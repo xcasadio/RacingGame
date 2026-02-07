@@ -1,13 +1,10 @@
-#region File Description
 //-----------------------------------------------------------------------------
 // Sound.cs
 //
 // Microsoft XNA Community Game Platform
 // Copyright (C) Microsoft Corporation. All rights reserved.
 //-----------------------------------------------------------------------------
-#endregion
 
-#region Using directives
 using Microsoft.Xna.Framework.Audio;
 using System;
 using System.Collections.Generic;
@@ -20,7 +17,6 @@ using System.Threading;
 using Microsoft.Xna.Framework;
 using System.IO;
 using RacingGame.Properties;
-#endregion
 
 namespace RacingGame.Sounds
 {
@@ -111,8 +107,7 @@ namespace RacingGame.Sounds
 
                 if (waveBank != null)
                 {
-                    soundBank = new SoundBank(audioEngine,
-                        Path.Combine(dir, "Sound Bank.xsb"));
+                    soundBank = new SoundBank(audioEngine, Path.Combine(dir, "Sound Bank.xsb"));
                 }
 
                 // Get the categories needed to change volume and pitching
@@ -287,8 +282,7 @@ namespace RacingGame.Sounds
         /// Volumes for each gear, currently all set to 100% because we
         /// adjusted the gear volumes in Xact already.
         /// </summary>
-        static readonly float[] vol =
-            new float[NumberOfGears] { 1, 1, 1, 1, 1 };
+        static readonly float[] vol = new float[NumberOfGears] { 1, 1, 1, 1, 1 };
         /// <summary>
         /// Minimum pitch for each gear, this is the sound pitch you will hear
         /// when the gear is at the very start. It goes up to maxPitch and

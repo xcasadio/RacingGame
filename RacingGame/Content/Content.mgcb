@@ -14,6 +14,18 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Audio/RacingGame.xap
+/copy:Audio/RacingGame.xap
+
+#begin Audio/RacingGameManager.xgs
+/copy:Audio/RacingGameManager.xgs
+
+#begin Audio/Sound Bank.xsb
+/copy:Audio/Sound Bank.xsb
+
+#begin Audio/Wave Bank.xwb
+/copy:Audio/Wave Bank.xwb
+
 #begin Audio/Waves/Beep.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
