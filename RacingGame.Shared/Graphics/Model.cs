@@ -166,8 +166,7 @@ namespace RacingGame.Graphics
         {
             name = setModelName;
 
-            xnaModel = BaseGame.Content.Load<XnaModel>(
-                @"Content\models\" + name);
+            xnaModel = BaseGame.Content.Load<XnaModel>(@"Content\models\" + name);
 
             // Get matrix transformations of the model
             // Has to be done only once because we don't use animations in our game.
@@ -284,18 +283,23 @@ namespace RacingGame.Graphics
                     }
 
                     // No technique found or invalid?
-                    if (techniqueIndex < 0 ||
-                        techniqueIndex >= effect.Techniques.Count)
+                    if (techniqueIndex < 0 
+                        || techniqueIndex >= effect.Techniques.Count)
                     {
                         // Try to use last technique
                         techniqueIndex = effect.Techniques.Count - 1;
                         // If this is NormalMapping, use DiffuseSpecular20 instead
                         // of the last technique (which is SpecularWithReflection20)
                         if (effect.Techniques[techniqueIndex].Name.Contains("SpecularWithReflection"))
+                        {
                             techniqueIndex -= 2;
+                        }
+
                         // Update: We have now 2 more techniques (ReflectionSpecular)
                         if (effect.Techniques[techniqueIndex].Name.Contains("ReflectionSpecular"))
-                            techniqueIndex -= 4;
+                        {
+                            //techniqueIndex -= 4;
+                        }
                     }
 
                     // Set current technique for rendering below
@@ -313,8 +317,7 @@ namespace RacingGame.Graphics
                     // index and vertex buffers and all the render data.
                     // Material settings are build from the effect settings.
                     // Also add this to our own dictionary for rendering.
-                    renderableMeshes.Add(part, BaseGame.MeshRenderManager.Add(
-                        part.VertexBuffer, part.IndexBuffer, part, part.Effect));
+                    renderableMeshes.Add(part, BaseGame.MeshRenderManager.Add(part.VertexBuffer, part.IndexBuffer, part, part.Effect));
                 }
             }
 

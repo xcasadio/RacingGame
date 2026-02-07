@@ -321,9 +321,9 @@ namespace RacingGame
         public RacingGameManager()
             : base("RacingGame")
         {
-			//Sound.Initialize();
+			Sound.Initialize();
             // Start playing the menu music
-            //Sound.Play(Sound.Sounds.MenuMusic);
+            Sound.Play(Sound.Sounds.MenuMusic);
 
             // Create main menu at our main entry point
             gameScreens.Push(new MainMenu());
