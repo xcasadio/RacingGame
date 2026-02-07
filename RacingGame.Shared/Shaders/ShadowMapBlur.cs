@@ -122,7 +122,9 @@ namespace RacingGame.Shaders
         {
             // Can't get parameters if loading failed!
             if (effect == null)
+            {
                 return;
+            }
 
             windowSize = effect.Parameters["windowSize"];
             sceneMap = effect.Parameters["sceneMap"];
@@ -131,8 +133,10 @@ namespace RacingGame.Shaders
             // We need both windowSize and sceneMap.
             if (windowSize == null ||
                 sceneMap == null)
+            {
                 throw new NotSupportedException("windowSize and sceneMap must be " +
-                    "valid in PostScreenShader=" + Filename);
+                                                "valid in PostScreenShader=" + Filename);
+            }
         }
         #endregion
 
@@ -144,7 +148,9 @@ namespace RacingGame.Shaders
         public void RenderShadows(BaseGame.RenderHandler renderCode)
         {
             if (renderCode == null)
+            {
                 throw new ArgumentNullException("renderCode");
+            }
 
             // Render into our scene map texture
             sceneMapTexture.SetRenderTarget();
@@ -175,7 +181,9 @@ namespace RacingGame.Shaders
                 // If the shadow scene map is not yet filled, there is no point
                 // continuing here ...
                 sceneMapTexture.XnaTexture == null)
+            {
                 return;
+            }
 
             // Don't use or write to the z buffer
             BaseGame.Device.DepthStencilState = DepthStencilState.None;
@@ -183,17 +191,24 @@ namespace RacingGame.Shaders
             BaseGame.Device.BlendState = BlendState.Opaque;
 
             if (windowSize != null)
+            {
                 windowSize.SetValue(
                     new float[] { sceneMapTexture.Width, sceneMapTexture.Height });
+            }
+
             if (sceneMap != null)
+            {
                 sceneMap.SetValue(sceneMapTexture.XnaTexture);
+            }
 
             effect.CurrentTechnique = effect.Techniques["ScreenAdvancedBlur20"];
 
             // We must have exactly 2 passes!
             if (effect.CurrentTechnique.Passes.Count != 2)
+            {
                 throw new InvalidOperationException(
                     "This shader should have exactly 2 passes!");
+            }
 
             // Just start pass 0
             
@@ -227,7 +242,9 @@ namespace RacingGame.Shaders
                 // If the shadow scene map is not yet filled, there is no point
                 // continuing here ...
                 blurMapTexture.XnaTexture == null)
+            {
                 return;
+            }
 
             // Don't use or write to the z buffer
             BaseGame.Device.DepthStencilState = DepthStencilState.None;
@@ -239,14 +256,18 @@ namespace RacingGame.Shaders
             //not required: BaseGame.ResetRenderTarget(false);
 
             if (blurMap != null)
+            {
                 blurMap.SetValue(blurMapTexture.XnaTexture);
+            }
 
             effect.CurrentTechnique = effect.Techniques["ScreenAdvancedBlur20"];
 
             // We must have exactly 2 passes!
             if (effect.CurrentTechnique.Passes.Count != 2)
+            {
                 throw new InvalidOperationException(
                     "This shader should have exactly 2 passes!");
+            }
 
             // Render second pass
 

@@ -484,7 +484,9 @@ namespace RacingGame.Tracks
             int totalTunnelLength = 0;
             foreach (RoadHelperPosition tunnelPos in helperPositions)
                 if (tunnelPos.type == TrackData.RoadHelper.HelperType.Tunnel)
+                {
                     totalTunnelLength += 1 + (tunnelPos.endNum - tunnelPos.startNum);
+                }
 
             // Lets use 4 vertices per segment, we could improve that later
             // by adding more vertices for a round tunnel.
@@ -492,6 +494,7 @@ namespace RacingGame.Tracks
             vertexIndex = 0;
             foreach (RoadHelperPosition tunnelPos in helperPositions)
                 if (tunnelPos.type == TrackData.RoadHelper.HelperType.Tunnel)
+                {
                     for (int num = tunnelPos.startNum; num <= tunnelPos.endNum; num++)
                     {
                         // Left side of the road
@@ -531,6 +534,7 @@ namespace RacingGame.Tracks
 
                         vertexIndex += 4;
                     }
+                }
 
             // Set road back vertex buffer
             if (roadTunnelVertices.Length > 0)
@@ -555,7 +559,10 @@ namespace RacingGame.Tracks
                 int totalIndices = 0;
                 foreach (RoadHelperPosition tunnelPos in helperPositions)
                     if (tunnelPos.type == TrackData.RoadHelper.HelperType.Tunnel)
+                    {
                         totalIndices += (tunnelPos.endNum - tunnelPos.startNum);
+                    }
+
                 roadTunnelIndices = new int[totalIndices * 6 * 3];
                 vertexIndex = 0;
                 int tunnelIndex = 0;
@@ -647,16 +654,22 @@ namespace RacingGame.Tracks
                         num <= helper.endNum)
                     {
                         if (helper.type == TrackData.RoadHelper.HelperType.Palms)
+                        {
                             palms = true;
+                        }
                         else if (helper.type == TrackData.RoadHelper.HelperType.Laterns)
+                        {
                             laterns = true;
+                        }
                     }
 
                 // No palms or laterns here?
                 if (palms == false &&
                     laterns == false)
                     // Then skip
+                {
                     continue;
+                }
 
                 // Distance of the current position to the next position
                 float distance = Vector3.Distance(
@@ -676,7 +689,9 @@ namespace RacingGame.Tracks
                     bool movingDown = dir.Z < -0.65f;
                     if (upsideDown || movingUp || movingDown)
                         // Skip generation here!
+                    {
                         continue;
+                    }
 
                     // Create the coordinate system for the current point by the 3 unit
                     // vectors.
@@ -710,7 +725,10 @@ namespace RacingGame.Tracks
                                 int randomNum = RandomHelper.GetRandomInt(4);
                                 // Less propability for small palm
                                 if (randomNum == 3)
+                                {
                                     randomNum = RandomHelper.GetRandomInt(4);
+                                }
+
                                 landscape.AddObjectToRender(
                                     // Random palms
                                     randomNum == 0 ? "AlphaPalm" :
@@ -836,7 +854,9 @@ namespace RacingGame.Tracks
                 bool movingDown = dir.Z < -0.65f;
                 if (upsideDown || movingUp || movingDown)
                     // Skip generation here!
+                {
                     continue;
+                }
 
                 // Create the coordinate system for the current point by the 3 unit
                 // vectors.
@@ -905,7 +925,9 @@ namespace RacingGame.Tracks
                     // If road goes to the left, use negative angle value!
                     if (Vector3.Distance(points[num].right, angleVec) <
                         Vector3.Distance(-points[num].right, angleVec))
+                    {
                         roadAngle = -roadAngle;
+                    }
 
                     // Now compare, if the backPos is more than 12 meters down,
                     // add a warning sign.
@@ -975,10 +997,14 @@ namespace RacingGame.Tracks
                         // Randomize again if not that curvy here
                         if (rndValue == 0 &&
                             Math.Abs(roadAngle) < MathHelper.Pi / 24)
+                        {
                             rndValue = RandomHelper.GetRandomInt(3);
+                        }
                         else if (Math.Abs(roadAngle) < MathHelper.Pi / 20 &&
-                            RandomHelper.GetRandomInt(2) == 1)
+                                 RandomHelper.GetRandomInt(2) == 1)
+                        {
                             roadAngle *= -1;
+                        }
 
                         // Show right road sign
                         landscape.AddObjectToRender(
@@ -1027,7 +1053,9 @@ namespace RacingGame.Tracks
 
                     // Skip object generation at great heights!
                     if (points[num].pos.Z - landscapeHeight > 60.0f)
+                    {
                         continue;
+                    }
                 }
 
                 // The unit vectors for our local point space
@@ -1041,14 +1069,20 @@ namespace RacingGame.Tracks
                 bool movingDown = dir.Z < -0.65f;
                 if (upsideDown || movingUp || movingDown)
                     // Skip generation here!
+                {
                     continue;
+                }
 
                 // Show twice as many objects in high details mode
                 int randomMaxPropability;
                 if (BaseGame.HighDetail)
+                {
                     randomMaxPropability = 5;
+                }
                 else
+                {
                     randomMaxPropability = 10;
+                }
 
                 // Generate stuff in 20% of the cases
                 if (RandomHelper.GetRandomInt(randomMaxPropability) == 0 &&
@@ -1060,20 +1094,27 @@ namespace RacingGame.Tracks
 
                     // If above 6, generate again
                     if (randomObjNum >= 6)
+                    {
                         randomObjNum = RandomHelper.GetRandomInt(
                             landscape.autoGenerationNames.Length);
+                    }
 
                     // Don't generate so many casinos
                     if (randomObjNum == landscape.autoGenerationNames.Length - 1 &&
                         RandomHelper.GetRandomInt(3) < 2)
+                    {
                         randomObjNum = RandomHelper.GetRandomInt(
                             landscape.autoGenerationNames.Length);
+                    }
 
                     // Ok, generate
                     float distance = RandomHelper.GetRandomFloat(26, 88);
                     // For casinos make sure the object is far enough away.
                     if (randomObjNum == landscape.autoGenerationNames.Length - 1)
+                    {
                         distance += 20;
+                    }
+
                     bool side = RandomHelper.GetRandomInt(2) == 0;
                     float rotation = RandomHelper.GetRandomFloat(0, MathHelper.Pi * 2);
                     landscape.AddObjectToRender(
@@ -1208,7 +1249,9 @@ namespace RacingGame.Tracks
         private void RenderRoadTunnelVertices()
         {
             if (roadTunnelVb == null)
+            {
                 return;
+            }
 
             // Disable culling (render tunnel from both sides)
             BaseGame.Device.RasterizerState = RasterizerState.CullNone;
@@ -1345,9 +1388,15 @@ namespace RacingGame.Tracks
         {
             // Make sure we are between 0 and 1
             if (trackSegmentPercent < 0)
+            {
                 trackSegmentPercent = 0;
+            }
+
             if (trackSegmentPercent > 1)
+            {
                 trackSegmentPercent = 1;
+            }
+
             float pointPercent = trackSegmentPercent;
             int num = trackSegmentNum % points.Count;
 
@@ -1413,36 +1462,55 @@ namespace RacingGame.Tracks
                 nextPointDist = Vector3Helper.SignedDistanceToPlane(carPos,
                     nextPoint.pos, nextPoint.dir);
                 if (thisPointDist < 0)
+                {
                     num--;
+                }
                 // Then check if we still are inside this segment
                 else if (nextPointDist < 0)
+                {
                     num++;
+                }
                 else
                     // Ok, we got it.
+                {
                     gotCarInThisSegment = true;
+                }
 
                 if (num < 0)
+                {
                     num = points.Count - 1;
+                }
+
                 if (num >= points.Count)
+                {
                     num = 0;
+                }
 
                 // Get outa here if we are above the max. iterations!
                 if (maxNumberOfIterations-- < 0)
+                {
                     return;
+                }
             } while (gotCarInThisSegment == false);
 
             trackSegmentNumber = num;
             // Btw: Is this a tunnel? Then disable lens flares!
             // Check every 10 frames to save a little performance.
             if (BaseGame.TotalFrames % 10 == 0)
+            {
                 disableLensFlareInTunnel = IsTunnel(num);
+            }
 
             // Also calculate our track segment position
             float segmentLength = thisPointDist + nextPointDist;
             if (segmentLength == 0)
+            {
                 trackSegmentPercent = 0;
+            }
             else
+            {
                 trackSegmentPercent = thisPointDist / segmentLength;
+            }
         }
 
         /// <summary>
@@ -1464,7 +1532,9 @@ namespace RacingGame.Tracks
                 if (tunnelPos.type == TrackData.RoadHelper.HelperType.Tunnel &&
                     trackSegment >= tunnelPos.startNum &&
                     trackSegment <= tunnelPos.endNum)
+                {
                     return true;
+                }
             }
 
             // No tunnel found here

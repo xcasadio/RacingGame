@@ -155,7 +155,10 @@ namespace RacingGame.Shaders
             get
             {
                 if (alreadyResolved)
+                {
                     internalXnaTexture = renderTarget;
+                }
+
                 return internalXnaTexture;
             }
         }
@@ -242,16 +245,20 @@ namespace RacingGame.Shaders
             //    SurfaceFormat.Rgba64, BaseGame.BackBufferDepthFormat, MultisampleCount, out outSF, out outDF, out outMSC);
 
             if (sizeType == SizeType.ShadowMap)
+            {
                 outMSC = 0;
+            }
 
-			// Create render target of specified size.
+            // Create render target of specified size.
 			renderTarget = new RenderTarget2D (
 				BaseGame.Device,
 				texWidth, texHeight, false, 
 					outSF, outDF, outMSC, RenderTargetUsage.DiscardContents);
 
             if (outSF != SurfaceFormat.Color)
+            {
                 usesHighPercisionFormat = true;
+            }
 
             loaded = true;
         }
@@ -265,7 +272,9 @@ namespace RacingGame.Shaders
         {
             if (loaded == false ||
                 renderTarget == null)
+            {
                 return;
+            }
 
             BaseGame.Device.Clear(
                 ClearOptions.Target | ClearOptions.DepthBuffer,
@@ -281,7 +290,9 @@ namespace RacingGame.Shaders
         {
             if (loaded == false ||
                 renderTarget == null)
+            {
                 return false;
+            }
 
             BaseGame.SetRenderTarget(renderTarget, false);
             return true;
@@ -308,8 +319,10 @@ namespace RacingGame.Shaders
         {
             // Make sure this render target is currently set!
             if (BaseGame.CurrentRenderTarget != renderTarget)
+            {
                 throw new InvalidOperationException(
                     "You can't call Resolve without first setting the render target!");
+            }
 
             alreadyResolved = true;
             // fix

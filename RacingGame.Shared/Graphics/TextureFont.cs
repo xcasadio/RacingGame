@@ -217,9 +217,14 @@ namespace RacingGame.Graphics
             if (disposing)
             {
                 if (fontTexture != null)
+                {
                     fontTexture.Dispose();
+                }
+
                 if (fontSprite != null)
+                {
                     fontSprite.Dispose();
+                }
             }
         }
         #endregion
@@ -240,7 +245,9 @@ namespace RacingGame.Graphics
                 int charNum = (int)chars[num];
                 if (charNum >= 32 &&
                     charNum - 32 < CharRects.Length)
+                {
                     width += BaseGame.XToRes1400(CharRects[charNum - 32].Height);
+                }
             }
             return width;
         }
@@ -397,7 +404,9 @@ namespace RacingGame.Graphics
         public void WriteAll()
         {
             if (remTexts.Count == 0)
+            {
                 return;
+            }
 
             // Start rendering
             fontSprite.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);

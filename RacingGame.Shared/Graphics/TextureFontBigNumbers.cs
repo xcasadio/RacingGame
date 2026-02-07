@@ -65,7 +65,9 @@ namespace RacingGame.Graphics
         private static int WriteDigit(int x, int y, int digit)
         {
             if (digit < 0)
+            {
                 return 0;
+            }
 
             float resScalingX = (float)BaseGame.Width / 1600.0f;
             float resScalingY = (float)BaseGame.Height / 1200.0f;
@@ -89,7 +91,9 @@ namespace RacingGame.Graphics
         private static int WriteDigit(int x, int y, int height, int digit)
         {
             if (digit < 0)
+            {
                 return 0;
+            }
 
             float resScalingX = (float)BaseGame.Width / 1600.0f;
             float resScalingY = (float)BaseGame.Height / 1200.0f;

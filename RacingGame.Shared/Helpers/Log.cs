@@ -61,7 +61,9 @@ namespace RacingGame.Helpers
 
                 FileStream file;
                 if (!isolatedStorageFile.FileExists(LogFilename))
+                {
                     file = isolatedStorageFile.CreateFile(LogFilename);
+                }
                 else
                 {
                     file = isolatedStorageFile.OpenFile(LogFilename, FileMode.OpenOrCreate,
@@ -78,10 +80,14 @@ namespace RacingGame.Helpers
                 // Associate writer with that, when writing to a new file,
                 // make sure UTF-8 sign is written, else don't write it again!
                 if (file.Length == 0)
+                {
                     writer = new StreamWriter(file,
                         System.Text.Encoding.UTF8);
+                }
                 else
+                {
                     writer = new StreamWriter(file);
+                }
 
                 // Go to end of file
                 writer.BaseStream.Seek(0, SeekOrigin.End);
@@ -118,7 +124,9 @@ namespace RacingGame.Helpers
 #if !XBOX360 && !XBOXONE
             // Can't continue without valid writer
             if (writer == null)
+            {
                 return;
+            }
 
             try
             {

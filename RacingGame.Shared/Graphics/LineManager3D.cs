@@ -87,7 +87,9 @@ namespace RacingGame.Graphics
             public override bool Equals(object a)
             {
                 if (a is Line)
+                {
                     return (Line)a == this;
+                }
 
                 return false;
             }
@@ -152,8 +154,10 @@ namespace RacingGame.Graphics
         public LineManager3D()
         {
             if (BaseGame.Device == null)
+            {
                 throw new ArgumentNullException(
                     "XNA device is not initialized, can't init line manager.");
+            }
         }
         #endregion
 

@@ -92,9 +92,13 @@ namespace RacingGame.Graphics
             get
             {
                 if (diffuseTexture != null)
+                {
                     return diffuseTexture.HasAlphaPixels;
+                }
                 else
+                {
                     return false;
+                }
             }
         }
         #endregion
@@ -175,11 +179,19 @@ namespace RacingGame.Graphics
             specularColor = setSpecularColor;
             diffuseTexture = new Texture(setDiffuseTexture);
             if (String.IsNullOrEmpty(setNormalTexture) == false)
+            {
                 normalTexture = new Texture(setNormalTexture);
+            }
+
             if (String.IsNullOrEmpty(setHeightTexture) == false)
+            {
                 heightTexture = new Texture(setHeightTexture);
+            }
+
             if (String.IsNullOrEmpty(setDetailTexture) == false)
+            {
                 detailTexture = new Texture(setDetailTexture);
+            }
             // Leave rest to default
         }
         #endregion
@@ -192,39 +204,53 @@ namespace RacingGame.Graphics
         public Material(Effect effect)
         {
             if (effect == null)
+            {
                 throw new ArgumentNullException("effect");
+            }
 
             EffectParameter diffuseTextureParameter =
                 effect.Parameters["diffuseTexture"];
             if (diffuseTextureParameter != null)
+            {
                 diffuseTexture = new Texture(
                     diffuseTextureParameter.GetValueTexture2D());
+            }
 
             EffectParameter normalTextureParameter =
                 effect.Parameters["normalTexture"];
             if (normalTextureParameter != null)
+            {
                 normalTexture = new Texture(
                     normalTextureParameter.GetValueTexture2D());
+            }
 
             EffectParameter diffuseColorParameter =
                 effect.Parameters["diffuseColor"];
             if (diffuseColorParameter != null)
+            {
                 diffuseColor = new Color(diffuseColorParameter.GetValueVector4());
+            }
 
             EffectParameter ambientColorParameter =
                 effect.Parameters["ambientColor"];
             if (ambientColorParameter != null)
+            {
                 ambientColor = new Color(ambientColorParameter.GetValueVector4());
+            }
 
             EffectParameter specularColorParameter =
                 effect.Parameters["specularColor"];
             if (specularColorParameter != null)
+            {
                 specularColor = new Color(specularColorParameter.GetValueVector4());
+            }
 
             EffectParameter specularPowerParameter =
                 effect.Parameters["specularPower"];
             if (specularPowerParameter != null)
+            {
                 specularPower = specularPowerParameter.GetValueSingle();
+            }
         }
         #endregion
         #endregion
@@ -248,13 +274,24 @@ namespace RacingGame.Graphics
             if (disposing)
             {
                 if (diffuseTexture != null)
+                {
                     diffuseTexture.Dispose();
+                }
+
                 if (normalTexture != null)
+                {
                     normalTexture.Dispose();
+                }
+
                 if (heightTexture != null)
+                {
                     heightTexture.Dispose();
+                }
+
                 if (detailTexture != null)
+                {
                     detailTexture.Dispose();
+                }
             }
         }
         #endregion

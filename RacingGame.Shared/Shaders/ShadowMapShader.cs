@@ -184,6 +184,7 @@ namespace RacingGame.Shaders
         protected override void SetParameterDefaultValues()
         {
             if (filterTaps != null)
+            {
                 filterTaps.SetValue(new Vector2[] {
                     new Vector2 (-0.84052f, -0.073954f),
                     new Vector2 (-0.326235f, -0.40583f),
@@ -196,6 +197,7 @@ namespace RacingGame.Shaders
                     new Vector2 (0.507351f, 0.064963f),
                     new Vector2 (-0.321932f, 0.5954349f),
                 });
+            }
         }
 
         #region Get parameters
@@ -206,7 +208,9 @@ namespace RacingGame.Shaders
         {
             // Can't get parameters if loading failed!
             if (effect == null)
+            {
                 return;
+            }
 
             base.GetParameters();
 
@@ -224,8 +228,10 @@ namespace RacingGame.Shaders
                 effect.Parameters["shadowDistanceFadeoutTexture"];
             // Load shadowDistanceFadeoutTexture
             if (shadowDistanceFadeoutTexture != null)
+            {
                 shadowDistanceFadeoutTexture.SetValue(
                     new Texture("ShadowDistanceFadeoutMap").XnaTexture);
+            }
         }
         #endregion
 
@@ -237,7 +243,9 @@ namespace RacingGame.Shaders
         {
             // Can't set parameters if loading failed!
             if (effect == null)
+            {
                 return;
+            }
 
             shadowNearPlane = 1.0f;
             shadowFarPlane = 6.25f * 28 * 1.25f;
@@ -255,7 +263,10 @@ namespace RacingGame.Shaders
             shadowMapTexelSize.SetValue(
                 new Vector2(texelWidth, texelHeight));
             if (nearPlane != null)
+            {
                 nearPlane.SetValue(shadowNearPlane);
+            }
+
             farPlane.SetValue(shadowFarPlane);
         }
         #endregion
@@ -322,7 +333,9 @@ namespace RacingGame.Shaders
         {
             // Can't generate shadow if loading failed!
             if (effect == null)
+            {
                 return;
+            }
 
             // This method sets all required shader variables.
             this.SetParameters(null);
@@ -402,7 +415,9 @@ namespace RacingGame.Shaders
         {
             // Can't calc shadows if loading failed!
             if (effect == null)
+            {
                 return;
+            }
 
             // Make sure z buffer and writing z buffer is on
             BaseGame.Device.DepthStencilState = DepthStencilState.Default;

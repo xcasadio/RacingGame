@@ -52,14 +52,18 @@ namespace RacingGame.GameScreens
 
             // Show shadows we calculated above
             if (BaseGame.AllowShadowMapping)
-                ShaderEffect.shadowMapping.ShowShadows();
+            {
+	            ShaderEffect.shadowMapping.ShowShadows();
+            }
 
             // Show Press Start to continue. 
             if ((int)(BaseGame.TotalTime / 0.375f) % 3 != 0)
-                BaseGame.UI.Headers.RenderOnScreen(
-                    BaseGame.CalcRectangleCenteredWithGivenHeight(
-                    512, 518 + 61 / 2, 26, UIRenderer.PressStartGfxRect),
-                    UIRenderer.PressStartGfxRect);
+            {
+	            BaseGame.UI.Headers.RenderOnScreen(
+		            BaseGame.CalcRectangleCenteredWithGivenHeight(
+			            512, 518 + 61 / 2, 26, UIRenderer.PressStartGfxRect),
+		            UIRenderer.PressStartGfxRect);
+            }
 
             // Clicking or pressing start will go to the menu
             return Input.MouseLeftButtonJustPressed ||

@@ -320,29 +320,64 @@ namespace RacingGame.Graphics
             if (disposing)
             {
                 if (background != null)
+                {
                     background.Dispose();
+                }
+
                 if (buttons != null)
+                {
                     buttons.Dispose();
+                }
+
                 if (headers != null)
+                {
                     headers.Dispose();
+                }
+
                 if (helpScreen != null)
+                {
                     helpScreen.Dispose();
+                }
+
                 if (optionsScreen != null)
+                {
                     optionsScreen.Dispose();
+                }
+
                 if (mouseCursor != null)
+                {
                     mouseCursor.Dispose();
+                }
+
                 if (font != null)
+                {
                     font.Dispose();
+                }
+
                 if (postScreenMenuShader != null)
+                {
                     postScreenMenuShader.Dispose();
+                }
+
                 if (postScreenGameShader != null)
+                {
                     postScreenGameShader.Dispose();
+                }
+
                 if (skyCube != null)
+                {
                     skyCube.Dispose();
+                }
+
                 if (lensFlare != null)
+                {
                     lensFlare.Dispose();
+                }
+
                 if (ingame != null)
+                {
                     ingame.Dispose();
+                }
             }
         }
         #endregion
@@ -424,7 +459,10 @@ namespace RacingGame.Graphics
                     // Fade out
                     float alpha = 1.0f;
                     if (fadeupText.showTimeMs < 1500)
+                    {
                         alpha = fadeupText.showTimeMs / 1500.0f;
+                    }
+
                     // Move up
                     float moveUpAmount =
                         (TimeFadeupText.MaxShowTimeMs - fadeupText.showTimeMs) /
@@ -453,7 +491,9 @@ namespace RacingGame.Graphics
 
             // Render lens flare on top of 3d stuff
             if (Track.disableLensFlareInTunnel == false)
+            {
                 lensFlare.Render(Color.White);
+            }
         }
         #endregion
 
@@ -491,7 +531,9 @@ namespace RacingGame.Graphics
             // Advance menu car preview time
             carMenuTime += BaseGame.ElapsedTimeThisFrameInMilliseconds / 1000.0f;
             if (carMenuTime > RacingGameManager.Landscape.BestReplay.LapTime)
+            {
                 carMenuTime -= RacingGameManager.Landscape.BestReplay.LapTime;
+            }
 
             // Use data from replay
             Matrix carMatrix =
@@ -509,9 +551,15 @@ namespace RacingGame.Graphics
             Vector3 newCarForward = carMatrix.Forward;
             Vector3 newCarUp = carMatrix.Up;
             if (oldCarForward == Vector3.Zero)
+            {
                 oldCarForward = newCarForward;
+            }
+
             if (oldCarUp == Vector3.Zero)
+            {
                 oldCarUp = newCarUp;
+            }
+
             oldCarForward = oldCarForward * 0.95f + newCarForward * 0.05f;
             oldCarUp = oldCarUp * 0.95f + newCarUp * 0.05f;
             RacingGameManager.Player.SetCameraPosition(
@@ -580,21 +628,28 @@ namespace RacingGame.Graphics
             int xAdd = BaseGame.XToRes(16);
             int yAdd = BaseGame.YToRes(9);
             if (overBButton)
+            {
                 bButtonRect = new Rectangle(
                     bButtonRect.X - xAdd / 2, bButtonRect.Y - yAdd / 2,
                     bButtonRect.Width + xAdd, bButtonRect.Height + yAdd);
+            }
+
             buttons.RenderOnScreen(bButtonRect, BottomButtonBButtonGfxRect);
 
             // Is mouse over button?
             if (overBButton)
+            {
                 buttons.RenderOnScreen(bButtonRect, BottomButtonSelectionGfxRect);
+            }
 
             // Store value if back button was pressed;
             backButtonPressed = overBButton && Input.MouseLeftButtonJustPressed;
 
             // Don't show button a if there is nothing to select here
             if (onlyBack)
+            {
                 return false;
+            }
 
             Rectangle aButtonRect = BaseGame.CalcRectangleCenteredWithGivenHeight(
                 0, 587, 48, BottomButtonAButtonGfxRect);
@@ -602,9 +657,12 @@ namespace RacingGame.Graphics
                 aButtonRect.Width * 2 - BaseGame.XToRes(55 + 25);
             bool overAButton = Input.MouseInBox(aButtonRect);
             if (overAButton)
+            {
                 aButtonRect = new Rectangle(
                     aButtonRect.X - xAdd / 2, aButtonRect.Y - yAdd / 2,
                     aButtonRect.Width + xAdd, aButtonRect.Height + yAdd);
+            }
+
             buttons.RenderOnScreen(aButtonRect, BottomButtonAButtonGfxRect);
 
             // Is mouse over button?
@@ -612,7 +670,9 @@ namespace RacingGame.Graphics
             {
                 buttons.RenderOnScreen(aButtonRect, BottomButtonSelectionGfxRect);
                 if (Input.MouseLeftButtonJustPressed)
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -635,7 +695,9 @@ namespace RacingGame.Graphics
             string trackName, int[] top5LapTimes)
         {
             if (top5LapTimes == null)
+            {
                 throw new ArgumentNullException("top5LapTimes");
+            }
 
             Color baseUIColor = Color.White;//ColorHelper.HalfAlpha;
 
@@ -829,9 +891,15 @@ namespace RacingGame.Graphics
             //ingame.RenderOnScreenWithRotation(
             //    tachoPoint, TachoArrowGfxRect, -acceleration*2);
             if (acceleration < 0)
+            {
                 acceleration = 0;
+            }
+
             if (acceleration > 1)
+            {
                 acceleration = 1;
+            }
+
             float rotation = -2.33f + acceleration * 2.5f;
             int tachoArrowWidth = BaseGame.XToRes1600(TachoArrowGfxRect.Width);
             int tachoArrowHeight = BaseGame.YToRes1200(TachoArrowGfxRect.Height);
@@ -881,7 +949,9 @@ namespace RacingGame.Graphics
         public static void Render(LineManager2D lineManager2D)
         {
             if (lineManager2D == null)
+            {
                 throw new ArgumentNullException("lineManager2D");
+            }
 
             // Disable depth buffer for UI
             BaseGame.Device.DepthStencilState = DepthStencilState.None;
@@ -910,13 +980,17 @@ namespace RacingGame.Graphics
                 // Also allow toggeling with gamepad
                 (Input.GamePad.Buttons.LeftShoulder == ButtonState.Pressed &&
                 Input.GamePadYJustPressed))
+            {
                 showFps = !showFps;
+            }
 #endif
             if (showFps)
+            {
                 TextureFont.WriteText(
                     BaseGame.XToRes(200), BaseGame.YToRes(26),
                     "Fps: " + BaseGame.Fps + " " +
                     BaseGame.Width + "x" + BaseGame.Height);
+            }
 
             // Render font texts
             RenderTimeFadeupEffects();

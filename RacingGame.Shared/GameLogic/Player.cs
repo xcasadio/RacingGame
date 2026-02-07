@@ -155,11 +155,15 @@ namespace RacingGame.GameLogic
                 // Check if car is in the air,
                 // used to check if the player died.
                 if (this.isCarOnGround == false)
+                {
                     inAirTimeMilliseconds +=
                         BaseGame.ElapsedTimeThisFrameInMilliseconds;
+                }
                 else
                     // Back on ground, reset
+                {
                     inAirTimeMilliseconds = 0;
+                }
 
                 // Game not over yet, check if we lost or won.
                 // Check if we have fallen from the track

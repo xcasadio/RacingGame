@@ -122,7 +122,9 @@ namespace RacingGame.GameScreens
         private static bool ReadHighscoresFromSettings()
         {
             if (String.IsNullOrEmpty(GameSettings.Default.Highscores))
+            {
                 return false;
+            }
 
             string highscoreString = GameSettings.Default.Highscores;
             string[] allHighscores = highscoreString.Split(',');
@@ -214,13 +216,17 @@ namespace RacingGame.GameScreens
             // Time must be at least 1 second
             if (timeMilliseconds < 1000)
                 // Invalid time, return rank 11 (out of highscore)
+            {
                 return NumOfHighscores;
+            }
 
             // Just compare with all highscores and return the rank we have reached.
             for (int num = 0; num < NumOfHighscores; num++)
             {
                 if (timeMilliseconds <= highscores[level, num].timeMilliseconds)
+                {
                     return num;
+                }
             }
 
             // No Rank found, use rank 11
@@ -286,7 +292,9 @@ namespace RacingGame.GameScreens
         {
             // This starts both menu and in game post screen shader!
 			if(BaseGame.UsePostScreenShaders)
-            	BaseGame.UI.PostScreenMenuShader.Start();
+            {
+                BaseGame.UI.PostScreenMenuShader.Start();
+            }
 
             // Render background
             BaseGame.UI.RenderMenuBackground();
@@ -406,7 +414,9 @@ namespace RacingGame.GameScreens
                 Input.MouseLeftButtonJustPressed &&
                 // Don't allow clicking on the controls to quit
                 Input.MousePos.Y > yPos)
+            {
                 return true;
+            }
 
             return false;
         }

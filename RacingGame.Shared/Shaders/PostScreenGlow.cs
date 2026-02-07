@@ -110,7 +110,9 @@ namespace RacingGame.Shaders
         {
             // Can't get parameters if loading failed!
             if (effect == null)
+            {
                 return;
+            }
 
             windowSize = effect.Parameters["windowSize"];
             sceneMap = effect.Parameters["sceneMap"];
@@ -118,8 +120,10 @@ namespace RacingGame.Shaders
             // We need both windowSize and sceneMap.
             if (windowSize == null ||
                 sceneMap == null)
+            {
                 throw new NotSupportedException("windowSize and sceneMap must be " +
-                    "valid in PostScreenShader=" + Filename);
+                                                "valid in PostScreenShader=" + Filename);
+            }
 
             // Init additional stuff
             downsampleMap = effect.Parameters["downsampleMap"];
@@ -149,7 +153,9 @@ namespace RacingGame.Shaders
             if (sceneMapTexture == null ||
                 effect == null ||
                 started == false)
+            {
                 return;
+            }
 
             started = false;
 
@@ -163,10 +169,15 @@ namespace RacingGame.Shaders
             BaseGame.Device.BlendState = BlendStateAlphaWrite;
 
             if (windowSize != null)
+            {
                 windowSize.SetValue(
                     new float[] { sceneMapTexture.Width, sceneMapTexture.Height });
+            }
+
             if (sceneMap != null)
+            {
                 sceneMap.SetValue(sceneMapTexture.XnaTexture);
+            }
 
             RadialBlurScaleFactor =
                 // Warning: To big values will make the motion blur look to
@@ -178,8 +189,10 @@ namespace RacingGame.Shaders
 
             // We must have exactly 5 passes!
             if (effect.CurrentTechnique.Passes.Count != 5)
+            {
                 throw new InvalidOperationException(
                     "This shader should have exactly 5 passes!");
+            }
 
             try
             {
@@ -187,13 +200,21 @@ namespace RacingGame.Shaders
                     pass++)
                 {
                     if (pass == 0)
+                    {
                         radialSceneMapTexture.SetRenderTarget();
+                    }
                     else if (pass == 1)
+                    {
                         downsampleMapTexture.SetRenderTarget();
+                    }
                     else if (pass == 2)
+                    {
                         blurMap1Texture.SetRenderTarget();
+                    }
                     else if (pass == 3)
+                    {
                         blurMap2Texture.SetRenderTarget();
+                    }
                     else
                     {
                         BaseGame.ResetRenderTarget(true);
@@ -204,36 +225,52 @@ namespace RacingGame.Shaders
                     // For first effect we use radial blur, draw it with a grid
                     // to get cooler results (more blur at borders than in middle).
                     if (pass == 0)
+                    {
                         VBScreenHelper.Render10x10Grid();
+                    }
                     else
+                    {
                         VBScreenHelper.Render();
+                    }
 
                     if (pass == 0)
                     {
                         radialSceneMapTexture.Resolve();
                         if (radialSceneMap != null)
+                        {
                             radialSceneMap.SetValue(radialSceneMapTexture.XnaTexture);
+                        }
+
                         effectPass.Apply();
                     }
                     else if (pass == 1)
                     {
                         downsampleMapTexture.Resolve();
                         if (downsampleMap != null)
+                        {
                             downsampleMap.SetValue(downsampleMapTexture.XnaTexture);
+                        }
+
                         effectPass.Apply();
                     }
                     else if (pass == 2)
                     {
                         blurMap1Texture.Resolve();
                         if (blurMap1 != null)
+                        {
                             blurMap1.SetValue(blurMap1Texture.XnaTexture);
+                        }
+
                         effectPass.Apply();
                     }
                     else if (pass == 3)
                     {
                         blurMap2Texture.Resolve();
                         if (blurMap2 != null)
+                        {
                             blurMap2.SetValue(blurMap2Texture.XnaTexture);
+                        }
+
                         effectPass.Apply();
                     }
                 }

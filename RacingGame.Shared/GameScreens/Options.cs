@@ -76,13 +76,24 @@ namespace RacingGame.GameScreens
             // Current resolution:
             // 0=640x480, 1=800x600, 2=1024x768, 3=1280x1024, 4=auto (default)
             if (BaseGame.Width == 640 && BaseGame.Height == 480)
+            {
                 currentResolution = 0;
+            }
+
             if (BaseGame.Width == 800 && BaseGame.Height == 600)
+            {
                 currentResolution = 1;
+            }
+
             if (BaseGame.Width == 1024 && BaseGame.Height == 768)
+            {
                 currentResolution = 2;
+            }
+
             if (BaseGame.Width == 1280 && BaseGame.Height == 1024)
+            {
                 currentResolution = 3;
+            }
 
             // Get graphics detail settings
             fullscreen = BaseGame.Fullscreen;
@@ -119,7 +130,9 @@ namespace RacingGame.GameScreens
             #region Background
             // This starts both menu and in game post screen shader!
 			if(BaseGame.UsePostScreenShaders)
-            	BaseGame.UI.PostScreenMenuShader.Start();
+            {
+                BaseGame.UI.PostScreenMenuShader.Start();
+            }
 
             // Render background and black bar
             BaseGame.UI.RenderMenuBackground();
@@ -163,9 +176,12 @@ namespace RacingGame.GameScreens
             res0Rect.Y += BaseGame.YToRes768(125);
             bool inRes0Rect = Input.MouseInBox(res0Rect);
             if (currentResolution == 0)
+            {
                 BaseGame.UI.OptionsScreen.RenderOnScreen(
                     res0Rect, Resolution640x480GfxRect,
                     selColor, BlendState.AlphaBlend);
+            }
+
             if (inRes0Rect && Input.MouseLeftButtonJustPressed)
             {
                 Sound.Play(Sound.Sounds.ButtonClick);
@@ -177,9 +193,12 @@ namespace RacingGame.GameScreens
             res1Rect.Y += BaseGame.YToRes768(125);
             bool inRes1Rect = Input.MouseInBox(res1Rect);
             if (currentResolution == 1)
+            {
                 BaseGame.UI.OptionsScreen.RenderOnScreen(
                     res1Rect, Resolution800x600GfxRect,
                     selColor, BlendState.AlphaBlend);
+            }
+
             if (inRes1Rect && Input.MouseLeftButtonJustPressed)
             {
                 Sound.Play(Sound.Sounds.ButtonClick);
@@ -191,9 +210,12 @@ namespace RacingGame.GameScreens
             res2Rect.Y += BaseGame.YToRes768(125);
             bool inRes2Rect = Input.MouseInBox(res2Rect);
             if (currentResolution == 2)
+            {
                 BaseGame.UI.OptionsScreen.RenderOnScreen(
                     res2Rect, Resolution1024x768GfxRect,
                     selColor, BlendState.AlphaBlend);
+            }
+
             if (inRes2Rect && Input.MouseLeftButtonJustPressed)
             {
                 Sound.Play(Sound.Sounds.ButtonClick);
@@ -205,9 +227,12 @@ namespace RacingGame.GameScreens
             res3Rect.Y += BaseGame.YToRes768(125);
             bool inRes3Rect = Input.MouseInBox(res3Rect);
             if (currentResolution == 3)
+            {
                 BaseGame.UI.OptionsScreen.RenderOnScreen(
                     res3Rect, Resolution1280x1024GfxRect,
                     selColor, BlendState.AlphaBlend);
+            }
+
             if (inRes3Rect && Input.MouseLeftButtonJustPressed)
             {
                 Sound.Play(Sound.Sounds.ButtonClick);
@@ -219,9 +244,12 @@ namespace RacingGame.GameScreens
             res4Rect.Y += BaseGame.YToRes768(125);
             bool inRes4Rect = Input.MouseInBox(res4Rect);
             if (currentResolution == 4)
+            {
                 BaseGame.UI.OptionsScreen.RenderOnScreen(
                     res4Rect, ResolutionAutoGfxRect,
                     selColor, BlendState.AlphaBlend);
+            }
+
             if (inRes4Rect && Input.MouseLeftButtonJustPressed)
             {
                 Sound.Play(Sound.Sounds.ButtonClick);
@@ -236,9 +264,12 @@ namespace RacingGame.GameScreens
             fsRect.Y += BaseGame.YToRes768(125);
             bool inFsRect = Input.MouseInBox(fsRect);
             if (fullscreen)
+            {
                 BaseGame.UI.OptionsScreen.RenderOnScreen(
                     fsRect, FullscreenGfxRect,
                     selColor, BlendState.AlphaBlend);
+            }
+
             if (inFsRect && Input.MouseLeftButtonJustPressed)
             {
                 Sound.Play(Sound.Sounds.ButtonClick);
@@ -250,9 +281,12 @@ namespace RacingGame.GameScreens
             pseRect.Y += BaseGame.YToRes768(125);
             bool inPseRect = Input.MouseInBox(pseRect);
             if (usePostScreenShaders)
+            {
                 BaseGame.UI.OptionsScreen.RenderOnScreen(
                     pseRect, PostScreenEffectsGfxRect,
                     selColor, BlendState.AlphaBlend);
+            }
+
             if (inPseRect && Input.MouseLeftButtonJustPressed)
             {
                 Sound.Play(Sound.Sounds.ButtonClick);
@@ -264,9 +298,12 @@ namespace RacingGame.GameScreens
             smRect.Y += BaseGame.YToRes768(125);
             bool inSmRect = Input.MouseInBox(smRect);
             if (useShadowMapping)
+            {
                 BaseGame.UI.OptionsScreen.RenderOnScreen(
                     smRect, ShadowsGfxRect,
                     selColor, BlendState.AlphaBlend);
+            }
+
             if (inSmRect && Input.MouseLeftButtonJustPressed)
             {
                 Sound.Play(Sound.Sounds.ButtonClick);
@@ -278,9 +315,12 @@ namespace RacingGame.GameScreens
             hdRect.Y += BaseGame.YToRes768(125);
             bool inHdRect = Input.MouseInBox(hdRect);
             if (useHighDetail)
+            {
                 BaseGame.UI.OptionsScreen.RenderOnScreen(
                     hdRect, HighDetailGfxRect,
                     selColor, BlendState.AlphaBlend);
+            }
+
             if (inHdRect && Input.MouseLeftButtonJustPressed)
             {
                 Sound.Play(Sound.Sounds.ButtonClick);
@@ -319,9 +359,14 @@ namespace RacingGame.GameScreens
                     Sound.Play(Sound.Sounds.Highlight);
                 }
                 if (currentSoundVolume < 0)
+                {
                     currentSoundVolume = 0;
+                }
+
                 if (currentSoundVolume > 1)
+                {
                     currentSoundVolume = 1;
+                }
             }
 
             // Render slider handle
@@ -364,9 +409,14 @@ namespace RacingGame.GameScreens
                     Sound.Play(Sound.Sounds.Highlight);
                 }
                 if (currentMusicVolume < 0)
+                {
                     currentMusicVolume = 0;
+                }
+
                 if (currentMusicVolume > 1)
+                {
                     currentMusicVolume = 1;
+                }
             }
 
             // Render slider handle
@@ -411,9 +461,14 @@ namespace RacingGame.GameScreens
                     Sound.Play(Sound.Sounds.Highlight);
                 }
                 if (currentSensitivity < 0)
+                {
                     currentSensitivity = 0;
+                }
+
                 if (currentSensitivity > 1)
+                {
                     currentSensitivity = 1;
+                }
             }
 
             // Render slider handle
@@ -443,8 +498,10 @@ namespace RacingGame.GameScreens
 
                 // Draw selection arrow
                 if (currentOptionsNumber == num)
+                {
                     BaseGame.UI.Buttons.RenderOnScreen(
                         lineRect, UIRenderer.SelectionArrowGfxRect, Color.White);
+                }
             }
 
             // Game pad selection

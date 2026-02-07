@@ -44,9 +44,11 @@ namespace RacingGame.GameScreens
         {
             // This starts both menu and in game post screen shader!
 			if (BaseGame.UsePostScreenShaders)
-            	BaseGame.UI.PostScreenMenuShader.Start();
+			{
+				BaseGame.UI.PostScreenMenuShader.Start();
+			}
 
-            // Render background and black bar
+			// Render background and black bar
             BaseGame.UI.RenderMenuBackground();
 
             // Help header
@@ -83,7 +85,9 @@ namespace RacingGame.GameScreens
                 Input.GamePadBJustPressed ||
                 Input.GamePadBackJustPressed ||
                 Input.MouseLeftButtonJustPressed)
-                return true;
+            {
+	            return true;
+            }
 
             return false;
         }

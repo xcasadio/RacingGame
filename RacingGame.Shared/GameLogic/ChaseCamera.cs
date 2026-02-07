@@ -193,9 +193,13 @@ namespace RacingGame.GameLogic
             set
             {
                 if (value == true)
+                {
                     cameraMode = CameraMode.FreeCamera;
+                }
                 else
+                {
                     cameraMode = CameraMode.Default;
+                }
             }
         }
         #endregion
@@ -274,10 +278,14 @@ namespace RacingGame.GameLogic
         {
             // Don't use for free camera
             if (FreeCamera)
+            {
                 return;
+            }
 
             if (wannaCameraDistance == 0.0f)
+            {
                 SetCameraPosition(setInterpolatedCameraPos);
+            }
 
             wannaCameraDistance =
                 Vector3.Distance(LookAtPos, setInterpolatedCameraPos);
@@ -302,7 +310,9 @@ namespace RacingGame.GameLogic
         {
             // Don't control the camera in the menu or game, only in unit tests!
             if (cameraMode != CameraMode.FreeCamera)
+            {
                 return;
+            }
 
             float rotationFactor = 0.0075f;
             float gamePadRotFactor = 5.0f * BaseGame.MoveFactorPerSecond;
@@ -312,7 +322,10 @@ namespace RacingGame.GameLogic
             cameraDistance = cameraLookVector.Length();
 
             if (wannaHaveCameraRotation.Equals(Vector3.Zero))
+            {
                 wannaHaveCameraRotation = freeCameraRot;
+            }
+
             Vector3 rot = wannaHaveCameraRotation;
 
             float addRotX =
@@ -325,10 +338,15 @@ namespace RacingGame.GameLogic
             {
                 if (Input.GamePadLeftPressed ||
                     Input.KeyboardLeftPressed)
+                {
                     addRotX = -gamePadRotFactor;
+                }
+
                 if (Input.GamePadRightPressed ||
                     Input.KeyboardRightPressed)
+                {
                     addRotX = +gamePadRotFactor;
+                }
             }
             float addRotY =
                 // Allow mouse input
@@ -340,10 +358,15 @@ namespace RacingGame.GameLogic
             {
                 if (Input.GamePadUpPressed ||
                     Input.KeyboardUpPressed)
+                {
                     addRotY = -gamePadRotFactor;
+                }
+
                 if (Input.GamePadDownPressed ||
                     Input.KeyboardDownPressed)
+                {
                     addRotY = +gamePadRotFactor;
+                }
             }
 
             wannaHaveCameraRotation = new Vector3(
@@ -385,13 +408,24 @@ namespace RacingGame.GameLogic
             float lookDistanceChange = 0.0f;
             // Page up/down or Home/End to zoom in and out.
             if (Input.Keyboard.IsKeyDown(Keys.PageUp))
+            {
                 lookDistanceChange += moveFactor * 0.05f;
+            }
+
             if (Input.Keyboard.IsKeyDown(Keys.PageDown))
+            {
                 lookDistanceChange -= moveFactor * 0.05f;
+            }
+
             if (Input.Keyboard.IsKeyDown(Keys.Home))
+            {
                 lookDistanceChange += smallMoveFactor * 0.05f;
+            }
+
             if (Input.Keyboard.IsKeyDown(Keys.End))
+            {
                 lookDistanceChange -= smallMoveFactor * 0.05f;
+            }
 
             // Also allow mouse wheel to zoom
             if (Input.MouseWheelDelta != 0)
@@ -411,11 +445,15 @@ namespace RacingGame.GameLogic
             {
                 // Half zoom effect if shift is pressed
                 if (Input.Keyboard.IsKeyDown(Keys.LeftShift))
+                {
                     lookDistanceChange /= 2.0f;
+                }
 
                 cameraDistance *= 1.0f - lookDistanceChange;
                 if (cameraDistance < 1.0f)
+                {
                     cameraDistance = 1.0f;
+                }
 
                 // Calculate cameraPos like in HandleLookPosCamera()
                 cameraLookVector = Vector3.TransformNormal(
@@ -457,7 +495,9 @@ namespace RacingGame.GameLogic
             {
                 cameraWobbelTimeoutMs -= BaseGame.ElapsedTimeThisFrameInMilliseconds;
                 if (cameraWobbelTimeoutMs < 0)
+                {
                     cameraWobbelTimeoutMs = 0;
+                }
             }
 
             // Add camera shake if camera wobbel effect is on

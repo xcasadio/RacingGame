@@ -93,21 +93,31 @@ namespace RacingGame.Shaders
         {
             // Scene map texture
             if (sceneMapTexture == null)
+            {
                 sceneMapTexture = new RenderToTexture(
                     RenderToTexture.SizeType.FullScreen);
+            }
+
             // Downsample map texture (to 1/4 of the screen)
             if (downsampleMapTexture == null)
+            {
                 downsampleMapTexture = new RenderToTexture(
                     RenderToTexture.SizeType.QuarterScreen);
+            }
 
             // Blur map texture
             if (blurMap1Texture == null)
+            {
                 blurMap1Texture = new RenderToTexture(
                     RenderToTexture.SizeType.QuarterScreen);
+            }
+
             // Blur map texture
             if (blurMap2Texture == null)
+            {
                 blurMap2Texture = new RenderToTexture(
                     RenderToTexture.SizeType.QuarterScreen);
+            }
         }
 
         /// <summary>
@@ -127,7 +137,9 @@ namespace RacingGame.Shaders
         {
             // Can't get parameters if loading failed!
             if (effect == null)
+            {
                 return;
+            }
 
             windowSize = effect.Parameters["windowSize"];
             sceneMap = effect.Parameters["sceneMap"];
@@ -135,8 +147,10 @@ namespace RacingGame.Shaders
             // We need both windowSize and sceneMap.
             if (windowSize == null ||
                 sceneMap == null)
+            {
                 throw new NotSupportedException("windowSize and sceneMap must be " +
-                    "valid in PostScreenShader=" + Filename);
+                                                "valid in PostScreenShader=" + Filename);
+            }
 
             // Init additional stuff
             downsampleMap = effect.Parameters["downsampleMap"];
@@ -166,7 +180,9 @@ namespace RacingGame.Shaders
                 started == true ||
                 // Also skip if we don't use post screen shaders at all!
                 BaseGame.UsePostScreenShaders == false)
+            {
                 return;
+            }
 
             BaseGame.SetRenderTarget(sceneMapTexture.RenderTarget, true);
             started = true;
@@ -184,7 +200,9 @@ namespace RacingGame.Shaders
             if (sceneMapTexture == null ||
                 Valid == false ||
                 started == false)
+            {
                 return;
+            }
 
             started = false;
 
@@ -198,32 +216,47 @@ namespace RacingGame.Shaders
             BaseGame.Device.BlendState = BlendState.Opaque;
 
             if (windowSize != null)
+            {
                 windowSize.SetValue(
                     new float[] { sceneMapTexture.Width, sceneMapTexture.Height });
+            }
+
             if (sceneMap != null)
+            {
                 sceneMap.SetValue(sceneMapTexture.XnaTexture);
+            }
 
             if (timer != null)
                 // Add a little offset to prevent first effect.
+            {
                 timer.SetValue(BaseGame.TotalTime + 0.75f);
+            }
 
             effect.CurrentTechnique = effect.Techniques["ScreenGlow20"];
 
             // We must have exactly 4 passes!
             if (effect.CurrentTechnique.Passes.Count != 4)
+            {
                 throw new InvalidOperationException(
                     "This shader should have exactly 4 passes!");
+            }
 
             try
             {
                 for (int pass = 0; pass < effect.CurrentTechnique.Passes.Count; pass++)
                 {
                     if (pass == 0)
+                    {
                         downsampleMapTexture.SetRenderTarget();
+                    }
                     else if (pass == 1)
+                    {
                         blurMap1Texture.SetRenderTarget();
+                    }
                     else if (pass == 2)
+                    {
                         blurMap2Texture.SetRenderTarget();
+                    }
                     else
                     {
                         BaseGame.ResetRenderTarget(true);
@@ -237,21 +270,30 @@ namespace RacingGame.Shaders
                     {
                         downsampleMapTexture.Resolve();
                         if (downsampleMap != null)
+                        {
                             downsampleMap.SetValue(downsampleMapTexture.XnaTexture);
+                        }
+
                         effectPass.Apply();
                     }
                     else if (pass == 1)
                     {
                         blurMap1Texture.Resolve();
                         if (blurMap1 != null)
+                        {
                             blurMap1.SetValue(blurMap1Texture.XnaTexture);
+                        }
+
                         effectPass.Apply();
                     }
                     else if (pass == 2)
                     {
                         blurMap2Texture.Resolve();
                         if (blurMap2 != null)
+                        {
                             blurMap2.SetValue(blurMap2Texture.XnaTexture);
+                        }
+
                         effectPass.Apply();
                     }
                 }

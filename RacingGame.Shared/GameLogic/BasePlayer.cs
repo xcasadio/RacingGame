@@ -89,7 +89,9 @@ namespace RacingGame.GameLogic
             // Got new best time?
             if (bestLapTimeMilliseconds == 0 ||
                 currentGameTimeMilliseconds < bestLapTimeMilliseconds)
+            {
                 bestLapTimeMilliseconds = currentGameTimeMilliseconds;
+            }
 
             // Start at 0:00.00 again
             currentGameTimeMilliseconds = zoomInTime;
@@ -300,7 +302,9 @@ namespace RacingGame.GameLogic
 
             // Don't handle any more game logic if game is over or still zooming in.
             if (CanControlCar == false)
+            {
                 return;
+            }
 
             // Increase game time
             currentGameTimeMilliseconds += BaseGame.ElapsedTimeThisFrameInMilliseconds;

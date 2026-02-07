@@ -229,9 +229,11 @@ namespace RacingGame.Graphics
             {
                 // Make sure this mesh uses the correct material
                 if (addMesh.material != material)
+                {
                     throw new ArgumentException("Invalid material, to add a mesh to " +
-                        "MeshesPerMaterial it must use the specified material=" +
-                        material);
+                                                "MeshesPerMaterial it must use the specified material=" +
+                                                material);
+                }
 
                 meshes.Add(addMesh);
             }
@@ -267,7 +269,9 @@ namespace RacingGame.Graphics
                 {
                     RenderableMesh mesh = meshes[meshNum];
                     if (mesh.renderMatrices.Count > 0)
+                    {
                         mesh.Render();
+                    }
                 }
 
                 // Disable alpha testing again and restore culling
@@ -341,9 +345,11 @@ namespace RacingGame.Graphics
             {
                 // Make sure this mesh uses the correct material
                 if (addMesh.usedTechnique != technique)
+                {
                     throw new ArgumentException("Invalid technique, to add a mesh to " +
-                        "MeshesPerMaterialPerTechniques it must use the specified " +
-                        "technique=" + technique.Name);
+                                                "MeshesPerMaterialPerTechniques it must use the specified " +
+                                                "technique=" + technique.Name);
+                }
 
                 // Search for the used material, maybe we have it already in list.
                 for (int listNum = 0; listNum < meshesPerMaterials.Count; listNum++)
@@ -386,7 +392,9 @@ namespace RacingGame.Graphics
                 {
                     MeshesPerMaterial list = meshesPerMaterials[listNum];
                     if (list.NumberOfRenderMatrices > 0)
+                    {
                         list.Render();
+                    }
                 }
             }
             #endregion
@@ -511,7 +519,9 @@ namespace RacingGame.Graphics
                 MeshesPerMaterialPerTechniques list = sortedMeshes[listNum];
 
                 if (list != null && list.NumberOfRenderMatrices > 0)
+                {
                     list.Render(effect);
+                }
             }
         }
         #endregion

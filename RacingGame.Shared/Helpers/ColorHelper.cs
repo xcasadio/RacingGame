@@ -43,9 +43,15 @@ namespace RacingGame.Helpers
         private static float StayInRange(float val, float min, float max)
         {
             if (val < min)
+            {
                 return min;
+            }
+
             if (val > max)
+            {
                 return max;
+            }
+
             return val;
         }
         #endregion
@@ -62,9 +68,14 @@ namespace RacingGame.Helpers
             // Quick check if any of the colors is white,
             // multiplying won't do anything then.
             if (color1 == Color.White)
+            {
                 return color2;
+            }
+
             if (color2 == Color.White)
+            {
                 return color1;
+            }
 
             // Get values from color1
             float redValue1 = color1.R / 255.0f;
@@ -127,9 +138,15 @@ namespace RacingGame.Helpers
         public static Color ApplyAlphaToColor(Color col, float newAlpha)
         {
             if (newAlpha < 0)
+            {
                 newAlpha = 0;
+            }
+
             if (newAlpha > 1)
+            {
                 newAlpha = 1;
+            }
+
             return new Color(
                 (byte)(col.R),
                 (byte)(col.G),
@@ -146,9 +163,15 @@ namespace RacingGame.Helpers
         public static Color MixAlphaToColor(Color col, float newAlpha)
         {
             if (newAlpha < 0)
+            {
                 newAlpha = 0;
+            }
+
             if (newAlpha > 1)
+            {
                 newAlpha = 1;
+            }
+
             return new Color(
                 (byte)(col.R * newAlpha),
                 (byte)(col.G * newAlpha),

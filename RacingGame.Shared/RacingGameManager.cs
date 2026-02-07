@@ -8,18 +8,11 @@
 #endregion
 
 #region Using directives
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
+
 using System.Threading;
 using RacingGame.GameLogic;
 using RacingGame.GameScreens;
 using RacingGame.Graphics;
-using RacingGame.Helpers;
 using RacingGame.Landscapes;
 using RacingGame.Sounds;
 using Model = RacingGame.Graphics.Model;
@@ -328,7 +321,7 @@ namespace RacingGame
         public RacingGameManager()
             : base("RacingGame")
         {
-			Sound.Initialize();
+			//Sound.Initialize();
             // Start playing the menu music
             //Sound.Play(Sound.Sounds.MenuMusic);
 
@@ -481,11 +474,15 @@ namespace RacingGame
             // Currently in car selection screen?
             if (gameScreens.Count > 0 &&
                 gameScreens.Peek().GetType() == typeof(CarSelection))
+            {
                 ((CarSelection)gameScreens.Peek()).PostUIRender();
+            }
 
             // Do menu shader after everything
             if (BaseGame.UsePostScreenShaders && PostScreenMenu.Started)
+            {
                 UI.PostScreenMenuShader.Show();
+            }
         }
         #endregion
     }

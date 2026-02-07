@@ -164,7 +164,9 @@ namespace RacingGame.Properties
         {
             // No need to save if everything is up to date.
             if (needSave == false)
+            {
                 return;
+            }
 
             needSave = false;
 
@@ -235,7 +237,10 @@ namespace RacingGame.Properties
             set
             {
                 if (highscores != value)
+                {
                     needSave = true;
+                }
+
                 highscores = value;
             }
         }
@@ -257,7 +262,10 @@ namespace RacingGame.Properties
             set
             {
                 if (playerName != value)
+                {
                     needSave = true;
+                }
+
                 playerName = value;
             }
         }
@@ -281,7 +289,10 @@ namespace RacingGame.Properties
             set
             {
                 if (resolutionWidth != value)
+                {
                     needSave = true;
+                }
+
                 resolutionWidth = value;
             }
         }
@@ -305,7 +316,10 @@ namespace RacingGame.Properties
             set
             {
                 if (resolutionHeight != value)
+                {
                     needSave = true;
+                }
+
                 resolutionHeight = value;
             }
         }
@@ -327,7 +341,10 @@ namespace RacingGame.Properties
             set
             {
                 if (fullscreen != value)
+                {
                     needSave = true;
+                }
+
                 fullscreen = value;
             }
         }
@@ -346,7 +363,10 @@ namespace RacingGame.Properties
             set
             {
                 if (postScreenEffects != value)
+                {
                     needSave = true;
+                }
+
                 postScreenEffects = value;
             }
         }
@@ -365,7 +385,10 @@ namespace RacingGame.Properties
             set
             {
                 if (shadowMapping != value)
+                {
                     needSave = true;
+                }
+
                 shadowMapping = value;
             }
         }
@@ -384,7 +407,10 @@ namespace RacingGame.Properties
             set
             {
                 if (highDetail != value)
+                {
                     needSave = true;
+                }
+
                 highDetail = value;
             }
         }
@@ -406,7 +432,10 @@ namespace RacingGame.Properties
             set
             {
                 if (soundVolume != value)
+                {
                     needSave = true;
+                }
+
                 soundVolume = value;
             }
         }
@@ -428,7 +457,10 @@ namespace RacingGame.Properties
             set
             {
                 if (musicVolume != value)
+                {
                     needSave = true;
+                }
+
                 musicVolume = value;
             }
         }
@@ -450,7 +482,10 @@ namespace RacingGame.Properties
             set
             {
                 if (controllerSensitivity != value)
+                {
                     needSave = true;
+                }
+
                 controllerSensitivity = value;
             }
         }

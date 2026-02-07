@@ -46,7 +46,9 @@ namespace RacingGame.GameScreens
 		public void Update(GameTime gameTime)
 		{
 			if (RacingGameManager.LoadingThread.ThreadState == ThreadState.Unstarted)
+			{
 				RacingGameManager.LoadingThread.Start();
+			}
 		}
 
 		public void LoadEvent(object sender, EventArgs e)

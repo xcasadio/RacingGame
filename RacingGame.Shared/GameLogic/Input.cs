@@ -166,7 +166,9 @@ namespace RacingGame.GameLogic
 #if !XBOX360
                 //TODO: Introduce a mouse movement threshold constant
                 if (MouseXMovement > 1 || MouseYMovement > 1)
+                {
                     return true;
+                }
 #endif
                 return false;
             }
@@ -314,7 +316,9 @@ namespace RacingGame.GameLogic
             // Highlight happend?
             if (ret &&
                 lastRet == false)
+            {
                 Sound.Play(Sound.Sounds.Highlight);
+            }
 
             return ret;
 #else
@@ -394,9 +398,13 @@ namespace RacingGame.GameLogic
             if (keyNum >= (int)Keys.A && keyNum <= (int)Keys.Z)
             {
                 if (shiftPressed)
+                {
                     ret = key.ToString()[0];
+                }
                 else
+                {
                     ret = key.ToString().ToLower()[0];
+                }
             }
             else if (keyNum >= (int)Keys.D0 && keyNum <= (int)Keys.D9 &&
                 shiftPressed == false)
@@ -404,47 +412,89 @@ namespace RacingGame.GameLogic
                 ret = (char)((int)'0' + (keyNum - Keys.D0));
             }
             else if (key == Keys.D1 && shiftPressed)
+            {
                 ret = '!';
+            }
             else if (key == Keys.D2 && shiftPressed)
+            {
                 ret = '@';
+            }
             else if (key == Keys.D3 && shiftPressed)
+            {
                 ret = '#';
+            }
             else if (key == Keys.D4 && shiftPressed)
+            {
                 ret = '$';
+            }
             else if (key == Keys.D5 && shiftPressed)
+            {
                 ret = '%';
+            }
             else if (key == Keys.D6 && shiftPressed)
+            {
                 ret = '^';
+            }
             else if (key == Keys.D7 && shiftPressed)
+            {
                 ret = '&';
+            }
             else if (key == Keys.D8 && shiftPressed)
+            {
                 ret = '*';
+            }
             else if (key == Keys.D9 && shiftPressed)
+            {
                 ret = '(';
+            }
             else if (key == Keys.D0 && shiftPressed)
+            {
                 ret = ')';
+            }
             else if (key == Keys.OemTilde)
+            {
                 ret = shiftPressed ? '~' : '`';
+            }
             else if (key == Keys.OemMinus)
+            {
                 ret = shiftPressed ? '_' : '-';
+            }
             else if (key == Keys.OemPipe)
+            {
                 ret = shiftPressed ? '|' : '\\';
+            }
             else if (key == Keys.OemOpenBrackets)
+            {
                 ret = shiftPressed ? '{' : '[';
+            }
             else if (key == Keys.OemCloseBrackets)
+            {
                 ret = shiftPressed ? '}' : ']';
+            }
             else if (key == Keys.OemSemicolon)
+            {
                 ret = shiftPressed ? ':' : ';';
+            }
             else if (key == Keys.OemQuotes)
+            {
                 ret = shiftPressed ? '"' : '\'';
+            }
             else if (key == Keys.OemComma)
+            {
                 ret = shiftPressed ? '<' : '.';
+            }
             else if (key == Keys.OemPeriod)
+            {
                 ret = shiftPressed ? '>' : ',';
+            }
             else if (key == Keys.OemQuestion)
+            {
                 ret = shiftPressed ? '?' : '/';
+            }
             else if (key == Keys.OemPlus)
+            {
                 ret = shiftPressed ? '+' : '=';
+            }
 
             // Return result
             return ret;
@@ -925,7 +975,10 @@ namespace RacingGame.GameLogic
             lastMouseYMovement -= lastMouseYMovement / 2.0f;
 
             if (MouseLeftButtonPressed == false)
+            {
                 startDraggingPos = MousePos;
+            }
+
             mouseWheelDelta = mouseState.ScrollWheelValue - mouseWheelValue;
             mouseWheelValue = mouseState.ScrollWheelValue;
 
@@ -947,9 +1000,11 @@ namespace RacingGame.GameLogic
             // on a windows machine if just the gamepad or keyboard is used.
             if (mouseDetected == false)// &&
                 //always returns false: Microsoft.Xna.Framework.Input.Mouse.IsCaptured)
+            {
                 mouseDetected = mouseState.X != mouseStateLastFrame.X ||
-                    mouseState.Y != mouseStateLastFrame.Y ||
-                    mouseState.LeftButton != mouseStateLastFrame.LeftButton;
+                                mouseState.Y != mouseStateLastFrame.Y ||
+                                mouseState.LeftButton != mouseStateLastFrame.LeftButton;
+            }
 #endif
 
             // Handle keyboard input

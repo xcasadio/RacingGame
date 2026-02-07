@@ -63,10 +63,16 @@ namespace RacingGame.Graphics
             // can return (0, 0, 0) if the vectors are parallel!
             Vector3 up = plane.Normal;
             if (up.Length() == 0)
+            {
                 up = new Vector3(0, 0, 1);
+            }
+
             Vector3 helperVec = Vector3.Cross(up, new Vector3(1, 0, 0));
             if (helperVec.Length() == 0)
+            {
                 helperVec = new Vector3(0, 1, 0);
+            }
+
             Vector3 right = Vector3.Cross(helperVec, up);
             Vector3 dir = Vector3.Cross(up, right);
             float dist = plane.D;

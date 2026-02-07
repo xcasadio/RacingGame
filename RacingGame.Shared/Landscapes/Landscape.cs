@@ -129,7 +129,9 @@ namespace RacingGame.Landscapes
             public LandscapeObject(Model setModel, Matrix setMatrix)
             {
                 if (setModel == null)
+                {
                     throw new ArgumentNullException("setModel");
+                }
 
                 model = setModel;
                 matrix = setMatrix;
@@ -192,14 +194,20 @@ namespace RacingGame.Landscapes
         {
             // Make sure we only use 0-2
             if (number < 0 || number >= 3)
+            {
                 number = 0;
+            }
 
             if (startLightObject != null)
             {
                 if (number == 2)
+                {
                     Sound.Play(Sound.Sounds.Bleep);
+                }
                 else
+                {
                     Sound.Play(Sound.Sounds.Beep);
+                }
 
                 startLightObject.ChangeModel(landscapeModels[number]);
             }
@@ -344,24 +352,38 @@ namespace RacingGame.Landscapes
         {
             // Fix wrong model names
             if (modelName == "OilWell")
+            {
                 modelName = "OilPump";
+            }
             else if (modelName == "PalmSmall")
+            {
                 modelName = "AlphaPalmSmall";
+            }
             else if (modelName == "AlphaPalm4")
+            {
                 modelName = "AlphaPalmSmall";
+            }
             else if (modelName == "Palm")
+            {
                 modelName = "AlphaPalm";
+            }
             else if (modelName == "Casino")
+            {
                 modelName = "Casino01";
+            }
             else if (modelName == "Combi")
+            {
                 modelName = "CombiPalms";
+            }
 
             // Always include windmills and buildings for shadow generation
             if (modelName.ToLower() == "windmill" ||
                 modelName.ToLower().Contains("hotel") ||
                 modelName.ToLower().Contains("building") ||
                 modelName.ToLower().Contains("casino01"))
+            {
                 isNearTrackForShadowGeneration = true;
+            }
 
             // Search for combos
             for (int num = 0; num < combos.Length; num++)
@@ -433,16 +455,22 @@ namespace RacingGame.Landscapes
 
                 // Add again to the nearTrackObjects list if near the track
                 if (isNearTrackForShadowGeneration)
+                {
                     nearTrackObjects.Add(newObject);
+                }
 
                 if (modelName.StartsWith("StartLight"))
+                {
                     startLightObject = newObject;
+                }
             }
 #if DEBUG
             else if (modelName.Contains("Track") == false)
                 // Add warning in log file
+            {
                 Log.Write("Landscape model "+modelName+" is not supported and "+
-                    "can't be added for rendering!");
+                          "can't be added for rendering!");
+            }
 #endif
         }
 
@@ -488,10 +516,15 @@ namespace RacingGame.Landscapes
             // Make sure it is away from the road.
             if (distance > 0 &&
                 distance - 10 < objSize)
+            {
                 distance += objSize;
+            }
+
             if (distance < 0 &&
                 distance + 10 > -objSize)
+            {
                 distance -= objSize;
+            }
 
             AddObjectToRender(modelName,
                 Matrix.CreateRotationZ(rotation) *
@@ -605,7 +638,9 @@ namespace RacingGame.Landscapes
             if (bestReplay == null ||
                 checkpointNum >= bestReplay.CheckpointTimes.Count)
                 // Then we can't return anything
+            {
                 return 0;
+            }
 
             // Else just return difference
             float differenceMs =
@@ -743,13 +778,24 @@ namespace RacingGame.Landscapes
         public float GetMapHeight(int x, int y)
         {
             if (x < 0)
+            {
                 x = 0;
+            }
+
             if (y < 0)
+            {
                 y = 0;
+            }
+
             if (x >= GridWidth)
+            {
                 x = GridWidth - 1;
+            }
+
             if (y >= GridHeight)
+            {
                 y = GridHeight - 1;
+            }
 
             return mapHeights[x, y];
         }
@@ -761,9 +807,13 @@ namespace RacingGame.Landscapes
         private static int ModulateValueInRange(float val, int max)
         {
             if (val < 0.0f)
+            {
                 return (max - 1) - ((int)(-val) % max);
+            }
             else
+            {
                 return (int)val % max;
+            }
         }
 
         /// <summary>
@@ -1012,9 +1062,13 @@ namespace RacingGame.Landscapes
             // Load track based on the level selection, do this after
             // we got all the height data because the track might be adjusted.
             if (track == null)
+            {
                 track = new Track("Track" + level.ToString(), this);
+            }
             else
+            {
                 track.Reload("Track" + level.ToString(), this);
+            }
 
             // Load replay for this track to show best player
             bestReplay = new Replay((int)level, false, track);
@@ -1273,7 +1327,9 @@ namespace RacingGame.Landscapes
             if (Vector3.DistanceSquared(position, lastAddedTrackPos) < 0.024f ||
                 // Limit number of tracks to keep rendering fast.
                 brakeTracksVertices.Count > MaxBrakeTrackVertices)
+            {
                 return;
+            }
 
             lastAddedTrackPos = position;
 
@@ -1288,7 +1344,9 @@ namespace RacingGame.Landscapes
                     maxDist * maxDist)
                     // Then skip this brake track, don't put that much stuff on
                     // top of each other.
+                {
                     return;
+                }
 
             // Move position a little bit up (above the road)
             position += Vector3.Normalize(car.CarUpVector) * RaiseBreakTracksAmount;
@@ -1329,7 +1387,9 @@ namespace RacingGame.Landscapes
         {
             // Nothing to render?
             if (brakeTracksVerticesArray == null)
+            {
                 return;
+            }
 
             BaseGame.SetAlphaBlendingEnabled(true);
             BaseGame.WorldMatrix = Matrix.Identity;

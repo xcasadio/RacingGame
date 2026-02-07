@@ -280,7 +280,9 @@ namespace RacingGame.Graphics
             {
                 for (int num = 0; num < NumberOfFlareTypes; num++)
                     if (flareTextures[num] != null)
+                    {
                         flareTextures[num].Dispose();
+                    }
             }
         }
         #endregion
@@ -302,7 +304,9 @@ namespace RacingGame.Graphics
 
             // Only show lens flare if facing in the right direction
             if (BaseGame.IsInFrontOfCamera(relativeLensPos) == false)
+            {
                 return;
+            }
 
             // Convert 3D point to 2D!
             Point lensOrigin =
@@ -318,7 +322,9 @@ namespace RacingGame.Graphics
 
             // We can skip rendering the sun if the itensity is to low
             if (sunIntensity < 0.01f)
+            {
                 return;
+            }
 
             int resWidth = BaseGame.Width,
                 resHeight = BaseGame.Height;
@@ -334,10 +340,15 @@ namespace RacingGame.Graphics
                 distance -= resHeight / 1.75f;
                 // If distance is more than half the resolution, don't show anything!
                 if (distance > resHeight / 1.75f)
+                {
                     return;
+                }
+
                 alpha = 1.0f - (distance / ((float)resHeight / 1.75f));
                 if (alpha > 1.0f)
+                {
                     alpha = 1.0f;
+                }
             }
 
             // Use square of sunIntensity for lens flares because we want

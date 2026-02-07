@@ -139,7 +139,9 @@ namespace RacingGame.Sounds
         public static void Play(string soundName)
         {
             if (soundBank == null)
+            {
                 return;
+            }
 
             soundBank.PlayCue(soundName);
         }
@@ -161,7 +163,9 @@ namespace RacingGame.Sounds
         public static void StopMusic()
         {
             if (soundBank == null)
+            {
                 return;
+            }
 
             // Use a little trick, start new music, but use the cue. This will
             // replace the old music, then stop the music and everything is stopped!
@@ -338,7 +342,9 @@ namespace RacingGame.Sounds
         private static void PlayGearSound(string soundName)
         {
             if (soundBank == null)
+            {
                 return;
+            }
 
             if (soundName.Contains("To"))
             {
@@ -369,7 +375,9 @@ namespace RacingGame.Sounds
             string gearSound, float volume, float pitch)
         {
             if (audioEngine == null)
+            {
                 return;
+            }
 
             // Gear changing in progress?
             if (gearChangeSoundInitiatedMs > 0)
@@ -421,10 +429,16 @@ namespace RacingGame.Sounds
             // Stop everything
             currentGear = 0;
             if (currentGearChangeCue != null)
+            {
                 currentGearChangeCue.Stop(AudioStopOptions.Immediate);
+            }
+
             currentGearChangeCue = null;
             if (currentGearCue != null)
+            {
                 currentGearCue.Stop(AudioStopOptions.Immediate);
+            }
+
             currentGearCue = null;
         }
         #endregion
@@ -444,9 +458,14 @@ namespace RacingGame.Sounds
 
             // Make sure newGear is between 0 and NumberOfGears
             if (newGear < 0)
+            {
                 newGear = 0;
+            }
+
             if (newGear >= NumberOfGears)
+            {
                 newGear = NumberOfGears - 1;
+            }
 
             // We can only change gear if no other gear change sound is in progress
             if (gearChangeSoundInitiatedMs <= 0)
@@ -473,8 +492,11 @@ namespace RacingGame.Sounds
 
             // If negative, play gear1 sound and make sure we stay in gear1
             if (speed < 0)
+            {
                 speed = MathHelper.Clamp(
                     Math.Abs(speed), 0, Player.MaxPossibleSpeed / 5);
+            }
+
             float gearPercentage = (float)
                 ((int)((speed / Player.MaxPossibleSpeed) * 499) %
                 (int)(500 / NumberOfGears)) / 100.0f;
@@ -505,7 +527,9 @@ namespace RacingGame.Sounds
                 // If slowing down do not go above 0 for the pitch, sounds wrong!
                 pitch = Math.Min(-0.025f, pitch / 1.25f);
                 if (lastGearPitch > pitch)
+                {
                     lastGearPitch = lastGearPitch * 0.9f + pitch * 0.1f;
+                }
             }
 
             // Slowly interpolate volume and pitch, abrupt changes don't sound cool.
@@ -529,12 +553,19 @@ namespace RacingGame.Sounds
         public static void Update()
         {
             if (brakeSoundStillPlayingMs > 0)
+            {
                 brakeSoundStillPlayingMs -= BaseGame.ElapsedTimeThisFrameInMilliseconds;
+            }
+
             if (crashSoundStillPlayingMs > 0)
+            {
                 crashSoundStillPlayingMs -= BaseGame.ElapsedTimeThisFrameInMilliseconds;
+            }
 
             if (audioEngine != null)
+            {
                 audioEngine.Update();
+            }
         }
 
         public static void SetVolumes(float soundVolume, float musicVolume)

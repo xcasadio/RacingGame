@@ -200,14 +200,20 @@ namespace RacingGame.Tracks
 
             // Kill all loaded objects
             if (landscape != null)
+            {
                 landscape.KillAllLoadedObjects();
+            }
+
             #endregion
 
             #region Make sure we got valid data
             if (inputPoints == null ||
                 inputPoints.Length < 3)
+            {
                 throw new ArgumentException("inputPoints is invalid, we need at " +
-                    "least 3 valid input points to generate a TrackLine.");
+                                            "least 3 valid input points to generate a TrackLine.");
+            }
+
             #endregion
 
             #region Check if all points are ABOVE the landscape
@@ -224,7 +230,9 @@ namespace RacingGame.Tracks
 
                     // And make sure we are always above it!
                     if (inputPoints[num].Z < landscapeHeight)
+                    {
                         inputPoints[num].Z = landscapeHeight;
+                    }
                 }
 
                 // Second pass, check 24 interpolation points between all inputPoints
@@ -311,9 +319,13 @@ namespace RacingGame.Tracks
                     // Copy everything over
                     for (int copyNum = 0; copyNum < remInputPoints.Length; copyNum++)
                         if (copyNum < num)
+                        {
                             inputPoints[copyNum] = remInputPoints[copyNum];
+                        }
                         else
+                        {
                             inputPoints[copyNum + 7] = remInputPoints[copyNum];
+                        }
 
                     // Ok, now we can add our loop
                     for (int loopNum = 0; loopNum < LoopingPoints.Length; loopNum++)
@@ -338,8 +350,10 @@ namespace RacingGame.Tracks
                     }
                     else
                         // Just add an interpolation point
+                    {
                         inputPoints[num + 9] =
                             (inputPoints[num + 8] + inputPoints[num + 10]) / 2.0f;
+                    }
 
                     // Advance 10 points until we check for the next loop
                     num += 10;
@@ -365,7 +379,9 @@ namespace RacingGame.Tracks
                 int numberOfIterations =
                     (int)(NumberOfIterationsPer100Meters * (distance / 100.0f));
                 if (numberOfIterations <= 0)
+                {
                     numberOfIterations = 1;
+                }
 
                 for (int iter = 0; iter < numberOfIterations; iter++)
                 {
@@ -400,7 +416,10 @@ namespace RacingGame.Tracks
                     points[num - 1 < 0 ? points.Count - 1 : num - 1].pos) / 2.0f;
                 Vector3 optimalUpVector = middlePoint - points[num].pos;
                 if (optimalUpVector.Length() < 0.0001f)
+                {
                     optimalUpVector = lastUpVec;
+                }
+
                 optimalUpVector.Normalize();
 
                 // Store the optimalUpVectors in the preUpVectors list
@@ -457,13 +476,21 @@ namespace RacingGame.Tracks
                 // Its very useful to know if we move up or down to fix the
                 // problematic areas at loopings by pointing stuff correct right away.
                 if (movingUp)
+                {
                     lastUpVec = Vector3.Lerp(upVec, -defaultUpVec, UpFactorCorrector);
+                }
                 else if (movingDown)
+                {
                     lastUpVec = Vector3.Lerp(upVec, defaultUpVec, UpFactorCorrector);
+                }
                 else if (upsideDown)
+                {
                     lastUpVec = Vector3.Lerp(upVec, -defaultUpVec, UpFactorCorrector);
+                }
                 else
+                {
                     lastUpVec = Vector3.Lerp(upVec, defaultUpVec, UpFactorCorrector);
+                }
 
                 // If we are very close to the ground, make the road point up more!
                 if (//upsideDown == false &&
@@ -476,8 +503,10 @@ namespace RacingGame.Tracks
                     // If point is close to the landscape, let everything point up more
                     if (points[num].pos.Z - landscapeHeight <
                         MinimumLandscapeDistance * 4)
+                    {
                         lastUpVec = Vector3.Lerp(upVec, defaultUpVec,
                             1.75f * UpFactorCorrector);
+                    }
                 }
 
                 // And finally calculate rightVectors with just a cross product.
@@ -582,9 +611,15 @@ namespace RacingGame.Tracks
                 }
 
                 if (currentWidth < TrackVertex.MinRoadWidth)
+                {
                     currentWidth = TrackVertex.MinRoadWidth;
+                }
+
                 if (currentWidth > TrackVertex.MaxRoadWidth)
+                {
                     currentWidth = TrackVertex.MaxRoadWidth;
+                }
+
                 points[num].roadWidth = currentWidth;
             }
             #endregion
@@ -650,7 +685,9 @@ namespace RacingGame.Tracks
                                 remType, helperStartedNum, num));
                             // Reset?
                             if (roadHelper.type == TrackData.RoadHelper.HelperType.Reset)
+                            {
                                 helperStartedNum = -1;
+                            }
                             else
                             {
                                 // Start new part
@@ -673,8 +710,11 @@ namespace RacingGame.Tracks
 
             // Still a helper open? Then close it close before the end!
             if (helperStartedNum > 0)
+            {
                 helperPositions.Add(new RoadHelperPosition(
                     remType, helperStartedNum, points.Count - 3));
+            }
+
             #endregion
 
             #region Copy over neutral objects for landscape rendering

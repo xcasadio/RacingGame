@@ -175,14 +175,20 @@ namespace RacingGame.Graphics
         public Texture(string setFilename)
         {
             if (alphaSprite == null)
+            {
                 alphaSprite = new SpriteBatch(BaseGame.Device);
+            }
 
             if (additiveSprite == null)
+            {
                 additiveSprite = new SpriteBatch(BaseGame.Device);
+            }
 
             if (String.IsNullOrEmpty(setFilename))
+            {
                 throw new ArgumentNullException("setFilename",
                     "Unable to create texture without valid filename.");
+            }
 
             // Set content name (cut off extension!)
             texFilename = Path.GetFileNameWithoutExtension(setFilename);
@@ -219,13 +225,19 @@ namespace RacingGame.Graphics
         public Texture(Texture2D tex)
         {
             if (alphaSprite == null)
+            {
                 alphaSprite = new SpriteBatch(BaseGame.Device);
+            }
 
             if (additiveSprite == null)
+            {
                 additiveSprite = new SpriteBatch(BaseGame.Device);
+            }
 
             if (tex == null)
+            {
                 throw new ArgumentNullException("tex");
+            }
 
             internalXnaTexture = tex;
 
@@ -262,7 +274,10 @@ namespace RacingGame.Graphics
             if (disposing)
             {
                 if (internalXnaTexture != null)
+                {
                     internalXnaTexture.Dispose();
+                }
+
                 internalXnaTexture = null;
             }
 
@@ -401,9 +416,13 @@ namespace RacingGame.Graphics
             Color color, BlendState blendState)
         {
             if (blendState == BlendState.Additive)
+            {
                 additiveSprite.Draw(internalXnaTexture, rect, pixelRect, color);
+            }
             else
+            {
                 alphaSprite.Draw(internalXnaTexture, rect, pixelRect, color);
+            }
             //SpriteHelper.AddSpriteToRender(this, rect, pixelRect, color, blendState);
         }
         #endregion

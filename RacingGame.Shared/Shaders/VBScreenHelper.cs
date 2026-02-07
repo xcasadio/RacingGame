@@ -121,9 +121,12 @@ namespace RacingGame.Shaders
             {
                 if (setGridWidth < 2 ||
                     setGridHeight < 2)
+                {
                     throw new ArgumentException(
                         "setGridWidth=" + setGridWidth + ", setGridHeight=" + setGridHeight,
                         "Grid size must be at least (2, 2).");
+                }
+
                 gridWidth = setGridWidth;
                 gridHeight = setGridHeight;
 
@@ -227,7 +230,9 @@ namespace RacingGame.Shaders
         public static void Render()
         {
             if (vbScreenInstance == null)
+            {
                 vbScreenInstance = new VBScreen();
+            }
 
             vbScreenInstance.Render();
         }
@@ -245,7 +250,9 @@ namespace RacingGame.Shaders
         public static void Render10x10Grid()
         {
             if (gridScreen10x10Instance == null)
+            {
                 gridScreen10x10Instance = new GridScreen(10, 10);
+            }
 
             gridScreen10x10Instance.Render();
         }

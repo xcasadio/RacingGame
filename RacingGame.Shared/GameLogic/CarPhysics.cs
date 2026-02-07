@@ -329,9 +329,14 @@ namespace RacingGame.GameLogic
                 lastAccelerationResult +=
                     Vector3.Dot(carForce, carDir) * 0.01f * BaseGame.MoveFactorPerSecond;
                 if (lastAccelerationResult < -0.25f)
+                {
                     lastAccelerationResult = -0.25f;
+                }
+
                 if (lastAccelerationResult > 1)
+                {
                     lastAccelerationResult = 1;
+                }
 
                 // Drop to 0 for a short time if gear change happend
                 int thisGear = 1 + (int)(5 * Speed / MaxPossibleSpeed);
@@ -491,11 +496,15 @@ namespace RacingGame.GameLogic
 
             // Don't use the car position and car handling if in free camera mode.
             if (RacingGameManager.Player.FreeCamera)
+            {
                 return;
+            }
 
             // Only allow control if zommed in, use carOnGround as helper
             if (ZoomInTime > 0)
+            {
                 isCarOnGround = false;
+            }
 
             wheelPos += BaseGame.MoveFactorPerSecond * speed / WheelMovementSpeed;
 
@@ -503,9 +512,14 @@ namespace RacingGame.GameLogic
             // Make sure this is never below 0.001f and never above 0.5f
             // Else our formulars below might mess up or carSpeed and carForce!
             if (moveFactor < 0.001f)
+            {
                 moveFactor = 0.001f;
+            }
+
             if (moveFactor > 0.5f)
+            {
                 moveFactor = 0.5f;
+            }
 
             #region Handle rotations
             float effectiveSensitivity = MinSensitivity +
@@ -517,20 +531,29 @@ namespace RacingGame.GameLogic
             // Left/right changes rotation
             if (Input.KeyboardLeftPressed ||
                 Input.Keyboard.IsKeyDown(Keys.A))
+            {
                 rotationChange += effectiveSensitivity *
                     MaxRotationPerSec * moveFactor / 2.5f;
+            }
             else if (Input.KeyboardRightPressed ||
-                Input.Keyboard.IsKeyDown(Keys.D) ||
-                Input.Keyboard.IsKeyDown(Keys.E))
+                     Input.Keyboard.IsKeyDown(Keys.D) ||
+                     Input.Keyboard.IsKeyDown(Keys.E))
+            {
                 rotationChange -= effectiveSensitivity *
                     MaxRotationPerSec * moveFactor / 2.5f;
+            }
             else
+            {
                 rotationChange = 0;
+            }
 
             if (Input.MouseXMovement != 0)
+            {
                 rotationChange -= effectiveSensitivity *
-                    (Input.MouseXMovement / 15.0f) *
-                    MaxRotationPerSec * moveFactor;
+                                  (Input.MouseXMovement / 15.0f) *
+                                  MaxRotationPerSec * moveFactor;
+            }
+
             if (Input.IsGamePadConnected)
             {
                 // More dynamic force changing with gamepad (slow, faster, etc.)
@@ -539,11 +562,15 @@ namespace RacingGame.GameLogic
                     MaxRotationPerSec * moveFactor / 1.12345f;
                 // Also allow pad to simulate same behaviour as on keyboard
                 if (Input.GamePad.DPad.Left == ButtonState.Pressed)
+                {
                     rotationChange += effectiveSensitivity *
                         MaxRotationPerSec * moveFactor / 1.5f;
+                }
                 else if (Input.GamePad.DPad.Right == ButtonState.Pressed)
+                {
                     rotationChange -= effectiveSensitivity *
                         MaxRotationPerSec * moveFactor / 1.5f;
+                }
             }
 
             float maxRot = MaxRotationPerSec * moveFactor * 1.25f;
@@ -571,16 +598,25 @@ namespace RacingGame.GameLogic
             {
                 // If we are staying or moving very slowly, limit rotation!
                 if (speed < 10.0f)
+                {
                     rotationChange *= 0.67f + 0.33f * speed / 10.0f;
+                }
                 else
+                {
                     rotationChange *= 1.0f + (speed - 10) / 100.0f;
+                }
             }
 
             // Limit rotation change to MaxRotationPerSec * 1.5 (usually for mouse)
             if (rotationChange > maxRot)
+            {
                 rotationChange = maxRot;
+            }
+
             if (rotationChange < -maxRot)
+            {
                 rotationChange = -maxRot;
+            }
 
             // Rotate dir around up vector
             // Interpolate rotatation amount.
@@ -591,27 +627,43 @@ namespace RacingGame.GameLogic
                 moveFactor / 0.225f;
             virtualRotationAmount -= interpolatedRotationChange;
             if (isCarOnGround)
+            {
                 carDir = Vector3.TransformNormal(carDir,
                     Matrix.CreateFromAxisAngle(carUp, interpolatedRotationChange));
+            }
+
             #endregion
 
             #region Handle view distance (page up/down and mouse wheel)
             if (Input.Keyboard.IsKeyDown(Keys.PageUp) ||
                 Input.GamePadXPressed)
+            {
                 viewDistance -= moveFactor * 2.0f;
+            }
+
             if (Input.Keyboard.IsKeyDown(Keys.PageDown) ||
                 Input.GamePadYPressed)
+            {
                 viewDistance += moveFactor * 2.0f;
+            }
+
             if (Input.MouseWheelDelta != 0)
+            {
                 viewDistance -= Input.MouseWheelDelta / 500.0f;
+            }
 
             // Restrict the camera's distance to a range, but allow the camera
             // to be as far as it likes during the start of race zoom in
             if (ZoomInTime <= 0)
+            {
                 viewDistance =
                     MathHelper.Clamp(viewDistance, MinViewDistance, MaxViewDistance);
+            }
             else
+            {
                 viewDistance = Math.Max(viewDistance, MinViewDistance);
+            }
+
             #endregion
 
             #region Handle speed
@@ -623,15 +675,19 @@ namespace RacingGame.GameLogic
                 Input.Keyboard.IsKeyDown(Keys.W) ||
                 Input.MouseLeftButtonPressed ||
                 Input.GamePadAPressed)
+            {
                 newAccelerationForce +=
                     maxAccelerationPerSec;// * moveFactor;
+            }
             // Down or right mouse button decelerates
             else if (Input.KeyboardDownPressed ||
                 Input.Keyboard.IsKeyDown(Keys.S) ||
                 Input.Keyboard.IsKeyDown(Keys.O) ||
                 Input.MouseRightButtonPressed)
+            {
                 newAccelerationForce -=
                     maxAccelerationPerSec;// * moveFactor;
+            }
             else if (Input.IsGamePadConnected)
             {
                 // More dynamic force changing with gamepad (slow, faster, etc.)
@@ -640,25 +696,36 @@ namespace RacingGame.GameLogic
                     maxAccelerationPerSec;// *moveFactor;
                 // Also allow pad to simulate same behaviour as on keyboard
                 if (Input.GamePad.DPad.Up == ButtonState.Pressed)
+                {
                     newAccelerationForce +=
                         maxAccelerationPerSec;
+                }
                 else if (Input.GamePad.DPad.Down == ButtonState.Pressed)
+                {
                     newAccelerationForce -=
                         maxAccelerationPerSec;
+                }
             }
 
             // Limit acceleration (but drive as fast forwards as possible if we
             // are moving backwards)
             if (speed > 0 &&
                 newAccelerationForce > MaxAcceleration)
+            {
                 newAccelerationForce = MaxAcceleration;
+            }
+
             if (newAccelerationForce < MinAcceleration)
+            {
                 newAccelerationForce = MinAcceleration;
+            }
 
             // Add acceleration force to total car force, but use the current carDir!
             if (isCarOnGround)
+            {
                 carForce +=
                     carDir * newAccelerationForce * (moveFactor * 85);
+            }
 
             // Change speed with standard formula, use acceleration as our force
             float oldSpeed = speed;
@@ -670,7 +737,10 @@ namespace RacingGame.GameLogic
                 float speedApplyFactor =
                     Vector3.Dot(Vector3.Normalize(speedChangeVector), carDir);
                 if (speedApplyFactor > 1)
+                {
                     speedApplyFactor = 1;
+                }
+
                 speed += speedChangeVector.Length() * speedApplyFactor;
             }
 
@@ -690,15 +760,20 @@ namespace RacingGame.GameLogic
             // too hard.
             float airFriction = AirFrictionPerSpeed * Math.Abs(speed);
             if (airFriction > MaxAirFriction)
+            {
                 airFriction = MaxAirFriction;
+            }
+
             // Don't use ground friction if we are not on the ground.
             float groundFriction = CarFrictionOnRoad;
             if (isCarOnGround == false)
+            {
                 groundFriction = 0;
+            }
 
             carForce *= 1.0f - (0.275f * 0.02125f *
-                0.2f * // 20% for force slowdown
-                (groundFriction + airFriction));
+                                0.2f * // 20% for force slowdown
+                                (groundFriction + airFriction));
             // Reduce the speed, but use very low values to make the game more fun!
             float noFrictionSpeed = speed;
             speed *= 1.0f - (0.01f *
@@ -706,7 +781,9 @@ namespace RacingGame.GameLogic
                 (groundFriction + airFriction));
             // Never change more than by 1
             if (speed < noFrictionSpeed - 1)
+            {
                 speed = noFrictionSpeed - 1;
+            }
 
             if (isCarOnGround)
             {
@@ -731,9 +808,14 @@ namespace RacingGame.GameLogic
                     speed *= Math.Max(0, slowdown);
                     // Limit to max. 100 mph slowdown per sec
                     if (speed > oldSpeed + 100 * moveFactor)
+                    {
                         speed = (oldSpeed + 100 * moveFactor);
+                    }
+
                     if (speed < oldSpeed - 100 * moveFactor)
+                    {
                         speed = (oldSpeed - 100 * moveFactor);
+                    }
 
                     // Remember that we slowed down for generating tracks.
                     downPressed = true;
@@ -762,17 +844,28 @@ namespace RacingGame.GameLogic
 
                 // Limit speed change, never apply more than 5 per sec.
                 if (speedChange < -8 * moveFactor)
+                {
                     speedChange = -8 * moveFactor;
+                }
+
                 if (speedChange > 8 * moveFactor)
+                {
                     speedChange = 8 * moveFactor;
+                }
+
                 carPitchPhysics.ChangePos(speedChange);
             }
 
             // Limit speed
             if (speed > maxSpeed)
+            {
                 speed = maxSpeed;
+            }
+
             if (speed < -maxSpeed)
+            {
                 speed = -maxSpeed;
+            }
 
             // Apply speed and calculate new car position.
             carPos += speed * carDir * moveFactor * 1.75f;
@@ -823,9 +916,13 @@ namespace RacingGame.GameLogic
                             RacingGameManager.Landscape.CompareCheckpointTime(num);
 
                         if (differenceMs < 0)
+                        {
                             Sound.Play(Sound.Sounds.CheckpointBetter);
+                        }
                         else
+                        {
                             Sound.Play(Sound.Sounds.CheckpointWorse);
+                        }
 
                         BaseGame.UI.AddTimeFadeupEffect(
                             //normal: (int)GameTimeMilliseconds,
@@ -894,7 +991,9 @@ namespace RacingGame.GameLogic
         {
             // Don't do it in the menu
             if (RacingGameManager.InMenu)
+            {
                 return;
+            }
 
             // Calc normals for the guard rail with help of the next guard rail
             // position and the ground normal.
@@ -941,7 +1040,10 @@ namespace RacingGame.GameLogic
                 #region Apply gravity
                 // Apply gravity if we are flying, do this for each wheel.
                 if (carCorners[num].Z > groundPlanePos.Z)
+                {
                     applyGravity += Gravity / 4;
+                }
+
                 #endregion
 
                 #region Hit guardrail
@@ -966,7 +1068,10 @@ namespace RacingGame.GameLogic
                         carRight, guardrailLeftNormal);
                     // Flip at 180 degrees (if driving in wrong direction)
                     if (collisionAngle > MathHelper.Pi / 2)
+                    {
                         collisionAngle -= MathHelper.Pi;
+                    }
+
                     // Just correct rotation if 0-45 degrees (slowly)
                     if (Math.Abs(collisionAngle) < MathHelper.Pi / 4.0f)
                     {
@@ -980,7 +1085,9 @@ namespace RacingGame.GameLogic
 
                             speed *= 0.93f;
                             if (viewDistance > 0.75f)
+                            {
                                 viewDistance -= 0.1f;
+                            }
                         }
                         else
                         {
@@ -988,7 +1095,9 @@ namespace RacingGame.GameLogic
 
                             speed *= 0.96f;
                             if (viewDistance > 0.75f)
+                            {
                                 viewDistance -= 0.05f;
+                            }
                         }
                         ChaseCamera.WobbelCamera(0.00075f * speed);
                     }
@@ -999,7 +1108,9 @@ namespace RacingGame.GameLogic
                     {
                         // Also rotate car if less than 60 degrees
                         if (Math.Abs(collisionAngle) < MathHelper.Pi / 3.0f)
+                        {
                             rotateCarAfterCollision = +collisionAngle / 3.0f;
+                        }
 
                         // Play crash sound
                         Sound.PlayCrashSound(true);
@@ -1038,7 +1149,10 @@ namespace RacingGame.GameLogic
                         carLeft, guardrailRightNormal);
                     // Flip at 180 degrees (if driving in wrong direction)
                     if (collisionAngle > MathHelper.Pi / 2)
+                    {
                         collisionAngle -= MathHelper.Pi;
+                    }
+
                     // Just correct rotation if 0-45 degrees (slowly)
                     if (Math.Abs(collisionAngle) < MathHelper.Pi / 4.0f)
                     {
@@ -1052,7 +1166,9 @@ namespace RacingGame.GameLogic
 
                             speed *= 0.935f;
                             if (viewDistance > 0.75f)
+                            {
                                 viewDistance -= 0.1f;
+                            }
                         }
                         else
                         {
@@ -1060,7 +1176,9 @@ namespace RacingGame.GameLogic
 
                             speed *= 0.96f;
                             if (viewDistance > 0.75f)
+                            {
                                 viewDistance -= 0.05f;
+                            }
                         }
                         ChaseCamera.WobbelCamera(0.00075f * speed);
                     }
@@ -1071,7 +1189,9 @@ namespace RacingGame.GameLogic
                     {
                         // Also rotate car if less than 60 degrees
                         if (Math.Abs(collisionAngle) < MathHelper.Pi / 3.0f)
+                        {
                             rotateCarAfterCollision = +collisionAngle / 3.0f;
+                        }
 
                         // Play crash sound
                         Sound.PlayCrashSound(true);
@@ -1213,35 +1333,47 @@ namespace RacingGame.GameLogic
 
                 // Make sure we don't interpolate at the first time
                 if (ZoomInTime - BaseGame.ElapsedTimeThisFrameInMilliseconds >= 3000)
+                {
                     RacingGameManager.Player.SetCameraPosition(camPos);
+                }
                 else
+                {
                     RacingGameManager.Player.InterpolateCameraPosition(camPos);
+                }
             }
             else if (RacingGameManager.Player.FreeCamera)
+            {
                 RacingGameManager.Player.InterpolateCameraPosition(
                     carPos + carUp * CarHeight +
                     carMatrix.Forward * chaseCamDistance -
                     carMatrix.Up * chaseCamDistance / (viewDistance + 6.0f) -
                     carMatrix.Up * 1.0f);
+            }
             else if (RacingGameManager.InMenu &&
-                BaseGame.TotalTimeMilliseconds < 100)
+                     BaseGame.TotalTimeMilliseconds < 100)
                 // No interpolation in menu, just set it (at least for the first ms)
+            {
                 RacingGameManager.Player.SetCameraPosition(
                     carPos + carUp * CarHeight +
                     carMatrix.Forward * chaseCamDistance -
                     carMatrix.Up * 0.6f);
+            }
             else
+            {
                 RacingGameManager.Player.InterpolateCameraPosition(
                     carPos + carMatrix.Up * CarHeight +
                     carMatrix.Forward * chaseCamDistance / 1.125f -
                     carMatrix.Up * 0.8f);
+            }
 
             // Save this carMatrix into the current replay every time the
             // replay interval passes.
             if (RacingGameManager.Player.GameTimeMilliseconds >
                 RacingGameManager.Landscape.NewReplay.NumberOfTrackMatrices *
                 Replay.TrackMatrixIntervals * 1000.0f)
+            {
                 RacingGameManager.Landscape.NewReplay.AddCarMatrix(carMatrix);
+            }
 
             // For rendering rotate car to stay correctly on the road
             carMatrix =

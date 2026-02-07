@@ -81,7 +81,9 @@ namespace RacingGame.GameLogic
                 for (i = 1; i < 10; i++)
                 {
                     if (File.Exists(ScreenshotNameBuilder(i * 1000)) == false)
+                    {
                         break;
+                    }
                 }
 
                 // This i*1000 does not exist, continue scan next level
@@ -90,7 +92,9 @@ namespace RacingGame.GameLogic
                 for (j = 1; j < 10; j++)
                 {
                     if (File.Exists(ScreenshotNameBuilder(i * 1000 + j * 100)) == false)
+                    {
                         break;
+                    }
                 }
 
                 // This i*1000+j*100 does not exist, continue scan next level
@@ -100,7 +104,9 @@ namespace RacingGame.GameLogic
                 {
                     if (File.Exists(ScreenshotNameBuilder(
                             i * 1000 + j * 100 + k * 10)) == false)
+                    {
                         break;
+                    }
                 }
 
                 // This i*1000+j*100+k*10 does not exist, continue scan next level
@@ -110,7 +116,9 @@ namespace RacingGame.GameLogic
                 {
                     if (File.Exists(ScreenshotNameBuilder(
                             i * 1000 + j * 100 + k * 10 + l)) == false)
+                    {
                         break;
+                    }
                 }
 
                 // This i*1000+j*100+k*10+l does not exist, we have now last

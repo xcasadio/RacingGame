@@ -191,7 +191,9 @@ namespace RacingGame.Tracks
                 // last points entry because we devided through 2.
                 int pointNum = num * 2;
                 if (pointNum >= points.Count - 1)
+                {
                     pointNum = points.Count - 1;
+                }
 
                 // Just copy the points over and manipulate the position and the
                 // right vector depending on which side of the guard rail we are
@@ -307,6 +309,7 @@ namespace RacingGame.Tracks
                         // Completely ignore all guard rails for low detail
                         // to save performance (few thousand objects per track less)
                         BaseGame.HighDetail)
+                    {
                         landscape.AddObjectToRender(
                             "GuardRailHolder",
                             // Fix scaling a little
@@ -323,6 +326,7 @@ namespace RacingGame.Tracks
                             // Optimize performance: Set this to false,
                             // but then we won't have shadows for the holder piles.
                             false);//true);
+                    }
 
                     // We have just set a pile, the next pile will be set after
                     // reaching the next holder gap.

@@ -143,7 +143,9 @@ namespace RacingGame.Helpers
         public static void WriteVector3(BinaryWriter writer, Vector3 vec)
         {
             if (writer == null)
+            {
                 throw new ArgumentNullException("writer");
+            }
 
             writer.Write(vec.X);
             writer.Write(vec.Y);
@@ -158,7 +160,9 @@ namespace RacingGame.Helpers
         public static void WriteVector4(BinaryWriter writer, Vector4 vec)
         {
             if (writer == null)
+            {
                 throw new ArgumentNullException("writer");
+            }
 
             writer.Write(vec.X);
             writer.Write(vec.Y);
@@ -174,7 +178,9 @@ namespace RacingGame.Helpers
         public static void WriteMatrix(BinaryWriter writer, Matrix matrix)
         {
             if (writer == null)
+            {
                 throw new ArgumentNullException("writer");
+            }
 
             writer.Write(matrix.M11);
             writer.Write(matrix.M12);
@@ -204,7 +210,9 @@ namespace RacingGame.Helpers
         public static Vector3 ReadVector3(BinaryReader reader)
         {
             if (reader == null)
+            {
                 throw new ArgumentNullException("reader");
+            }
 
             return new Vector3(
                 reader.ReadSingle(),
@@ -220,7 +228,9 @@ namespace RacingGame.Helpers
         public static Vector4 ReadVector4(BinaryReader reader)
         {
             if (reader == null)
+            {
                 throw new ArgumentNullException("reader");
+            }
 
             return new Vector4(
                 reader.ReadSingle(),
@@ -237,7 +247,9 @@ namespace RacingGame.Helpers
         public static Matrix ReadMatrix(BinaryReader reader)
         {
             if (reader == null)
+            {
                 throw new ArgumentNullException("reader");
+            }
 
             return new Matrix(
                 reader.ReadSingle(),

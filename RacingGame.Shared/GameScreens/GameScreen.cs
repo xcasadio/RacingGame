@@ -76,7 +76,9 @@ namespace RacingGame.GameScreens
 
             // This starts both menu and in game post screen shader!
 			if( BaseGame.UsePostScreenShaders)
-            	BaseGame.UI.PostScreenGlowShader.Start();
+            {
+                BaseGame.UI.PostScreenGlowShader.Start();
+            }
 
             // Render background sky and lensflare.
             BaseGame.UI.RenderGameBackground();
@@ -106,17 +108,23 @@ namespace RacingGame.GameScreens
 
             // Also render the shadow car (if the game has started)!
             if (RacingGameManager.Player.GameTimeMilliseconds > 0)
+            {
                 RacingGameManager.CarModel.RenderCar(
                     0, RacingGameManager.CarColor,
                     true, bestReplayCarMatrix);
+            }
 
             // Show shadows we calculated above
             if (BaseGame.AllowShadowMapping)
+            {
                 ShaderEffect.shadowMapping.ShowShadows();
+            }
 
             // Apply post screen shader here before doing the UI
 			if (BaseGame.UsePostScreenShaders)
-            	BaseGame.UI.PostScreenGlowShader.Show();
+            {
+                BaseGame.UI.PostScreenGlowShader.Show();
+            }
 
             // Play motor sound
             Sound.UpdateGearSound(RacingGameManager.Player.Speed,

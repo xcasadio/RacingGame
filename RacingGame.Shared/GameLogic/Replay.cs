@@ -130,11 +130,15 @@ namespace RacingGame.GameLogic
         {
             // No values available? We need at least 2 matrices!
             if (trackMatrixValues.Count < 2)
+            {
                 return Matrix.Identity;
+            }
 
             // Not started yet? Then just return start matrix
             if (trackTime <= 0.0f)
+            {
                 return trackMatrixValues[0];
+            }
 
             // Get track num and percent of the current interval.
             int trackNum = (int)(trackTime / TrackMatrixIntervals);
@@ -142,11 +146,15 @@ namespace RacingGame.GameLogic
                 (trackTime - trackNum * TrackMatrixIntervals) /
                 TrackMatrixIntervals;
             if (trackNum < 0)
+            {
                 trackNum = 0;
+            }
 
             // At end? Then wait at start, do not interpolate anymore!
             if (trackNum > trackMatrixValues.Count - 2)
+            {
                 return trackMatrixValues[0];
+            }
 
             // Interpolate and return
             return Matrix.Lerp(
@@ -308,7 +316,9 @@ namespace RacingGame.GameLogic
                     // Reached finish?
                     if (carTrackPos >= 1.0f)
                         // Then abort, do not add more.
+                    {
                         break;
+                    }
                 }
 
                 // Add the final checkpoint for the laptime

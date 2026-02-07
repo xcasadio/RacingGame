@@ -102,7 +102,9 @@ namespace RacingGame.Shaders
         {
             // Can't render with shader if shader is not valid!
             if (this.Valid == false)
+            {
                 return;
+            }
 
             // Don't use or write to the z buffer
             BaseGame.Device.DepthStencilState = DepthStencilState.None;

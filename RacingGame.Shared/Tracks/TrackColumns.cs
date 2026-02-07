@@ -115,7 +115,9 @@ namespace RacingGame.Tracks
         public TrackColumns(List<TrackVertex> points, Landscape landscape)
         {
             if (landscape == null)
+            {
                 return;
+            }
 
             #region Find out column positions
             float lastColumnsDistance = ColumnsDistance;
@@ -256,10 +258,12 @@ namespace RacingGame.Tracks
                 if (landscape != null &&
                     // This is not really required, we can easily optimize this out.
                     BaseGame.HighDetail)
+                {
                     landscape.AddObjectToRender(
                         "RoadColumnSegment",
                         new Vector3(bottomPos.X, bottomPos.Y,
-                        bottomPos.Z - ColumnGroundHeight));
+                            bottomPos.Z - ColumnGroundHeight));
+                }
             }
 
             // Create the vertex buffer from our vertices.
@@ -372,7 +376,9 @@ namespace RacingGame.Tracks
         private void RenderColumnVertices()
         {
             if (columnVertices == null)
+            {
                 return;
+            }
 
             BaseGame.Device.SetVertexBuffer(columnVb);
             BaseGame.Device.Indices = columnIb;

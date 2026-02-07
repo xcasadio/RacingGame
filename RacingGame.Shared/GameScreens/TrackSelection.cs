@@ -109,7 +109,9 @@ namespace RacingGame.GameScreens
         {
             // This starts both menu and in game post screen shader!
 			if(BaseGame.UsePostScreenShaders)
-            	BaseGame.UI.PostScreenMenuShader.Start();
+            {
+                BaseGame.UI.PostScreenMenuShader.Start();
+            }
 
             // Render background and black bar
             BaseGame.UI.RenderMenuBackground();
@@ -136,7 +138,9 @@ namespace RacingGame.GameScreens
             // If the user manipulated the mouse, stop ignoring the mouse
             // This allows the mouse to override the game pad or keyboard selection
             if (Input.HasMouseMoved || Input.MouseLeftButtonJustPressed)
+            {
                 ignoreMouse = false;
+            }
 
             // Show buttons
             // Part 1: Calculate global variables for our buttons
@@ -162,9 +166,14 @@ namespace RacingGame.GameScreens
                 currentButtonSizes[num] +=
                     (selected ? 1 : -1) * BaseGame.MoveFactorPerSecond * 2;
                 if (currentButtonSizes[num] < 0)
+                {
                     currentButtonSizes[num] = 0;
+                }
+
                 if (currentButtonSizes[num] > 1)
+                {
                     currentButtonSizes[num] = 1;
+                }
 
                 Rectangle thisRect = MainMenu.
                     InterpolateRect(activeRect, inactiveRect, currentButtonSizes[num]);
@@ -176,8 +185,10 @@ namespace RacingGame.GameScreens
 
                 // Add border effect if selected
                 if (selected)
+                {
                     BaseGame.UI.Buttons.RenderOnScreen(renderRect,
                         UIRenderer.TrackButtonSelectionGfxRect);
+                }
 
                 // Also add text below button
                 Rectangle textRenderRect = new Rectangle(
@@ -185,18 +196,24 @@ namespace RacingGame.GameScreens
                     renderRect.Width,
                     renderRect.Height * TextRects[0].Height / ButtonRects[0].Height);
                 if (selected)
+                {
                     BaseGame.UI.Buttons.RenderOnScreen(textRenderRect, TextRects[num],
                         selected ? Color.White : Color.Gray);
+                }
 
                 // Also check if the user hovers with the mouse over this button
                 if (Input.MouseInBox(renderRect))
+                {
                     mouseIsOverButton = num;
+                }
 
                 xPos += thisRect.Width + BaseGame.XToRes(DistanceBetweenButtons);
             }
 
             if (!ignoreMouse && mouseIsOverButton >= 0)
+            {
                 selectedButton = mouseIsOverButton;
+            }
 
             // Handle GamePad input, and also allow keyboard input
             if (Input.GamePadLeftJustPressed ||
@@ -231,7 +248,9 @@ namespace RacingGame.GameScreens
                 Input.GamePadBJustPressed ||
                 Input.GamePadBackJustPressed ||
                 BaseGame.UI.backButtonPressed)
+            {
                 return true;
+            }
 
             return false;
         }

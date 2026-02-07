@@ -211,7 +211,9 @@ namespace RacingGame.Graphics
             VertexElement[] declaration)
         {
             if (declaration == null)
+            {
                 throw new ArgumentNullException("declaration");
+            }
 
             return
                 declaration.Length == 4 &&

@@ -103,7 +103,9 @@ namespace RacingGame.Graphics
             public override bool Equals(object a)
             {
                 if (a is Line)
+                {
                     return (Line)a == this;
+                }
 
                 return false;
             }

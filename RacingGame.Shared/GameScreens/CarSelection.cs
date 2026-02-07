@@ -154,7 +154,9 @@ namespace RacingGame.GameScreens
             // It will render into the sceneMap texture which we will use
             // later then.
 			if (BaseGame.UsePostScreenShaders)
-            	BaseGame.UI.PostScreenMenuShader.Start();
+            {
+                BaseGame.UI.PostScreenMenuShader.Start();
+            }
 
             // Render background and black bar
             BaseGame.UI.RenderMenuBackground();
@@ -200,7 +202,10 @@ namespace RacingGame.GameScreens
                     Input.MouseLeftButtonPressed)
                 {
                     if (RacingGameManager.currentCarColor != num)
+                    {
                         Sound.Play(Sound.Sounds.Highlight);
+                    }
+
                     RacingGameManager.currentCarColor = num;
                 }
             }
@@ -238,7 +243,9 @@ namespace RacingGame.GameScreens
             float engine =
                 -0.2f + 0.5f * (maxSpeed / mass + acceleration - maxSpeed * 5 + 5);
             if (engine > 0.95f)
+            {
                 engine = 0.95f;
+            }
 
             ShowCarPropertyBar(
                 BaseGame.XToRes(1024 - 258), BaseGame.YToRes(190),
@@ -343,7 +350,9 @@ namespace RacingGame.GameScreens
                 Input.GamePadBJustPressed ||
                 Input.GamePadBackJustPressed ||
                 BaseGame.UI.backButtonPressed)
+            {
                 return true;
+            }
 
             return false;
         }
@@ -363,9 +372,14 @@ namespace RacingGame.GameScreens
         public static void AdjustRotRange(ref float desiredRot, float sourceRot)
         {
             if (desiredRot >= sourceRot + (float)Math.PI)
+            {
                 desiredRot -= (float)Math.PI * 2.0f;
+            }
+
             if (desiredRot < sourceRot - (float)Math.PI)
+            {
                 desiredRot += (float)Math.PI * 2.0f;
+            }
         }
 
         /// <summary>
@@ -374,9 +388,14 @@ namespace RacingGame.GameScreens
         public static void AdjustRotToPIRange(ref float desiredRot)
         {
             if (desiredRot <= -(float)Math.PI)
+            {
                 desiredRot += (float)Math.PI * 2.0f;
+            }
+
             if (desiredRot > (float)Math.PI)
+            {
                 desiredRot -= (float)Math.PI * 2.0f;
+            }
         }
 
         /// <summary>
@@ -394,16 +413,24 @@ namespace RacingGame.GameScreens
             if (rot > targetRot)
             {
                 if (Math.Abs(rot - targetRot) < nearlyEqualRot)
+                {
                     rot = targetRot;
+                }
                 else
+                {
                     rot -= nearlyEqualRot;
+                }
             }
             else if (rot < targetRot)
             {
                 if (Math.Abs(rot - targetRot) < nearlyEqualRot)
+                {
                     rot = targetRot;
+                }
                 else
+                {
                     rot += nearlyEqualRot;
+                }
             }
 
             // Check if rot is in -PI-PI range (for easier calculations!)

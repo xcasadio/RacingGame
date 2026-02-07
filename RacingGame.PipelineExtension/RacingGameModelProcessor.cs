@@ -1,135 +1,372 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// RacingGameModelProcessor.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using directives
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text.RegularExpressions;
+
 using Microsoft.Xna.Framework.Content.Pipeline;
-using Microsoft.Xna.Framework.Content.Pipeline.Processors;
 using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
-#endregion
+using Microsoft.Xna.Framework.Content.Pipeline.Processors;
 
 namespace RacingGame.PipelineExtension
 {
     /// <summary>
-    /// RacingGame model processor for x files. Loads models the same way as
-    /// the ModelProcessor class, but generates tangents and some additional
-    /// data too.
+    /// RacingGame model processor for .x files.
+    /// Converts EffectInstance data from the .x file into EffectMaterialContent so
+    /// the runtime Model uses custom Effects (not BasicEffect).
     /// </summary>
-    [ContentProcessor(DisplayName = "RacingGame Model (Tangent support)")]
+    [ContentProcessor(DisplayName = "RacingGame Model (X .x + EffectInstance)")]
     public class RacingGameModelProcessor : ModelProcessor
     {
-        #region Process
-        /// <summary>
-        /// Process the model
-        /// </summary>
-        /// <param name="input">Input data</param>
-        /// <param name="context">Context for logging</param>
-        /// <returns>Model content</returns>
-        public override ModelContent Process(
-            NodeContent input, ContentProcessorContext context)
-        {
-            // First generate tangent data because x files don't store them
-            GenerateTangents(input, context);
+        // Parsed from the .x file: material name => effect instance info
+        private Dictionary<string, XEffectInfo> _effectsByMaterialName =
+            new(StringComparer.OrdinalIgnoreCase);
 
-            // Use the name of the bone for our mesh name if it is not set
+        private string _sourceXFile = "";
+
+        public override ModelContent Process(NodeContent input, ContentProcessorContext context)
+        {
+            context.Logger.LogImportantMessage(">>> RacingGameModelProcessor called <<<");
+
+            // 1) Resolve the source .x file path (this one is reliable in MGCB)
+            _sourceXFile = context.SourceIdentity?.SourceFilename
+                           ?? input.Identity?.SourceFilename
+                           ?? "";
+
+            context.Logger.LogMessage($"CWD = '{Environment.CurrentDirectory}'");
+            context.Logger.LogMessage($"SourceIdentity = '{context.SourceIdentity?.SourceFilename}'");
+            context.Logger.LogMessage($"Input.Identity = '{input.Identity?.SourceFilename}'");
+            context.Logger.LogMessage($"Resolved X = '{_sourceXFile}', exists={File.Exists(_sourceXFile)}");
+
+            // 2) Use the parent bone name for nodes that have no name
             UseParentBoneNameIfMeshNameIsNotSet(input);
 
-            // Store the current selected technique and if the texture uses alpha
-            // into the mesh name for each mesh part.
+            // 3) Parse EffectInstance from the .x and inject EffectMaterialContent into the scene tree
+            if (!string.IsNullOrWhiteSpace(_sourceXFile) && File.Exists(_sourceXFile))
+            {
+                _effectsByMaterialName = ParseXEffects(_sourceXFile, context);
+                context.Logger.LogImportantMessage($"Parsed {_effectsByMaterialName.Count} EffectInstance(s) from .x");
+
+                if (_effectsByMaterialName.Count > 0)
+                    ApplyParsedEffectsToScene(input, context, _effectsByMaterialName, _sourceXFile);
+            }
+            else
+            {
+                context.Logger.LogWarning("", context.SourceIdentity, "Cannot read source .x file: '{0}'", _sourceXFile);
+            }
+
+            // 4) Tangents (only if missing) to avoid Tangent0 duplicate crash
+            GenerateTangentsIfMissing(input, context);
+
+            // 5) Store technique into the mesh node name (old kit behavior)
             StoreEffectTechniqueInMeshName(input, context);
 
-            // And let the rest be processed by the default model processor
+            // 6) Let base ModelProcessor do the conversion/build
             return base.Process(input, context);
         }
-        #endregion
 
-        #region Generate tangents
-        /// <summary>
-        /// Generate tangents helper method, x files do not have tangents
-        /// exported, we have to generate them ourselfs.
-        /// </summary>
-        /// <param name="input">Input data</param>
-        /// <param name="context">Context for logging</param>
-        private void GenerateTangents(
-            NodeContent input, ContentProcessorContext context)
+        #region Tangents
+
+        private void GenerateTangentsIfMissing(NodeContent input, ContentProcessorContext context)
         {
-            MeshContent mesh = input as MeshContent;
-            if (mesh != null)
+            if (input is MeshContent mesh)
             {
-                // Generate trangents for the mesh. We don't want binormals,
-                // so null is passed in for the last parameter.
-                MeshHelper.CalculateTangentFrames(mesh,
-                    VertexChannelNames.TextureCoordinate(0),
-                    VertexChannelNames.Tangent(0), null);
+                // If any geometry already has Tangent0, don't try to regenerate (prevents duplicate channel crash).
+                bool hasTangent0 = false;
+                string tangentName = VertexChannelNames.Tangent(0);
+
+                foreach (var geom in mesh.Geometry)
+                {
+                    if (geom.Vertices.Channels.Contains(tangentName))
+                    {
+                        hasTangent0 = true;
+                        break;
+                    }
+                }
+
+                if (!hasTangent0)
+                {
+                    context.Logger.LogMessage($"Generating Tangent0 for mesh '{mesh.Name ?? "<no name>"}'");
+                    MeshHelper.CalculateTangentFrames(
+                        mesh,
+                        VertexChannelNames.TextureCoordinate(0),
+                        VertexChannelNames.Tangent(0),
+                        null // no binormals
+                    );
+                }
             }
 
-            // Go through all childs
             foreach (NodeContent child in input.Children)
-            {
-                GenerateTangents(child, context);
-            }
+                GenerateTangentsIfMissing(child, context);
         }
+
         #endregion
 
-        #region UseParentBoneNameIfMeshNameIsNotSet
-        /// <summary>
-        /// Use parent bone's name if mesh's name is not set.
-        /// </summary>
-        /// <param name="input"></param>
+        #region Name helper (keep kit behavior)
+
         private void UseParentBoneNameIfMeshNameIsNotSet(NodeContent input)
         {
-            if (String.IsNullOrEmpty(input.Name) &&
+            if (string.IsNullOrEmpty(input.Name) &&
                 input.Parent != null &&
-                String.IsNullOrEmpty(input.Parent.Name) == false)
+                !string.IsNullOrEmpty(input.Parent.Name))
+            {
                 input.Name = input.Parent.Name;
+            }
 
             foreach (NodeContent node in input.Children)
                 UseParentBoneNameIfMeshNameIsNotSet(node);
         }
+
         #endregion
 
-        #region StoreEffectMaterialsAndTechniques
-        /// <summary>
-        /// Stores the current selected technique and if the texture uses alpha
-        /// into the mesh name for each mesh part.
-        /// </summary>
-        private void StoreEffectTechniqueInMeshName(
-            NodeContent input, ContentProcessorContext context)
+        #region Store technique in mesh name (keep kit behavior)
+
+        private void StoreEffectTechniqueInMeshName(NodeContent input, ContentProcessorContext context)
         {
-            MeshContent mesh = input as MeshContent;
-            if (mesh != null)
+            if (input is MeshContent mesh)
             {
                 foreach (GeometryContent geom in mesh.Geometry)
                 {
-                    EffectMaterialContent effectMaterial =
-                        geom.Material as EffectMaterialContent;
-                    if (effectMaterial != null)
+                    var effectMaterial = geom.Material as EffectMaterialContent;
+                    if (effectMaterial == null)
+                        continue;
+
+                    if (effectMaterial.OpaqueData.TryGetValue("technique", out object techObj) && techObj != null)
                     {
-                        if (effectMaterial.OpaqueData.ContainsKey("technique"))
+                        string techStr = Convert.ToString(techObj, CultureInfo.InvariantCulture) ?? "";
+
+                        // Avoid appending multiple times if called on multiple geometries
+                        if (!string.IsNullOrEmpty(input.Name) &&
+                            !string.IsNullOrEmpty(techStr) &&
+                            !input.Name.EndsWith(techStr, StringComparison.Ordinal))
                         {
-                            // Store technique here! (OpaqueData["technique"] is an
-                            // int32) If we have multiple mesh parts in our mesh object,
-                            // there will be multiple techniques listed at the end of
-                            // our mesh name.
-                            input.Name =
-                                input.Name + effectMaterial.OpaqueData["technique"];
+                            input.Name = input.Name + techStr;
+                            context.Logger.LogMessage($"Technique={techStr} => node name '{input.Name}'");
                         }
                     }
                 }
             }
 
-            // Go through all childs
             foreach (NodeContent child in input.Children)
-            {
                 StoreEffectTechniqueInMeshName(child, context);
-            }
         }
+
+        #endregion
+
+        #region Parse .x EffectInstance -> dictionary
+
+        private sealed class XEffectInfo
+        {
+            public string EffectPath = "";
+            public Dictionary<string, int> DWords = new(StringComparer.OrdinalIgnoreCase);
+            public Dictionary<string, float[]> Floats = new(StringComparer.OrdinalIgnoreCase);
+            public Dictionary<string, string> Strings = new(StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static string XUnescape(string s)
+        {
+            // .x usually stores paths like "..\\shaders\\X.fx"
+            return s.Replace(@"\\", @"\").Replace("\\\"", "\"");
+        }
+
+        private static int FindMatchingBrace(string s, int openPos)
+        {
+            int depth = 0;
+            bool inString = false;
+
+            for (int i = openPos; i < s.Length; i++)
+            {
+                char ch = s[i];
+
+                if (ch == '"')
+                {
+                    // ignore escaped quotes
+                    int bs = 0;
+                    for (int j = i - 1; j >= 0 && s[j] == '\\'; j--) bs++;
+                    if ((bs & 1) == 0)
+                        inString = !inString;
+                }
+
+                if (inString) continue;
+
+                if (ch == '{') depth++;
+                else if (ch == '}')
+                {
+                    depth--;
+                    if (depth == 0) return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private static Dictionary<string, XEffectInfo> ParseXEffects(string xPath, ContentProcessorContext context)
+        {
+            var result = new Dictionary<string, XEffectInfo>(StringComparer.OrdinalIgnoreCase);
+            string text = File.ReadAllText(xPath);
+
+            // Material <Name> {
+            foreach (Match mm in Regex.Matches(text, @"\bMaterial\s+(?<name>[A-Za-z0-9_]+)\s*\{", RegexOptions.Compiled))
+            {
+                string matName = mm.Groups["name"].Value;
+
+                int matOpen = text.IndexOf('{', mm.Index);
+                int matClose = FindMatchingBrace(text, matOpen);
+                if (matClose < 0) continue;
+
+                string matBody = text.Substring(matOpen + 1, matClose - matOpen - 1);
+
+                // EffectInstance {
+                Match em = Regex.Match(matBody, @"\bEffectInstance\s*\{", RegexOptions.Compiled);
+                if (!em.Success) continue;
+
+                int effOpen = matBody.IndexOf('{', em.Index);
+                int effClose = FindMatchingBrace(matBody, effOpen);
+                if (effClose < 0) continue;
+
+                string effBody = matBody.Substring(effOpen + 1, effClose - effOpen - 1);
+
+                // first ".fx" string
+                Match fxm = Regex.Match(effBody, "\"(?<fx>[^\"]+\\.fx)\"\\s*;", RegexOptions.IgnoreCase);
+                if (!fxm.Success) continue;
+
+                var info = new XEffectInfo
+                {
+                    EffectPath = XUnescape(fxm.Groups["fx"].Value)
+                };
+
+                // EffectParamDWord { "name"; 123; }
+                foreach (Match dm in Regex.Matches(
+                    effBody,
+                    @"EffectParamDWord\s*\{\s*""(?<n>[^""]+)""\s*;\s*(?<v>[+-]?\d+)\s*;\s*\}",
+                    RegexOptions.Singleline))
+                {
+                    info.DWords[dm.Groups["n"].Value] = int.Parse(dm.Groups["v"].Value, CultureInfo.InvariantCulture);
+                }
+
+                // EffectParamString { "name"; "..\\textures\\X.tga"; }
+                foreach (Match sm in Regex.Matches(
+                    effBody,
+                    @"EffectParamString\s*\{\s*""(?<n>[^""]+)""\s*;\s*""(?<v>[^""]+)""\s*;\s*\}",
+                    RegexOptions.Singleline))
+                {
+                    info.Strings[sm.Groups["n"].Value] = XUnescape(sm.Groups["v"].Value);
+                }
+
+                // EffectParamFloats { "name"; count; v1, v2, ...; }
+                foreach (Match fm in Regex.Matches(
+                    effBody,
+                    @"EffectParamFloats\s*\{\s*""(?<n>[^""]+)""\s*;\s*(?<c>\d+)\s*;\s*(?<vals>.*?)\s*;\s*\}",
+                    RegexOptions.Singleline))
+                {
+                    string name = fm.Groups["n"].Value;
+                    int count = int.Parse(fm.Groups["c"].Value, CultureInfo.InvariantCulture);
+
+                    var tokens = Regex.Split(fm.Groups["vals"].Value.Trim(), @"[,\s]+");
+                    var list = new List<float>(count);
+
+                    foreach (var t in tokens)
+                    {
+                        if (string.IsNullOrWhiteSpace(t)) continue;
+                        if (float.TryParse(t, NumberStyles.Float, CultureInfo.InvariantCulture, out float f))
+                            list.Add(f);
+                        if (list.Count == count) break;
+                    }
+
+                    info.Floats[name] = list.ToArray();
+                }
+
+                result[matName] = info;
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        #region Apply parsed effects to GeometryContent.Material
+
+        private static bool LooksLikeTexturePath(string v)
+        {
+            if (string.IsNullOrWhiteSpace(v))
+                return false;
+
+            string ext = Path.GetExtension(v).ToLowerInvariant();
+            return ext is ".dds" or ".png" or ".jpg" or ".jpeg" or ".tga" or ".bmp";
+        }
+
+        private static void ApplyParsedEffectsToScene(
+            NodeContent node,
+            ContentProcessorContext context,
+            Dictionary<string, XEffectInfo> fxByMaterial,
+            string xPath)
+        {
+            string baseDir = Path.GetDirectoryName(xPath) ?? "";
+
+            if (node is MeshContent mesh)
+            {
+                foreach (GeometryContent geom in mesh.Geometry)
+                {
+                    var mat = geom.Material;
+                    if (mat == null || string.IsNullOrEmpty(mat.Name))
+                        continue;
+
+                    if (!fxByMaterial.TryGetValue(mat.Name, out XEffectInfo info))
+                        continue;
+
+                    // Already an EffectMaterialContent? Keep it, but ensure technique/paths exist.
+                    var fxMat = mat as EffectMaterialContent;
+                    if (fxMat == null)
+                    {
+                        fxMat = new EffectMaterialContent
+                        {
+                            Name = mat.Name,
+                            Identity = mat.Identity
+                        };
+
+                        // Copy existing material data
+                        foreach (var kv in mat.OpaqueData)
+                            fxMat.OpaqueData[kv.Key] = kv.Value;
+
+                        foreach (var kv in mat.Textures)
+                            fxMat.Textures[kv.Key] = kv.Value;
+                    }
+
+                    // Effect path
+                    string fxFull = Path.GetFullPath(Path.Combine(baseDir, info.EffectPath));
+                    fxMat.Effect = new ExternalReference<EffectContent>(fxFull, context.SourceIdentity);
+
+                    // DWords/Floats/Strings to OpaqueData (and textures)
+                    foreach (var kv in info.DWords)
+                        fxMat.OpaqueData[kv.Key] = kv.Value;
+
+                    foreach (var kv in info.Floats)
+                        fxMat.OpaqueData[kv.Key] = kv.Value;
+
+                    foreach (var kv in info.Strings)
+                    {
+                        if (LooksLikeTexturePath(kv.Value))
+                        {
+                            string texFull = Path.GetFullPath(Path.Combine(baseDir, kv.Value));
+                            fxMat.Textures[kv.Key] = new ExternalReference<TextureContent>(texFull, context.SourceIdentity);
+                        }
+                        else
+                        {
+                            fxMat.OpaqueData[kv.Key] = kv.Value;
+                        }
+                    }
+
+                    geom.Material = fxMat;
+
+                    context.Logger.LogMessage(
+                        $"Applied FX '{info.EffectPath}' to material '{mat.Name}' (mesh '{mesh.Name ?? "<no name>"}')");
+                }
+            }
+
+            foreach (NodeContent child in node.Children)
+                ApplyParsedEffectsToScene(child, context, fxByMaterial, xPath);
+        }
+
         #endregion
     }
 }

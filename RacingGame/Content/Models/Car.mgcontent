@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SourceFile>D:/development/repo/RacingGame/RacingGame/Content/Models/Car.x</SourceFile>
+  <SourceTime>2026-02-07T10:36:58.5857753+01:00</SourceTime>
+  <DestFile>D:/development/repo/RacingGame/RacingGame/Content/Models/Car.xnb</DestFile>
+  <DestTime>2026-02-07T14:11:44.4439013+01:00</DestTime>
+  <Importer>XImporter</Importer>
+  <ImporterTime>2025-10-20T16:25:32+02:00</ImporterTime>
+  <Processor>ModelProcessor</Processor>
+  <ProcessorTime>2025-10-20T16:25:32+02:00</ProcessorTime>
+  <Dependencies />
+  <BuildAsset />
+  <BuildOutput />
+</PipelineBuildEvent>

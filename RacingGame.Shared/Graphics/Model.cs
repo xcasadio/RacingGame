@@ -178,9 +178,11 @@ namespace RacingGame.Graphics
 
                 // Calculate scaling for this object, used for distance comparisons.
                 if (xnaModel.Meshes.Count > 0)
+                {
                     realScaling = scaling =
                         xnaModel.Meshes[0].BoundingSphere.Radius *
                         transforms[0].Right.Length();
+                }
 
                 // For palms, laterns, holders and column holders reduce scaling
                 // to reduce the number of objects we have to render.
@@ -188,18 +190,24 @@ namespace RacingGame.Graphics
                     name.ToLower() == "alphapalm2" ||
                     name.ToLower() == "alphapalm3" ||
                     name.ToLower() == "roadcolumnsegment")
+                {
                     scaling *= 0.75f;
+                }
 
                 // Hotels and windmills should always be visible (they are big)
                 if (name.ToLower() == "hotel01" ||
                     name.ToLower() == "hotel02" ||
                     name.ToLower() == "casino01" ||
                     name.ToLower() == "windmill")
+                {
                     scaling *= 5.0f;
+                }
                 else
                     // Don't use more than 3m for scaling and checking smaller objects
                     if (scaling > 3)
-                        scaling = 3;
+                {
+                    scaling = 3;
+                }
             }
 
             hasAlpha = name.ToLower().StartsWith("alpha");
@@ -222,7 +230,9 @@ namespace RacingGame.Graphics
                 // Remember this mesh for animations done in Render!
                 if (name.ToLower() == "windmill" &&
                     meshName.ToLower().StartsWith("windmill_wings"))
+                {
                     animatedMesh = mesh;
+                }
 
                 // And for each effect this mesh uses (usually just 1, multimaterials
                 // are nice in 3ds max, but not efficiently for rendering stuff).
@@ -244,12 +254,16 @@ namespace RacingGame.Graphics
 
                     // Increase ambient value to 0.5, 0.5, 0.5 for signs and banners!
                     if (isSign)
+                    {
                         effect.Parameters["ambientColor"].SetValue(
                             new Color(128, 128, 128).ToVector4());
+                    }
 
                     // Car only uses alpha on the glass
                     if (isCar && !mesh.Name.StartsWith("glass"))
+                    {
                         effect.Parameters["UseAlpha"].SetValue(false);
+                    }
 
                     // Get technique from meshName
                     int techniqueIndex = -1;
@@ -277,13 +291,11 @@ namespace RacingGame.Graphics
                         techniqueIndex = effect.Techniques.Count - 1;
                         // If this is NormalMapping, use DiffuseSpecular20 instead
                         // of the last technique (which is SpecularWithReflection20)
-                        /*if (effect.Techniques[techniqueIndex].Name.Contains(
-                            "SpecularWithReflection"))
+                        if (effect.Techniques[techniqueIndex].Name.Contains("SpecularWithReflection"))
                             techniqueIndex -= 2;
                         // Update: We have now 2 more techniques (ReflectionSpecular)
-                        if (effect.Techniques[techniqueIndex].Name.Contains(
-                            "ReflectionSpecular"))
-                            techniqueIndex -= 4;*/
+                        if (effect.Techniques[techniqueIndex].Name.Contains("ReflectionSpecular"))
+                            techniqueIndex -= 4;
                     }
 
                     // Set current technique for rendering below
@@ -309,8 +321,10 @@ namespace RacingGame.Graphics
 #if DEBUG
             // Check if there are no meshes to render
             if (xnaModel.Meshes.Count == 0)
+            {
                 throw new ArgumentException("Invalid model "+name+
-                    ". It does not contain any meshes");
+                                            ". It does not contain any meshes");
+            }
 #endif
         }
         #endregion
@@ -365,7 +379,9 @@ namespace RacingGame.Graphics
                 // Only set if we reduce, don't increase again if it is running
                 // a little faster for a short time.
                 if (value < maxViewDistance)
+                {
                     maxViewDistance = value;
+                }
             }
         }
 
@@ -385,7 +401,9 @@ namespace RacingGame.Graphics
                 BaseGame.CameraPos, renderMatrix.Translation);
             if (distanceSquared > maxDistance * maxDistance)
                 // Don't render, too far away!
+            {
                 return;
+            }
 
             // Check out if object is behind us or not visible, then we can skip
             // rendering. This is the GREATEST performance gain in the whole game!
@@ -404,7 +422,9 @@ namespace RacingGame.Graphics
                     BaseGame.CameraRotation, objectDirection);
                 if (objAngle > BaseGame.ViewableFieldOfView)
                     // Skip.
+                {
                     return;
+                }
             }
 
             // Multiply object matrix by render matrix, result is used multiple
@@ -562,7 +582,9 @@ namespace RacingGame.Graphics
                     {
                         Effect effect = mesh.Effects[effectNum];
                         if (effectNum == 0)
+                        {
                             remCurrentTechnique = effect.CurrentTechnique;
+                        }
 
                         // Find out if this is ReflectionSimpleGlass.fx,
                         // NormalMapping.fx will also use reflection, but the techniques
@@ -661,7 +683,9 @@ namespace RacingGame.Graphics
 
                     // Render
                     if (dontRender == false)
+                    {
                         mesh.Draw();
+                    }
 
                     // Change shader back to default render technique.
                     // We only have to do this if the color was changed
@@ -694,7 +718,9 @@ namespace RacingGame.Graphics
                 ShaderEffect.shadowMapping.ShadowLightPos, renderMatrix.Translation) >
                 maxDistance * maxDistance)
                 // Don't render, too far away!
+            {
                 return;
+            }
 
             // Multiply object matrix by render matrix.
             renderMatrix = objectMatrix * renderMatrix;
@@ -751,7 +777,9 @@ namespace RacingGame.Graphics
             // shader. This affects usually only palms anyway, which look better
             // without shadowing on.
             if (hasAlpha)
+            {
                 return;
+            }
 
             // Find out how far the object is away from the shadow,
             // we can ignore it if it is outside of the shadow generation range.
@@ -765,7 +793,9 @@ namespace RacingGame.Graphics
                 ShaderEffect.shadowMapping.ShadowLightPos, renderMatrix.Translation) >
                 maxDistance * maxDistance)
                 // Don't render, too far away!
+            {
                 return;
+            }
 
             // Multiply object matrix by render matrix.
             renderMatrix = objectMatrix * renderMatrix;

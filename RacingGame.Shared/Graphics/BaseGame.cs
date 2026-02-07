@@ -237,7 +237,9 @@ namespace RacingGame.Graphics
             GraphicsDevice device = Device;
 
             if (device == null)
+            {
                 throw new InvalidOperationException("Device is not created yet!");
+            }
 
             alreadyCheckedGraphicsOptions = true;
 
@@ -269,7 +271,9 @@ namespace RacingGame.Graphics
             get
             {
                 if (alreadyCheckedGraphicsOptions == false)
+                {
                     CheckOptionsAndPSVersion();
+                }
 
                 return highDetail;
             }
@@ -285,7 +289,9 @@ namespace RacingGame.Graphics
             get
             {
                 if (alreadyCheckedGraphicsOptions == false)
+                {
                     CheckOptionsAndPSVersion();
+                }
 
                 return allowShadowMapping;
             }
@@ -1188,7 +1194,10 @@ namespace RacingGame.Graphics
                 ViewProjectionMatrix);
 
             if (result4.W == 0)
+            {
                 result4.W = BaseGame.Epsilon;
+            }
+
             Vector3 result = new Vector3(
                 result4.X / result4.W,
                 result4.Y / result4.W,
@@ -1244,7 +1253,10 @@ namespace RacingGame.Graphics
                 // for very far objects (z >> 5) only pass if near to +- 1.0f
                 float zDist = Math.Abs(result.Z);
                 if (zDist < 5.0f)
+                {
                     return true;
+                }
+
                 checkOffset = 1.0f + (checkOffset / zDist);
 
                 return
@@ -1350,7 +1362,9 @@ namespace RacingGame.Graphics
 
             // Make sure elapsedTimeThisFrameInMs is never 0
             if (elapsedTimeThisFrameInMs <= 0)
+            {
                 elapsedTimeThisFrameInMs = 0.001f;
+            }
 
             // Increase frame counter for FramesPerSecond
             frameCountThisSecond++;
@@ -1373,18 +1387,30 @@ namespace RacingGame.Graphics
                 // Check out if our framerate is running very low. Then we can improve
                 // rendering by reducing the number of objects we draw.
                 if (fpsInterpolated < 5)
+                {
                     Model.MaxViewDistance = 50;
+                }
                 else if (fpsInterpolated < 12)
+                {
                     Model.MaxViewDistance = 70;
+                }
                 else if (fpsInterpolated < 16)
+                {
                     Model.MaxViewDistance = 90;
+                }
                 else if (fpsInterpolated < 20)
+                {
                     Model.MaxViewDistance = 120;
+                }
                 else if (fpsInterpolated < 25)
+                {
                     Model.MaxViewDistance = 150;
+                }
                 else if (fpsInterpolated < 30 ||
-                    HighDetail == false)
+                         HighDetail == false)
+                {
                     Model.MaxViewDistance = 175;
+                }
             }
 
             // Update sound and music
@@ -1613,7 +1639,10 @@ namespace RacingGame.Graphics
         {
             Device.SetRenderTarget(renderTarget);
             if (isSceneRenderTarget)
+            {
                 remSceneRenderTarget = renderTarget;
+            }
+
             lastSetRenderTarget = renderTarget;
         }
 

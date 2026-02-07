@@ -291,7 +291,9 @@ namespace RacingGame.Shaders
             {
                 // Faster, we checked world matrix in constructor.
 				if (world != null)
+                {
                     world.SetValue(value);
+                }
             }
         }
 
@@ -585,8 +587,10 @@ namespace RacingGame.Shaders
         public ShaderEffect(string shaderName)
         {
             if (BaseGame.Device == null)
+            {
                 throw new InvalidOperationException(
                     "XNA device is not initialized, can't create ShaderEffect.");
+            }
 
             shaderContentName = Path.GetFileNameWithoutExtension(shaderName);
 
@@ -614,7 +618,9 @@ namespace RacingGame.Shaders
             {
                 // Dispose shader effect
                 if (effect != null)
+                {
                     effect.Dispose();
+                }
             }
         }
         #endregion
@@ -692,20 +698,35 @@ namespace RacingGame.Shaders
         public virtual void SetParameters(Material setMat)
         {
             if (worldViewProj != null)
+            {
                 worldViewProj.SetValue(BaseGame.WorldViewProjectionMatrix);
+            }
+
             if (viewProj != null)
+            {
                 viewProj.SetValue(BaseGame.ViewProjectionMatrix);
+            }
+
             if (world != null)
+            {
                 world.SetValue(BaseGame.WorldMatrix);
+            }
+
             if (viewInverse != null)
             {
                 if (viewInverse.ParameterClass == EffectParameterClass.Matrix)
+                {
                     viewInverse.SetValue(BaseGame.InverseViewMatrix);
+                }
                 else
+                {
                     viewInverse.SetValue(BaseGame.InverseViewMatrix.Translation);
+                }
             }
             if (lightDir != null)
+            {
                 lightDir.SetValue(BaseGame.LightDirection);
+            }
 
             // Set the reflection cube texture only once
             if (lastUsedReflectionCubeTexture == null &&
@@ -743,15 +764,29 @@ namespace RacingGame.Shaders
         public virtual void SetParametersOptimizedGeneral()
         {
             if (worldViewProj != null)
+            {
                 worldViewProj.SetValue(BaseGame.WorldViewProjectionMatrix);
+            }
+
             if (viewProj != null)
+            {
                 viewProj.SetValue(BaseGame.ViewProjectionMatrix);
+            }
+
             if (world != null)
+            {
                 world.SetValue(BaseGame.WorldMatrix);
+            }
+
             if (viewInverse != null)
-				viewInverse.SetValue(BaseGame.InverseViewMatrix.Translation);
+            {
+                viewInverse.SetValue(BaseGame.InverseViewMatrix.Translation);
+            }
+
             if (lightDir != null)
+            {
                 lightDir.SetValue(BaseGame.LightDirection);
+            }
 
             // Set the reflection cube texture only once
             if (lastUsedReflectionCubeTexture == null &&
@@ -776,7 +811,9 @@ namespace RacingGame.Shaders
         public virtual void SetParametersOptimized(Material setMat)
         {
             if (setMat == null)
+            {
                 throw new ArgumentNullException("setMat");
+            }
 
             // No need to set world matrix, will be done later in mesh rendering
             // in the MeshRenderManager. All the rest is set with help of the
@@ -788,9 +825,14 @@ namespace RacingGame.Shaders
             diffuseColor.SetValue(setMat.diffuseColor.ToVector4());
             specularColor.SetValue(setMat.specularColor.ToVector4());
             if (setMat.diffuseTexture != null)
+            {
                 diffuseTexture.SetValue(setMat.diffuseTexture.XnaTexture);
+            }
+
             if (setMat.normalTexture != null)
+            {
                 normalTexture.SetValue(setMat.normalTexture.XnaTexture);
+            }
         }
         #endregion
 
@@ -819,9 +861,14 @@ namespace RacingGame.Shaders
             BaseGame.RenderHandler renderCode)
         {
             if (techniqueName == null)
+            {
                 throw new ArgumentNullException("techniqueName");
+            }
+
             if (renderCode == null)
+            {
                 throw new ArgumentNullException("renderCode");
+            }
 
             SetParameters(setMat);
 
@@ -861,7 +908,9 @@ namespace RacingGame.Shaders
             BaseGame.RenderHandler renderCode)
         {
             if (renderCode == null)
+            {
                 throw new ArgumentNullException("renderCode");
+            }
 
             // Start effect (current technique should be set)
 
