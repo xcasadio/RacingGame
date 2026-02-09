@@ -377,11 +377,8 @@ class TrackColumns : IDisposable
 
         BaseGame.Device.SetVertexBuffer(columnVb);
         BaseGame.Device.Indices = columnIb;
-        BaseGame.Device.DrawIndexedPrimitives(
-            PrimitiveType.TriangleList,
-            0, 0, columnVertices.Length,
-            0, (BaseColumnVertices.Length - 1) *
-               columnPositions.Count * 2);
+        BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 
+            (BaseColumnVertices.Length - 1) * columnPositions.Count * 2);
     }
     #endregion
 }

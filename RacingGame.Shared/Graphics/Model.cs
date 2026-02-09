@@ -549,10 +549,7 @@ public class Model : IDisposable
                             BaseGame.Device.Indices = part.IndexBuffer;
 
                             // And render all primitives
-                            BaseGame.Device.DrawIndexedPrimitives(
-                                PrimitiveType.TriangleList,
-                                part.VertexOffset, 0, part.NumVertices,
-                                part.StartIndex, part.PrimitiveCount);
+                            BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, part.VertexOffset, part.StartIndex, part.PrimitiveCount);
                         }
                     }
                 });
@@ -756,10 +753,7 @@ public class Model : IDisposable
                 // this method is internal and can't be used by us :(
                 BaseGame.Device.SetVertexBuffer(part.VertexBuffer);
                 BaseGame.Device.Indices = part.IndexBuffer;
-                BaseGame.Device.DrawIndexedPrimitives(
-                    PrimitiveType.TriangleList,
-                    part.VertexOffset, 0,
-                    part.NumVertices, part.StartIndex, part.PrimitiveCount);
+                BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, part.VertexOffset, part.StartIndex, part.PrimitiveCount);
             }
         }
     }
@@ -831,10 +825,7 @@ public class Model : IDisposable
                 // this method is internal and can't be used by us :(
                 BaseGame.Device.SetVertexBuffer(part.VertexBuffer);
                 BaseGame.Device.Indices = part.IndexBuffer;
-                BaseGame.Device.DrawIndexedPrimitives(
-                    PrimitiveType.TriangleList,
-                    part.VertexOffset, 0,
-                    part.NumVertices, part.StartIndex, part.PrimitiveCount);
+                BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, part.VertexOffset, part.StartIndex, part.PrimitiveCount);
             }
         }
     }

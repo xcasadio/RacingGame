@@ -213,9 +213,8 @@ public static class VBScreenHelper
             // Rendering is pretty straight forward (if you know how anyway).
             BaseGame.Device.SetVertexBuffer(vertexBuffer);
             BaseGame.Device.Indices = indexBuffer;
-            BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList,
-                0, 0, gridWidth * gridHeight,
-                0, (gridWidth - 1) * (gridHeight - 1) * 2);
+            BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 
+                (gridWidth - 1) * (gridHeight - 1) * 2);
         }
         #endregion
     }

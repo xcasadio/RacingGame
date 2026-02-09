@@ -147,9 +147,7 @@ public class MeshRenderManager
             // And render (this call takes the longest, we can't optimize
             // it any further because the vertexBuffer and indexBuffer are
             // WriteOnly, we can't combine it or optimize it any more).
-            BaseGame.Device.DrawIndexedPrimitives(
-                PrimitiveType.TriangleList,
-                baseVertex, 0, numVertices, startIndex, primitiveCount);
+            BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex, startIndex, primitiveCount);
         }
 
         /// <summary>

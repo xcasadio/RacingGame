@@ -1221,9 +1221,7 @@ public class Track : TrackLine, IDisposable
     {
         BaseGame.Device.SetVertexBuffer(roadVb);
         BaseGame.Device.Indices = roadIb;
-        BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList,
-            0, 0, points.Count * 5,
-            0, (points.Count - 1) * 8);
+        BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, (points.Count - 1) * 8);
     }
 
     /// <summary>
@@ -1233,9 +1231,7 @@ public class Track : TrackLine, IDisposable
     {
         BaseGame.Device.SetVertexBuffer(roadBackVb);
         BaseGame.Device.Indices = roadBackIb;
-        BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList,
-            0, 0, points.Count * 4,
-            0, (points.Count - 1) * 6);
+        BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, (points.Count - 1) * 6);
     }
 
     /// <summary>
@@ -1254,9 +1250,7 @@ public class Track : TrackLine, IDisposable
         // Render vertices
         BaseGame.Device.SetVertexBuffer(roadTunnelVb);
         BaseGame.Device.Indices = roadTunnelIb;
-        BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList,
-            0, 0, roadTunnelVertices.Length,
-            0, roadTunnelIndices.Length / 3);
+        BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, roadTunnelIndices.Length / 3);
 
         // Restore culling (default is always counter clockwise)
         BaseGame.Device.RasterizerState = RasterizerState.CullCounterClockwise;
