@@ -54,52 +54,33 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
 
 ## Code Quality (QUAL)
 
-### 📋 QUAL-001 : Supprimer les directives préprocesseur obsolètes
+### ✅ QUAL-001 : Supprimer les directives préprocesseur obsolètes
 - **Priorité** : Haute
-- **Description** : Blocs `#if !XBOX360`, `#if GAMERSERVICES`, `#if NETFX_CORE`, `#if XBOXONE` dans de nombreux fichiers.
-- **Plan** :
-  1. Identifier tous les blocs conditionnels avec grep
-  2. Supprimer les branches Xbox/GamerServices/NETFX_CORE qui ne s'appliquent plus à MonoGame Desktop
-  3. Conserver uniquement `#if WINDOWS` si nécessaire
-- **Fichiers concernés** : `Input.cs`, `FileHelper.cs`, `Log.cs`, `ScreenshotCapturer.cs`, `BaseGame.cs`, `GameSettings.cs`, `Replay.cs`
+- **Statut** : Implémenté — Tous les blocs `#if XBOX360`, `#if GAMERSERVICES`, `#if NETFX_CORE`, `#if XBOXONE` supprimés de 11 fichiers (203 suppressions). Commit `546fa65`.
 
-### 📋 QUAL-002 : Convertir les champs publics en propriétés
+### ✅ QUAL-002 : Convertir les champs publics en propriétés
 - **Priorité** : Moyenne
-- **Description** : Champs publics dans `RacingGameManager.cs` (`currentCarNumber`, `currentCarColor`), `SpringPhysicsObject.cs` (`pos`, `velocity`, `force`), `RandomHelper.cs` (`globalRandomGenerator`).
-- **Plan** : Encapsuler chaque champ public en propriété avec getter/setter appropriés.
+- **Statut** : Implémenté — `currentCarNumber/Color/colorSelectionTexture` → `CurrentCarNumber/CurrentCarColor/ColorSelectionTexture`, `globalRandomGenerator` → `GlobalRandomGenerator`, `SpringPhysicsObject.pos/velocity/force` → `Pos/Velocity/Force`. Commit `34f96a1`.
 
-### 📋 QUAL-003 : Réduire l'utilisation excessive des #region
+### ✅ QUAL-003 : Réduire l'utilisation excessive des #region
 - **Priorité** : Basse
-- **Description** : Usage massif de `#region` dans toutes les classes, symptôme de classes trop grandes.
-- **Plan** : En parallèle avec ARCH-001/002, extraire des classes plus petites. Les `#region` disparaîtront naturellement.
+- **Statut** : Implémenté — Blocs `#region File Description ... #endregion` et `#region Using directives` supprimés de 55 fichiers via `scripts/clean_regions.py` (709 suppressions). Commit `c8e1c35`.
 
-### 📋 QUAL-004 : Extraire les magic numbers en constantes nommées
+### ✅ QUAL-004 : Extraire les magic numbers en constantes nommées
 - **Priorité** : Haute
-- **Description** : Centaines de valeurs magiques dans `CarPhysics.cs`, `ChaseCamera.cs`, `Player.cs`, `Landscape.cs`.
-- **Plan** :
-  1. Identifier chaque valeur magique significative
-  2. La remplacer par une constante nommée avec un commentaire explicatif
-  3. Valeurs candidates : `2593.0f` (GameOverCameraRotationDivisor), `17.523456789f`, `0.93f` (braking friction), etc.
+- **Statut** : Implémenté — 30+ constantes nommées ajoutées dans `CarPhysics.cs` (#region Constants) : `PitchSpringFriction`, `RotationFrictionFactor`, `KeyboardRotationDivisor`, `GlancingCollisionWobbleFactor`, etc. `GameOverCameraRotationPeriodMs` ajouté dans `Player.cs`. Commit `04ab63b`.
 
-### 📋 QUAL-005 : Décomposer les méthodes trop longues
+### ✅ QUAL-005 : Décomposer les méthodes trop longues
 - **Priorité** : Haute
-- **Description** : `CarPhysics.Update()` (~350 lignes), `Options.Render()` (~300 lignes), `Landscape.Render()`, `Track.GenerateVertices()`.
-- **Plan** :
-  1. `CarPhysics.Update()` → `HandleSteering()`, `HandleAcceleration()`, `HandleBraking()`, `HandleCollisionDetection()`, `UpdatePosition()`
-  2. `Options.Render()` → `RenderResolutionOptions()`, `RenderGraphicsOptions()`, `RenderAudioOptions()`
+- **Statut** : Implémenté — `CarPhysics.Update()` → `HandleRotations()`, `HandleViewDistance()`, `HandleSpeed()`, `UpdateTrackAndPhysics()`. `Options.Render()` → `RenderMenuBackground()`, `RenderResolutionOptions()`, `RenderGraphicsOptions()`, `RenderAudioSliders()`, `RenderSelectionArrow()`. Commit `a25550a`.
 
-### 📋 QUAL-006 : Nettoyer le code mort et les commentaires inutiles
+### ✅ QUAL-006 : Nettoyer le code mort et les commentaires inutiles
 - **Priorité** : Moyenne
-- **Description** : Grands blocs de code commenté dans `BaseGame.cs`, `CarSelection.cs`, `Help.cs`, commentaires XML vides.
-- **Plan** : Passer en revue chaque fichier et supprimer le code mort identifié.
+- **Statut** : Implémenté — Suppression UWP blocks dans `BaseGame.cs` (handler `graphics_PrepareDevice` vide + enregistrement, champ `CurrentPlatform`, `//TODO:` etc.), alternative `//try1:` dans `CarSelection.cs`. Commit `b315d35`.
 
-### 📋 QUAL-007 : Implémenter IDisposable correctement
+### ✅ QUAL-007 : Implémenter IDisposable correctement
 - **Priorité** : Haute
-- **Description** : `ShaderEffect` instances statiques jamais disposées, `RenderTarget2D` et `Effect` non nettoyés.
-- **Plan** :
-  1. Identifier toutes les ressources GPU allouées
-  2. Implémenter `Dispose()` dans `BaseGame` avec appel en override de `UnloadContent()`
-  3. Utiliser `using` statements ou `Dispose()` explicite pour les effets
+- **Statut** : Implémenté — `ShaderEffect.DisposeAll()` dispose les 5 shaders statiques. `BaseGame.Dispose(bool)` dispose `ui`, `lineManager2D`, `lineManager3D` et appelle `DisposeAll()`. `RacingGameManager.Dispose(bool)` dispose `landscape`. Commit `d9ca42a`.
 
 ---
 
