@@ -307,6 +307,17 @@ public class CarPhysics : BasePlayer
     /// </summary>
     const float WheelMovementSpeed = 1.0f;
 
+    /// <summary>Seconds of gamepad vibration remaining after the last collision.</summary>
+    private float _vibrationRemainingSeconds = 0f;
+    /// <summary>Duration of vibration for a glancing collision (seconds).</summary>
+    private const float GlancingVibrationDuration = 0.25f;
+    /// <summary>Duration of vibration for a frontal collision (seconds).</summary>
+    private const float FrontalVibrationDuration = 0.40f;
+    /// <summary>Vibration intensity for a glancing collision (0..1).</summary>
+    private const float GlancingVibrationIntensity = 0.35f;
+    /// <summary>Vibration intensity for a frontal collision (0..1).</summary>
+    private const float FrontalVibrationIntensity = 0.85f;
+
     /// <summary>
     /// Rotate car after collision.
     /// </summary>
@@ -568,6 +579,17 @@ public class CarPhysics : BasePlayer
     public override void Update()
     {
         base.Update();
+
+        // Decay gamepad vibration over time and stop it when the timer expires.
+        if (_vibrationRemainingSeconds > 0f)
+        {
+            _vibrationRemainingSeconds -= BaseGame.MoveFactorPerSecond;
+            if (_vibrationRemainingSeconds <= 0f)
+            {
+                _vibrationRemainingSeconds = 0f;
+                GamePad.SetVibration(PlayerIndex.One, 0f, 0f);
+            }
+        }
 
         // Don't use the car position and car handling if in free camera mode.
         if (RacingGameManager.Player.FreeCamera)
@@ -974,6 +996,25 @@ public class CarPhysics : BasePlayer
     }
 
     /// <summary>
+    /// Triggers gamepad vibration for <paramref name="durationSeconds"/> at the given
+    /// <paramref name="intensity"/> when the option is enabled and a gamepad is connected.
+    /// A running vibration is extended if the new request is stronger.
+    /// </summary>
+    private void ApplyVibration(float intensity, float durationSeconds)
+    {
+        if (!GameSettings.Default.GamepadVibration || !Input.IsGamePadConnected)
+            return;
+
+        // Only start/override when stronger than the current vibration.
+        if (intensity > 0f || _vibrationRemainingSeconds <= 0f)
+        {
+            GamePad.SetVibration(PlayerIndex.One, intensity, intensity);
+            if (durationSeconds > _vibrationRemainingSeconds)
+                _vibrationRemainingSeconds = durationSeconds;
+        }
+    }
+
+    /// <summary>
     /// Updates the car's track-segment position, aligns <c>carUp</c>/<c>carDir</c>
     /// to the road surface, sets guard-rail bounds and checks for collisions.
     /// Called from <see cref="Update"/> each frame.
@@ -1174,6 +1215,7 @@ public class CarPhysics : BasePlayer
                 {
                     // Play crash sound
                     Sound.PlayCrashSound(false);
+                    ApplyVibration(GlancingVibrationIntensity, GlancingVibrationDuration);
 
                     // For front wheels to full collision rotation, for back half!
                     if (num < 2)
@@ -1211,6 +1253,7 @@ public class CarPhysics : BasePlayer
 
                     // Play crash sound
                     Sound.PlayCrashSound(true);
+                    ApplyVibration(FrontalVibrationIntensity, FrontalVibrationDuration);
 
                     // Shake camera
                     ChaseCamera.WobbleCamera(FrontalCollisionWobbleFactor * speed);
@@ -1255,6 +1298,7 @@ public class CarPhysics : BasePlayer
                 {
                     // Play crash sound
                     Sound.PlayCrashSound(false);
+                    ApplyVibration(GlancingVibrationIntensity, GlancingVibrationDuration);
 
                     // For front wheels to full collision rotation, for back half!
                     if (num < 2)
@@ -1292,6 +1336,7 @@ public class CarPhysics : BasePlayer
 
                     // Play crash sound
                     Sound.PlayCrashSound(true);
+                    ApplyVibration(FrontalVibrationIntensity, FrontalVibrationDuration);
 
                     // Shake camera
                     ChaseCamera.WobbleCamera(FrontalCollisionWobbleFactor * speed);
