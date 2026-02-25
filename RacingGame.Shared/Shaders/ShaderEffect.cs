@@ -605,6 +605,19 @@ public class ShaderEffect : IDisposable
             }
         }
     }
+
+    /// <summary>
+    /// Disposes all static shader instances owned by <see cref="ShaderEffect"/>.
+    /// Should be called once when the game exits (e.g. from BaseGame.Dispose).
+    /// </summary>
+    public static void DisposeAll()
+    {
+        lineRendering?.Dispose();        lineRendering        = null;
+        lighting?.Dispose();             lighting             = null;
+        normalMapping?.Dispose();        normalMapping        = null;
+        landscapeNormalMapping?.Dispose(); landscapeNormalMapping = null;
+        shadowMapping?.Dispose();        shadowMapping        = null;
+    }
     #endregion
 
     #region Reload effect

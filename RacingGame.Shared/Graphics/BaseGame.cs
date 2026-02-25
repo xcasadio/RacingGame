@@ -1577,4 +1577,22 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
         }
     }
     #endregion
+
+    #region Dispose
+    /// <summary>
+    /// Disposes managed GPU resources: UI renderer, line managers and all static shaders.
+    /// Called automatically by the MonoGame framework when the game window closes.
+    /// </summary>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            ui?.Dispose();             ui            = null;
+            lineManager2D?.Dispose();  lineManager2D  = null;
+            lineManager3D?.Dispose();  lineManager3D  = null;
+            ShaderEffect.DisposeAll();
+        }
+        base.Dispose(disposing);
+    }
+    #endregion
 }

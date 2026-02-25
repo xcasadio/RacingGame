@@ -526,4 +526,18 @@ public class RacingGameManager : BaseGame
         }
     }
     #endregion
+
+    #region Dispose
+    /// <summary>
+    /// Disposes the landscape and delegates to base for GPU resources.
+    /// </summary>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            landscape?.Dispose();  landscape = null;
+        }
+        base.Dispose(disposing);
+    }
+    #endregion
 }
