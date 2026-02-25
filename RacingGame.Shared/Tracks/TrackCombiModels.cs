@@ -11,9 +11,6 @@
 
 using System.Xml.Serialization;
 using RacingGame.Landscapes;
-#if NETFX_CORE
-using Serializable = System.Runtime.Serialization.DataContractAttribute;
-#endif
 #endregion
 
 namespace RacingGame.Tracks;

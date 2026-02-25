@@ -10,9 +10,6 @@
 #region Using directives
 
 using System.Xml.Serialization;
-#if NETFX_CORE
-using Serializable = System.Runtime.Serialization.DataContractAttribute;
-#endif
 #endregion
 
 namespace RacingGame.Tracks;

@@ -14,9 +14,6 @@ using RacingGame.Helpers;
 using RacingGame.Properties;
 using RacingGame.Shaders;
 using RacingGame.Sounds;
-#if GAMERSERVICES
-using Microsoft.Xna.Framework.GamerServices;
-#endif
 using RacingGame.GameScreens;
 #endregion
 
@@ -184,14 +181,6 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
                (int)(totalTimeMs / checkMilliseconds);
     }
 
-#if GAMERSERVICES
-        private static GamerServicesComponent gamerServicesComponent = null;
-        public static GamerServicesComponent GamerServicesComponent
-        {
-            get { return gamerServicesComponent; }
-        }
-#endif
-
     #endregion
 
     #region Properties
@@ -323,21 +312,12 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
                 GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
         }
 
-#if XBOX360 || XBOXONE
-            // Xbox 360 graphics settings are fixed
-            graphicsManager.IsFullScreen = true;
-            graphicsManager.PreferredBackBufferWidth =
-                GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-            graphicsManager.PreferredBackBufferHeight =
-                GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
-#else
         graphicsManager.PreferredBackBufferWidth = resolutionWidth;
         graphicsManager.PreferredBackBufferHeight = resolutionHeight;
         graphicsManager.IsFullScreen = GameSettings.Default.Fullscreen;
         graphicsManager.GraphicsDevice.Viewport = new Viewport (0, 0, resolutionWidth, resolutionHeight);
 
         mustApplyDeviceChanges = true;
-#endif
     }
     #endregion
 
@@ -1019,10 +999,6 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
     /// <param name="setWindowsTitle">Set windows title</param>
     protected BaseGame(string setWindowsTitle)
     {
-#if GAMERSERVICES
-            gamerServicesComponent = new GamerServicesComponent(this);
-            base.Components.Add(gamerServicesComponent);
-#endif
         // Set graphics
         graphicsManager = new GraphicsDeviceManager(this);
         graphicsManager.GraphicsProfile = GraphicsProfile.HiDef;
@@ -1090,11 +1066,9 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
     /// </summary>
     protected override void Initialize()
     {
-#if !XBOX360
         // Add screenshot capturer. Note: Don't do this in constructor,
         // we need the correct window name for screenshots!
         this.Components.Add(new ScreenshotCapturer(this));
-#endif
 
         base.Initialize();
 

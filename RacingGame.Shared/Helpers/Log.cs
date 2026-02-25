@@ -31,7 +31,6 @@ namespace RacingGame.Helpers;
 public static class Log
 {
     #region Variables
-#if !XBOX360
     /// <summary>
     /// Writer
     /// </summary>
@@ -41,7 +40,6 @@ public static class Log
     /// Log filename
     /// </summary>
     private const string LogFilename = "Log.txt";
-#endif
     #endregion
 
     #region Static constructor to create log file
@@ -50,7 +48,6 @@ public static class Log
     /// </summary>
     public static void Initialize()
     {
-#if !XBOX360 && !NETFX_CORE && !XBOXONE
         try
         {
             IsolatedStorageFile isolatedStorageFile = IsolatedStorageFile.GetUserStoreForDomain();
@@ -107,7 +104,6 @@ public static class Log
             // Ignore any file exceptions, if file is not
             // createable (e.g. on a CD-Rom) it doesn't matter.
         }
-#endif
     }
     #endregion
 
@@ -117,7 +113,6 @@ public static class Log
     /// </summary>
     static public void Write(string message)
     {
-#if !XBOX360 && !XBOXONE
         // Can't continue without valid writer
         if (writer == null)
         {
@@ -148,7 +143,6 @@ public static class Log
             // Ignore any file exceptions, if file is not
             // createable (e.g. on a CD-Rom) it doesn't matter.
         }
-#endif
     }
     #endregion
 }

@@ -8,7 +8,6 @@
 #endregion
 
 // Does not work on the Xbox360, no Save method in the Texture class!
-#if !XBOX360
 
 #region Using Statements
 
@@ -168,4 +167,3 @@ public partial class ScreenshotCapturer : GameComponent
     }
     #endregion
 }
-#endif

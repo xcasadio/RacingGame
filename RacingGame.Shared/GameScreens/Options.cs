@@ -111,7 +111,6 @@ class Options : IGameScreen
     {
         Input.HandleKeyboardInput(ref currentPlayerName);
 
-#if !XBOX360
         // Resolution buttons
         Rectangle res0Rect = BaseGame.CalcRectangleKeep4To3(Resolution640x480GfxRect);
         res0Rect.Y += BaseGame.YToRes768(125);
@@ -158,7 +157,6 @@ class Options : IGameScreen
         hdRect.Y += BaseGame.YToRes768(125);
         if (Input.MouseInBox(hdRect) && Input.MouseLeftButtonJustPressed)
         { Sound.Play(Sound.Sounds.ButtonClick); useHighDetail = !useHighDetail; }
-#endif
 
         // Sound slider
         Rectangle soundRect = BaseGame.CalcRectangleKeep4To3(SoundGfxRect);
@@ -301,7 +299,6 @@ class Options : IGameScreen
             ((int)(BaseGame.TotalTime / 0.35f) % 2 == 0 ? "|" : ""));
         #endregion
 
-#if !XBOX360
         #region Resolution selection highlight
         Color selColor = new Color(255, 156, 0, 160);
 
@@ -361,7 +358,6 @@ class Options : IGameScreen
             BaseGame.UI.OptionsScreen.RenderOnScreen(
                 hdRect, HighDetailGfxRect, selColor, BlendState.AlphaBlend);
         #endregion
-#endif
 
         #region Sound slider
         Rectangle soundRect = BaseGame.CalcRectangleKeep4To3(SoundGfxRect);

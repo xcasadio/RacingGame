@@ -24,12 +24,10 @@ namespace RacingGame.GameLogic;
 public static class Input
 {
     #region Variables
-#if !XBOX360
     /// <summary>
     /// Mouse state, set every frame in the Update method.
     /// </summary>
     private static MouseState mouseState, mouseStateLastFrame;
-#endif
 
     /// <summary>
     /// Was a mouse detected? Returns true if the user moves the mouse.
@@ -67,9 +65,7 @@ public static class Input
     /// </summary>
     /// <returns>0</returns>
     private static int mouseWheelDelta = 0;
-#if !XBOX360
     private static int mouseWheelValue = 0;
-#endif
 
     /// <summary>
     /// Start dragging pos, will be set when we just pressed the left
@@ -101,21 +97,15 @@ public static class Input
     {
         get
         {
-#if !XBOX360
             return new Point(mouseState.X, mouseState.Y);
-#else
-                return Point.Zero;
-#endif
         }
     }
 
     /// <summary>
     /// X and y movements of the mouse this frame
     /// </summary>
-#if !XBOX360
     private static float mouseXMovement, mouseYMovement;
     private static float lastMouseXMovement, lastMouseYMovement;
-#endif
 
     /// <summary>
     /// Mouse x movement
@@ -125,11 +115,7 @@ public static class Input
     {
         get
         {
-#if !XBOX360
             return mouseXMovement;
-#else
-                return 0;
-#endif
         }
     }
 
@@ -141,11 +127,7 @@ public static class Input
     {
         get
         {
-#if !XBOX360
             return mouseYMovement;
-#else
-                    return 0;
-#endif
         }
     }
 
@@ -157,13 +139,11 @@ public static class Input
     {
         get
         {
-#if !XBOX360
             //TODO: Introduce a mouse movement threshold constant
             if (MouseXMovement > 1 || MouseYMovement > 1)
             {
                 return true;
             }
-#endif
             return false;
         }
     }
@@ -176,11 +156,7 @@ public static class Input
     {
         get
         {
-#if !XBOX360
             return mouseState.LeftButton == ButtonState.Pressed;
-#else
-                return false;
-#endif
         }
     }
 
@@ -192,11 +168,7 @@ public static class Input
     {
         get
         {
-#if !XBOX360
             return mouseState.RightButton == ButtonState.Pressed;
-#else
-                return false;
-#endif
         }
     }
 
@@ -208,11 +180,7 @@ public static class Input
     {
         get
         {
-#if !XBOX360
             return mouseState.MiddleButton == ButtonState.Pressed;
-#else
-                return false;
-#endif
         }
     }
 
@@ -224,12 +192,8 @@ public static class Input
     {
         get
         {
-#if !XBOX360
             return mouseState.LeftButton == ButtonState.Pressed &&
                    mouseStateLastFrame.LeftButton == ButtonState.Released;
-#else
-                return false;
-#endif
         }
     }
 
@@ -244,12 +208,8 @@ public static class Input
     {
         get
         {
-#if !XBOX360
             return mouseState.RightButton == ButtonState.Pressed &&
                    mouseStateLastFrame.RightButton == ButtonState.Released;
-#else
-                return false;
-#endif
         }
     }
 
@@ -297,7 +257,6 @@ public static class Input
     /// <returns>Bool</returns>
     public static bool MouseInBox(Rectangle rect)
     {
-#if !XBOX360
         bool ret = mouseState.X >= rect.X &&
                    mouseState.Y >= rect.Y &&
                    mouseState.X < rect.Right &&
@@ -315,9 +274,6 @@ public static class Input
         }
 
         return ret;
-#else
-            return false;
-#endif
     }
 
     /// <summary>
@@ -965,10 +921,6 @@ public static class Input
     /// </summary>
     internal static void Update()
     {
-#if XBOX360
-            // No mouse support on the XBox360 yet :(
-            mouseDetected = false;
-#else
         // Handle mouse input variables
         mouseStateLastFrame = mouseState;
         mouseState = Microsoft.Xna.Framework.Input.Mouse.GetState();
@@ -1012,7 +964,6 @@ public static class Input
                             mouseState.Y != mouseStateLastFrame.Y ||
                             mouseState.LeftButton != mouseStateLastFrame.LeftButton;
         }
-#endif
 
         // Handle keyboard input
         keysPressedLastFrame = new HashSet<Keys>(keyboardState.GetPressedKeys());

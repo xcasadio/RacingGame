@@ -10,9 +10,6 @@
 #region Using directives
 
 using System.Threading;
-#if GAMERSERVICES
-using Microsoft.Xna.Framework.GamerServices;
-#endif
 
 #endregion
 
@@ -39,56 +36,6 @@ public static class FileHelper
     #region StorageDevice
 
     public static ManualResetEvent StorageContainerMRE = new ManualResetEvent(true);
-
-#if GAMERSERVICES
-        /// <summary>
-        /// XNA user device, asks for the saving location on the Xbox360,
-        /// theirfore remember this device for the time we run the game.
-        /// </summary>
-        static StorageDevice xnaUserDevice = null;
-
-        /// <summary>
-        /// Xna user device
-        /// </summary>
-        /// <returns>Storage device</returns>
-        public static StorageDevice XnaUserDevice
-        {
-            get
-            {
-                if ((xnaUserDevice != null) && !xnaUserDevice.IsConnected)
-                {
-                    xnaUserDevice = null;
-                }
-                // Create if not created yet.
-                if (xnaUserDevice == null)
-                {
-                    if (Guide.IsVisible)
-                    {
-                        return null;
-                    }
-                    IAsyncResult async = StorageDevice.BeginShowSelector(PlayerIndex.One, null, null);
-
-                    async.AsyncWaitHandle.WaitOne();
-
-                    xnaUserDevice = StorageDevice.EndShowSelector(async);
-#if XBOX360
-                    if (!Guide.IsVisible)
-                    {
-                        BaseGame.GamerServicesComponent.Update(new GameTime());
-                    }
-                    if (Guide.IsVisible)
-                    {
-                        Thread.Sleep(10);
-                        BaseGame.GamerServicesComponent.Update(new GameTime());
-                        BaseGame.graphicsManager.GraphicsDevice.Clear(Color.Black);
-                        BaseGame.graphicsManager.GraphicsDevice.Present();
-                    }
-#endif
-                }
-                return xnaUserDevice;
-            }
-        }
-#endif
 
     #endregion
 

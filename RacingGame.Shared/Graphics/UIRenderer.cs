@@ -273,13 +273,8 @@ public class UIRenderer : IDisposable
         background = new Texture("background.png");
         buttons = new Texture("buttons.png");
         headers = new Texture("headers.png");
-#if XBOX360
-            helpScreen = new Texture("HelpScreenXbox360.png");
-            optionsScreen = new Texture("OptionsScreenXbox360.png");
-#else
         helpScreen = new Texture("HelpScreenWindows.png");
         optionsScreen = new Texture("OptionsScreenWindows.png");
-#endif
         mouseCursor = new Texture("MouseCursor.png");
         ingame = new Texture("Ingame.png");
         trophies[0] = new Texture("pokal1");
@@ -726,45 +721,6 @@ public class UIRenderer : IDisposable
         // More distance to the screen borders on the Xbox 360 to fit better into
         // the save region. Calculate all rectangles for each platform,
         // then they will be used the same way on both platforms.
-#if XBOX360
-            // Draw all boxes and background stuff
-            Rectangle lapsRect = BaseGame.CalcRectangle1600(
-                60, 46, LapsGfxRect.Width, LapsGfxRect.Height);
-            ingame.RenderOnScreen(lapsRect, LapsGfxRect, baseUIColor);
-            
-            Rectangle timesRect = BaseGame.CalcRectangle1600(
-                60, 46, CurrentAndBestGfxRect.Width, CurrentAndBestGfxRect.Height);
-            timesRect.Y = BaseGame.Height-timesRect.Bottom;
-            ingame.RenderOnScreen(timesRect, CurrentAndBestGfxRect, baseUIColor);
-            
-            Rectangle trackNameRect = BaseGame.CalcRectangle1600(
-                60, 46, TrackNameGfxRect.Width, TrackNameGfxRect.Height);
-            trackNameRect.X = BaseGame.Width-trackNameRect.Right;
-            ingame.RenderOnScreen(trackNameRect, TrackNameGfxRect, baseUIColor);
-            Rectangle top5Rect1 = BaseGame.CalcRectangle1600(
-                60, 4, Best5GfxRect.Width, Best5GfxRect.Height);
-            top5Rect1.X = trackNameRect.X;
-            int top5Distance = top5Rect1.Y;
-            top5Rect1.Y += trackNameRect.Bottom;
-            ingame.RenderOnScreen(top5Rect1, Best5GfxRect, baseUIColor);
-            Rectangle top5Rect2 = new Rectangle(top5Rect1.X,
-                top5Rect1.Bottom+top5Distance, top5Rect1.Width, top5Rect1.Height);
-            ingame.RenderOnScreen(top5Rect2, Best5GfxRect, baseUIColor);
-            Rectangle top5Rect3 = new Rectangle(top5Rect1.X,
-                top5Rect2.Bottom+top5Distance, top5Rect1.Width, top5Rect1.Height);
-            ingame.RenderOnScreen(top5Rect3, Best5GfxRect, baseUIColor);
-            Rectangle top5Rect4 = new Rectangle(top5Rect1.X,
-                top5Rect3.Bottom+top5Distance, top5Rect1.Width, top5Rect1.Height);
-            ingame.RenderOnScreen(top5Rect4, Best5GfxRect, baseUIColor);
-            Rectangle top5Rect5 = new Rectangle(top5Rect1.X,
-                top5Rect4.Bottom+top5Distance, top5Rect1.Width, top5Rect1.Height);
-            ingame.RenderOnScreen(top5Rect5, Best5GfxRect, baseUIColor);
-
-            Rectangle tachoRect = BaseGame.CalcRectangle1600(
-                60, 46, TachoGfxRect.Width, TachoGfxRect.Height);
-            tachoRect.X = BaseGame.Width-tachoRect.Right;
-            tachoRect.Y = BaseGame.Height-tachoRect.Bottom;
-#else
         // Draw all boxes and background stuff
         Rectangle lapsRect = BaseGame.CalcRectangle1600(
             10, 10, LapsGfxRect.Width, LapsGfxRect.Height);
@@ -802,7 +758,6 @@ public class UIRenderer : IDisposable
             10, 10, TachoGfxRect.Width, TachoGfxRect.Height);
         tachoRect.X = BaseGame.Width - tachoRect.Right;
         tachoRect.Y = BaseGame.Height - tachoRect.Bottom;
-#endif
 
         // Rest can stay the same because we use the rectangles from now on
         ingame.RenderOnScreen(tachoRect, TachoGfxRect, baseUIColor);

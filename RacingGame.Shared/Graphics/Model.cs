@@ -268,16 +268,8 @@ public class Model : IDisposable
                 {
                     string techniqueNumberString = meshName.Substring(
                         meshName.Length - (1 + meshPartNum), 1);
-#if !XBOX360
                     // Faster and does not throw an exception!
                     int.TryParse(techniqueNumberString, out techniqueIndex);
-#else
-                        try
-                        {
-                            techniqueIndex = Convert.ToInt32(techniqueNumberString);
-                        }
-                        catch { }
-#endif
                 }
 
                 // No technique found or invalid?

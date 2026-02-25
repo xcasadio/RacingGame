@@ -10,9 +10,6 @@
 #region Using directives
 
 using RacingGame.Helpers;
-#if NETFX_CORE
-using Serializable = System.Runtime.Serialization.DataContractAttribute;
-#endif
 #endregion
 
 namespace RacingGame.Properties;
