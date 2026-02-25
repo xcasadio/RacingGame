@@ -3,43 +3,43 @@ MonoGame port (3.8.*) of the Racing Game starter kit
 
 >Note: All content and source code downloaded from this page is bound to the Microsoft Permissive License (Ms-PL).
 
-## Améliorations apportées
-
-Ce fork apporte une série de corrections et d'améliorations par rapport au portage MonoGame original.
-
-**Corrections de bugs**
-- Sauvegarde/chargement des paramètres (résolution, volumes, highscores) désormais fonctionnels via XML.
-- Sauvegarde des meilleurs replays entre sessions.
-- Mode plein écran réellement appliqué depuis les Options.
-- `MouseInBoxRelative` corrigé (calcul de Rectangle erroné).
-- `KeyToChar` : inversion des caractères `,` et `.` corrigée.
-- Suppression des allocations mémoire par frame (`Vector3[]` de collision, `List<Keys>` d'input).
-- `GetAngleBetweenVectors` : dot product clampé pour éviter les `NaN`.
-- Séparation Update/Render dans `Player` (le texte victoire/game-over n'est plus dessiné dans `Update`).
-- Gestion du `ManualResetEvent` avec `try/finally` pour éviter les deadlocks.
-- Gestion des exceptions sur le thread de chargement.
-- Capture d'écran implémentée (touche F12 → PNG horodaté).
-
-**Architecture & qualité**
-- Chaîne d'héritage réduite : `ChaseCamera` extrait de `CarPhysics`, devenu composition dans `Player`.
-- Séparation `Update(GameTime)` / `Render()` dans tous les GameScreens via `IGameScreen`.
-- `Sound` décomposé en `MusicManager`, `SfxManager` et `EngineSound`.
-- Stack des écrans protégée par verrou (`_screenLock`) pour la thread-safety.
-- Suppression de tous les blocs préprocesseur Xbox 360 / GamerServices / UWP obsolètes.
-- Champs publics convertis en propriétés ; magic numbers extraits en constantes nommées.
-- `IDisposable` correctement implémenté (`ShaderEffect`, `BaseGame`, `RacingGameManager`).
-- `RenderToTexture` : `SurfaceFormat.Color` par défaut au lieu de `Rgba64` (moitié moins de mémoire GPU).
-
-**Fonctionnalités**
-- Résolutions dynamiques dans les Options (tirées de `GraphicsAdapter.SupportedDisplayModes` ; préfère le 16:9 moderne).
-- Affichage du FPS configurable (option dans le menu, activable en jeu).
-- Vibration manette sur les collisions (glancing 0,35 / frontal 0,85, durée variable, option On/Off).
-- Barre de progression sur l'écran de chargement avec animation de vague sur tous les textes.
-
 ## Description
 
 The Racing Game Starter Kit is a complete game. This sample comes ready to compile and run, and it's easy to customize with a little bit of C# programming. You are free to use the source code as the basis for your own XNA Game Studio projects, and to share your work with others.
 Racing Game is a 3D auto racing game that features advanced graphics, audio, and input processing. Race around the track and try to beat the ghost car to achieve the best time.
+
+## Improvements
+
+This fork brings a series of bug fixes and improvements over the original MonoGame port.
+
+**Bug fixes**
+- Settings save/load (resolution, volumes, highscores) now working via XML.
+- Best replays saved between sessions.
+- Fullscreen mode properly applied from the Options screen.
+- `MouseInBoxRelative` fixed (incorrect Rectangle calculation).
+- `KeyToChar`: swapped `,` and `.` characters corrected.
+- Per-frame memory allocations removed (`Vector3[]` for collisions, `List<Keys>` for input).
+- `GetAngleBetweenVectors`: dot product clamped to prevent `NaN`.
+- Update/Render separated in `Player` (win/game-over text no longer drawn inside `Update`).
+- `ManualResetEvent` wrapped in `try/finally` to prevent deadlocks.
+- Exception handling added on the loading thread.
+- Screenshot capture implemented (F12 key → timestamped PNG).
+
+**Architecture & code quality**
+- Reduced inheritance chain: `ChaseCamera` extracted from `CarPhysics`, now used as composition in `Player`.
+- `Update(GameTime)` / `Render()` separated in all GameScreens via `IGameScreen`.
+- `Sound` split into `MusicManager`, `SfxManager` and `EngineSound`.
+- Screen stack protected by a lock (`_screenLock`) for thread safety.
+- All obsolete Xbox 360 / GamerServices / UWP preprocessor blocks removed.
+- Public fields converted to properties; magic numbers extracted to named constants.
+- `IDisposable` properly implemented (`ShaderEffect`, `BaseGame`, `RacingGameManager`).
+- `RenderToTexture`: defaults to `SurfaceFormat.Color` instead of `Rgba64` (half the GPU memory).
+
+**Features**
+- Dynamic resolutions in Options (sourced from `GraphicsAdapter.SupportedDisplayModes`; prefers modern 16:9).
+- Configurable FPS display (menu option, toggleable in-game).
+- Gamepad vibration on collisions (glancing 0.35 / frontal 0.85, variable duration, On/Off option).
+- Progress bar on the loading screen with wave animation on all texts.
 
 ## Screenshot
 ![image 1](/github/XNA_Racing-Game_01_small.jpg)
