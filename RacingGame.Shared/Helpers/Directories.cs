@@ -50,7 +50,11 @@ static class Directories
     {
         get
         {
-                return Path.Combine(GameBaseDirectory, "Content", "Audio");
+            return Path.Combine(GameBaseDirectory, "Content", "Audio");
+        }
+    }
+
+    /// <summary>
     /// Default Screenshots directory.
     /// </summary>
     /// <returns>String</returns>

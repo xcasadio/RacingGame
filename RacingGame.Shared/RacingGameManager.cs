@@ -389,9 +389,7 @@ public class RacingGameManager : BaseGame
         catch (Exception exc)
         {
             System.Diagnostics.Debug.WriteLine("LoadResources failed: " + exc);
-            Log.Write("LoadResources failed: " + exc.Message);
-            // Signal loading complete so the game doesn't hang on the loading screen
-            contentLoaded = true;
+            // The thread will complete and ContentLoaded will return true automatically.
         }
     }
     #endregion
