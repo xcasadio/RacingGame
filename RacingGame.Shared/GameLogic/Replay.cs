@@ -182,47 +182,30 @@ public class Replay : ICloneable
 
         try
         {
-            /*
-            StorageDevice storageDevice = FileHelper.XnaUserDevice;
-            if ((storageDevice != null) && storageDevice.IsConnected)
+            string appDataPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "RacingGame",
+                ReplayFilenames[trackNum]);
+
+            if (File.Exists(appDataPath))
             {
-                IAsyncResult async = storageDevice.BeginOpenContainer("RacingGame", null, null);
+                using FileStream stream = File.OpenRead(appDataPath);
+                using BinaryReader reader = new BinaryReader(stream);
 
-                async.AsyncWaitHandle.WaitOne();
+                lapTime = reader.ReadSingle();
+                int numOfMatrixValues = reader.ReadInt32();
+                for (int num = 0; num < numOfMatrixValues; num++)
+                    trackMatrixValues.Add(FileHelper.ReadMatrix(reader));
+                int numOfCheckpointTimes = reader.ReadInt32();
+                for (int num = 0; num < numOfCheckpointTimes; num++)
+                    checkpointTimes.Add(reader.ReadSingle());
 
-                using (StorageContainer container =
-                    storageDevice.EndOpenContainer(async))
-                {
-                    async.AsyncWaitHandle.Close();
-                    if (container.FileExists(ReplayFilenames[trackNum]))
-                    {
-                        using (Stream stream = container.OpenFile(ReplayFilenames[trackNum],
-                            FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        {
-                            using (BinaryReader reader = new BinaryReader(stream))
-                            {
-                                // Load total lap time
-                                lapTime = reader.ReadSingle();
-
-                                // Load matrix values
-                                int numOfMatrixValues = reader.ReadInt32();
-                                for (int num = 0; num < numOfMatrixValues; num++)
-                                    trackMatrixValues.Add(
-                                        FileHelper.ReadMatrix(reader));
-
-                                // Load checkpoint times
-                                int numOfCheckpointTimes = reader.ReadInt32();
-                                for (int num = 0; num < numOfCheckpointTimes; num++)
-                                    checkpointTimes.Add(reader.ReadSingle());
-                            }
-                        }
-                    }
-                }
-            }*/
+                replayFileFound = true;
+            }
         }
         catch (Exception exc)
         {
-            System.Diagnostics.Debug.WriteLine("Settings Load Failure: " + exc.ToString());
+            System.Diagnostics.Debug.WriteLine("Replay Load Failure: " + exc.ToString());
         }
         finally
         {
@@ -341,42 +324,31 @@ public class Replay : ICloneable
 
         try
         {
-            /*
-            StorageDevice storageDevice = FileHelper.XnaUserDevice;
-            if ((storageDevice != null) && storageDevice.IsConnected)
-            {
-                IAsyncResult async = storageDevice.BeginOpenContainer("RacingGame", null, null);
+            string dir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "RacingGame");
+            Directory.CreateDirectory(dir);
+            string savePath = Path.Combine(dir, ReplayFilenames[trackNum]);
 
-                async.AsyncWaitHandle.WaitOne();
+            using FileStream stream = File.Create(savePath);
+            using BinaryWriter writer = new BinaryWriter(stream);
 
-                using (StorageContainer container =
-                    storageDevice.EndOpenContainer(async))
-                {
-                    async.AsyncWaitHandle.Close();
-                    using (Stream stream = container.CreateFile(ReplayFilenames[trackNum]))
-                    {
-                        using (BinaryWriter writer = new BinaryWriter(stream))
-                        {
-                            // Save lap time
-                            writer.Write(lapTime);
+            // Save lap time
+            writer.Write(lapTime);
 
-                            // Save track matrix values
-                            writer.Write(trackMatrixValues.Count);
-                            for (int num = 0; num < trackMatrixValues.Count; num++)
-                                FileHelper.WriteMatrix(writer, trackMatrixValues[num]);
+            // Save track matrix values
+            writer.Write(trackMatrixValues.Count);
+            for (int num = 0; num < trackMatrixValues.Count; num++)
+                FileHelper.WriteMatrix(writer, trackMatrixValues[num]);
 
-                            // Save checkpoint times
-                            writer.Write(checkpointTimes.Count);
-                            for (int num = 0; num < checkpointTimes.Count; num++)
-                                writer.Write(checkpointTimes[num]);
-                        }
-                    }
-                }
-            }*/
+            // Save checkpoint times
+            writer.Write(checkpointTimes.Count);
+            for (int num = 0; num < checkpointTimes.Count; num++)
+                writer.Write(checkpointTimes[num]);
         }
         catch (Exception exc)
         {
-            System.Diagnostics.Debug.WriteLine("Settings Load Failure: " + exc.ToString());
+            System.Diagnostics.Debug.WriteLine("Replay Save Failure: " + exc.ToString());
         }
         finally
         {
