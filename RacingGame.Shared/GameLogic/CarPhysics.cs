@@ -1002,10 +1002,12 @@ public class CarPhysics : BasePlayer
     /// </summary>
     private void ApplyVibration(float intensity, float durationSeconds)
     {
-        if (!GameSettings.Default.GamepadVibration || !Input.IsGamePadConnected)
+        if (!GameSettings.Default.GamepadVibration)
             return;
 
-        // Only start/override when stronger than the current vibration.
+        // Attempt vibration regardless of IsGamePadConnected — some drivers
+        // report disconnected even when the controller is physically usable.
+        // GamePad.SetVibration returns false harmlessly if no pad is present.
         if (intensity > 0f || _vibrationRemainingSeconds <= 0f)
         {
             GamePad.SetVibration(PlayerIndex.One, intensity, intensity);

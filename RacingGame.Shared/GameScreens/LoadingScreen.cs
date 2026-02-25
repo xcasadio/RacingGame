@@ -58,21 +58,37 @@ class LoadingScreen : IGameScreen
 			_pixelTex.SetData(new[] { Color.White });
 		}
 
-		Vector2 position = new Vector2((BaseGame.Width / 2) - 50, (BaseGame.Height / 2) - 20);
+		// Vertical anchor: everything is laid out relative to this point.
+		float baseY    = (BaseGame.Height / 2f) - 50f;
+		float sineArg  = -BaseGame.TotalTime * 3f;
 
+		// The bar bounces in sync with the first letter of "Loading...".
+		float barBounce = 7f * Math.Abs((float)Math.Sin(sineArg));
+
+		// Layout (all Y values relative to baseY):
+		//   [0]        Animated "Loading..." letters
+		//   [+52]      Status text (centred)
+		//   [+90+bounce] Progress bar top
+		int statusY = (int)(baseY + 52);
+		int barYTop  = (int)(baseY + 90 + barBounce);
+
+		// Draw the progress bar FIRST so it is submitted to the sprite batch
+		// before the text characters — text is rendered in a later pass and
+		// therefore appears on top of the bar.
+		RenderProgressBar(barYTop);
+
+		// Animated "Loading..." letters — each character bounces independently.
+		float posX = (BaseGame.Width / 2f) - 50f;
 		for (int i = 0; i < loadingText.Length; i++)
 		{
 			string charStr = new string(loadingText[i], 1);
-			int charHeight = (int)(position.Y + 7 * Math.Abs(Math.Sin((i / 4f) + (-BaseGame.TotalTime * 3))));
-			TextureFont.WriteText((int)position.X, charHeight, charStr, Color.Red);
-
-			position.X += TextureFont.GetTextWidth(charStr);
+			int charY = (int)(baseY + 7 * Math.Abs(Math.Sin((i / 4f) + sineArg)));
+			TextureFont.WriteText((int)posX, charY, charStr, Color.Red);
+			posX += TextureFont.GetTextWidth(charStr);
 		}
 
-		TextureFont.WriteTextCentered(BaseGame.Width / 2, (int)position.Y + 40, loadingStatus);
-
-		// Progress bar
-		RenderProgressBar((int)position.Y + 65);
+		// Status label (e.g. "Models...", "Textures...").
+		TextureFont.WriteTextCentered(BaseGame.Width / 2, statusY, loadingStatus);
 
 		return _isFinished;
 	}
