@@ -1,5 +1,6 @@
 using RacingGame.GameLogic;
 using RacingGame.Helpers;
+using RacingGame.Properties;
 using RacingGame.Shaders;
 using RacingGame.Tracks;
 
@@ -885,13 +886,6 @@ public class UIRenderer : IDisposable
     #endregion
 
     #region Render
-    bool showFps =
-#if DEBUG
-        true;
-#else
- false;
-#endif
-
     /// <summary>
     /// Render all UI elements at the end of the frame, will also
     /// render the mouse cursor if we got a mouse attached.
@@ -930,22 +924,11 @@ public class UIRenderer : IDisposable
     /// </summary>
     public void RenderTextsAndMouseCursor()
     {
-#if DEBUG
-        // Show fps
-        if (Input.KeyboardF1JustPressed ||
-            // Also allow toggeling with gamepad
-            (Input.GamePad.Buttons.LeftShoulder == ButtonState.Pressed &&
-             Input.GamePadYJustPressed))
-        {
-            showFps = !showFps;
-        }
-#endif
-        if (showFps)
+        if (GameSettings.Default.ShowFPS)
         {
             TextureFont.WriteText(
                 BaseGame.XToRes(200), BaseGame.YToRes(26),
-                "Fps: " + BaseGame.Fps + " " +
-                BaseGame.Width + "x" + BaseGame.Height);
+                "Fps: " + BaseGame.Fps);
         }
 
         // Render font texts

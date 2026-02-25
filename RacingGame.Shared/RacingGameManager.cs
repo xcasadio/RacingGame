@@ -530,14 +530,6 @@ public class RacingGameManager : BaseGame
         }
         carSelScreen?.PostUIRender();
 
-        // Overlay FPS counter when the option is enabled.
-        if (GameSettings.Default.ShowFPS)
-        {
-            Texture.alphaSprite.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
-            TextureFont.WriteText(8, 8, $"FPS: {BaseGame.Fps}");
-            Texture.alphaSprite.End();
-        }
-
         // Do menu shader after everything
         if (BaseGame.UsePostScreenShaders && PostScreenMenu.Started)
         {
