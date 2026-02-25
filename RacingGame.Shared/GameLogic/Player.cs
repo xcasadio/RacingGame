@@ -18,14 +18,13 @@ using RacingGame.Sounds;
 namespace RacingGame.GameLogic;
 
 /// <summary>
-/// Player helper class, holds all the current game properties:
-/// Fuel, Health, Speed, Lifes and Score.
-/// Note: This class is just used in RacingGame and we only have
-/// 1 instance of it for the current player for the current game.
-/// If we want to have more than 1 player (e.g. in multiplayer mode)
-/// you should add a multiplayer class and have all player instances there.
+/// Player game-logic class. Owns the car physics (via <see cref="CarPhysics"/> inheritance)
+/// and composes a <see cref="ChaseCamera"/> instance rather than inheriting from it.
+/// This removes the conceptually incorrect "camera IS-A car physics" relationship.
+/// Note: This class is instanced once for the current player. For multiplayer you would
+/// create one Player per participant.
 /// </summary>
-public class Player : ChaseCamera
+public class Player : CarPhysics
 {
     #region Variables
     /// <summary>
@@ -62,26 +61,63 @@ public class Player : ChaseCamera
     private const float InAirTimeoutMilliseconds = 3000.0f;
     #endregion
 
+    #region Camera composition
+    /// <summary>
+    /// Chase camera that follows this player's car.
+    /// Owned by Player rather than inherited, so that camera behaviour is
+    /// fully decoupled from car physics.
+    /// </summary>
+    public ChaseCamera Camera { get; }
+
+    /// <summary>Current camera position in world space.</summary>
+    public Vector3 CameraPosition => Camera.CameraPosition;
+
+    /// <inheritdoc/>
+    public override bool FreeCamera
+    {
+        get => Camera.FreeCamera;
+        set => Camera.FreeCamera = value;
+    }
+
+    /// <inheritdoc/>
+    public override void SetCameraPosition(Vector3 position) =>
+        Camera.SetCameraPosition(position);
+
+    /// <inheritdoc/>
+    public override void InterpolateCameraPosition(Vector3 position) =>
+        Camera.InterpolateCameraPosition(position);
+    #endregion
+
     #region Constructor
     /// <summary>
-    /// Create chase camera
+    /// Create the player at the given car starting position.
     /// </summary>
-    /// <param name="setCarPosition">Set car position</param>
-    /// <param name="setCameraPos">Set camera pos</param>
+    /// <param name="setCarPosition">Initial car position.</param>
     public Player(Vector3 setCarPosition)
         : base(setCarPosition)
     {
+        Camera = new ChaseCamera(this);
     }
     #endregion
 
     #region Reset
     /// <summary>
-    /// Reset player values.
+    /// Reset all player and camera values for a new game.
     /// </summary>
     public override void Reset()
     {
         base.Reset();
         lapTimes.Clear();
+        Camera.Reset();
+    }
+
+    /// <summary>
+    /// Clear physics and camera variables when the game ends.
+    /// </summary>
+    public override void ClearVariablesForGameOver()
+    {
+        base.ClearVariablesForGameOver();
+        Camera.ClearVariablesForGameOver();
     }
     #endregion
 
@@ -98,12 +134,12 @@ public class Player : ChaseCamera
             // Game over? Then show end screen!
             if (isGameOver)
             {
-                // Just rotate around, don't use camera class!
-                cameraPos = CarPosition + new Vector3(0, -5, +20) +
+                // Manually orbit the camera around the car — bypass ChaseCamera entirely.
+                Vector3 gameOverCamPos = CarPosition + new Vector3(0, -5, +20) +
                             Vector3.TransformNormal(new Vector3(30, 0, 0),
                                 Matrix.CreateRotationZ(BaseGame.TotalTimeMilliseconds / 2593.0f));
                 BaseGame.ViewMatrix = Matrix.CreateLookAt(
-                    cameraPos, CarPosition, CarUpVector);
+                    gameOverCamPos, CarPosition, CarUpVector);
                 this.currentGameTimeMilliseconds = this.BestTimeMilliseconds;
 
                 // Don't continue processing game logic
@@ -161,6 +197,7 @@ public class Player : ChaseCamera
         }
 
         base.Update();
+        Camera.Update();
     }
     #endregion
 

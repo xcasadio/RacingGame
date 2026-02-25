@@ -114,10 +114,11 @@ public class BasePlayer
     private float zoomInTime = StartGameZoomTimeMilliseconds;
 
     /// <summary>
-    /// Zoom in time
+    /// Zoom in time. Public so that the composed <see cref="ChaseCamera"/> can read it
+    /// without inheriting from the player hierarchy.
     /// </summary>
     /// <returns>Float</returns>
-    protected float ZoomInTime
+    public float ZoomInTime
     {
         get
         {

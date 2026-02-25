@@ -17,15 +17,8 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
   4. Mettre à jour tous les sites d'appel
 - **Risque** : Très élevé — implique des changements dans tous les fichiers
 
-### ARCH-002 : Remplacer l'héritage profond par la composition
-- **Priorité** : Haute  
-- **Description** : Chaîne `BasePlayer → CarPhysics → ChaseCamera → Player` (4 niveaux). Conceptuellement incorrect : la caméra ne devrait pas hériter de la physique voiture.
-- **Plan** :
-  1. Extraire `CarPhysics` comme composant autonome avec une interface `ICarPhysics`
-  2. Extraire `ChaseCamera` comme composant autonome avec une interface `ICamera`
-  3. `Player` contient `CarPhysics` et `ChaseCamera` au lieu d'en hériter
-  4. `BasePlayer` peut devenir une dataclass simple
-- **Risque** : Élevé — implique `CarPhysics.cs` (~1380 lignes) et touts les appelants
+### ✅ ARCH-002 : Remplacer l'héritage profond par la composition _(implémenté)_
+- **Statut** : Implémenté — `ChaseCamera` n'hérite plus de `CarPhysics`. `Player` hérite uniquement de `CarPhysics` et possède un `ChaseCamera Camera` en composition. Chaîne réduite de 4 à 3 niveaux (`BasePlayer → CarPhysics → Player`).
 
 ### ARCH-003 : Séparer Input/Logique/Rendu dans les GameScreens
 - **Priorité** : Moyenne

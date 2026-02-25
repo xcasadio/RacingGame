@@ -2,7 +2,7 @@
 
 **Légende** : ✅ Implémenté | 📋 Tâche future (voir [future-tasks.md](future-tasks.md))
 
-**Résumé** : 21 tâches ✅ implémentées (12 bugs, 5 robustesse, 2 performance, 2 qualité) • 22 tâches 📋 déférées
+**Résumé** : 22 tâches ✅ implémentées (12 bugs, 5 robustesse, 2 performance, 2 qualité, 1 architecture) • 21 tâches 📋 déférées
 
 ---
 
@@ -77,7 +77,7 @@
 - **Description** : Quasiment tout est statique : `player`, `landscape`, `carModel`, `gameScreens`, les matrices, l'UI, etc. Cela rend le code non-testable, crée un couplage fort entre toutes les classes et empêche tout scénario multi-instance.
 - **Amélioration** : Introduire un pattern de service locator ou d'injection de dépendances. Convertir les champs statiques en champs d'instance avec accès via un contexte de jeu partagé.
 
-### 📋 ARCH-002 : Héritage profond BasePlayer → CarPhysics → ChaseCamera → Player
+### ✅ ARCH-002 : Héritage profond BasePlayer → CarPhysics → ChaseCamera → Player
 - **Fichiers** : `BasePlayer.cs`, `CarPhysics.cs`, `ChaseCamera.cs`, `Player.cs`
 - **Description** : Chaîne d'héritage à 4 niveaux. La caméra hérite de la physique de la voiture, ce qui est conceptuellement incorrect. La caméra devrait suivre la voiture, pas en hériter.
 - **Amélioration** : Favoriser la composition. Séparer `CarPhysics`, `ChaseCamera` et `Player` en passant des références entre eux.

@@ -403,6 +403,28 @@ public class CarPhysics : BasePlayer
             return carRenderMatrix;
         }
     }
+
+    /// <summary>
+    /// Whether the camera is in free-camera mode.
+    /// Overridden by <see cref="Player"/> to delegate to the composed <see cref="ChaseCamera"/>.
+    /// </summary>
+    public virtual bool FreeCamera
+    {
+        get => false;
+        set { }
+    }
+
+    /// <summary>
+    /// Sets the camera position.
+    /// Overridden by <see cref="Player"/> to delegate to the composed <see cref="ChaseCamera"/>.
+    /// </summary>
+    public virtual void SetCameraPosition(Vector3 position) { }
+
+    /// <summary>
+    /// Smoothly interpolates the camera towards a new position.
+    /// Overridden by <see cref="Player"/> to delegate to the composed <see cref="ChaseCamera"/>.
+    /// </summary>
+    public virtual void InterpolateCameraPosition(Vector3 position) { }
     #endregion
 
     #region Constructor

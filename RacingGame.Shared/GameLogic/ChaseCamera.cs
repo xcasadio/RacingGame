@@ -21,13 +21,25 @@ namespace RacingGame.GameLogic;
 /// The camera rotation is not the same as the current car rotation,
 /// we interpolate the values a bit, allowing the user to do small changes
 /// without rotating the camera frantically. Also feels more realistic in
-/// curves. Derived from the CarController class, which controls the car
-/// by the user input. This camera class is not controlled by the user,
-/// its all automatic!
+/// curves. References a <see cref="CarPhysics"/> instance to read car state
+/// (position, orientation, zoom-in progress). This camera is not controlled
+/// by the user — it is fully automatic!
 /// </summary>
-public class ChaseCamera : CarPhysics
+public class ChaseCamera
 {
     #region Variables
+    /// <summary>
+    /// Reference to the car physics, used to read LookAtPos, CarUpVector and ZoomInTime
+    /// without inheriting from the car physics hierarchy.
+    /// </summary>
+    private readonly CarPhysics _physics;
+
+    /// <summary>Look-at position, delegated from car physics.</summary>
+    private Vector3 LookAtPos => _physics.LookAtPos;
+
+    /// <summary>Car up vector, delegated from car physics.</summary>
+    private Vector3 CarUpVector => _physics.CarUpVector;
+
     /// <summary>
     /// Current camera position.
     /// </summary>
@@ -200,46 +212,14 @@ public class ChaseCamera : CarPhysics
 
     #region Constructor
     /// <summary>
-    /// Create chase camera. Sets the car position and the camera position,
-    /// which is then used to rotate around the car.
+    /// Create a chase camera that follows the given car physics object.
+    /// The initial position is placed behind and slightly above the car.
     /// </summary>
-    /// <param name="setCarPosition">Set car position</param>
-    /// <param name="setDirection">Set direction</param>
-    /// <param name="setUp">Set up</param>
-    /// <param name="setCameraPos">Set camera pos</param>
-    public ChaseCamera(Vector3 setCarPosition, Vector3 setDirection,
-        Vector3 setUp, Vector3 setCameraPos)
-        : base(setCarPosition, setDirection, setUp)
+    /// <param name="physics">Car physics to follow.</param>
+    public ChaseCamera(CarPhysics physics)
     {
-        // Set camera position and calculate rotation from look pos
-        SetCameraPosition(setCameraPos);
-    }
-
-    /// <summary>
-    /// Create chase camera. Sets the car position and the camera position,
-    /// which is then used to rotate around the car.
-    /// </summary>
-    /// <param name="setCarPosition">Set car position</param>
-    /// <param name="setCameraPos">Set camera pos</param>
-    public ChaseCamera(Vector3 setCarPosition, Vector3 setCameraPos)
-        : base(setCarPosition)
-    {
-        // Set camera position and calculate rotation from look pos
-        SetCameraPosition(setCameraPos);
-    }
-
-    /// <summary>
-    /// Create chase camera. Just sets the car position.
-    /// The chase camera is set behind it.
-    /// </summary>
-    /// <param name="setCarPosition">Set car position</param>
-    public ChaseCamera(Vector3 setCarPosition)
-        : base(setCarPosition)
-    {
-        // Set camera position and calculate rotation from look pos
-        SetCameraPosition(
-            //setCarPosition - new Vector3(0, 0.5f, 1.0f) * carDir);
-            setCarPosition + new Vector3(0, 10.0f, 25.0f));
+        _physics = physics;
+        SetCameraPosition(physics.CarPosition + new Vector3(0, 10.0f, 25.0f));
     }
     #endregion
 
@@ -497,7 +477,7 @@ public class ChaseCamera : CarPhysics
         // Add camera shake if camera wobble effect is on
         if (cameraWobbleTimeoutMs > 0 &&
             // But only if not zooming in and if in game.
-            ZoomInTime <= StartGameZoomTimeMilliseconds)
+            _physics.ZoomInTime <= BasePlayer.StartGameZoomTimeMilliseconds)
         {
             float effectStrength = 1.5f * cameraWobbleFactor *
                                    (cameraWobbleTimeoutMs / (float)MaxCameraWobbleTimeoutMs);
@@ -516,20 +496,18 @@ public class ChaseCamera : CarPhysics
 
     #region Reset
     /// <summary>
-    /// Resets just the camera wobble factor here.
+    /// Resets camera wobble.
     /// </summary>
-    public override void Reset()
+    public void Reset()
     {
-        base.Reset();
         cameraWobbleFactor = 0;
     }
 
     /// <summary>
     /// Clear variables for game over
     /// </summary>
-    public override void ClearVariablesForGameOver()
+    public void ClearVariablesForGameOver()
     {
-        base.ClearVariablesForGameOver();
         cameraWobbleFactor = 0;
     }
     #endregion
@@ -538,10 +516,8 @@ public class ChaseCamera : CarPhysics
     /// <summary>
     /// Update camera, should be called every frame to handle all the input.
     /// </summary>
-    public override void Update()
+    public void Update()
     {
-        base.Update();
-
         // Only allow control when zooming is finished.
         HandleFreeCamera();
 
