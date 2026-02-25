@@ -53,9 +53,9 @@ public partial class ScreenshotCapturer : GameComponent
     /// <returns>String</returns>
     private string ScreenshotNameBuilder(int num)
     {
-        return Directories.ScreenshotsDirectory + "\\" +
-               game.Window.Title + " Screenshot " +
-               num.ToString("0000") + ".jpg";
+        return Path.Combine(
+            Directories.ScreenshotsDirectory,
+            game.Window.Title + " Screenshot " + num.ToString("0000") + ".png");
     }
     #endregion
 
@@ -129,12 +129,42 @@ public partial class ScreenshotCapturer : GameComponent
 
     #region Update
     /// <summary>
-    /// Allows the game component to update itself.
+    /// Captures a screenshot to the Screenshots folder when F12 is pressed.
     /// </summary>
     /// <param name="gameTime">Provides a snapshot of timing values.</param>
     public override void Update(GameTime gameTime)
     {
         base.Update(gameTime);
+
+        if (Input.KeyboardF12JustPressed)
+        {
+            screenshotNum++;
+            try
+            {
+                Directory.CreateDirectory(Directories.ScreenshotsDirectory);
+                string path = ScreenshotNameBuilder(screenshotNum);
+
+                int width = game.GraphicsDevice.PresentationParameters.BackBufferWidth;
+                int height = game.GraphicsDevice.PresentationParameters.BackBufferHeight;
+
+                // Read the back buffer into a texture
+                byte[] backBuffer = new byte[width * height * 4];
+                game.GraphicsDevice.GetBackBufferData(backBuffer);
+
+                using Texture2D screenshot = new Texture2D(game.GraphicsDevice, width, height,
+                    false, game.GraphicsDevice.PresentationParameters.BackBufferFormat);
+                screenshot.SetData(backBuffer);
+
+                using FileStream stream = File.Create(path);
+                screenshot.SaveAsPng(stream, width, height);
+
+                Log.Write("Screenshot saved: " + path);
+            }
+            catch (Exception exc)
+            {
+                System.Diagnostics.Debug.WriteLine("Screenshot capture failed: " + exc.Message);
+            }
+        }
     }
     #endregion
 }

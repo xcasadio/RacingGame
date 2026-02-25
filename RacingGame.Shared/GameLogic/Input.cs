@@ -566,6 +566,19 @@ public static class Input
     }
 
     /// <summary>
+    /// Keyboard F12 just pressed (used for screenshot capture)
+    /// </summary>
+    /// <returns>Bool</returns>
+    public static bool KeyboardF12JustPressed
+    {
+        get
+        {
+            return keyboardState.IsKeyDown(Keys.F12) &&
+                   keysPressedLastFrame.Contains(Keys.F12) == false;
+        }
+    }
+
+    /// <summary>
     /// Keyboard escape just pressed
     /// </summary>
     /// <returns>Bool</returns>
