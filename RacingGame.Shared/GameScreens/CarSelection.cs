@@ -398,8 +398,6 @@ class CarSelection : IGameScreen
     {
         TextureFont.WriteText(x, y, propertyName);
         RacingGameManager.UI.OptionsScreen.RenderOnScreen(
-            //try1: new Rectangle(x + BaseGame.XToRes(150), y + BaseGame.YToRes(5),
-            //BaseGame.XToRes((int)(145 * value)), BaseGame.YToRes(6)),
             new Rectangle(x, y + BaseGame.YToRes(29),
                 BaseGame.XToRes((int)(192 * value)), BaseGame.YToRes(6)),
             gfxBarFromOptionsScreen);

@@ -38,9 +38,6 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
 
     #region Variables
 
-    // UWP COMMENT OUT
-    // public static PlatformID CurrentPlatform = Environment.OSVersion.Platform;
-
     /// <summary>
     /// Graphics device manager, used for the graphics creation and holds
     /// the GraphicsDevice.
@@ -213,7 +210,6 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
         alreadyCheckedGraphicsOptions = true;
 
         usePostScreenShaders = GameSettings.Default.PostScreenEffects;
-        //TODO Fix Shadow Maps!
         allowShadowMapping = GameSettings.Default.ShadowMapping;
         highDetail = GameSettings.Default.HighDetail;
     }
@@ -275,9 +271,6 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
     {
         get
         {
-            //if (alreadyCheckedGraphicsOptions == false)
-            //    CheckOptionsAndPSVersion();
-
             return usePostScreenShaders;
         }
     }
@@ -990,10 +983,6 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
         graphicsManager = new GraphicsDeviceManager(this);
         graphicsManager.GraphicsProfile = GraphicsProfile.HiDef;
 
-        graphicsManager.PreparingDeviceSettings +=
-            new EventHandler<PreparingDeviceSettingsEventArgs>(
-                graphics_PrepareDevice);
-
 #if DEBUG
         // Disable vertical retrace to get highest framerates possible for
         // testing performance.
@@ -1020,32 +1009,6 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
     protected BaseGame()
         : this("Game")
     {
-    }
-
-    void graphics_PrepareDevice(object sender, PreparingDeviceSettingsEventArgs e)
-    {
-        // UWP COMMENT OUT
-//            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-//            {
-//                PresentationParameters presentParams =
-//                    e.GraphicsDeviceInformation.PresentationParameters;
-
-//                presentParams.RenderTargetUsage = RenderTargetUsage.PlatformContents;
-//                if (graphicsManager.PreferredBackBufferHeight == 720)
-//                {
-//                    presentParams.MultiSampleCount = 4;
-//#if !DEBUG
-//                    presentParams.PresentationInterval = PresentInterval.One;
-//#endif
-//                }
-//                else
-//                {
-//                    presentParams.MultiSampleCount = 2;
-//#if !DEBUG
-//                    presentParams.PresentationInterval = PresentInterval.Two;
-//#endif
-//                }
-//            }
     }
 
     /// <summary>
@@ -1114,11 +1077,6 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
         BaseGame.Device.SamplerStates[0] = SamplerState.LinearWrap;
         // Restore normal alpha blending
         BaseGame.SetCurrentAlphaMode(BaseGame.AlphaMode.Default);
-
-        //TODO: AlphaTestEffect
-        // Set 128 and greate alpha compare for Model.Render
-        //BaseGame.Device.RenderState.ReferenceAlpha = 128;
-        //BaseGame.Device.RenderState.AlphaFunction = CompareFunction.Greater;
 
         // Recreate all render-targets
         foreach (RenderToTexture renderToTexture in remRenderToTextures)
@@ -1527,7 +1485,6 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
     /// </summary>
     public static void ClearBackground()
     {
-        //unsure if it clears depth correctly: Device.Clear(BackgroundColor);
         Device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer,
             BackgroundColor, 1.0f, 0);
     }

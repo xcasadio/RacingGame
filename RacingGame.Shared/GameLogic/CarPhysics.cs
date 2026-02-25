@@ -1030,7 +1030,6 @@ public class CarPhysics : BasePlayer
                     }
 
                     BaseGame.UI.AddTimeFadeupEffect(
-                        //normal: (int)GameTimeMilliseconds,
                         Math.Abs(differenceMs),
                         differenceMs < 0 ? UIRenderer.TimeFadeupMode.Minus :
                             UIRenderer.TimeFadeupMode.Plus);
