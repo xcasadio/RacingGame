@@ -1,5 +1,7 @@
 # RacingGame — Tâches Futures (Refactorisation Lourde)
 
+**Légende** : ✅ Implémenté | 📋 Tâche future | 🔄 En cours
+
 Ces tâches sont trop complexes pour être implémentées en une seule passe sans risque de régression majeure.
 Elles constituent une feuille de route pour améliorer progressivement la qualité et les fonctionnalités du jeu.
 
@@ -7,7 +9,7 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
 
 ## Architecture (ARCH)
 
-### ARCH-001 : Refactoriser les classes statiques
+### 📋 ARCH-001 : Refactoriser les classes statiques
 - **Priorité** : Haute
 - **Description** : Quasiment tout est statique (`RacingGameManager`, `BaseGame`, `Input`, `Sound`, `ShaderEffect`). Cela rend le code non-testable et crée un couplage fort.
 - **Plan** :
@@ -17,28 +19,16 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
   4. Mettre à jour tous les sites d'appel
 - **Risque** : Très élevé — implique des changements dans tous les fichiers
 
-### ✅ ARCH-002 : Remplacer l'héritage profond par la composition _(implémenté)_
+### ✅ ARCH-002 : Remplacer l'héritage profond par la composition
 - **Statut** : Implémenté — `ChaseCamera` n'hérite plus de `CarPhysics`. `Player` hérite uniquement de `CarPhysics` et possède un `ChaseCamera Camera` en composition. Chaîne réduite de 4 à 3 niveaux (`BasePlayer → CarPhysics → Player`).
 
-### ARCH-003 : Séparer Input/Logique/Rendu dans les GameScreens
-- **Priorité** : Moyenne
-- **Description** : `Render()` gère à la fois l'affichage, la navigation et les transitions. Exemple : `MainMenu.Render()` gère clavier + souris + rendu dans la même méthode.
-- **Plan** :
-  1. Définir dans `IGameScreen` : `void ProcessInput()`, `void UpdateLogic(GameTime)`, `void Draw()`
-  2. Migrer chaque screen vers ce pattern
-  3. `RacingGameManager.Update()` appelle `ProcessInput()` + `UpdateLogic()`
-  4. `RacingGameManager.Render()` appelle `Draw()`
+### ✅ ARCH-003 : Séparer Input/Logique/Rendu dans les GameScreens
+- **Statut** : Implémenté — `IGameScreen` étendu avec `Update(GameTime)` et `Render()`. Tous les 9 écrans migrés. `RacingGameManager` appelle `Update()` puis `Render()` séparément.
 
-### ARCH-004 : Décomposer la classe Sound monolithique
-- **Priorité** : Moyenne
-- **Description** : `Sound.cs` gère la musique, les effets sonores, le son moteur avec engrenages, les sons de frein — tout en statique.
-- **Plan** :
-  1. `MusicManager` : gestion de la musique de fond
-  2. `SfxManager` : effets sonores ponctuels
-  3. `EngineSound` : son moteur avec gestion des engrenages
-  4. Conserver une façade `Sound` statique si nécessaire pour la compatibilité
+### ✅ ARCH-004 : Décomposer la classe Sound monolithique
+- **Statut** : Implémenté — `Sound.cs` décomposé en `MusicManager`, `SfxManager` et `EngineSound`. Façade `Sound` statique conservée pour compatibilité.
 
-### ARCH-005 : Décomposer la classe Landscape (~1425 lignes)
+### 📋 ARCH-005 : Décomposer la classe Landscape (~1425 lignes)
 - **Priorité** : Moyenne
 - **Description** : `Landscape.cs` gère le terrain, les objets, les traces de frein, les replays, les checkpoints, la physique et le rendu.
 - **Plan** :
@@ -51,30 +41,20 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
 
 ## Performance (PERF)
 
-### PERF-001 : Stack<IGameScreen> non thread-safe
-- **Priorité** : Haute
-- **Description** : `gameScreens` (Stack<IGameScreen> statique) est accédé depuis le thread principal et potentiellement modifié depuis d'autres threads sans synchronisation.
-- **Plan** : Remplacer par un `ConcurrentStack<T>` ou utiliser `lock` sur toutes les opérations de lecture/écriture.
-- **Note** : La situation actuelle est probablement safe car le loading thread ne touche pas `gameScreens`, mais c'est fragile.
+### ✅ PERF-001 : Stack<IGameScreen> non thread-safe
+- **Statut** : Implémenté — verrou `_screenLock` ajouté + pattern snapshot dans Update/Render.
 
-### PERF-002 : Allocations fréquentes dans la boucle de rendu
-- **Priorité** : Moyenne
-- **Description** : `Vector3[]`, `List<...>` créés chaque frame dans `CarPhysics`, `UIRenderer`.
-- **Plan** :
-  1. Profiler avec PerfView ou dotTrace pour identifier les allocations réelles
-  2. Pré-allouer les tableaux en champs de classe
-  3. Réutiliser via `Array.Clear()` avant chaque usage
+### ✅ PERF-002 : Allocations fréquentes dans la boucle de rendu
+- **Statut** : Implémenté — `_carCorners` pré-alloué en champ `readonly Vector3[4]` dans `CarPhysics`.
 
-### PERF-005 : RenderToTexture utilise Rgba64 par défaut
-- **Priorité** : Basse
-- **Description** : Format `SurfaceFormat.Rgba64` pour tous les render targets, même non-HDR.
-- **Plan** : Ajouter un paramètre `bool isHDR = false` à `Create()`. Utiliser `SurfaceFormat.Color` par défaut et `Rgba64` uniquement si `isHDR = true`.
+### ✅ PERF-005 : RenderToTexture utilise Rgba64 par défaut
+- **Statut** : Implémenté — paramètre `bool isHDR = false` ajouté ; `SurfaceFormat.Color` par défaut, `Rgba64` pour ShadowMap/HDR.
 
 ---
 
 ## Code Quality (QUAL)
 
-### QUAL-001 : Supprimer les directives préprocesseur obsolètes
+### 📋 QUAL-001 : Supprimer les directives préprocesseur obsolètes
 - **Priorité** : Haute
 - **Description** : Blocs `#if !XBOX360`, `#if GAMERSERVICES`, `#if NETFX_CORE`, `#if XBOXONE` dans de nombreux fichiers.
 - **Plan** :
@@ -83,17 +63,17 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
   3. Conserver uniquement `#if WINDOWS` si nécessaire
 - **Fichiers concernés** : `Input.cs`, `FileHelper.cs`, `Log.cs`, `ScreenshotCapturer.cs`, `BaseGame.cs`, `GameSettings.cs`, `Replay.cs`
 
-### QUAL-002 : Convertir les champs publics en propriétés
+### 📋 QUAL-002 : Convertir les champs publics en propriétés
 - **Priorité** : Moyenne
 - **Description** : Champs publics dans `RacingGameManager.cs` (`currentCarNumber`, `currentCarColor`), `SpringPhysicsObject.cs` (`pos`, `velocity`, `force`), `RandomHelper.cs` (`globalRandomGenerator`).
 - **Plan** : Encapsuler chaque champ public en propriété avec getter/setter appropriés.
 
-### QUAL-003 : Réduire l'utilisation excessive des #region
+### 📋 QUAL-003 : Réduire l'utilisation excessive des #region
 - **Priorité** : Basse
 - **Description** : Usage massif de `#region` dans toutes les classes, symptôme de classes trop grandes.
 - **Plan** : En parallèle avec ARCH-001/002, extraire des classes plus petites. Les `#region` disparaîtront naturellement.
 
-### QUAL-004 : Extraire les magic numbers en constantes nommées
+### 📋 QUAL-004 : Extraire les magic numbers en constantes nommées
 - **Priorité** : Haute
 - **Description** : Centaines de valeurs magiques dans `CarPhysics.cs`, `ChaseCamera.cs`, `Player.cs`, `Landscape.cs`.
 - **Plan** :
@@ -101,19 +81,19 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
   2. La remplacer par une constante nommée avec un commentaire explicatif
   3. Valeurs candidates : `2593.0f` (GameOverCameraRotationDivisor), `17.523456789f`, `0.93f` (braking friction), etc.
 
-### QUAL-005 : Décomposer les méthodes trop longues
+### 📋 QUAL-005 : Décomposer les méthodes trop longues
 - **Priorité** : Haute
 - **Description** : `CarPhysics.Update()` (~350 lignes), `Options.Render()` (~300 lignes), `Landscape.Render()`, `Track.GenerateVertices()`.
 - **Plan** :
   1. `CarPhysics.Update()` → `HandleSteering()`, `HandleAcceleration()`, `HandleBraking()`, `HandleCollisionDetection()`, `UpdatePosition()`
   2. `Options.Render()` → `RenderResolutionOptions()`, `RenderGraphicsOptions()`, `RenderAudioOptions()`
 
-### QUAL-006 : Nettoyer le code mort et les commentaires inutiles
+### 📋 QUAL-006 : Nettoyer le code mort et les commentaires inutiles
 - **Priorité** : Moyenne
 - **Description** : Grands blocs de code commenté dans `BaseGame.cs`, `CarSelection.cs`, `Help.cs`, commentaires XML vides.
 - **Plan** : Passer en revue chaque fichier et supprimer le code mort identifié.
 
-### QUAL-007 : Implémenter IDisposable correctement
+### 📋 QUAL-007 : Implémenter IDisposable correctement
 - **Priorité** : Haute
 - **Description** : `ShaderEffect` instances statiques jamais disposées, `RenderTarget2D` et `Effect` non nettoyés.
 - **Plan** :
@@ -125,7 +105,7 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
 
 ## Fonctionnalités (FEAT)
 
-### FEAT-003 : Écran de pause en jeu
+### 📋 FEAT-003 : Écran de pause en jeu
 - **Priorité** : Haute
 - **Description** : ESC quitte directement vers le menu. Ajouter un écran de pause.
 - **Plan** :
@@ -134,7 +114,7 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
   3. Options : Reprendre, Recommencer, Menu principal
   4. Mettre en pause le son moteur et les positions de physique
 
-### FEAT-004 : Résolutions modernes dans Options
+### 📋 FEAT-004 : Résolutions modernes dans Options
 - **Priorité** : Moyenne
 - **Description** : Résolutions obsolètes (640x480, 800x600, 1024x768).
 - **Plan** :
@@ -142,12 +122,12 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
   2. Filtrer les doublons et trier par taille
   3. Afficher dynamiquement dans le menu Options
 
-### FEAT-005 : Afficher le FPS en option
+### 📋 FEAT-005 : Afficher le FPS en option
 - **Priorité** : Basse
 - **Description** : `BaseGame.FPS` est calculé mais jamais affiché.
 - **Plan** : Ajouter un booléen `GameSettings.ShowFPS` et afficher `TextureFont.WriteText(fps, ...)` dans une position fixe si activé.
 
-### FEAT-006 : Support des manettes modernes
+### 📋 FEAT-006 : Support des manettes modernes
 - **Priorité** : Moyenne
 - **Description** : Un seul gamepad (`PlayerIndex.One`), pas de vibration, pas de remapping.
 - **Plan** :
@@ -155,7 +135,7 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
   2. Créer un `InputMapper` pour le remapping
   3. Persister le mapping dans `GameSettings`
 
-### FEAT-008 : Voitures IA adversaires
+### 📋 FEAT-008 : Voitures IA adversaires
 - **Priorité** : Basse
 - **Description** : Jeu solo uniquement. Pas de compétiteurs.
 - **Plan** :
@@ -163,7 +143,7 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
   2. Ajouter un paramètre de difficulté (vitesse max IA, agressivité)
   3. Afficher les voitures IA avec `CarModel.RenderCar()`
 
-### FEAT-009 : Effets visuels de collision
+### 📋 FEAT-009 : Effets visuels de collision
 - **Priorité** : Basse
 - **Description** : Collisions sans effets visuels.
 - **Plan** :
@@ -171,7 +151,7 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
   2. `GamePad.SetVibration()` proportionnel à la force de collision
   3. Flash d'écran lors d'une collision forte
 
-### FEAT-010 : Barre de progression sur l'écran de chargement
+### 📋 FEAT-010 : Barre de progression sur l'écran de chargement
 - **Priorité** : Basse
 - **Description** : Écran de chargement sans feedback quantitatif.
 - **Plan** :
@@ -183,17 +163,17 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
 
 ## Build & Projet (BUILD)
 
-### BUILD-001 : Mettre à jour le TargetFramework
+### 📋 BUILD-001 : Mettre à jour le TargetFramework
 - **Priorité** : Basse
 - **Description** : Cibles `net8.0-windows`. Évaluer la mise à jour vers `net9.0-windows` ou suivre les futures LTS.
 - **Plan** : Tester la compatibilité MonoGame + mettre à jour les packages NuGet. Corriger les avertissements éventuels.
 
-### BUILD-002 : Ajouter un fichier .editorconfig
+### 📋 BUILD-002 : Ajouter un fichier .editorconfig
 - **Priorité** : Moyenne
 - **Description** : Pas de style de code uniforme. Mélange tabs/espaces, styles de nommage.
 - **Plan** : Créer `.editorconfig` avec règles C# standard, forcer `dotnet format` dans le CI.
 
-### BUILD-003 : Ajouter des tests unitaires
+### 📋 BUILD-003 : Ajouter des tests unitaires
 - **Priorité** : Haute
 - **Description** : Constructeur `RacingGameManager(string unitTestName)` présent mais aucun projet de test.
 - **Plan** :
@@ -201,7 +181,7 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
   2. Tester en priorité : `Highscores`, `Replay` (parse/serialize), `Vector3Helper`, `Input.KeyToChar`, `CarPhysics` (formules)
   3. Mocker `BaseGame` via des interfaces ou abstractions pour tester la physique sans GPU
 
-### BUILD-004 : PipelineExtension — remplacer System.Numerics par Microsoft.Xna.Framework
+### 📋 BUILD-004 : PipelineExtension — remplacer System.Numerics par Microsoft.Xna.Framework
 - **Priorité** : Moyenne
 - **Description** : `RacingGameModelProcessor.cs` utilise `System.Numerics.Vector2/3/4` au lieu de `Microsoft.Xna.Framework.Vector2/3/4`. Cela peut provoquer des erreurs de désérialisation au runtime car le content pipeline attend les types XNA.
 - **Raison du report** : Le projet `RacingGame.PipelineExtension` cible `net8.0` (sans suffixe `-windows`). Dans ce contexte, `Microsoft.Xna.Framework` ne rend pas les types `Vector2/3/4` accessibles directement.
