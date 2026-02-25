@@ -20,13 +20,16 @@ namespace RacingGame.GameScreens;
 public interface IGameScreen
 {
 	/// <summary>
-	/// Run game screen. Called each frame. Returns true if we want to exit it.
+	/// Draw this screen. Called each frame after Update.
+	/// Must be pure rendering — no input detection or state mutation.
+	/// Returns true when the screen should be popped from the stack.
 	/// </summary>
 	bool Render();
 
 	/// <summary>
-	/// Process logic for this screen. Note that this method is called before
-	/// the draw (or render) method in XNA.
+	/// Process input and update game state for this screen.
+	/// Called every frame before Render. Sets the internal IsFinished state
+	/// that Render will return, kicks off screen transitions, etc.
 	/// </summary>
 	void Update(GameTime gameTime);
 }

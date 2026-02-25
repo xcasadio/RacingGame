@@ -43,13 +43,88 @@ class TrackSelection : IGameScreen
     #endregion
 
     #region Update
+    private bool _isFinished = false;
+
     /// <summary>
-    /// Unimplemented
+    /// Process input: mouse, keyboard/gamepad navigation, track selection.
     /// </summary>
-    /// <param name="gameTime"></param>
     public void Update(GameTime gameTime)
     {
+        // If the user moved the mouse, stop ignoring it
+        if (Input.HasMouseMoved || Input.MouseLeftButtonJustPressed)
+            ignoreMouse = false;
 
+        // Compute button rects (same formula as Render)
+        Rectangle activeRect = BaseGame.CalcRectangleCenteredWithGivenHeight(
+            0, 0,
+            ActiveButtonWidth * ButtonRects[0].Height / ButtonRects[0].Width,
+            ButtonRects[0]);
+        Rectangle inactiveRect = BaseGame.CalcRectangleCenteredWithGivenHeight(
+            0, 0,
+            InactiveButtonWidth * ButtonRects[0].Height / ButtonRects[0].Width,
+            ButtonRects[0]);
+        int totalWidth = activeRect.Width +
+                         2 * inactiveRect.Width +
+                         2 * BaseGame.XToRes(DistanceBetweenButtons);
+        int xPos = BaseGame.XToRes(512) - totalWidth / 2;
+        int yPos = BaseGame.YToRes(258);
+
+        int mouseIsOverButton = -1;
+
+        for (int num = 0; num < NumberOfButtons; num++)
+        {
+            bool selected = num == selectedButton;
+
+            // Animate button size
+            currentButtonSizes[num] +=
+                (selected ? 1 : -1) * BaseGame.MoveFactorPerSecond * 2;
+            currentButtonSizes[num] = Math.Clamp(currentButtonSizes[num], 0f, 1f);
+
+            Rectangle thisRect = MainMenu.InterpolateRect(
+                activeRect, inactiveRect, currentButtonSizes[num]);
+            Rectangle renderRect = new Rectangle(
+                xPos, yPos - (thisRect.Height - inactiveRect.Height) / 2,
+                thisRect.Width, thisRect.Height);
+
+            if (Input.MouseInBox(renderRect))
+                mouseIsOverButton = num;
+
+            xPos += thisRect.Width + BaseGame.XToRes(DistanceBetweenButtons);
+        }
+
+        if (!ignoreMouse && mouseIsOverButton >= 0)
+            selectedButton = mouseIsOverButton;
+
+        // Keyboard / gamepad navigation
+        if (Input.GamePadLeftJustPressed || Input.KeyboardLeftJustPressed)
+        {
+            Sound.Play(Sound.Sounds.ButtonClick);
+            selectedButton = (selectedButton + NumberOfButtons - 1) % NumberOfButtons;
+            ignoreMouse = true;
+        }
+        else if (Input.GamePadRightJustPressed || Input.KeyboardRightJustPressed)
+        {
+            Sound.Play(Sound.Sounds.ButtonClick);
+            selectedButton = (selectedButton + 1) % NumberOfButtons;
+            ignoreMouse = true;
+        }
+
+        bool aButtonPressed = BaseGame.UI.UpdateBottomButtons(false);
+
+        // Start the game when confirmed
+        if ((mouseIsOverButton >= 0 && Input.MouseLeftButtonJustPressed) ||
+            aButtonPressed ||
+            Input.GamePadAJustPressed ||
+            Input.KeyboardSpaceJustPressed)
+        {
+            RacingGameManager.AddGameScreen(new GameScreen());
+        }
+
+        _isFinished =
+            Input.KeyboardEscapeJustPressed ||
+            Input.GamePadBJustPressed ||
+            Input.GamePadBackJustPressed ||
+            BaseGame.UI.backButtonPressed;
     }
     #endregion
 
@@ -97,47 +172,20 @@ class TrackSelection : IGameScreen
     bool ignoreMouse = true;
 
     /// <summary>
-    /// Render game screen. Called each frame.
+    /// Render game screen — drawing only.
     /// </summary>
     public bool Render()
     {
-        // This starts both menu and in game post screen shader!
-        if(BaseGame.UsePostScreenShaders)
-        {
+        if (BaseGame.UsePostScreenShaders)
             BaseGame.UI.PostScreenMenuShader.Start();
-        }
 
-        // Render background and black bar
         BaseGame.UI.RenderMenuBackground();
         BaseGame.UI.RenderBlackBar(220, 280);
 
-        // Track header
-        int posX = 10;
-        int posY = 18;
-        // UWP COMMENT OUT
-        //if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-        //{
-        //    posX += 36;
-        //    posY += 26;
-        //}
         BaseGame.UI.Headers.RenderOnScreenRelative1600(
-            posX, posY, UIRenderer.HeaderSelectTrackGfxRect);
+            10, 18, UIRenderer.HeaderSelectTrackGfxRect);
 
-        // Little helper to keep track if mouse is actually over a button.
-        // Required because buttons are selected even when not hovering over
-        // them for GamePad support, but we still want the mouse only to
-        // be apply when we are actually over the button.
-        int mouseIsOverButton = -1;
-
-        // If the user manipulated the mouse, stop ignoring the mouse
-        // This allows the mouse to override the game pad or keyboard selection
-        if (Input.HasMouseMoved || Input.MouseLeftButtonJustPressed)
-        {
-            ignoreMouse = false;
-        }
-
-        // Show buttons
-        // Part 1: Calculate global variables for our buttons
+        // Recompute button rects using updated currentButtonSizes (set in Update)
         Rectangle activeRect = BaseGame.CalcRectangleCenteredWithGivenHeight(
             0, 0,
             ActiveButtonWidth * ButtonRects[0].Height / ButtonRects[0].Width,
@@ -151,40 +199,24 @@ class TrackSelection : IGameScreen
                          2 * BaseGame.XToRes(DistanceBetweenButtons);
         int xPos = BaseGame.XToRes(512) - totalWidth / 2;
         int yPos = BaseGame.YToRes(258);
+
         for (int num = 0; num < NumberOfButtons; num++)
         {
-            // Is this button currently selected?
             bool selected = num == selectedButton;
 
-            // Increase size if selected, decrease otherwise
-            currentButtonSizes[num] +=
-                (selected ? 1 : -1) * BaseGame.MoveFactorPerSecond * 2;
-            if (currentButtonSizes[num] < 0)
-            {
-                currentButtonSizes[num] = 0;
-            }
-
-            if (currentButtonSizes[num] > 1)
-            {
-                currentButtonSizes[num] = 1;
-            }
-
-            Rectangle thisRect = MainMenu.
-                InterpolateRect(activeRect, inactiveRect, currentButtonSizes[num]);
+            Rectangle thisRect = MainMenu.InterpolateRect(
+                activeRect, inactiveRect, currentButtonSizes[num]);
             Rectangle renderRect = new Rectangle(
                 xPos, yPos - (thisRect.Height - inactiveRect.Height) / 2,
                 thisRect.Width, thisRect.Height);
+
             BaseGame.UI.Buttons.RenderOnScreen(renderRect, ButtonRects[num],
                 selected ? Color.White : new Color(192, 192, 192, 192));
 
-            // Add border effect if selected
             if (selected)
-            {
                 BaseGame.UI.Buttons.RenderOnScreen(renderRect,
                     UIRenderer.TrackButtonSelectionGfxRect);
-            }
 
-            // Also add text below button
             Rectangle textRenderRect = new Rectangle(
                 xPos, renderRect.Bottom + BaseGame.YToRes(5),
                 renderRect.Width,
@@ -192,61 +224,15 @@ class TrackSelection : IGameScreen
             if (selected)
             {
                 BaseGame.UI.Buttons.RenderOnScreen(textRenderRect, TextRects[num],
-                    selected ? Color.White : Color.Gray);
-            }
-
-            // Also check if the user hovers with the mouse over this button
-            if (Input.MouseInBox(renderRect))
-            {
-                mouseIsOverButton = num;
+                    Color.White);
             }
 
             xPos += thisRect.Width + BaseGame.XToRes(DistanceBetweenButtons);
         }
 
-        if (!ignoreMouse && mouseIsOverButton >= 0)
-        {
-            selectedButton = mouseIsOverButton;
-        }
+        BaseGame.UI.RenderBottomButtons(false);
 
-        // Handle GamePad input, and also allow keyboard input
-        if (Input.GamePadLeftJustPressed ||
-            Input.KeyboardLeftJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            selectedButton =
-                (selectedButton + NumberOfButtons - 1) % NumberOfButtons;
-            ignoreMouse = true;
-        }
-        else if (Input.GamePadRightJustPressed ||
-                 Input.KeyboardRightJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            selectedButton = (selectedButton + 1) % NumberOfButtons;
-            ignoreMouse = true;
-        }
-
-        bool aButtonPressed = BaseGame.UI.RenderBottomButtons(false);
-        // If user presses the mouse button or the game pad A or Space,
-        // start the game screen for the currently selected game part.
-        if ((mouseIsOverButton >= 0 && Input.MouseLeftButtonJustPressed) ||
-            aButtonPressed ||
-            Input.GamePadAJustPressed ||
-            Input.KeyboardSpaceJustPressed)
-        {
-            // Track selection is handled through SelectedTrackNumber
-            RacingGameManager.AddGameScreen(new GameScreen());
-        }
-
-        if (Input.KeyboardEscapeJustPressed ||
-            Input.GamePadBJustPressed ||
-            Input.GamePadBackJustPressed ||
-            BaseGame.UI.backButtonPressed)
-        {
-            return true;
-        }
-
-        return false;
+        return _isFinished;
     }
     #endregion
 }

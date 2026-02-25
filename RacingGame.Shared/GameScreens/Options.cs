@@ -45,11 +45,9 @@ class Options : IGameScreen
     #region Variables
     /// <summary>
     /// Current player name, copied from the settings file.
-    /// Can be changed in this screen and will be saved to the settings file.
-    /// Just a variable here to make it easier to change the name and
-    /// because of performance (reading Settings every frame is not good).
     /// </summary>
     string currentPlayerName = GameSettings.Default.PlayerName;
+    private bool _isFinished = false;
     #endregion
 
     #region Constructor
@@ -106,426 +104,140 @@ class Options : IGameScreen
 
     #region Update
     /// <summary>
-    /// Unimplemented
+    /// Process all input: name editing, resolution, graphics options,
+    /// sliders, d-pad navigation, exit and settings save.
     /// </summary>
-    /// <param name="gameTime"></param>
     public void Update(GameTime gameTime)
     {
-
-    }
-    #endregion
-
-    #region Run
-    /// <summary>
-    /// Render game screen. Called each frame.
-    /// </summary>
-    public bool Render()
-    {
-        #region Background
-        // This starts both menu and in game post screen shader!
-        if(BaseGame.UsePostScreenShaders)
-        {
-            BaseGame.UI.PostScreenMenuShader.Start();
-        }
-
-        // Render background and black bar
-        BaseGame.UI.RenderMenuBackground();
-
-        // Options header
-        int posX = 10;
-        int posY = 18;
-        // UWP COMMENT OUT
-        //if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-        //{
-        //    posX += 36;
-        //    posY += 26;
-        //}
-        BaseGame.UI.Headers.RenderOnScreenRelative1600(
-            posX, posY, UIRenderer.HeaderOptionsGfxRect);
-
-        // Options background
-        BaseGame.UI.OptionsScreen.RenderOnScreenRelative4To3(
-            0, 125, BaseGame.UI.OptionsScreen.GfxRectangle);
-        #endregion
-
-        #region Edit player name
-        // Edit player name
-        int xPos = BaseGame.XToRes(352);
-        int yPos = BaseGame.YToRes768(125 + 65 - 20);
-        TextureFont.WriteText(xPos, yPos,
-            currentPlayerName +
-            // Add blinking |
-            ((int)(BaseGame.TotalTime / 0.35f) % 2 == 0 ? "|" : ""));
         Input.HandleKeyboardInput(ref currentPlayerName);
-        #endregion
 
 #if !XBOX360
-        #region Select resolution
-        // Select resolution
-        // Use inverted color for selection (see below for sprite blend mode)
-        Color selColor = new Color(255, 156, 0, 160);
-
-        Rectangle res0Rect = BaseGame.CalcRectangleKeep4To3(
-            Resolution640x480GfxRect);
+        // Resolution buttons
+        Rectangle res0Rect = BaseGame.CalcRectangleKeep4To3(Resolution640x480GfxRect);
         res0Rect.Y += BaseGame.YToRes768(125);
-        bool inRes0Rect = Input.MouseInBox(res0Rect);
-        if (currentResolution == 0)
-        {
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                res0Rect, Resolution640x480GfxRect,
-                selColor, BlendState.AlphaBlend);
-        }
+        if (Input.MouseInBox(res0Rect) && Input.MouseLeftButtonJustPressed)
+        { Sound.Play(Sound.Sounds.ButtonClick); currentResolution = 0; }
 
-        if (inRes0Rect && Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            currentResolution = 0;
-        }
-
-        Rectangle res1Rect = BaseGame.CalcRectangleKeep4To3(
-            Resolution800x600GfxRect);
+        Rectangle res1Rect = BaseGame.CalcRectangleKeep4To3(Resolution800x600GfxRect);
         res1Rect.Y += BaseGame.YToRes768(125);
-        bool inRes1Rect = Input.MouseInBox(res1Rect);
-        if (currentResolution == 1)
-        {
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                res1Rect, Resolution800x600GfxRect,
-                selColor, BlendState.AlphaBlend);
-        }
+        if (Input.MouseInBox(res1Rect) && Input.MouseLeftButtonJustPressed)
+        { Sound.Play(Sound.Sounds.ButtonClick); currentResolution = 1; }
 
-        if (inRes1Rect && Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            currentResolution = 1;
-        }
-
-        Rectangle res2Rect = BaseGame.CalcRectangleKeep4To3(
-            Resolution1024x768GfxRect);
+        Rectangle res2Rect = BaseGame.CalcRectangleKeep4To3(Resolution1024x768GfxRect);
         res2Rect.Y += BaseGame.YToRes768(125);
-        bool inRes2Rect = Input.MouseInBox(res2Rect);
-        if (currentResolution == 2)
-        {
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                res2Rect, Resolution1024x768GfxRect,
-                selColor, BlendState.AlphaBlend);
-        }
+        if (Input.MouseInBox(res2Rect) && Input.MouseLeftButtonJustPressed)
+        { Sound.Play(Sound.Sounds.ButtonClick); currentResolution = 2; }
 
-        if (inRes2Rect && Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            currentResolution = 2;
-        }
-
-        Rectangle res3Rect = BaseGame.CalcRectangleKeep4To3(
-            Resolution1280x1024GfxRect);
+        Rectangle res3Rect = BaseGame.CalcRectangleKeep4To3(Resolution1280x1024GfxRect);
         res3Rect.Y += BaseGame.YToRes768(125);
-        bool inRes3Rect = Input.MouseInBox(res3Rect);
-        if (currentResolution == 3)
-        {
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                res3Rect, Resolution1280x1024GfxRect,
-                selColor, BlendState.AlphaBlend);
-        }
+        if (Input.MouseInBox(res3Rect) && Input.MouseLeftButtonJustPressed)
+        { Sound.Play(Sound.Sounds.ButtonClick); currentResolution = 3; }
 
-        if (inRes3Rect && Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            currentResolution = 3;
-        }
-
-        Rectangle res4Rect = BaseGame.CalcRectangleKeep4To3(
-            ResolutionAutoGfxRect);
+        Rectangle res4Rect = BaseGame.CalcRectangleKeep4To3(ResolutionAutoGfxRect);
         res4Rect.Y += BaseGame.YToRes768(125);
-        bool inRes4Rect = Input.MouseInBox(res4Rect);
-        if (currentResolution == 4)
-        {
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                res4Rect, ResolutionAutoGfxRect,
-                selColor, BlendState.AlphaBlend);
-        }
+        if (Input.MouseInBox(res4Rect) && Input.MouseLeftButtonJustPressed)
+        { Sound.Play(Sound.Sounds.ButtonClick); currentResolution = 4; }
 
-        if (inRes4Rect && Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            currentResolution = 4;
-        }
-        #endregion
-
-        #region Graphics options
-
-        Rectangle fsRect = BaseGame.CalcRectangleKeep4To3(
-            FullscreenGfxRect);
+        // Graphics checkboxes
+        Rectangle fsRect = BaseGame.CalcRectangleKeep4To3(FullscreenGfxRect);
         fsRect.Y += BaseGame.YToRes768(125);
-        bool inFsRect = Input.MouseInBox(fsRect);
-        if (fullscreen)
-        {
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                fsRect, FullscreenGfxRect,
-                selColor, BlendState.AlphaBlend);
-        }
+        if (Input.MouseInBox(fsRect) && Input.MouseLeftButtonJustPressed)
+        { Sound.Play(Sound.Sounds.ButtonClick); fullscreen = !fullscreen; }
 
-        if (inFsRect && Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            fullscreen = !fullscreen;
-        }
-
-        Rectangle pseRect = BaseGame.CalcRectangleKeep4To3(
-            PostScreenEffectsGfxRect);
+        Rectangle pseRect = BaseGame.CalcRectangleKeep4To3(PostScreenEffectsGfxRect);
         pseRect.Y += BaseGame.YToRes768(125);
-        bool inPseRect = Input.MouseInBox(pseRect);
-        if (usePostScreenShaders)
-        {
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                pseRect, PostScreenEffectsGfxRect,
-                selColor, BlendState.AlphaBlend);
-        }
+        if (Input.MouseInBox(pseRect) && Input.MouseLeftButtonJustPressed)
+        { Sound.Play(Sound.Sounds.ButtonClick); usePostScreenShaders = !usePostScreenShaders; }
 
-        if (inPseRect && Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            usePostScreenShaders = !usePostScreenShaders;
-        }
-
-        Rectangle smRect = BaseGame.CalcRectangleKeep4To3(
-            ShadowsGfxRect);
+        Rectangle smRect = BaseGame.CalcRectangleKeep4To3(ShadowsGfxRect);
         smRect.Y += BaseGame.YToRes768(125);
-        bool inSmRect = Input.MouseInBox(smRect);
-        if (useShadowMapping)
-        {
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                smRect, ShadowsGfxRect,
-                selColor, BlendState.AlphaBlend);
-        }
+        if (Input.MouseInBox(smRect) && Input.MouseLeftButtonJustPressed)
+        { Sound.Play(Sound.Sounds.ButtonClick); useShadowMapping = !useShadowMapping; }
 
-        if (inSmRect && Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            useShadowMapping = !useShadowMapping;
-        }
-
-        Rectangle hdRect = BaseGame.CalcRectangleKeep4To3(
-            HighDetailGfxRect);
+        Rectangle hdRect = BaseGame.CalcRectangleKeep4To3(HighDetailGfxRect);
         hdRect.Y += BaseGame.YToRes768(125);
-        bool inHdRect = Input.MouseInBox(hdRect);
-        if (useHighDetail)
-        {
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                hdRect, HighDetailGfxRect,
-                selColor, BlendState.AlphaBlend);
-        }
-
-        if (inHdRect && Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            useHighDetail = !useHighDetail;
-        }
-        #endregion
+        if (Input.MouseInBox(hdRect) && Input.MouseLeftButtonJustPressed)
+        { Sound.Play(Sound.Sounds.ButtonClick); useHighDetail = !useHighDetail; }
 #endif
 
-        #region Sound volume
-        Rectangle soundRect = BaseGame.CalcRectangleKeep4To3(
-            SoundGfxRect);
+        // Sound slider
+        Rectangle soundRect = BaseGame.CalcRectangleKeep4To3(SoundGfxRect);
         soundRect.Y += BaseGame.YToRes768(125);
-        if (Input.MouseInBox(soundRect))
+        if (Input.MouseInBox(soundRect) && Input.MouseLeftButtonJustPressed)
         {
-            if (Input.MouseLeftButtonJustPressed)
-            {
-                currentSoundVolume =
-                    (Input.MousePos.X - soundRect.X) / (float)soundRect.Width;
-                Sound.Play(Sound.Sounds.Highlight);
-            }
+            currentSoundVolume =
+                (Input.MousePos.X - soundRect.X) / (float)soundRect.Width;
+            Sound.Play(Sound.Sounds.Highlight);
         }
-
-        // Handel controller input
         if (currentOptionsNumber == 0)
         {
-            if (Input.GamePadLeftJustPressed ||
-                Input.KeyboardLeftJustPressed)
-            {
-                currentSoundVolume -= 0.1f;
-                Sound.Play(Sound.Sounds.Highlight);
-            }
-            if (Input.GamePadRightJustPressed ||
-                Input.KeyboardRightJustPressed)
-            {
-                currentSoundVolume += 0.1f;
-                Sound.Play(Sound.Sounds.Highlight);
-            }
-            if (currentSoundVolume < 0)
-            {
-                currentSoundVolume = 0;
-            }
-
-            if (currentSoundVolume > 1)
-            {
-                currentSoundVolume = 1;
-            }
+            if (Input.GamePadLeftJustPressed || Input.KeyboardLeftJustPressed)
+            { currentSoundVolume -= 0.1f; Sound.Play(Sound.Sounds.Highlight); }
+            if (Input.GamePadRightJustPressed || Input.KeyboardRightJustPressed)
+            { currentSoundVolume += 0.1f; Sound.Play(Sound.Sounds.Highlight); }
+            currentSoundVolume = Math.Clamp(currentSoundVolume, 0f, 1f);
         }
 
-        // Render slider handle
-        Rectangle gfxRect = UIRenderer.SelectionRadioButtonGfxRect;
-        BaseGame.UI.Buttons.RenderOnScreen(new Rectangle(
-                soundRect.X + (int)(soundRect.Width * currentSoundVolume) -
-                BaseGame.XToRes(gfxRect.Width) / 2,
-                soundRect.Y,
-                BaseGame.XToRes(gfxRect.Width), BaseGame.YToRes768(gfxRect.Height)),
-            gfxRect);
-        #endregion
-
-        #region Music volume
-        Rectangle musicRect = BaseGame.CalcRectangleKeep4To3(
-            MusicGfxRect);
+        // Music slider
+        Rectangle musicRect = BaseGame.CalcRectangleKeep4To3(MusicGfxRect);
         musicRect.Y += BaseGame.YToRes768(125);
-        if (Input.MouseInBox(musicRect))
+        if (Input.MouseInBox(musicRect) && Input.MouseLeftButtonJustPressed)
         {
-            if (Input.MouseLeftButtonJustPressed)
-            {
-                currentMusicVolume =
-                    (Input.MousePos.X - musicRect.X) / (float)musicRect.Width;
-                Sound.Play(Sound.Sounds.Highlight);
-            }
+            currentMusicVolume =
+                (Input.MousePos.X - musicRect.X) / (float)musicRect.Width;
+            Sound.Play(Sound.Sounds.Highlight);
         }
-
-        // Handel controller input
         if (currentOptionsNumber == 1)
         {
-            if (Input.GamePadLeftJustPressed ||
-                Input.KeyboardLeftJustPressed)
-            {
-                currentMusicVolume -= 0.1f;
-                Sound.Play(Sound.Sounds.Highlight);
-            }
-            if (Input.GamePadRightJustPressed ||
-                Input.KeyboardRightJustPressed)
-            {
-                currentMusicVolume += 0.1f;
-                Sound.Play(Sound.Sounds.Highlight);
-            }
-            if (currentMusicVolume < 0)
-            {
-                currentMusicVolume = 0;
-            }
-
-            if (currentMusicVolume > 1)
-            {
-                currentMusicVolume = 1;
-            }
+            if (Input.GamePadLeftJustPressed || Input.KeyboardLeftJustPressed)
+            { currentMusicVolume -= 0.1f; Sound.Play(Sound.Sounds.Highlight); }
+            if (Input.GamePadRightJustPressed || Input.KeyboardRightJustPressed)
+            { currentMusicVolume += 0.1f; Sound.Play(Sound.Sounds.Highlight); }
+            currentMusicVolume = Math.Clamp(currentMusicVolume, 0f, 1f);
         }
-
-        // Render slider handle
-        BaseGame.UI.Buttons.RenderOnScreen(new Rectangle(
-                musicRect.X + (int)(musicRect.Width * currentMusicVolume) -
-                BaseGame.XToRes(gfxRect.Width) / 2,
-                musicRect.Y,
-                BaseGame.XToRes(gfxRect.Width), BaseGame.YToRes768(gfxRect.Height)),
-            gfxRect);
-        #endregion
 
         Sound.SetVolumes(currentSoundVolume, currentMusicVolume);
 
-        #region Controller sensitivity
-        Rectangle sensitivityRect = BaseGame.CalcRectangleKeep4To3(
-            SensitivityGfxRect);
+        // Sensitivity slider
+        Rectangle sensitivityRect = BaseGame.CalcRectangleKeep4To3(SensitivityGfxRect);
         sensitivityRect.Y += BaseGame.YToRes768(125);
-        if (Input.MouseInBox(sensitivityRect))
+        if (Input.MouseInBox(sensitivityRect) && Input.MouseLeftButtonJustPressed)
         {
-            if (Input.MouseLeftButtonJustPressed)
-            {
-                currentSensitivity =
-                    (Input.MousePos.X - sensitivityRect.X) /
-                    (float)sensitivityRect.Width;
-                Sound.Play(Sound.Sounds.Highlight);
-            }
+            currentSensitivity =
+                (Input.MousePos.X - sensitivityRect.X) / (float)sensitivityRect.Width;
+            Sound.Play(Sound.Sounds.Highlight);
         }
-
-        // Handel controller input
         if (currentOptionsNumber == 2)
         {
-            if (Input.GamePadLeftJustPressed ||
-                Input.KeyboardLeftJustPressed)
-            {
-                currentSensitivity -= 0.1f;
-                Sound.Play(Sound.Sounds.Highlight);
-            }
-            if (Input.GamePadRightJustPressed ||
-                Input.KeyboardRightJustPressed)
-            {
-                currentSensitivity += 0.1f;
-                Sound.Play(Sound.Sounds.Highlight);
-            }
-            if (currentSensitivity < 0)
-            {
-                currentSensitivity = 0;
-            }
-
-            if (currentSensitivity > 1)
-            {
-                currentSensitivity = 1;
-            }
+            if (Input.GamePadLeftJustPressed || Input.KeyboardLeftJustPressed)
+            { currentSensitivity -= 0.1f; Sound.Play(Sound.Sounds.Highlight); }
+            if (Input.GamePadRightJustPressed || Input.KeyboardRightJustPressed)
+            { currentSensitivity += 0.1f; Sound.Play(Sound.Sounds.Highlight); }
+            currentSensitivity = Math.Clamp(currentSensitivity, 0f, 1f);
         }
 
-        // Render slider handle
-        BaseGame.UI.Buttons.RenderOnScreen(new Rectangle(
-                sensitivityRect.X +
-                (int)(sensitivityRect.Width * currentSensitivity) -
-                BaseGame.XToRes(gfxRect.Width) / 2,
-                sensitivityRect.Y,
-                BaseGame.XToRes(gfxRect.Width), BaseGame.YToRes768(gfxRect.Height)),
-            gfxRect);
-        #endregion
-
-        #region Show selected line
-        Rectangle[] lineArrowGfxRects = new Rectangle[]
-        {
-            Line4ArrowGfxRect,
-            Line5ArrowGfxRect,
-            Line6ArrowGfxRect,
-        };
-        for (int num = 0; num < lineArrowGfxRects.Length; num++)
-        {
-            Rectangle lineRect = BaseGame.CalcRectangleKeep4To3(
-                lineArrowGfxRects[num]);
-            lineRect.Y += BaseGame.YToRes768(125);
-            lineRect.X -= BaseGame.XToRes(8 + (int)Math.Round(8 *
-                                                              Math.Sin(BaseGame.TotalTime / 0.21212f)));
-
-            // Draw selection arrow
-            if (currentOptionsNumber == num)
-            {
-                BaseGame.UI.Buttons.RenderOnScreen(
-                    lineRect, UIRenderer.SelectionArrowGfxRect, Color.White);
-            }
-        }
-
-        // Game pad selection
-        if (Input.GamePadUpJustPressed ||
-            Input.KeyboardUpJustPressed)
+        // D-pad up/down selects active slider row
+        const int numOptions = 3;
+        if (Input.GamePadUpJustPressed || Input.KeyboardUpJustPressed)
         {
             Sound.Play(Sound.Sounds.Highlight);
-            currentOptionsNumber = (lineArrowGfxRects.Length +
-                currentOptionsNumber - 1) % lineArrowGfxRects.Length;
+            currentOptionsNumber =
+                (numOptions + currentOptionsNumber - 1) % numOptions;
         }
-        else if (Input.GamePadDownJustPressed ||
-                 Input.KeyboardDownJustPressed)
+        else if (Input.GamePadDownJustPressed || Input.KeyboardDownJustPressed)
         {
             Sound.Play(Sound.Sounds.Highlight);
-            currentOptionsNumber = (currentOptionsNumber + 1) %
-                                   lineArrowGfxRects.Length;
+            currentOptionsNumber = (currentOptionsNumber + 1) % numOptions;
         }
-        #endregion
 
-        #region Bottom buttons
-        BaseGame.UI.RenderBottomButtons(true);
-        #endregion
+        BaseGame.UI.UpdateBottomButtons(true);
 
-        #region Apply settings when quitting
+        // Exit: apply and save settings
         if (Input.KeyboardEscapeJustPressed ||
             Input.GamePadBJustPressed ||
             Input.GamePadBackJustPressed ||
             BaseGame.UI.backButtonPressed)
         {
-            // Apply settings, for xbox only set music/sound and sensitivity!
             GameSettings.Default.PlayerName = currentPlayerName;
             switch (currentResolution)
             {
@@ -546,7 +258,6 @@ class Options : IGameScreen
                     GameSettings.Default.ResolutionHeight = 1024;
                     break;
                 case 4:
-                    // Try to use best resolution available
                     GameSettings.Default.ResolutionWidth = 0;
                     GameSettings.Default.ResolutionHeight = 0;
                     break;
@@ -558,17 +269,160 @@ class Options : IGameScreen
             GameSettings.Default.MusicVolume = currentMusicVolume;
             GameSettings.Default.SoundVolume = currentSoundVolume;
             GameSettings.Default.ControllerSensitivity = currentSensitivity;
-
-            // Save all
             GameSettings.Save();
-            // Update game settings
             BaseGame.CheckOptionsAndPSVersion();
+            _isFinished = true;
+        }
+    }
+    #endregion
 
-            return true;
+    #region Run
+    /// <summary>
+    /// Render game screen — drawing only.
+    /// </summary>
+    public bool Render()
+    {
+        #region Background
+        if (BaseGame.UsePostScreenShaders)
+            BaseGame.UI.PostScreenMenuShader.Start();
+
+        BaseGame.UI.RenderMenuBackground();
+        BaseGame.UI.Headers.RenderOnScreenRelative1600(
+            10, 18, UIRenderer.HeaderOptionsGfxRect);
+        BaseGame.UI.OptionsScreen.RenderOnScreenRelative4To3(
+            0, 125, BaseGame.UI.OptionsScreen.GfxRectangle);
+        #endregion
+
+        #region Display player name
+        int xPos = BaseGame.XToRes(352);
+        int yPos = BaseGame.YToRes768(125 + 65 - 20);
+        TextureFont.WriteText(xPos, yPos,
+            currentPlayerName +
+            ((int)(BaseGame.TotalTime / 0.35f) % 2 == 0 ? "|" : ""));
+        #endregion
+
+#if !XBOX360
+        #region Resolution selection highlight
+        Color selColor = new Color(255, 156, 0, 160);
+
+        Rectangle res0Rect = BaseGame.CalcRectangleKeep4To3(Resolution640x480GfxRect);
+        res0Rect.Y += BaseGame.YToRes768(125);
+        if (currentResolution == 0)
+            BaseGame.UI.OptionsScreen.RenderOnScreen(
+                res0Rect, Resolution640x480GfxRect, selColor, BlendState.AlphaBlend);
+
+        Rectangle res1Rect = BaseGame.CalcRectangleKeep4To3(Resolution800x600GfxRect);
+        res1Rect.Y += BaseGame.YToRes768(125);
+        if (currentResolution == 1)
+            BaseGame.UI.OptionsScreen.RenderOnScreen(
+                res1Rect, Resolution800x600GfxRect, selColor, BlendState.AlphaBlend);
+
+        Rectangle res2Rect = BaseGame.CalcRectangleKeep4To3(Resolution1024x768GfxRect);
+        res2Rect.Y += BaseGame.YToRes768(125);
+        if (currentResolution == 2)
+            BaseGame.UI.OptionsScreen.RenderOnScreen(
+                res2Rect, Resolution1024x768GfxRect, selColor, BlendState.AlphaBlend);
+
+        Rectangle res3Rect = BaseGame.CalcRectangleKeep4To3(Resolution1280x1024GfxRect);
+        res3Rect.Y += BaseGame.YToRes768(125);
+        if (currentResolution == 3)
+            BaseGame.UI.OptionsScreen.RenderOnScreen(
+                res3Rect, Resolution1280x1024GfxRect, selColor, BlendState.AlphaBlend);
+
+        Rectangle res4Rect = BaseGame.CalcRectangleKeep4To3(ResolutionAutoGfxRect);
+        res4Rect.Y += BaseGame.YToRes768(125);
+        if (currentResolution == 4)
+            BaseGame.UI.OptionsScreen.RenderOnScreen(
+                res4Rect, ResolutionAutoGfxRect, selColor, BlendState.AlphaBlend);
+        #endregion
+
+        #region Graphics checkboxes highlight
+        Rectangle fsRect = BaseGame.CalcRectangleKeep4To3(FullscreenGfxRect);
+        fsRect.Y += BaseGame.YToRes768(125);
+        if (fullscreen)
+            BaseGame.UI.OptionsScreen.RenderOnScreen(
+                fsRect, FullscreenGfxRect, selColor, BlendState.AlphaBlend);
+
+        Rectangle pseRect = BaseGame.CalcRectangleKeep4To3(PostScreenEffectsGfxRect);
+        pseRect.Y += BaseGame.YToRes768(125);
+        if (usePostScreenShaders)
+            BaseGame.UI.OptionsScreen.RenderOnScreen(
+                pseRect, PostScreenEffectsGfxRect, selColor, BlendState.AlphaBlend);
+
+        Rectangle smRect = BaseGame.CalcRectangleKeep4To3(ShadowsGfxRect);
+        smRect.Y += BaseGame.YToRes768(125);
+        if (useShadowMapping)
+            BaseGame.UI.OptionsScreen.RenderOnScreen(
+                smRect, ShadowsGfxRect, selColor, BlendState.AlphaBlend);
+
+        Rectangle hdRect = BaseGame.CalcRectangleKeep4To3(HighDetailGfxRect);
+        hdRect.Y += BaseGame.YToRes768(125);
+        if (useHighDetail)
+            BaseGame.UI.OptionsScreen.RenderOnScreen(
+                hdRect, HighDetailGfxRect, selColor, BlendState.AlphaBlend);
+        #endregion
+#endif
+
+        #region Sound slider
+        Rectangle soundRect = BaseGame.CalcRectangleKeep4To3(SoundGfxRect);
+        soundRect.Y += BaseGame.YToRes768(125);
+        Rectangle gfxRect = UIRenderer.SelectionRadioButtonGfxRect;
+        BaseGame.UI.Buttons.RenderOnScreen(new Rectangle(
+                soundRect.X + (int)(soundRect.Width * currentSoundVolume) -
+                BaseGame.XToRes(gfxRect.Width) / 2,
+                soundRect.Y,
+                BaseGame.XToRes(gfxRect.Width), BaseGame.YToRes768(gfxRect.Height)),
+            gfxRect);
+        #endregion
+
+        #region Music slider
+        Rectangle musicRect = BaseGame.CalcRectangleKeep4To3(MusicGfxRect);
+        musicRect.Y += BaseGame.YToRes768(125);
+        BaseGame.UI.Buttons.RenderOnScreen(new Rectangle(
+                musicRect.X + (int)(musicRect.Width * currentMusicVolume) -
+                BaseGame.XToRes(gfxRect.Width) / 2,
+                musicRect.Y,
+                BaseGame.XToRes(gfxRect.Width), BaseGame.YToRes768(gfxRect.Height)),
+            gfxRect);
+        #endregion
+
+        #region Sensitivity slider
+        Rectangle sensitivityRect = BaseGame.CalcRectangleKeep4To3(SensitivityGfxRect);
+        sensitivityRect.Y += BaseGame.YToRes768(125);
+        BaseGame.UI.Buttons.RenderOnScreen(new Rectangle(
+                sensitivityRect.X +
+                (int)(sensitivityRect.Width * currentSensitivity) -
+                BaseGame.XToRes(gfxRect.Width) / 2,
+                sensitivityRect.Y,
+                BaseGame.XToRes(gfxRect.Width), BaseGame.YToRes768(gfxRect.Height)),
+            gfxRect);
+        #endregion
+
+        #region Show selected line arrow
+        Rectangle[] lineArrowGfxRects = new Rectangle[]
+        {
+            Line4ArrowGfxRect,
+            Line5ArrowGfxRect,
+            Line6ArrowGfxRect,
+        };
+        for (int num = 0; num < lineArrowGfxRects.Length; num++)
+        {
+            Rectangle lineRect = BaseGame.CalcRectangleKeep4To3(
+                lineArrowGfxRects[num]);
+            lineRect.Y += BaseGame.YToRes768(125);
+            lineRect.X -= BaseGame.XToRes(8 + (int)Math.Round(8 *
+                Math.Sin(BaseGame.TotalTime / 0.21212f)));
+            if (currentOptionsNumber == num)
+                BaseGame.UI.Buttons.RenderOnScreen(
+                    lineRect, UIRenderer.SelectionArrowGfxRect, Color.White);
         }
         #endregion
 
-        return false;
+        #region Bottom buttons
+        BaseGame.UI.RenderBottomButtons(true);
+        #endregion
+
+        return _isFinished;
     }
     #endregion
 }

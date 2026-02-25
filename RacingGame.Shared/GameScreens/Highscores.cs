@@ -273,26 +273,76 @@ class Highscores : IGameScreen
     #endregion
 
     #region Update
+    private bool _isFinished = false;
+    int selectedLevel = 1;
+
     /// <summary>
-    /// Unimplemented
+    /// Process input: level-tab selection, keyboard navigation, exit.
     /// </summary>
-    /// <param name="gameTime"></param>
     public void Update(GameTime gameTime)
     {
+        int yPos = BaseGame.YToRes(182);
+        int lineHeight = BaseGame.YToRes(27);
+        int xPos = BaseGame.XToRes(512 - 160 * 3 / 2 + 25);
 
+        // Tab click detection (rects match those drawn in Render)
+        if (Input.MouseInBox(new Rectangle(xPos, yPos, BaseGame.XToRes(125), lineHeight)) &&
+            Input.MouseLeftButtonJustPressed)
+        {
+            Sound.Play(Sound.Sounds.ButtonClick);
+            selectedLevel = 0;
+        }
+        xPos += BaseGame.XToRes(160 + 8);
+
+        if (Input.MouseInBox(new Rectangle(xPos, yPos, BaseGame.XToRes(125), lineHeight)) &&
+            Input.MouseLeftButtonJustPressed)
+        {
+            Sound.Play(Sound.Sounds.ButtonClick);
+            selectedLevel = 1;
+        }
+        xPos += BaseGame.XToRes(160 + 30 - 8);
+
+        if (Input.MouseInBox(new Rectangle(xPos, yPos, BaseGame.XToRes(125), lineHeight)) &&
+            Input.MouseLeftButtonJustPressed)
+        {
+            Sound.Play(Sound.Sounds.ButtonClick);
+            selectedLevel = 2;
+        }
+
+        // Keyboard / gamepad tab navigation
+        if (Input.GamePadLeftJustPressed || Input.KeyboardLeftJustPressed)
+        {
+            Sound.Play(Sound.Sounds.ButtonClick);
+            selectedLevel = (selectedLevel + 2) % 3;
+        }
+        else if (Input.GamePadRightJustPressed || Input.KeyboardRightJustPressed)
+        {
+            Sound.Play(Sound.Sounds.ButtonClick);
+            selectedLevel = (selectedLevel + 1) % 3;
+        }
+
+        BaseGame.UI.UpdateBottomButtons(true);
+
+        // Exit when clicking below the highscore rows, pressing Esc / Back
+        int lastRowY = BaseGame.YToRes(220) + NumOfHighscores * lineHeight;
+        _isFinished =
+            Input.KeyboardEscapeJustPressed ||
+            Input.GamePadBJustPressed ||
+            Input.GamePadBackJustPressed ||
+            (Input.MouseLeftButtonJustPressed && Input.MousePos.Y > lastRowY) ||
+            BaseGame.UI.backButtonPressed;
     }
     #endregion
 
     #region Render
-    int selectedLevel = 1;
     /// <summary>
-    /// Render game screen. Called each frame.
+    /// Render game screen — drawing only.
     /// </summary>
     /// <returns>Bool</returns>
     public bool Render()
     {
         // This starts both menu and in game post screen shader!
-        if(BaseGame.UsePostScreenShaders)
+        if (BaseGame.UsePostScreenShaders)
         {
             BaseGame.UI.PostScreenMenuShader.Start();
         }
@@ -302,85 +352,38 @@ class Highscores : IGameScreen
         BaseGame.UI.RenderBlackBar(160, 498 - 160);
 
         // Highscores header
-        int posX = 10;
-        int posY = 18;
-        // UWP COMMENT OUT
-        //if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-        //{
-        //    posX += 36;
-        //    posY += 26;
-        //}
         BaseGame.UI.Headers.RenderOnScreenRelative1600(
-            posX, posY, UIRenderer.HeaderHighscoresGfxRect);
+            10, 18, UIRenderer.HeaderHighscoresGfxRect);
 
-        // Track selection
+        // Track selection tabs
         int xPos = BaseGame.XToRes(512 - 160 * 3 / 2 + 25);
         int yPos = BaseGame.YToRes(182);
         int lineHeight = BaseGame.YToRes(27);
 
-        // Beginner track
-        bool inBox = Input.MouseInBox(new Rectangle(
-            xPos, yPos, BaseGame.XToRes(125), lineHeight));
+        // Draw tabs; mouse-over highlight is visual-only (no state change here)
+        bool inBox = Input.MouseInBox(new Rectangle(xPos, yPos, BaseGame.XToRes(125), lineHeight));
         TextureFont.WriteText(xPos, yPos, "Beginner",
-            selectedLevel == 0 ? Color.Yellow :
-            inBox ? Color.White : Color.LightGray);
-        if (inBox && Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            selectedLevel = 0;
-        }
+            selectedLevel == 0 ? Color.Yellow : inBox ? Color.White : Color.LightGray);
         xPos += BaseGame.XToRes(160 + 8);
 
-        // Advanced track
-        inBox = Input.MouseInBox(new Rectangle(
-            xPos, yPos, BaseGame.XToRes(125), lineHeight));
+        inBox = Input.MouseInBox(new Rectangle(xPos, yPos, BaseGame.XToRes(125), lineHeight));
         TextureFont.WriteText(xPos, yPos, "Advanced",
-            selectedLevel == 1 ? Color.Yellow :
-            inBox ? Color.White : Color.LightGray);
-        if (inBox && Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            selectedLevel = 1;
-        }
+            selectedLevel == 1 ? Color.Yellow : inBox ? Color.White : Color.LightGray);
         xPos += BaseGame.XToRes(160 + 30 - 8);
 
-        // Expert track
-        inBox = Input.MouseInBox(new Rectangle(
-            xPos, yPos, BaseGame.XToRes(125), lineHeight));
+        inBox = Input.MouseInBox(new Rectangle(xPos, yPos, BaseGame.XToRes(125), lineHeight));
         TextureFont.WriteText(xPos, yPos, "Expert",
-            selectedLevel == 2 ? Color.Yellow :
-            inBox ? Color.White : Color.LightGray);
-        if (inBox && Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            selectedLevel = 2;
-        }
+            selectedLevel == 2 ? Color.Yellow : inBox ? Color.White : Color.LightGray);
 
-        // Also handle xbox controller input
-        if (Input.GamePadLeftJustPressed ||
-            Input.KeyboardLeftJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            selectedLevel = (selectedLevel + 2) % 3;
-        }
-        else if (Input.GamePadRightJustPressed ||
-                 Input.KeyboardRightJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            selectedLevel = (selectedLevel + 1) % 3;
-        }
-
+        // Separation line
         int xPos1 = BaseGame.XToRes(300);
         int xPos2 = BaseGame.XToRes(350);
         int xPos3 = BaseGame.XToRes(640);
-
-        // Draw seperation line
         yPos = BaseGame.YToRes(208);
         BaseGame.DrawLine(
             new Point(xPos1, yPos),
             new Point(xPos3 + TextureFont.GetTextWidth("5:67:89"), yPos),
             new Color(192, 192, 192, 128));
-        // And another one, looks better with 2 pixel height
         BaseGame.DrawLine(
             new Point(xPos1, yPos + 1),
             new Point(xPos3 + TextureFont.GetTextWidth("5:67:89"), yPos + 1),
@@ -388,38 +391,21 @@ class Highscores : IGameScreen
 
         yPos = BaseGame.YToRes(220);
 
-        // Go through all highscores
         for (int num = 0; num < NumOfHighscores; num++)
         {
-            Rectangle lineRect = new Rectangle(
-                0, yPos, BaseGame.Width, lineHeight);
-            Color col = Input.MouseInBox(lineRect) ?
-                Color.White : new Color(200, 200, 200);
-            TextureFont.WriteText(xPos1, yPos,
-                (1 + num) + ".", col);
-            TextureFont.WriteText(xPos2, yPos,
-                highscores[selectedLevel, num].name, col);
-
+            Rectangle lineRect = new Rectangle(0, yPos, BaseGame.Width, lineHeight);
+            // Mouse-over highlight is a visual-only effect — no state change
+            Color col = Input.MouseInBox(lineRect) ? Color.White : new Color(200, 200, 200);
+            TextureFont.WriteText(xPos1, yPos, (1 + num) + ".", col);
+            TextureFont.WriteText(xPos2, yPos, highscores[selectedLevel, num].name, col);
             TextureFont.WriteGameTime(xPos3, yPos,
-                highscores[selectedLevel, num].timeMilliseconds,
-                Color.Yellow);
-
+                highscores[selectedLevel, num].timeMilliseconds, Color.Yellow);
             yPos += lineHeight;
         }
 
         BaseGame.UI.RenderBottomButtons(true);
 
-        if (Input.KeyboardEscapeJustPressed ||
-            Input.GamePadBJustPressed ||
-            Input.GamePadBackJustPressed ||
-            Input.MouseLeftButtonJustPressed &&
-            // Don't allow clicking on the controls to quit
-            Input.MousePos.Y > yPos)
-        {
-            return true;
-        }
-
-        return false;
+        return _isFinished;
     }
     #endregion
 }

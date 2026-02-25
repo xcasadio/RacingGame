@@ -22,20 +22,29 @@ namespace RacingGame.GameScreens;
 /// <returns>IGame screen</returns>
 class Help : IGameScreen
 {
+	#region Variables
+	private bool _isFinished = false;
+	#endregion
+
 	#region Update
 	/// <summary>
-	/// Unimplemented
+	/// Process input: any dismiss action closes the help screen.
 	/// </summary>
-	/// <param name="gameTime"></param>
 	public void Update(GameTime gameTime)
 	{
-
+		BaseGame.UI.UpdateBottomButtons(true);
+		_isFinished =
+			Input.KeyboardEscapeJustPressed ||
+			Input.GamePadBJustPressed ||
+			Input.GamePadBackJustPressed ||
+			Input.MouseLeftButtonJustPressed ||
+			BaseGame.UI.backButtonPressed;
 	}
 	#endregion
 
 	#region Render
 	/// <summary>
-	/// Render game screen. Called each frame.
+	/// Render game screen — drawing only.
 	/// </summary>
 	public bool Render()
 	{
@@ -49,44 +58,15 @@ class Help : IGameScreen
 		BaseGame.UI.RenderMenuBackground();
 
 		// Help header
-		int posX = 10;
-		int posY = 18;
-		// UWP COMMENT OUT
-		//if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-		//{
-		//    posX += 36;
-		//    posY += 26;
-		//}
 		BaseGame.UI.Headers.RenderOnScreenRelative1600(
-			posX, posY, UIRenderer.HeaderHelpGfxRect);
+			10, 18, UIRenderer.HeaderHelpGfxRect);
 
-		// Help
-		// UWP COMMENT OUT
-		//if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-		//{
-		//    BaseGame.UI.HelpScreen.RenderOnScreen(
-		//        BaseGame.CalcRectangleKeep4To3(
-		//        25, 130, BaseGame.UI.HelpScreen.GfxRectangle.Width - 50,
-		//        BaseGame.UI.HelpScreen.GfxRectangle.Height - 12),
-		//        BaseGame.UI.HelpScreen.GfxRectangle);
-		//}
-		//else
-		{
-			BaseGame.UI.HelpScreen.RenderOnScreenRelative4To3(
-				0, 125, BaseGame.UI.HelpScreen.GfxRectangle);
-		}
+		BaseGame.UI.HelpScreen.RenderOnScreenRelative4To3(
+			0, 125, BaseGame.UI.HelpScreen.GfxRectangle);
 
 		BaseGame.UI.RenderBottomButtons(true);
 
-		if (Input.KeyboardEscapeJustPressed ||
-		    Input.GamePadBJustPressed ||
-		    Input.GamePadBackJustPressed ||
-		    Input.MouseLeftButtonJustPressed)
-		{
-			return true;
-		}
-
-		return false;
+		return _isFinished;
 	}
 	#endregion
 }

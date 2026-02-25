@@ -21,20 +21,27 @@ namespace RacingGame.GameScreens;
 /// </summary>
 class SplashScreen : IGameScreen
 {
+	#region Variables
+	private bool _isFinished = false;
+	#endregion
+
 	#region Update
 	/// <summary>
-	/// Unimplemented
+	/// Process input: any button or click advances past the splash screen.
 	/// </summary>
-	/// <param name="gameTime"></param>
 	public void Update(GameTime gameTime)
 	{
-
+		_isFinished =
+			Input.MouseLeftButtonJustPressed ||
+			Input.KeyboardSpaceJustPressed ||
+			Input.KeyboardEscapeJustPressed ||
+			Input.GamePadStartPressed;
 	}
 	#endregion
 
 	#region RenderSplashScreen
 	/// <summary>
-	/// Render splash screen
+	/// Render splash screen — drawing only.
 	/// </summary>
 	public bool Render()
 	{
@@ -53,7 +60,7 @@ class SplashScreen : IGameScreen
 			ShaderEffect.shadowMapping.ShowShadows();
 		}
 
-		// Show Press Start to continue. 
+		// Show Press Start to continue.
 		if ((int)(BaseGame.TotalTime / 0.375f) % 3 != 0)
 		{
 			BaseGame.UI.Headers.RenderOnScreen(
@@ -62,11 +69,7 @@ class SplashScreen : IGameScreen
 				UIRenderer.PressStartGfxRect);
 		}
 
-		// Clicking or pressing start will go to the menu
-		return Input.MouseLeftButtonJustPressed ||
-		       Input.KeyboardSpaceJustPressed ||
-		       Input.KeyboardEscapeJustPressed ||
-		       Input.GamePadStartPressed;
+		return _isFinished;
 	}
 	#endregion
 }

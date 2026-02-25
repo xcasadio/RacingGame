@@ -609,11 +609,44 @@ public class UIRenderer : IDisposable
 
     #region RenderBottomButtons
     public bool backButtonPressed = false;
+    public bool aButtonPressed = false;
+
     /// <summary>
-    /// Render bottom buttons (select, back, etc.)
+    /// Process input for the bottom buttons (B = back, A = select).
+    /// Call this from your screen's Update() before calling RenderBottomButtons.
+    /// Sets <see cref="backButtonPressed"/> and <see cref="aButtonPressed"/>.
+    /// Returns true when the A button was clicked with the mouse.
+    /// </summary>
+    /// <param name="onlyBack">When true, only the B/back button is active.</param>
+    public bool UpdateBottomButtons(bool onlyBack)
+    {
+        Rectangle bButtonRect = BaseGame.CalcRectangleCenteredWithGivenHeight(
+            0, 587, 48, BottomButtonBButtonGfxRect);
+        bButtonRect.X = BaseGame.Width - bButtonRect.Width - BaseGame.XToRes(25 + 25);
+        bool overBButton = Input.MouseInBox(bButtonRect);
+        backButtonPressed = overBButton && Input.MouseLeftButtonJustPressed;
+
+        if (onlyBack)
+        {
+            aButtonPressed = false;
+            return false;
+        }
+
+        Rectangle aButtonRect = BaseGame.CalcRectangleCenteredWithGivenHeight(
+            0, 587, 48, BottomButtonAButtonGfxRect);
+        aButtonRect.X = BaseGame.Width -
+                        aButtonRect.Width * 2 - BaseGame.XToRes(55 + 25);
+        bool overAButton = Input.MouseInBox(aButtonRect);
+        aButtonPressed = overAButton && Input.MouseLeftButtonJustPressed;
+        return aButtonPressed;
+    }
+
+    /// <summary>
+    /// Render bottom buttons (select, back, etc.) — drawing only.
+    /// Call <see cref="UpdateBottomButtons"/> from Update() first.
     /// </summary>
     /// <param name="onlyBack">Only back</param>
-    public bool RenderBottomButtons(bool onlyBack)
+    public void RenderBottomButtons(bool onlyBack)
     {
         Rectangle bButtonRect = BaseGame.CalcRectangleCenteredWithGivenHeight(
             0, 587, 48, BottomButtonBButtonGfxRect);
@@ -629,20 +662,14 @@ public class UIRenderer : IDisposable
         }
 
         buttons.RenderOnScreen(bButtonRect, BottomButtonBButtonGfxRect);
-
-        // Is mouse over button?
         if (overBButton)
         {
             buttons.RenderOnScreen(bButtonRect, BottomButtonSelectionGfxRect);
         }
 
-        // Store value if back button was pressed;
-        backButtonPressed = overBButton && Input.MouseLeftButtonJustPressed;
-
-        // Don't show button a if there is nothing to select here
         if (onlyBack)
         {
-            return false;
+            return;
         }
 
         Rectangle aButtonRect = BaseGame.CalcRectangleCenteredWithGivenHeight(
@@ -658,17 +685,10 @@ public class UIRenderer : IDisposable
         }
 
         buttons.RenderOnScreen(aButtonRect, BottomButtonAButtonGfxRect);
-
-        // Is mouse over button?
         if (overAButton)
         {
             buttons.RenderOnScreen(aButtonRect, BottomButtonSelectionGfxRect);
-            if (Input.MouseLeftButtonJustPressed)
-            {
-                return true;
-            }
         }
-        return false;
     }
     #endregion
     #endregion

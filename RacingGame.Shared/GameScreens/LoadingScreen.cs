@@ -24,6 +24,7 @@ class LoadingScreen : IGameScreen
 	private const string loadingText = "Loading...";
 	private int loadingTextWidth = TextureFont.GetTextWidth(loadingText);
 	private string loadingStatus = "";
+	private bool _isFinished = false;
 	#endregion
 
 	#region Constructor
@@ -36,8 +37,7 @@ class LoadingScreen : IGameScreen
 
 	#region Update LoadingScreen
 	/// <summary>
-	/// Gather input on the loading screen and update it if progress has
-	/// changed in loading the game.
+	/// Start the loading thread and track loading completion.
 	/// </summary>
 	public void Update(GameTime gameTime)
 	{
@@ -45,6 +45,7 @@ class LoadingScreen : IGameScreen
 		{
 			RacingGameManager.LoadingThread.Start();
 		}
+		_isFinished = RacingGameManager.ContentLoaded;
 	}
 
 	public void OnLoadStatusChanged(string status)
@@ -55,7 +56,7 @@ class LoadingScreen : IGameScreen
 
 	#region RenderLoadingScreen
 	/// <summary>
-	/// Render loading screen
+	/// Render loading screen — drawing only.
 	/// </summary>
 	public bool Render()
 	{
@@ -72,7 +73,7 @@ class LoadingScreen : IGameScreen
 
 		TextureFont.WriteTextCentered(BaseGame.Width / 2, (int)position.Y + 40, loadingStatus);
 
-		return RacingGameManager.ContentLoaded;
+		return _isFinished;
 	}
 	#endregion
 }

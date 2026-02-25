@@ -68,47 +68,108 @@ class CarSelection : IGameScreen
     #endregion
 
     #region Update
+    private bool _isFinished = false;
+
     /// <summary>
-    /// Unimplemented
+    /// Process input: car/color navigation, A button, exit.
     /// </summary>
-    /// <param name="gameTime"></param>
     public void Update(GameTime gameTime)
     {
+        // Advance car rotation animation
+        float perCarRot = MathHelper.Pi * 2.0f / 3.0f;
+        float newCarSelectionRotationZ =
+            RacingGameManager.currentCarNumber * perCarRot;
+        carSelectionRotationZ = InterpolateRotation(
+            carSelectionRotationZ, newCarSelectionRotationZ,
+            BaseGame.MoveFactorPerSecond * 5.0f);
 
+        // Color swatch mouse hover + click detection
+        for (int num = 0; num < RacingGameManager.CarColors.Count; num++)
+        {
+            Rectangle rect =
+                RacingGameManager.currentCarColor == num
+                    ? BaseGame.CalcRectangle(250 + num * 50 - 6, 500 - 6, 46 + 12, 46 + 12)
+                    : BaseGame.CalcRectangle(250 + num * 50, 500, 46, 46);
+            if (Input.MouseInBox(rect) && Input.MouseLeftButtonPressed)
+            {
+                if (RacingGameManager.currentCarColor != num)
+                    Sound.Play(Sound.Sounds.Highlight);
+                RacingGameManager.currentCarColor = num;
+            }
+        }
+
+        // Car number left/right (keyboard, gamepad, mouse click zones)
+        if (Input.GamePadLeftJustPressed ||
+            Input.KeyboardLeftJustPressed ||
+            (Input.MouseLeftButtonJustPressed &&
+             Input.MouseInBoxRelative(new Rectangle(512 + 50, 170, 512 - 150, 135))))
+        {
+            Sound.Play(Sound.Sounds.Highlight);
+            RacingGameManager.currentCarNumber =
+                (RacingGameManager.currentCarNumber + 1) % 3;
+        }
+        else if (Input.GamePadRightJustPressed ||
+                 Input.KeyboardRightJustPressed ||
+                 (Input.MouseLeftButtonJustPressed &&
+                  Input.MouseInBoxRelative(new Rectangle(100, 170, 512 - 200, 135))))
+        {
+            Sound.Play(Sound.Sounds.Highlight);
+            RacingGameManager.currentCarNumber =
+                (RacingGameManager.currentCarNumber + 2) % 3;
+        }
+
+        // Car color up/down (gamepad / keyboard)
+        if (Input.GamePadUpJustPressed || Input.KeyboardUpJustPressed)
+        {
+            Sound.Play(Sound.Sounds.Highlight);
+            RacingGameManager.currentCarColor =
+                (RacingGameManager.currentCarColor +
+                 RacingGameManager.NumberOfCarColors - 1) %
+                RacingGameManager.NumberOfCarColors;
+        }
+        else if (Input.GamePadDownJustPressed || Input.KeyboardDownJustPressed)
+        {
+            Sound.Play(Sound.Sounds.Highlight);
+            RacingGameManager.currentCarColor =
+                (RacingGameManager.currentCarColor + 1) %
+                RacingGameManager.NumberOfCarColors;
+        }
+
+        bool aButtonPressed = BaseGame.UI.UpdateBottomButtons(false);
+        if (Input.GamePadAJustPressed ||
+            Input.KeyboardSpaceJustPressed ||
+            aButtonPressed)
+        {
+            RacingGameManager.AddGameScreen(new TrackSelection());
+        }
+
+        _isFinished =
+            Input.KeyboardEscapeJustPressed ||
+            Input.GamePadBJustPressed ||
+            Input.GamePadBackJustPressed ||
+            BaseGame.UI.backButtonPressed;
     }
     #endregion
 
     #region Render
     /// <summary>
-    /// Render
+    /// Render game screen — drawing only.
     /// </summary>
     /// <returns>Bool</returns>
     public bool Render()
     {
         if (BaseGame.AllowShadowMapping)
         {
-            // Let camera point directly at the center, around 10 units away.
             BaseGame.ViewMatrix = Matrix.CreateLookAt(
                 new Vector3(0, 10.45f, 2.75f),
                 new Vector3(0, 0, -1),
                 new Vector3(0, 0, 1));
 
-            // Let the light come from the front!
             Vector3 lightDir = -LensFlare.DefaultLightPos;
             lightDir = new Vector3(lightDir.X, lightDir.Y, -lightDir.Z);
-            // LightDirection will normalize
             BaseGame.LightDirection = lightDir;
 
-            // Show 3d cars
-            // Rotate all 3 cars depending on the current selection
             float perCarRot = MathHelper.Pi * 2.0f / 3.0f;
-            float newCarSelectionRotationZ =
-                RacingGameManager.currentCarNumber * perCarRot;
-            carSelectionRotationZ = InterpolateRotation(
-                carSelectionRotationZ, newCarSelectionRotationZ,
-                BaseGame.MoveFactorPerSecond * 5.0f);
-            // Prebuild all render matrices, we will use them for several times
-            // here.
             Matrix[] renderMatrices = new Matrix[3];
             for (int carNum = 0; carNum < 3; carNum++)
             {
@@ -118,31 +179,25 @@ class CarSelection : IGameScreen
                     Matrix.CreateRotationZ(-carSelectionRotationZ + carNum * perCarRot) *
                     Matrix.CreateTranslation(new Vector3(1.5f, 0.0f, 1.0f));
             }
-            // Last translation translates the position of the cars in the UI;
 
-            // For shadows make sure the car position is the origin
             RacingGameManager.Player.SetCarPosition(Vector3.Zero,
                 new Vector3(0, 1, 0), new Vector3(0, 0, 1));
 
-            // Generate shadows
             ShaderEffect.shadowMapping.GenerateShadows(
                 delegate
                 {
                     for (int carNum = 0; carNum < 3; carNum++)
-                        // Only the car throws shadows
                     {
                         RacingGameManager.CarModel.GenerateShadow(
                             renderMatrices[carNum]);
                     }
                 });
 
-            // Render shadows
             ShaderEffect.shadowMapping.RenderShadows(
                 delegate
                 {
                     for (int carNum = 0; carNum < 3; carNum++)
                     {
-                        // Both the car and the selection plate receive shadows
                         RacingGameManager.CarSelectionPlate.UseShadow(
                             renderMatrices[carNum]);
                         RacingGameManager.CarModel.UseShadow(renderMatrices[carNum]);
@@ -150,80 +205,40 @@ class CarSelection : IGameScreen
                 });
         }
 
-        // This starts both menu and in game post screen shader!
-        // It will render into the sceneMap texture which we will use
-        // later then.
         if (BaseGame.UsePostScreenShaders)
-        {
             BaseGame.UI.PostScreenMenuShader.Start();
-        }
 
-        // Render background and black bar
         BaseGame.UI.RenderMenuBackground();
         BaseGame.UI.RenderBlackBar(170, 390);
 
-        // Immediately paint here, else post screen UI will
-        // be drawn over!
         Texture.additiveSprite.End();
         Texture.alphaSprite.End();
-        //SpriteHelper.DrawAllSprites();
-
-        // Restart the sprites after the paint
         Texture.additiveSprite.Begin(SpriteSortMode.Deferred, BlendState.Additive);
         Texture.alphaSprite.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
 
-        // Cars header
-        int posX = 10;
-        int posY = 18;
-        // UWP COMMENT OUT
-        //if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-        //{
-        //    posX += 36;
-        //    posY += 26;
-        //}
-
         BaseGame.UI.Headers.RenderOnScreenRelative1600(
-            posX, posY, UIRenderer.HeaderChooseCarGfxRect);
+            10, 18, UIRenderer.HeaderChooseCarGfxRect);
 
-        // Allow selecting the car color
+        // Draw car color swatches (no input here)
         TextureFont.WriteText(BaseGame.XToRes(85), BaseGame.YToRes(512),
             "Car Color: ");
         for (int num = 0; num < RacingGameManager.CarColors.Count; num++)
         {
             Rectangle rect =
-                RacingGameManager.currentCarColor == num ?
-                    BaseGame.CalcRectangle(250 + num * 50 - 6, 500 - 6, 46 + 12, 46 + 12) :
-                    BaseGame.CalcRectangle(250 + num * 50, 500, 46, 46);
+                RacingGameManager.currentCarColor == num
+                    ? BaseGame.CalcRectangle(250 + num * 50 - 6, 500 - 6, 46 + 12, 46 + 12)
+                    : BaseGame.CalcRectangle(250 + num * 50, 500, 46, 46);
             RacingGameManager.colorSelectionTexture.RenderOnScreen(
                 rect, RacingGameManager.colorSelectionTexture.GfxRectangle,
                 RacingGameManager.CarColors[num]);
-
-            if (Input.MouseInBox(rect) &&
-                Input.MouseLeftButtonPressed)
-            {
-                if (RacingGameManager.currentCarColor != num)
-                {
-                    Sound.Play(Sound.Sounds.Highlight);
-                }
-
-                RacingGameManager.currentCarColor = num;
-            }
         }
 
-        // Show car maxSpeed, Acceleration and Mass values.
-        // Also show braking, friction and engine values based on that.
+        // Update car physics values for property bars
         CarPhysics.SetCarVariablesForCarType(
             CarTypeMaxSpeed[RacingGameManager.currentCarNumber],
             CarTypeMass[RacingGameManager.currentCarNumber],
             CarTypeMaxAcceleration[RacingGameManager.currentCarNumber]);
 
-        // Show info and helper texts
-        //TextureFont.WriteText(30, BaseGame.YToRes(280),
-        //    "Car: Left/Right");
-        //TextureFont.WriteText(30, BaseGame.YToRes(370),
-        //    "Color: Up/Down");
-
-        // Calculate values
         float maxSpeed =
             -1.5f + 2.45f *
             (CarTypeMaxSpeed[RacingGameManager.currentCarNumber] /
@@ -236,16 +251,11 @@ class CarSelection : IGameScreen
             -0.65f + 1.5f *
             (CarTypeMass[RacingGameManager.currentCarNumber] /
              CarPhysics.DefaultCarMass);
-        float braking =
-            -0.2f + acceleration - mass + maxSpeed;
-        float friction =
-            -1 + (1 / mass + maxSpeed / 5);
-        float engine =
-            -0.2f + 0.5f * (maxSpeed / mass + acceleration - maxSpeed * 5 + 5);
+        float braking = -0.2f + acceleration - mass + maxSpeed;
+        float friction = -1 + (1 / mass + maxSpeed / 5);
+        float engine = -0.2f + 0.5f * (maxSpeed / mass + acceleration - maxSpeed * 5 + 5);
         if (engine > 0.95f)
-        {
             engine = 0.95f;
-        }
 
         ShowCarPropertyBar(
             BaseGame.XToRes(1024 - 258), BaseGame.YToRes(190),
@@ -258,8 +268,7 @@ class CarSelection : IGameScreen
             "Acceleration:", acceleration);
         ShowCarPropertyBar(
             BaseGame.XToRes(1024 - 258), BaseGame.YToRes(280),
-            "Car Mass:",
-            mass);
+            "Car Mass:", mass);
         ShowCarPropertyBar(
             BaseGame.XToRes(1024 - 258), BaseGame.YToRes(335),
             "Braking:", braking);
@@ -270,7 +279,7 @@ class CarSelection : IGameScreen
             BaseGame.XToRes(1024 - 258), BaseGame.YToRes(445),
             "Engine:", engine);
 
-        // Also show bouncing arrow on top of car
+        // Animated selection arrows
         float arrowWave =
             (float)Math.Sin(BaseGame.TotalTime / 0.46f) *
             (float)Math.Cos(BaseGame.TotalTime / 0.285f);
@@ -279,9 +288,7 @@ class CarSelection : IGameScreen
             (int)Math.Round(UIRenderer.BigArrowGfxRect.Width * arrowScale),
             (int)Math.Round(UIRenderer.BigArrowGfxRect.Width * arrowScale));
         arrowRect.X -= arrowRect.Width / 2;
-        // Not displayed anymore ..
 
-        // Show left/right arrows
         Rectangle selArrowGfxRect = UIRenderer.SelectionArrowGfxRect;
         Rectangle leftRect = BaseGame.CalcRectangle(35, 250,
             selArrowGfxRect.Width, selArrowGfxRect.Height);
@@ -299,62 +306,9 @@ class CarSelection : IGameScreen
         BaseGame.UI.Buttons.RenderOnScreen(
             rightRect, UIRenderer.SelectionArrowGfxRect);
 
-        // Also handle xbox controller input
-        if (Input.GamePadLeftJustPressed ||
-            Input.KeyboardLeftJustPressed ||
-            Input.MouseLeftButtonJustPressed &&
-            Input.MouseInBoxRelative(new Rectangle(512 + 50, 170, 512 - 150, 135)))
-        {
-            Sound.Play(Sound.Sounds.Highlight);
-            RacingGameManager.currentCarNumber =
-                (RacingGameManager.currentCarNumber + 1) % 3;
-        }
-        else if (Input.GamePadRightJustPressed ||
-                 Input.KeyboardRightJustPressed ||
-                 Input.MouseLeftButtonJustPressed &&
-                 Input.MouseInBoxRelative(new Rectangle(100, 170, 512 - 200, 135)))
-        {
-            Sound.Play(Sound.Sounds.Highlight);
-            RacingGameManager.currentCarNumber =
-                (RacingGameManager.currentCarNumber + 2) % 3;
-        }
+        BaseGame.UI.RenderBottomButtons(false);
 
-        // Mouse input is handled in RacingGameManager.cs
-        if (Input.GamePadUpJustPressed ||
-            Input.KeyboardUpJustPressed)
-        {
-            Sound.Play(Sound.Sounds.Highlight);
-            RacingGameManager.currentCarColor = (RacingGameManager.currentCarColor +
-                                                    RacingGameManager.NumberOfCarColors - 1) %
-                                                RacingGameManager.NumberOfCarColors;
-        }
-        else if (Input.GamePadDownJustPressed ||
-                 Input.KeyboardDownJustPressed)
-        {
-            Sound.Play(Sound.Sounds.Highlight);
-            RacingGameManager.currentCarColor =
-                (RacingGameManager.currentCarColor + 1) %
-                RacingGameManager.NumberOfCarColors;
-        }
-
-        bool aButtonPressed = BaseGame.UI.RenderBottomButtons(false);
-        if (Input.GamePadAJustPressed ||
-            Input.KeyboardSpaceJustPressed ||
-            aButtonPressed)
-        {
-            RacingGameManager.AddGameScreen(new TrackSelection());
-            return false;
-        }
-
-        if (Input.KeyboardEscapeJustPressed ||
-            Input.GamePadBJustPressed ||
-            Input.GamePadBackJustPressed ||
-            BaseGame.UI.backButtonPressed)
-        {
-            return true;
-        }
-
-        return false;
+        return _isFinished;
     }
     #endregion
 
@@ -362,6 +316,7 @@ class CarSelection : IGameScreen
     #region Helpers
     /// <summary>
     /// Helper for rotating the 3 cars in the car selection screen.
+    /// Updated once per frame in Update().
     /// </summary>
     float carSelectionRotationZ = 0.0f;
 
@@ -482,14 +437,8 @@ class CarSelection : IGameScreen
         // LightDirection will normalize
         BaseGame.LightDirection = lightDir;
 
-        // Show 3d cars
-        // Rotate all 3 cars depending on the current selection
+        // Show 3d cars — carSelectionRotationZ already interpolated in Update()
         float perCarRot = MathHelper.Pi * 2.0f / 3.0f;
-        float newCarSelectionRotationZ =
-            RacingGameManager.currentCarNumber * perCarRot;
-        carSelectionRotationZ = InterpolateRotation(
-            carSelectionRotationZ, newCarSelectionRotationZ,
-            BaseGame.MoveFactorPerSecond * 5.0f);
         // Prebuild all render matrices, we will use them for several times
         // here.
         Matrix[] renderMatrices = new Matrix[3];
