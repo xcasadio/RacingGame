@@ -267,7 +267,22 @@ class Options : IGameScreen
     /// </summary>
     public bool Render()
     {
-        #region Background
+        RenderMenuBackground();
+
+        Color selColor = new Color(255, 156, 0, 160);
+        RenderResolutionOptions(selColor);
+        RenderGraphicsOptions(selColor);
+        RenderAudioSliders();
+        RenderSelectionArrow();
+
+        BaseGame.UI.RenderBottomButtons(true);
+
+        return _isFinished;
+    }
+
+    /// <summary>Draws the menu background, header image, options panel and player name.</summary>
+    private void RenderMenuBackground()
+    {
         if (BaseGame.UsePostScreenShaders)
             BaseGame.UI.PostScreenMenuShader.Start();
 
@@ -276,19 +291,17 @@ class Options : IGameScreen
             10, 18, UIRenderer.HeaderOptionsGfxRect);
         BaseGame.UI.OptionsScreen.RenderOnScreenRelative4To3(
             0, 125, BaseGame.UI.OptionsScreen.GfxRectangle);
-        #endregion
 
-        #region Display player name
         int xPos = BaseGame.XToRes(352);
         int yPos = BaseGame.YToRes768(125 + 65 - 20);
         TextureFont.WriteText(xPos, yPos,
             currentPlayerName +
             ((int)(BaseGame.TotalTime / 0.35f) % 2 == 0 ? "|" : ""));
-        #endregion
+    }
 
-        #region Resolution selection highlight
-        Color selColor = new Color(255, 156, 0, 160);
-
+    /// <summary>Draws the selection highlight over the active resolution button.</summary>
+    private void RenderResolutionOptions(Color selColor)
+    {
         Rectangle res0Rect = BaseGame.CalcRectangleKeep4To3(Resolution640x480GfxRect);
         res0Rect.Y += BaseGame.YToRes768(125);
         if (currentResolution == 0)
@@ -318,9 +331,11 @@ class Options : IGameScreen
         if (currentResolution == 4)
             BaseGame.UI.OptionsScreen.RenderOnScreen(
                 res4Rect, ResolutionAutoGfxRect, selColor, BlendState.AlphaBlend);
-        #endregion
+    }
 
-        #region Graphics checkboxes highlight
+    /// <summary>Draws selection highlights over the active graphics-option checkboxes.</summary>
+    private void RenderGraphicsOptions(Color selColor)
+    {
         Rectangle fsRect = BaseGame.CalcRectangleKeep4To3(FullscreenGfxRect);
         fsRect.Y += BaseGame.YToRes768(125);
         if (fullscreen)
@@ -344,21 +359,22 @@ class Options : IGameScreen
         if (useHighDetail)
             BaseGame.UI.OptionsScreen.RenderOnScreen(
                 hdRect, HighDetailGfxRect, selColor, BlendState.AlphaBlend);
-        #endregion
+    }
 
-        #region Sound slider
+    /// <summary>Draws the sound-volume, music-volume and sensitivity slider knobs.</summary>
+    private void RenderAudioSliders()
+    {
+        Rectangle gfxRect = UIRenderer.SelectionRadioButtonGfxRect;
+
         Rectangle soundRect = BaseGame.CalcRectangleKeep4To3(SoundGfxRect);
         soundRect.Y += BaseGame.YToRes768(125);
-        Rectangle gfxRect = UIRenderer.SelectionRadioButtonGfxRect;
         BaseGame.UI.Buttons.RenderOnScreen(new Rectangle(
                 soundRect.X + (int)(soundRect.Width * currentSoundVolume) -
                 BaseGame.XToRes(gfxRect.Width) / 2,
                 soundRect.Y,
                 BaseGame.XToRes(gfxRect.Width), BaseGame.YToRes768(gfxRect.Height)),
             gfxRect);
-        #endregion
 
-        #region Music slider
         Rectangle musicRect = BaseGame.CalcRectangleKeep4To3(MusicGfxRect);
         musicRect.Y += BaseGame.YToRes768(125);
         BaseGame.UI.Buttons.RenderOnScreen(new Rectangle(
@@ -367,9 +383,7 @@ class Options : IGameScreen
                 musicRect.Y,
                 BaseGame.XToRes(gfxRect.Width), BaseGame.YToRes768(gfxRect.Height)),
             gfxRect);
-        #endregion
 
-        #region Sensitivity slider
         Rectangle sensitivityRect = BaseGame.CalcRectangleKeep4To3(SensitivityGfxRect);
         sensitivityRect.Y += BaseGame.YToRes768(125);
         BaseGame.UI.Buttons.RenderOnScreen(new Rectangle(
@@ -379,9 +393,11 @@ class Options : IGameScreen
                 sensitivityRect.Y,
                 BaseGame.XToRes(gfxRect.Width), BaseGame.YToRes768(gfxRect.Height)),
             gfxRect);
-        #endregion
+    }
 
-        #region Show selected line arrow
+    /// <summary>Draws the animated selection arrow next to the currently highlighted slider row.</summary>
+    private void RenderSelectionArrow()
+    {
         Rectangle[] lineArrowGfxRects = new Rectangle[]
         {
             Line4ArrowGfxRect,
@@ -399,13 +415,6 @@ class Options : IGameScreen
                 BaseGame.UI.Buttons.RenderOnScreen(
                     lineRect, UIRenderer.SelectionArrowGfxRect, Color.White);
         }
-        #endregion
-
-        #region Bottom buttons
-        BaseGame.UI.RenderBottomButtons(true);
-        #endregion
-
-        return _isFinished;
     }
     #endregion
 }

@@ -596,7 +596,23 @@ public class CarPhysics : BasePlayer
             moveFactor = 0.5f;
         }
 
-        #region Handle rotations
+        HandleRotations(moveFactor);
+
+        HandleViewDistance(moveFactor);
+
+        HandleSpeed(moveFactor);
+
+        UpdateTrackAndPhysics();
+    }
+    #endregion
+
+    #region Update helper methods
+    /// <summary>
+    /// Handles steering input and updates <c>rotationChange</c> and <c>carDir</c>.
+    /// Called from <see cref="Update"/> each frame.
+    /// </summary>
+    private void HandleRotations(float moveFactor)
+    {
         float effectiveSensitivity = MinSensitivity +
                                      GameSettings.Default.ControllerSensitivity;
 
@@ -706,10 +722,14 @@ public class CarPhysics : BasePlayer
             carDir = Vector3.TransformNormal(carDir,
                 Matrix.CreateFromAxisAngle(carUp, interpolatedRotationChange));
         }
+    }
 
-        #endregion
-
-        #region Handle view distance (page up/down and mouse wheel)
+    /// <summary>
+    /// Handles page-up/down, mouse-wheel and gamepad view-distance changes.
+    /// Called from <see cref="Update"/> each frame.
+    /// </summary>
+    private void HandleViewDistance(float moveFactor)
+    {
         if (Input.Keyboard.IsKeyDown(Keys.PageUp) ||
             Input.GamePadXPressed)
         {
@@ -738,10 +758,14 @@ public class CarPhysics : BasePlayer
         {
             viewDistance = Math.Max(viewDistance, MinViewDistance);
         }
+    }
 
-        #endregion
-
-        #region Handle speed
+    /// <summary>
+    /// Handles acceleration, friction, braking and car-position update.
+    /// Called from <see cref="Update"/> each frame.
+    /// </summary>
+    private void HandleSpeed(float moveFactor)
+    {
         // With keyboard, do heavy changes, but still smooth over 200ms
         // Up or left mouse button accelerates
         // Also support ASDW (querty) and AOEW (dvorak) shooter like controlling!
@@ -947,9 +971,15 @@ public class CarPhysics : BasePlayer
 
         // Handle pitch spring
         carPitchPhysics.Simulate(moveFactor);
-        #endregion
+    }
 
-        #region Update track position and handle physics
+    /// <summary>
+    /// Updates the car's track-segment position, aligns <c>carUp</c>/<c>carDir</c>
+    /// to the road surface, sets guard-rail bounds and checks for collisions.
+    /// Called from <see cref="Update"/> each frame.
+    /// </summary>
+    private void UpdateTrackAndPhysics()
+    {
         int oldTrackSegmentNumber = trackSegmentNumber;
         // Find out where we currently are on the track.
         RacingGameManager.Landscape.UpdateCarTrackPosition(
@@ -1045,7 +1075,6 @@ public class CarPhysics : BasePlayer
         // Finally check for collisions with the guard rails.
         // Also handle gravity.
         ApplyGravityAndCheckForCollisions();
-        #endregion
     }
     #endregion
 
