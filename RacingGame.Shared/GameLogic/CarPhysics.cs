@@ -201,6 +201,12 @@ public class CarPhysics : BasePlayer
     Vector3 carUp;
 
     /// <summary>
+    /// Pre-allocated array for the four corners of the car's bounding box,
+    /// reused every frame to avoid per-frame heap allocations.
+    /// </summary>
+    private readonly Vector3[] _carCorners = new Vector3[4];
+
+    /// <summary>
     /// Car up vector
     /// </summary>
     /// <returns>Vector 3</returns>
@@ -1034,26 +1040,20 @@ public class CarPhysics : BasePlayer
         // Note: We ignore the height, this way the collision is simpler.
         // We then check the height above the road to see if we are flying
         // above the guard rails out into the landscape.
-        Vector3[] carCorners = new Vector3[]
-        {
-            // Top left
-            pos + carDir * 5.6f/2.0f - carRight * 2.6f/2.0f,
-            // Top right
-            pos + carDir * 5.6f/2.0f + carRight * 2.6f/2.0f,
-            // Bottom right
-            pos - carDir * 5.6f/2.0f + carRight * 2.6f/2.0f,
-            // Bottom left
-            pos - carDir * 5.6f/2.0f - carRight * 2.6f/2.0f,
-        };
+        // Reuse pre-allocated array to avoid GC pressure each frame.
+        _carCorners[0] = pos + carDir * 5.6f / 2.0f - carRight * 2.6f / 2.0f; // Top left
+        _carCorners[1] = pos + carDir * 5.6f / 2.0f + carRight * 2.6f / 2.0f; // Top right
+        _carCorners[2] = pos - carDir * 5.6f / 2.0f + carRight * 2.6f / 2.0f; // Bottom right
+        _carCorners[3] = pos - carDir * 5.6f / 2.0f - carRight * 2.6f / 2.0f; // Bottom left
 
         float applyGravity = 0;
 
         // Check for each corner if we collide with the guard rail
-        for (int num = 0; num < carCorners.Length; num++)
+        for (int num = 0; num < _carCorners.Length; num++)
         {
             #region Apply gravity
             // Apply gravity if we are flying, do this for each wheel.
-            if (carCorners[num].Z > groundPlanePos.Z)
+            if (_carCorners[num].Z > groundPlanePos.Z)
             {
                 applyGravity += Gravity / 4;
             }
@@ -1063,9 +1063,9 @@ public class CarPhysics : BasePlayer
             #region Hit guardrail
             // Hit any guardrail?
             float leftDist = Vector3Helper.DistanceToLine(
-                carCorners[num], guardrailLeft, nextGuardrailLeft);
+                _carCorners[num], guardrailLeft, nextGuardrailLeft);
             float rightDist = Vector3Helper.DistanceToLine(
-                carCorners[num], guardrailRight, nextGuardrailRight);
+                _carCorners[num], guardrailRight, nextGuardrailRight);
 
             // If we are closer than 0.1f, thats a collision!
             //TODO: ignore if we are too high (higher than guardrail).

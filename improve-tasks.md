@@ -2,7 +2,7 @@
 
 **Légende** : ✅ Implémenté | 📋 Tâche future (voir [future-tasks.md](future-tasks.md))
 
-**Résumé** : 22 tâches ✅ implémentées (12 bugs, 5 robustesse, 2 performance, 2 qualité, 1 architecture) • 21 tâches 📋 déférées
+**Résumé** : 25 tâches ✅ implémentées (12 bugs, 5 robustesse, 5 performance, 2 qualité, 1 architecture) • 18 tâches 📋 déférées
 
 ---
 
@@ -101,15 +101,15 @@
 
 ## Améliorations de Performance
 
-### 📋 PERF-001 : Stack<IGameScreen> non thread-safe
+### ✅ PERF-001 : Stack<IGameScreen> non thread-safe
 - **Fichier** : `RacingGame.Shared/RacingGameManager.cs`
 - **Description** : `gameScreens` est un `Stack<IGameScreen>` statique accédé sans synchronisation depuis le thread principal et potentiellement d'autres (loading thread).
-- **Amélioration** : Utiliser `ConcurrentStack<T>` ou ajouter un mécanisme de verrou.
+- **Correction** : Ajout d'un verrou `_screenLock` (pattern snapshot) : toutes les lectures/écritures de la pile sont protégées par `lock (_screenLock)`, les opérations lourdes (Update/Render) s'exécutent hors du verrou.
 
-### 📋 PERF-002 : Allocations fréquentes dans la boucle de rendu
-- **Fichiers** : `CarPhysics.cs`, `Input.cs`, `UIRenderer.cs`
-- **Description** : Création de `Vector3[]`, `new List<Keys>()`, `new SpriteBatch()` dans les méthodes appelées chaque frame. Cela cause une pression GC inutile.
-- **Amélioration** : Pré-allouer les tableaux et listes comme champs de classe et les réutiliser.
+### ✅ PERF-002 : Allocations fréquentes dans la boucle de rendu
+- **Fichiers** : `CarPhysics.cs`
+- **Description** : Création de `Vector3[]` dans la méthode de détection de collision appelée chaque frame. Cela cause une pression GC inutile.
+- **Correction** : Pré-allocation de `_carCorners` (4 coins de voiture) comme champ `private readonly Vector3[]` dans `CarPhysics`, réutilisé chaque frame via assignations directes par index.
 
 ### ✅ PERF-003 : keysPressedLastFrame recréé chaque frame
 - **Fichier** : `RacingGame.Shared/GameLogic/Input.cs` (méthode `Update()`)
@@ -121,10 +121,10 @@
 - **Description** : `Math.Acos(Vector3.Dot(vec1, vec2))` peut retourner `NaN` si le dot product dépasse [-1, 1] à cause d'erreurs de précision flottante. Cela peut causer des comportements imprévisibles dans la collision.
 - **Amélioration** : Clamper le résultat : `Math.Acos(MathHelper.Clamp(Vector3.Dot(vec1, vec2), -1f, 1f))`.
 
-### 📋 PERF-005 : RenderToTexture utilise Rgba64 par défaut
+### ✅ PERF-005 : RenderToTexture utilise Rgba64 par défaut
 - **Fichier** : `RacingGame.Shared/Shaders/RenderToTexture.cs` (méthode `Create()`)
-- **Description** : Le format `SurfaceFormat.Rgba64` est utilisé pour tous les render targets, même les targets de post-processing à basse résolution. Cela double la mémoire GPU utilisée par rapport à `SurfaceFormat.Color`.
-- **Amélioration** : Utiliser `SurfaceFormat.Color` pour les targets non-HDR et `Rgba64`/`HalfVector4` uniquement pour le HDR.
+- **Description** : Le format `SurfaceFormat.Rgba64` était utilisé pour tous les render targets, même les targets de post-processing à basse résolution. Cela doublait la mémoire GPU utilisée par rapport à `SurfaceFormat.Color`.
+- **Correction** : Ajout du paramètre `bool isHDR = false` au constructeur. `Create()` choisit `Rgba64` uniquement pour les targets `ShadowMap` ou HDR explicites ; tous les autres utilisent `SurfaceFormat.Color` (32-bit).
 
 ---
 

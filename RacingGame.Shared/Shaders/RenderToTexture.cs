@@ -122,6 +122,10 @@ public class RenderToTexture : Texture
     /// Does this texture use some high percision format? Better than 8 bit color?
     /// </summary>
     private bool usesHighPercisionFormat = false;
+    /// <summary>
+    /// When true, forces Rgba64 even for non-ShadowMap targets (HDR post-processing).
+    /// </summary>
+    private readonly bool _isHDR;
     #endregion
 
     #region Properties
@@ -177,9 +181,12 @@ public class RenderToTexture : Texture
     /// Creates an offscreen texture with the specified size which
     /// can be used for render to texture.
     /// </summary>
-    public RenderToTexture(SizeType setSizeType)
+    /// <param name="setSizeType">Desired render target size category.</param>
+    /// <param name="isHDR">When true, uses Rgba64 for HDR precision; defaults to Color (32-bit).</param>
+    public RenderToTexture(SizeType setSizeType, bool isHDR = false)
     {
         sizeType = setSizeType;
+        _isHDR = isHDR;
         CalcSize();
 
         texFilename = "RenderToTexture instance " +
@@ -231,7 +238,11 @@ public class RenderToTexture : Texture
         //    MultisampleCount = 0;
         //}
 
-        outSF = SurfaceFormat.Rgba64;
+        // Use Color (32-bit) for standard render targets to halve GPU memory usage.
+        // ShadowMap and explicit HDR targets keep Rgba64 for depth/colour precision.
+        outSF = (_isHDR || sizeType == SizeType.ShadowMap)
+            ? SurfaceFormat.Rgba64
+            : SurfaceFormat.Color;
         outDF = BaseGame.BackBufferDepthFormat;
         outMSC = MultisampleCount;
         //BaseGame.Device.Adapter.QueryRenderTargetFormat(BaseGame.Device.GraphicsProfile,

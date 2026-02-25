@@ -36,6 +36,11 @@ public class RacingGameManager : BaseGame
     /// and they follow the game logic automatically. Very cool.
     /// </summary>
     private static Stack<IGameScreen> gameScreens = new Stack<IGameScreen>();
+    /// <summary>
+    /// Lock object that protects all read/write access to <see cref="gameScreens"/>
+    /// so that the stack is safe to inspect from any thread.
+    /// </summary>
+    private static readonly object _screenLock = new object();
 
     /// <summary>
     /// Player for the game, also allows us to control the car and contains
@@ -139,8 +144,11 @@ public class RacingGameManager : BaseGame
     {
         get
         {
-            return gameScreens.Count > 0 &&
-                   gameScreens.Peek().GetType() != typeof(GameScreen);
+            lock (_screenLock)
+            {
+                return gameScreens.Count > 0 &&
+                       gameScreens.Peek().GetType() != typeof(GameScreen);
+            }
         }
     }
 
@@ -151,8 +159,11 @@ public class RacingGameManager : BaseGame
     {
         get
         {
-            return gameScreens.Count > 0 &&
-                   gameScreens.Peek().GetType() == typeof(GameScreen);
+            lock (_screenLock)
+            {
+                return gameScreens.Count > 0 &&
+                       gameScreens.Peek().GetType() == typeof(GameScreen);
+            }
         }
     }
 
@@ -165,10 +176,13 @@ public class RacingGameManager : BaseGame
         get
         {
             // Only if not in Game, not in splash screen!
-            return gameScreens.Count > 0 &&
-                   gameScreens.Peek().GetType() != typeof(GameScreen) &&
-                   gameScreens.Peek().GetType() != typeof(SplashScreen) &&
-                   gameScreens.Peek().GetType() != typeof(LoadingScreen);
+            lock (_screenLock)
+            {
+                return gameScreens.Count > 0 &&
+                       gameScreens.Peek().GetType() != typeof(GameScreen) &&
+                       gameScreens.Peek().GetType() != typeof(SplashScreen) &&
+                       gameScreens.Peek().GetType() != typeof(LoadingScreen);
+            }
         }
     }
 
@@ -180,8 +194,11 @@ public class RacingGameManager : BaseGame
     {
         get
         {
-            return gameScreens.Count > 0 &&
-                   gameScreens.Peek().GetType() == typeof(CarSelection);
+            lock (_screenLock)
+            {
+                return gameScreens.Count > 0 &&
+                       gameScreens.Peek().GetType() == typeof(CarSelection);
+            }
         }
     }
 
@@ -326,14 +343,17 @@ public class RacingGameManager : BaseGame
         Sound.Play(Sound.Sounds.MenuMusic);
 
         // Create main menu at our main entry point
-        gameScreens.Push(new MainMenu());
+        lock (_screenLock)
+        {
+            gameScreens.Push(new MainMenu());
 
-        // But start with splash screen, if user clicks or presses Start,
-        // we are back in the main menu.
-        gameScreens.Push(new SplashScreen());
+            // But start with splash screen, if user clicks or presses Start,
+            // we are back in the main menu.
+            gameScreens.Push(new SplashScreen());
 
-        //We want to initially show the loading screen while things start.
-        gameScreens.Push(new LoadingScreen());
+            //We want to initially show the loading screen while things start.
+            gameScreens.Push(new LoadingScreen());
+        }
 
         loadingThread = new Thread(LoadResources);
         loadingThread.Priority = ThreadPriority.BelowNormal;
@@ -405,7 +425,7 @@ public class RacingGameManager : BaseGame
         Sound.Play(Sound.Sounds.ScreenClick);
 
         // Add the game screen
-        gameScreens.Push(gameScreen);
+        lock (_screenLock) { gameScreens.Push(gameScreen); }
     }
     #endregion
 
@@ -418,16 +438,25 @@ public class RacingGameManager : BaseGame
         // Update game engine
         base.Update(gameTime);
 
-        if (gameScreens.Count > 0)
+        // Capture current screen under lock; the actual Update() call is
+        // intentionally outside the lock so game screens can call AddGameScreen()
+        // (lock is re-entrant per-thread, so nested pushes are safe).
+        IGameScreen updateScreen = null;
+        bool skipPlayerUpdate = false;
+        lock (_screenLock)
         {
-            if (gameScreens.Peek().GetType() != typeof(LoadingScreen))
+            if (gameScreens.Count > 0)
             {
-                // Update player and game logic
-                player.Update();
+                skipPlayerUpdate =
+                    gameScreens.Peek().GetType() == typeof(LoadingScreen);
+                updateScreen = gameScreens.Peek();
             }
-
-            //Update the game screen
-            gameScreens.Peek().Update(gameTime);
+        }
+        if (updateScreen != null)
+        {
+            if (!skipPlayerUpdate)
+                player.Update();
+            updateScreen.Update(gameTime);
         }
     }
     #endregion
@@ -438,35 +467,47 @@ public class RacingGameManager : BaseGame
     /// </summary>
     protected override void Render()
     {
-        // No more game screens?
-        if (gameScreens.Count == 0)
+        // Snapshot the current screen to render under lock; the Render() call
+        // itself is outside the lock to allow re-entrant AddGameScreen() calls.
+        IGameScreen renderScreen;
+        lock (_screenLock)
         {
-            // Before quiting, stop music and play crash sound :)
-            Sound.PlayCrashSound(true);
-            Sound.StopMusic();
+            // No more game screens?
+            if (gameScreens.Count == 0)
+            {
+                // Before quiting, stop music and play crash sound :)
+                Sound.PlayCrashSound(true);
+                Sound.StopMusic();
 
-            // Then quit
-            Exit();
-            return;
+                // Then quit
+                Exit();
+                return;
+            }
+
+            renderScreen = gameScreens.Peek();
         }
 
         // Handle current screen
-        if (gameScreens.Peek().Render())
+        if (renderScreen.Render())
         {
-            // If this was the options screen and the resolution has changed,
-            // apply the changes
-            if (gameScreens.Peek().GetType() == typeof(Options) &&
-                (BaseGame.Width != GameSettings.Default.ResolutionWidth ||
-                 BaseGame.Height != GameSettings.Default.ResolutionHeight ||
-                 BaseGame.Fullscreen != GameSettings.Default.Fullscreen))
+            lock (_screenLock)
             {
-                BaseGame.ApplyResolutionChange();
+                // If this was the options screen and the resolution has changed,
+                // apply the changes
+                if (gameScreens.Count > 0 &&
+                    gameScreens.Peek().GetType() == typeof(Options) &&
+                    (BaseGame.Width != GameSettings.Default.ResolutionWidth ||
+                     BaseGame.Height != GameSettings.Default.ResolutionHeight ||
+                     BaseGame.Fullscreen != GameSettings.Default.Fullscreen))
+                {
+                    BaseGame.ApplyResolutionChange();
+                }
+
+                // Play sound for screen back
+                Sound.Play(Sound.Sounds.ScreenBack);
+
+                gameScreens.Pop();
             }
-
-            // Play sound for screen back
-            Sound.Play(Sound.Sounds.ScreenBack);
-
-            gameScreens.Pop();
         }
     }
 
@@ -480,11 +521,16 @@ public class RacingGameManager : BaseGame
         BaseGame.Device.DepthStencilState = DepthStencilState.Default;
 
         // Currently in car selection screen?
-        if (gameScreens.Count > 0 &&
-            gameScreens.Peek().GetType() == typeof(CarSelection))
+        CarSelection carSelScreen = null;
+        lock (_screenLock)
         {
-            ((CarSelection)gameScreens.Peek()).PostUIRender();
+            if (gameScreens.Count > 0 &&
+                gameScreens.Peek().GetType() == typeof(CarSelection))
+            {
+                carSelScreen = (CarSelection)gameScreens.Peek();
+            }
         }
+        carSelScreen?.PostUIRender();
 
         // Do menu shader after everything
         if (BaseGame.UsePostScreenShaders && PostScreenMenu.Started)
