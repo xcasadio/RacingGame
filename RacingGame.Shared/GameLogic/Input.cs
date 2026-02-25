@@ -332,8 +332,8 @@ public static class Input
         return MouseInBox(new Rectangle(
             (int)Math.Round(rect.X * widthFactor),
             (int)Math.Round(rect.Y * heightFactor),
-            (int)Math.Round(rect.Right * widthFactor),
-            (int)Math.Round(rect.Bottom * heightFactor)));
+            (int)Math.Round(rect.Width * widthFactor),
+            (int)Math.Round(rect.Height * heightFactor)));
     }
     #endregion
 
@@ -475,11 +475,11 @@ public static class Input
         }
         else if (key == Keys.OemComma)
         {
-            ret = shiftPressed ? '<' : '.';
+            ret = shiftPressed ? '<' : ',';
         }
         else if (key == Keys.OemPeriod)
         {
-            ret = shiftPressed ? '>' : ',';
+            ret = shiftPressed ? '>' : '.';
         }
         else if (key == Keys.OemQuestion)
         {
