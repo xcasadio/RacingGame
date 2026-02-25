@@ -316,6 +316,13 @@ public class RacingGameManager : BaseGame
             return loadingThread.ThreadState == ThreadState.Stopped;
         }
     }
+
+    /// <summary>
+    /// Loading progress in the range [0, 1]. Set by <see cref="LoadResources"/>
+    /// at each discrete loading step so the <see cref="LoadingScreen"/> can
+    /// display a proportional progress bar.
+    /// </summary>
+    public static float LoadProgress { get; private set; } = 0f;
     #endregion
 
     #region Constructor
@@ -371,15 +378,18 @@ public class RacingGameManager : BaseGame
     {
         try
         {
+            LoadProgress = 0.05f;
             LoadEvent?.Invoke("Models...");
             // Load models
             carModel = new Model("Car");
             carSelectionPlate = new Model("CarSelectionPlate");
 
+            LoadProgress = 0.30f;
             LoadEvent?.Invoke("Landscape...");
             // Load landscape
             landscape = new Landscape(Level.Beginner);
 
+            LoadProgress = 0.65f;
             LoadEvent?.Invoke("Textures...");
             // Load textures, first one is grabbed from the imported one through
             // the car.x model, the other two are loaded seperately.
@@ -390,6 +400,7 @@ public class RacingGameManager : BaseGame
             ColorSelectionTexture = new Texture("ColorSelection");
             brakeTrackMaterial = new Material("track");
 
+            LoadProgress = 1.0f;
             LoadEvent?.Invoke("All systems go!");
             Thread.Sleep(1000);
         }
@@ -518,6 +529,14 @@ public class RacingGameManager : BaseGame
             }
         }
         carSelScreen?.PostUIRender();
+
+        // Overlay FPS counter when the option is enabled.
+        if (GameSettings.Default.ShowFPS)
+        {
+            Texture.alphaSprite.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+            TextureFont.WriteText(8, 8, $"FPS: {BaseGame.Fps}");
+            Texture.alphaSprite.End();
+        }
 
         // Do menu shader after everything
         if (BaseGame.UsePostScreenShaders && PostScreenMenu.Started)
