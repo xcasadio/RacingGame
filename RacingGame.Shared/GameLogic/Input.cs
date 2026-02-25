@@ -54,7 +54,7 @@ public static class Input
     /// <summary>
     /// Keys pressed last frame, for comparison if a key was just pressed.
     /// </summary>
-    private static List<Keys> keysPressedLastFrame = new List<Keys>();
+    private static HashSet<Keys> keysPressedLastFrame = new HashSet<Keys>();
 
     /// <summary>
     /// GamePad state, set every frame in the Update method.
@@ -1002,7 +1002,7 @@ public static class Input
 #endif
 
         // Handle keyboard input
-        keysPressedLastFrame = new List<Keys>(keyboardState.GetPressedKeys());
+        keysPressedLastFrame = new HashSet<Keys>(keyboardState.GetPressedKeys());
         keyboardState = Microsoft.Xna.Framework.Input.Keyboard.GetState();
 
         // And finally catch the XBox Controller input (only use 1 player here)

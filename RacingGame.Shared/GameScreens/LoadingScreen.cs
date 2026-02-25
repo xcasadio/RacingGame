@@ -59,7 +59,6 @@ class LoadingScreen : IGameScreen
 	/// </summary>
 	public bool Render()
 	{
-		SpriteBatch textBatch = new SpriteBatch(BaseGame.Device);
 		Vector2 position = new Vector2((BaseGame.Width / 2) - 50, (BaseGame.Height / 2) - 20);
 
 		for (int i = 0; i < loadingText.Length; i++)

@@ -41,7 +41,7 @@ class Vector3Helper
         // for help and check out the Dot Product section ^^
         // Both vectors are normalized so we can save deviding through the
         // lengths.
-        return (float)Math.Acos(Vector3.Dot(vec1, vec2));
+        return (float)Math.Acos(MathHelper.Clamp(Vector3.Dot(vec1, vec2), -1f, 1f));
     }
     #endregion
 
