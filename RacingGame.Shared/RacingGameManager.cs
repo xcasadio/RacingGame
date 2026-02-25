@@ -127,7 +127,7 @@ public class RacingGameManager : BaseGame
     /// </summary>
     private static Thread loadingThread;
 
-    public static event EventHandler<EventArgs> LoadEvent;
+    public static event Action<string> LoadEvent;
     #endregion
 
     #region Properties
@@ -364,16 +364,16 @@ public class RacingGameManager : BaseGame
     {
         try
         {
-            LoadEvent("Models...", null);
+            LoadEvent?.Invoke("Models...");
             // Load models
             carModel = new Model("Car");
             carSelectionPlate = new Model("CarSelectionPlate");
 
-            LoadEvent("Landscape...", null);
+            LoadEvent?.Invoke("Landscape...");
             // Load landscape
             landscape = new Landscape(Level.Beginner);
 
-            LoadEvent("Textures...", null);
+            LoadEvent?.Invoke("Textures...");
             // Load textures, first one is grabbed from the imported one through
             // the car.x model, the other two are loaded seperately.
             carTextures = new Texture[3];
@@ -383,7 +383,7 @@ public class RacingGameManager : BaseGame
             colorSelectionTexture = new Texture("ColorSelection");
             brakeTrackMaterial = new Material("track");
 
-            LoadEvent("All systems go!", null);
+            LoadEvent?.Invoke("All systems go!");
             Thread.Sleep(1000);
         }
         catch (Exception exc)

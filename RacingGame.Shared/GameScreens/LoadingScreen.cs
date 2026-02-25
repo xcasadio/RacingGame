@@ -30,7 +30,7 @@ class LoadingScreen : IGameScreen
 	public LoadingScreen()
 	{
 		//Setup the handler before we start the thread
-		RacingGameManager.LoadEvent += new EventHandler<EventArgs>(LoadEvent);
+		RacingGameManager.LoadEvent += OnLoadStatusChanged;
 	}
 	#endregion
 
@@ -47,9 +47,9 @@ class LoadingScreen : IGameScreen
 		}
 	}
 
-	public void LoadEvent(object sender, EventArgs e)
+	public void OnLoadStatusChanged(string status)
 	{
-		loadingStatus = (string)sender;
+		loadingStatus = status;
 	}
 	#endregion
 
