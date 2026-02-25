@@ -783,6 +783,7 @@ public class CarPhysics : BasePlayer
                 Input.MouseRightButtonPressed ||
                 Input.KeyboardDownPressed ||
                 Input.GamePad.DPad.Down == ButtonState.Pressed;
+            bool isBraking = false;
 
             if (Input.Keyboard.IsKeyDown(Keys.Space) ||
                 Input.MouseMiddleButtonPressed ||
@@ -809,8 +810,7 @@ public class CarPhysics : BasePlayer
                     speed = (oldSpeed - 100 * moveFactor);
                 }
 
-                // Remember that we slowed down for generating tracks.
-                downPressed = true;
+                isBraking = true;
             }
 
             // Calculate pitch depending on the force
@@ -818,7 +818,7 @@ public class CarPhysics : BasePlayer
 
             // Add brake tracks.
             if (speed > 0.5f && speed < 7.5f && speedChange > 5.5f * moveFactor ||
-                speed > 0.75f && speedChange < 10 * moveFactor && downPressed)
+                speed > 0.75f && speedChange < 10 * moveFactor && isBraking)
             {
                 Sound.Sounds brakeType =
                     Sound.GetBreakSoundType(speed, speedChange, rotationChange);

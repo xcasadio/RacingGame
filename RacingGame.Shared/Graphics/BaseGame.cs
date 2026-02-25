@@ -333,7 +333,7 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
 #else
         graphicsManager.PreferredBackBufferWidth = resolutionWidth;
         graphicsManager.PreferredBackBufferHeight = resolutionHeight;
-        graphicsManager.IsFullScreen = false;//GameSettings.Default.Fullscreen;
+        graphicsManager.IsFullScreen = GameSettings.Default.Fullscreen;
         graphicsManager.GraphicsDevice.Viewport = new Viewport (0, 0, resolutionWidth, resolutionHeight);
 
         mustApplyDeviceChanges = true;

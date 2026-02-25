@@ -136,26 +136,26 @@ public class Replay : ICloneable
             return trackMatrixValues[0];
         }
 
-        // Get track num and percent of the current interval.
-        int trackNum = (int)(trackTime / TrackMatrixIntervals);
+        // Get matrix index and percent of the current interval.
+        int matrixIndex = (int)(trackTime / TrackMatrixIntervals);
         float trackIntervalPercent =
-            (trackTime - trackNum * TrackMatrixIntervals) /
+            (trackTime - matrixIndex * TrackMatrixIntervals) /
             TrackMatrixIntervals;
-        if (trackNum < 0)
+        if (matrixIndex < 0)
         {
-            trackNum = 0;
+            matrixIndex = 0;
         }
 
         // At end? Then wait at start, do not interpolate anymore!
-        if (trackNum > trackMatrixValues.Count - 2)
+        if (matrixIndex > trackMatrixValues.Count - 2)
         {
             return trackMatrixValues[0];
         }
 
         // Interpolate and return
         return Matrix.Lerp(
-            trackMatrixValues[trackNum],
-            trackMatrixValues[trackNum + 1],
+            trackMatrixValues[matrixIndex],
+            trackMatrixValues[matrixIndex + 1],
             trackIntervalPercent);
     }
     #endregion
