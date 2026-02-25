@@ -102,7 +102,7 @@ class GameScreen : IGameScreen
 
         // Render car with matrix we got from CarPhysics
         RacingGameManager.CarModel.RenderCar(
-            RacingGameManager.currentCarNumber,
+            RacingGameManager.CurrentCarNumber,
             RacingGameManager.CarColor,
             false,
             RacingGameManager.Player.CarRenderMatrix);

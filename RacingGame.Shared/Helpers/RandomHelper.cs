@@ -22,7 +22,7 @@ public static class RandomHelper
     /// <summary>
     /// Global random generator
     /// </summary>
-    public static Random globalRandomGenerator =
+    public static Random GlobalRandomGenerator { get; private set; } =
         GenerateNewRandomGenerator();
     #endregion
 
@@ -35,10 +35,10 @@ public static class RandomHelper
     /// <returns>Random</returns>
     public static Random GenerateNewRandomGenerator()
     {
-        globalRandomGenerator =
+        GlobalRandomGenerator =
             new Random((int)DateTime.Now.Ticks);
         //needs Interop: (int)WindowsHelper.GetPerformanceCounter());
-        return globalRandomGenerator;
+        return GlobalRandomGenerator;
     }
     #endregion
 
@@ -50,7 +50,7 @@ public static class RandomHelper
     /// <returns>Int</returns>
     public static int GetRandomInt(int max)
     {
-        return globalRandomGenerator.Next(max);
+        return GlobalRandomGenerator.Next(max);
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ public static class RandomHelper
     /// <returns>Float</returns>
     public static float GetRandomFloat(float min, float max)
     {
-        return (float)globalRandomGenerator.NextDouble() * (max - min) + min;
+        return (float)GlobalRandomGenerator.NextDouble() * (max - min) + min;
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public static class RandomHelper
     /// <returns>Byte</returns>
     public static byte GetRandomByte(byte min, byte max)
     {
-        return (byte)(globalRandomGenerator.Next(min, max));
+        return (byte)(GlobalRandomGenerator.Next(min, max));
     }
 
     /// <summary>

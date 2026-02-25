@@ -66,18 +66,18 @@ public class RacingGameManager : BaseGame
     /// The player can select between the 3 cars: 0 (white), 1 (red) and
     /// 2 (yellow).
     /// </summary>
-    public static int currentCarNumber = 0;
+    public static int CurrentCarNumber { get; set; } = 0;
 
     /// <summary>
     /// The player can also select a car color, which will be used to
     /// recolor the car. Looks best for the first car (white).
     /// </summary>
-    public static int currentCarColor;// Color carColor = Color.White;
+    public static int CurrentCarColor { get; set; }
 
     /// <summary>
     /// Helper texture for color selection
     /// </summary>
-    public static Texture colorSelectionTexture = null;
+    public static Texture ColorSelectionTexture { get; set; } = null;
 
     /// <summary>
     /// Material for brake tracks on the road.
@@ -87,7 +87,7 @@ public class RacingGameManager : BaseGame
     /// <summary>
     /// Car colors for the car selection screen.
     /// </summary>
-    public static List<Color> CarColors = new List<Color>(
+    public static IReadOnlyList<Color> CarColors { get; } = new List<Color>(
         new Color[]
         {
             Color.White,
@@ -239,7 +239,7 @@ public class RacingGameManager : BaseGame
     {
         get
         {
-            return CarColors[currentCarColor % CarColors.Count];
+            return CarColors[CurrentCarColor % CarColors.Count];
         }
     }
 
@@ -400,7 +400,7 @@ public class RacingGameManager : BaseGame
             carTextures[0] = new Texture("RacerCar");
             carTextures[1] = new Texture("RacerCar2");
             carTextures[2] = new Texture("RacerCar3");
-            colorSelectionTexture = new Texture("ColorSelection");
+            ColorSelectionTexture = new Texture("ColorSelection");
             brakeTrackMaterial = new Material("track");
 
             LoadEvent?.Invoke("All systems go!");

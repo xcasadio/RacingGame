@@ -619,7 +619,7 @@ public class Model : IDisposable
                         // Change shader to
                         // VertexOutput_SpecularWithReflectionForCar20
                         // if we changed the color.
-                        if (RacingGameManager.currentCarColor != 0 &&
+                        if (RacingGameManager.CurrentCarColor != 0 &&
                             effectNum == 0)
                         {
                             effect.CurrentTechnique =
@@ -679,7 +679,7 @@ public class Model : IDisposable
 
                 // Change shader back to default render technique.
                 // We only have to do this if the color was changed
-                if (RacingGameManager.currentCarColor != 0 &&
+                if (RacingGameManager.CurrentCarColor != 0 &&
                     remCurrentTechnique != null)
                 {
                     mesh.Effects[0].CurrentTechnique = remCurrentTechnique;

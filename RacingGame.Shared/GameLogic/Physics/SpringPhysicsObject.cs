@@ -45,16 +45,16 @@ public class SpringPhysicsObject
     /// <summary>
     /// The distance of the attached object to the spring object.
     /// </summary>
-    public float pos = 0.0f;
+    public float Pos { get; set; } = 0.0f;
     /// <summary>
     /// Velocity of spring attached object
     /// </summary>
-    public float velocity = 0.0f;
+    public float Velocity { get; set; } = 0.0f;
     /// <summary>
     /// Current force, will be set to -pos to let it swing towards the
     /// spring center (in this class its the center).
     /// </summary>
-    public float force = 0.0f;
+    public float Force { get; set; } = 0.0f;
     #endregion
 
     #region Constructor
@@ -77,9 +77,9 @@ public class SpringPhysicsObject
         mass = setMass;
         friction = setFriction;
         springConstant = setSpringConstant;
-        pos = setInitialPos;
-        force = 0;
-        velocity = 0;
+        Pos = setInitialPos;
+        Force = 0;
+        Velocity = 0;
     }
     #endregion
 
@@ -92,13 +92,13 @@ public class SpringPhysicsObject
     public void Simulate(float timeChange)
     {
         // Calculate force again
-        force += -pos * springConstant;
+        Force += -Pos * springConstant;
         // Calculate velocity
-        velocity = force / mass;
+        Velocity = Force / mass;
         // And apply it to the current position
-        pos += timeChange * velocity;
+        Pos += timeChange * Velocity;
         // Apply friction
-        force *= 1.0f - (timeChange * friction);
+        Force *= 1.0f - (timeChange * friction);
     }
     #endregion
 
@@ -108,7 +108,7 @@ public class SpringPhysicsObject
     /// </summary>
     public void ChangePos(float change)
     {
-        pos += change;
+        Pos += change;
     }
     #endregion
 }

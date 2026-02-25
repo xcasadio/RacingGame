@@ -1392,7 +1392,7 @@ public class CarPhysics : BasePlayer
         // For rendering rotate car to stay correctly on the road
         carMatrix =
             Matrix.CreateRotationX(MathHelper.Pi / 2.0f -
-                                   carPitchPhysics.pos / 60) *
+                                   carPitchPhysics.Pos / 60) *
             Matrix.CreateRotationZ(MathHelper.Pi) *
             carMatrix;
 
