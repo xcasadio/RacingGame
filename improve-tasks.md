@@ -2,7 +2,7 @@
 
 **Légende** : ✅ Implémenté | 📋 Tâche future (voir [future-tasks.md](future-tasks.md))
 
-**Résumé** : 22 tâches ✅ implémentées (12 bugs, 5 robustesse, 2 performance, 2 qualité, 1 build) • 21 tâches 📋 déférées
+**Résumé** : 21 tâches ✅ implémentées (12 bugs, 5 robustesse, 2 performance, 2 qualité) • 22 tâches 📋 déférées
 
 ---
 
@@ -270,7 +270,7 @@
 - **Description** : Le constructeur `RacingGameManager(string unitTestName)` existe mais aucun projet de test n'est présent.
 - **Amélioration** : Créer un projet de tests (xUnit/NUnit) pour la physique, les highscores, les replays, etc.
 
-### ✅ BUILD-004 : PipelineExtension référence System.Numerics.Vector2/3/4
+### 📋 BUILD-004 : PipelineExtension référence System.Numerics.Vector2/3/4
 - **Fichier** : `RacingGame.PipelineExtension/RacingGameModelProcessor.cs`
 - **Description** : Le fichier utilise `using System.Numerics;` et `ConvertFloatsToBestType` retourne `Vector2`, `Vector3`, `Vector4` depuis `System.Numerics` au lieu des types MonoGame (`Microsoft.Xna.Framework`). Cela peut causer des erreurs de sérialisation au runtime.
 - **Amélioration** : Utiliser les types `Microsoft.Xna.Framework.Vector2/3/4` dans le content pipeline.

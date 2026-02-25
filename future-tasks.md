@@ -208,6 +208,15 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
   2. Tester en priorité : `Highscores`, `Replay` (parse/serialize), `Vector3Helper`, `Input.KeyToChar`, `CarPhysics` (formules)
   3. Mocker `BaseGame` via des interfaces ou abstractions pour tester la physique sans GPU
 
+### BUILD-004 : PipelineExtension — remplacer System.Numerics par Microsoft.Xna.Framework
+- **Priorité** : Moyenne
+- **Description** : `RacingGameModelProcessor.cs` utilise `System.Numerics.Vector2/3/4` au lieu de `Microsoft.Xna.Framework.Vector2/3/4`. Cela peut provoquer des erreurs de désérialisation au runtime car le content pipeline attend les types XNA.
+- **Raison du report** : Le projet `RacingGame.PipelineExtension` cible `net8.0` (sans suffixe `-windows`). Dans ce contexte, `Microsoft.Xna.Framework` ne rend pas les types `Vector2/3/4` accessibles directement.
+- **Plan** :
+  1. Vérifier si passer `RacingGame.PipelineExtension` de `net8.0` à `net8.0-windows` est possible sans casser la chaîne de build
+  2. Ou utiliser les types `Microsoft.Xna.Framework.Content.Pipeline.Graphics` équivalents déjà disponibles dans le pipeline
+  3. Tester que le content pipeline construit et produit des assets valides après le changement
+
 ---
 
 *Fichier généré le : 2025*  
