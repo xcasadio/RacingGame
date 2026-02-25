@@ -58,45 +58,52 @@ class LoadingScreen : IGameScreen
 			_pixelTex.SetData(new[] { Color.White });
 		}
 
-		// Vertical anchor: everything is laid out relative to this point.
-		float baseY    = (BaseGame.Height / 2f) - 50f;
-		float sineArg  = -BaseGame.TotalTime * 3f;
+		int    fontH    = TextureFont.Height;
+		float  centerX  = BaseGame.Width / 2f;
+		// Anchor the whole block around the vertical centre of the screen.
+		float  baseY    = (BaseGame.Height / 2f) - fontH * 1.5f;
+		float  sineArg  = -BaseGame.TotalTime * 3f;
+		// Row gap = font height + a small margin, fully resolution-independent.
+		int    rowGap   = fontH + fontH / 2;
 
-		// The bar bounces in sync with the first letter of "Loading...".
-		float barBounce = 7f * Math.Abs((float)Math.Sin(sineArg));
+		// Row 1 – "Loading..." animated wave (each character independent).
+		WriteBouncingText(loadingText, centerX, (int)baseY, Color.Red, sineArg);
 
-		// Layout (all Y values relative to baseY):
-		//   [0]        Animated "Loading..." letters
-		//   [+52]      Status text (centred)
-		//   [+90+bounce] Progress bar top
-		int statusY = (int)(baseY + 52);
-		int barYTop  = (int)(baseY + 90 + barBounce);
+		// Row 2 – Status label ("Models...", "Textures...", …) with the same wave.
+		WriteBouncingText(loadingStatus, centerX, (int)(baseY + rowGap), Color.White, sineArg + 1f);
 
-		// Draw the progress bar FIRST so it is submitted to the sprite batch
-		// before the text characters — text is rendered in a later pass and
-		// therefore appears on top of the bar.
-		RenderProgressBar(barYTop);
-
-		// Animated "Loading..." letters — each character bounces independently.
-		float posX = (BaseGame.Width / 2f) - 50f;
-		for (int i = 0; i < loadingText.Length; i++)
-		{
-			string charStr = new string(loadingText[i], 1);
-			int charY = (int)(baseY + 7 * Math.Abs(Math.Sin((i / 4f) + sineArg)));
-			TextureFont.WriteText((int)posX, charY, charStr, Color.Red);
-			posX += TextureFont.GetTextWidth(charStr);
-		}
-
-		// Status label (e.g. "Models...", "Textures...").
-		TextureFont.WriteTextCentered(BaseGame.Width / 2, statusY, loadingStatus);
+		// Row 3 – Progress bar, positioned below row 2 and shifted by the same bounce
+		// so the whole block moves as one unit.
+		float bounce = 7f * Math.Abs((float)Math.Sin(sineArg));
+		RenderProgressBar((int)(baseY + rowGap * 2 + bounce), sineArg);
 
 		return _isFinished;
 	}
 
 	/// <summary>
-	/// Draws a progress bar centred horizontally at the given <paramref name="yTop"/> coordinate.
+	/// Writes <paramref name="text"/> character-by-character, applying a sine-wave
+	/// vertical offset to each character so the text bounces like "Loading...".
+	/// The text is horizontally centred around <paramref name="centerX"/>.
 	/// </summary>
-	private void RenderProgressBar(int yTop)
+	private static void WriteBouncingText(string text, float centerX, int baseY, Color color, float sineArg)
+	{
+		if (string.IsNullOrEmpty(text)) return;
+		int totalWidth = TextureFont.GetTextWidth(text);
+		float posX = centerX - totalWidth / 2f;
+		for (int i = 0; i < text.Length; i++)
+		{
+			string ch = new string(text[i], 1);
+			int charY = (int)(baseY + 7 * Math.Abs(Math.Sin((i / 4f) + sineArg)));
+			TextureFont.WriteText((int)posX, charY, ch, color);
+			posX += TextureFont.GetTextWidth(ch);
+		}
+	}
+
+	/// <summary>
+	/// Draws a progress bar centred horizontally at the given <paramref name="yTop"/> coordinate.
+	/// The percentage label below the bar uses the same wave as the rest of the screen.
+	/// </summary>
+	private void RenderProgressBar(int yTop, float sineArg)
 	{
 		const int barWidth  = 300;
 		const int barHeight = 14;
@@ -125,10 +132,10 @@ class LoadingScreen : IGameScreen
 				new Color(220, 80, 20, 230));
 		}
 
-		// Percentage text
-		int pct = (int)(progress * 100f);
-		string pctText = $"{pct}%";
-		TextureFont.WriteTextCentered(BaseGame.Width / 2, yTop + barHeight + TextureFont.Height / 2 + 4, pctText);
+		// Percentage label below the bar — same wave effect as the rest.
+		string pctText = $"{(int)(progress * 100f)}%";
+		WriteBouncingText(pctText, BaseGame.Width / 2f,
+			yTop + barHeight + TextureFont.Height / 2 + 4, Color.White, sineArg + 2f);
 	}
 	#endregion
 }
