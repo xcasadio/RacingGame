@@ -46,6 +46,10 @@ public class Player : CarPhysics
     /// in the air before game over occurs
     /// </summary>
     private const float InAirTimeoutMilliseconds = 3000.0f;
+
+    // Game over camera
+    /// <summary>Period (ms) of one full orbit of the game-over camera around the car.</summary>
+    private const float GameOverCameraRotationPeriodMs = 2593.0f;
     #endregion
 
     #region Camera composition
@@ -124,7 +128,7 @@ public class Player : CarPhysics
                 // Manually orbit the camera around the car — bypass ChaseCamera entirely.
                 Vector3 gameOverCamPos = CarPosition + new Vector3(0, -5, +20) +
                             Vector3.TransformNormal(new Vector3(30, 0, 0),
-                                Matrix.CreateRotationZ(BaseGame.TotalTimeMilliseconds / 2593.0f));
+                                Matrix.CreateRotationZ(BaseGame.TotalTimeMilliseconds / GameOverCameraRotationPeriodMs));
                 BaseGame.ViewMatrix = Matrix.CreateLookAt(
                     gameOverCamPos, CarPosition, CarUpVector);
                 this.currentGameTimeMilliseconds = this.BestTimeMilliseconds;

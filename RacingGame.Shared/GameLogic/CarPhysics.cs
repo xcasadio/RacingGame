@@ -119,6 +119,74 @@ public class CarPhysics : BasePlayer
     /// This is ignored during at the start of the race for zooming in
     /// </summary>
     private const float MaxViewDistance = 1.8f;
+
+    // Spring physics for car pitch
+    /// <summary>Friction coefficient for the car pitch spring simulation.</summary>
+    private const float PitchSpringFriction = 1.5f;
+    /// <summary>Spring constant (stiffness) for the car pitch simulation.</summary>
+    private const int PitchSpringConstant = 120;
+
+    // Steering feel
+    /// <summary>Per-frame rotation damping factor (applied each update to bleed off rotation).</summary>
+    private const float RotationFrictionFactor = 0.95f;
+    /// <summary>Divisor applied to keyboard-input rotation to tune turning speed.</summary>
+    private const float KeyboardRotationDivisor = 2.5f;
+    /// <summary>Divisor that scales mouse-X delta into a rotation change.</summary>
+    private const float MouseSteeringDivisor = 15.0f;
+    /// <summary>Divisor for gamepad analog-stick rotation (tuned for analog feel).</summary>
+    private const float GamePadAnalogStickDivisor = 1.12345f;
+    /// <summary>Divisor for gamepad D-pad rotation (identical to keyboard feel).</summary>
+    private const float GamePadDPadRotationDivisor = 1.5f;
+    /// <summary>Multiplier that sets the maximum allowed rotation per update.</summary>
+    private const float MaxRotationMultiplier = 1.25f;
+    /// <summary>Speed (m/s) below which rotation is progressively reduced.</summary>
+    private const float LowSpeedThreshold = 10.0f;
+    /// <summary>Base rotation scale applied at zero speed (linear ramp starts here).</summary>
+    private const float LowSpeedRotationBase = 0.67f;
+    /// <summary>Slope of the linear rotation-scale ramp applied below LowSpeedThreshold.</summary>
+    private const float LowSpeedRotationFactor = 0.33f;
+    /// <summary>High-speed rotation divisor — reduces over-steer at top speeds.</summary>
+    private const float HighSpeedRotationDivisor = 100.0f;
+    /// <summary>Denominator used to smooth rotation interpolation over ~200 ms.</summary>
+    private const float RotationInterpolationFactor = 0.225f;
+
+    // View distance
+    /// <summary>Rate (units/sec) at which view distance changes via page-up/down.</summary>
+    private const float ViewDistanceChangeRate = 2.0f;
+    /// <summary>Divisor that converts mouse-wheel delta into a view-distance change.</summary>
+    private const float MouseWheelViewDivisor = 500.0f;
+
+    // Physics application
+    /// <summary>Scalar that converts acceleration force into the internal force units.</summary>
+    private const float AccelerationForceFactor = 85.0f;
+    /// <summary>Factor applied to speed when advancing car position each frame.</summary>
+    private const float CarSpeedPositionFactor = 1.75f;
+    /// <summary>Maximum allowed speed change per second (caps brake/acceleration).</summary>
+    private const float MaxSpeedChangePerSec = 100.0f;
+
+    // Collision response
+    /// <summary>Speed retained by front wheels after a glancing left-rail collision.</summary>
+    private const float FrontLeftGlanceSpeedFactor = 0.93f;
+    /// <summary>Speed retained by front wheels after a glancing right-rail collision.</summary>
+    private const float FrontRightGlanceSpeedFactor = 0.935f;
+    /// <summary>Speed retained by rear wheels after a glancing collision.</summary>
+    private const float RearGlanceSpeedFactor = 0.96f;
+    /// <summary>Minimum viewDistance value before collision visual effects are applied.</summary>
+    private const float CollisionViewDistanceMin = 0.75f;
+    /// <summary>View-distance decrease for a front-wheel collision.</summary>
+    private const float FrontCollisionViewDecrement = 0.1f;
+    /// <summary>View-distance decrease for a rear-wheel collision.</summary>
+    private const float RearCollisionViewDecrement = 0.05f;
+    /// <summary>Camera wobble intensity for a glancing collision.</summary>
+    private const float GlancingCollisionWobbleFactor = 0.00075f;
+    /// <summary>Camera wobble intensity for a frontal collision.</summary>
+    private const float FrontalCollisionWobbleFactor = 0.005f;
+    /// <summary>Divisor applied to collision angle for large-angle crash rotation.</summary>
+    private const float FrontalCollisionRotationDivisor = 3.0f;
+    /// <summary>Rotation divisor for front-wheel glancing collision (larger rotation than rear).</summary>
+    private const float FrontGlancingCollisionRotationDivisor = 1.5f;
+    /// <summary>Rotation divisor for rear-wheel glancing collision (smaller rotation than front).</summary>
+    private const float RearGlancingCollisionRotationDivisor = 2.5f;
     #endregion
 
     #region Variables
@@ -160,7 +228,7 @@ public class CarPhysics : BasePlayer
         maxAccelerationPerSec = setMaxAccelerationPerSec;
 
         carPitchPhysics = new SpringPhysicsObject(
-            carMass, 1.5f, 120, 0);
+            carMass, PitchSpringFriction, PitchSpringConstant, 0);
     }
     #endregion
 
@@ -220,7 +288,7 @@ public class CarPhysics : BasePlayer
     /// accelerating, decelerating and crashing.
     /// </summary>
     static SpringPhysicsObject carPitchPhysics = new SpringPhysicsObject(
-        DefaultCarMass, 1.5f, 120, 0);
+        DefaultCarMass, PitchSpringFriction, PitchSpringConstant, 0);
 
     /// <summary>
     /// View distance, which we can change with page up/down and the mouse
@@ -533,21 +601,21 @@ public class CarPhysics : BasePlayer
                                      GameSettings.Default.ControllerSensitivity;
 
         // First handle rotations (reduce last value)
-        rotationChange *= 0.95f;
+        rotationChange *= RotationFrictionFactor;
 
         // Left/right changes rotation
         if (Input.KeyboardLeftPressed ||
             Input.Keyboard.IsKeyDown(Keys.A))
         {
             rotationChange += effectiveSensitivity *
-                MaxRotationPerSec * moveFactor / 2.5f;
+                MaxRotationPerSec * moveFactor / KeyboardRotationDivisor;
         }
         else if (Input.KeyboardRightPressed ||
                  Input.Keyboard.IsKeyDown(Keys.D) ||
                  Input.Keyboard.IsKeyDown(Keys.E))
         {
             rotationChange -= effectiveSensitivity *
-                MaxRotationPerSec * moveFactor / 2.5f;
+                MaxRotationPerSec * moveFactor / KeyboardRotationDivisor;
         }
         else
         {
@@ -557,7 +625,7 @@ public class CarPhysics : BasePlayer
         if (Input.MouseXMovement != 0)
         {
             rotationChange -= effectiveSensitivity *
-                              (Input.MouseXMovement / 15.0f) *
+                              (Input.MouseXMovement / MouseSteeringDivisor) *
                               MaxRotationPerSec * moveFactor;
         }
 
@@ -566,21 +634,21 @@ public class CarPhysics : BasePlayer
             // More dynamic force changing with gamepad (slow, faster, etc.)
             rotationChange -= effectiveSensitivity *
                 Input.GamePad.ThumbSticks.Left.X *
-                MaxRotationPerSec * moveFactor / 1.12345f;
+                MaxRotationPerSec * moveFactor / GamePadAnalogStickDivisor;
             // Also allow pad to simulate same behaviour as on keyboard
             if (Input.GamePad.DPad.Left == ButtonState.Pressed)
             {
                 rotationChange += effectiveSensitivity *
-                    MaxRotationPerSec * moveFactor / 1.5f;
+                    MaxRotationPerSec * moveFactor / GamePadDPadRotationDivisor;
             }
             else if (Input.GamePad.DPad.Right == ButtonState.Pressed)
             {
                 rotationChange -= effectiveSensitivity *
-                    MaxRotationPerSec * moveFactor / 1.5f;
+                    MaxRotationPerSec * moveFactor / GamePadDPadRotationDivisor;
             }
         }
 
-        float maxRot = MaxRotationPerSec * moveFactor * 1.25f;
+        float maxRot = MaxRotationPerSec * moveFactor * MaxRotationMultiplier;
 
         // Handle car rotation after collision
         if (rotateCarAfterCollision != 0)
@@ -604,13 +672,13 @@ public class CarPhysics : BasePlayer
         else
         {
             // If we are staying or moving very slowly, limit rotation!
-            if (speed < 10.0f)
+            if (speed < LowSpeedThreshold)
             {
-                rotationChange *= 0.67f + 0.33f * speed / 10.0f;
+                rotationChange *= LowSpeedRotationBase + LowSpeedRotationFactor * speed / LowSpeedThreshold;
             }
             else
             {
-                rotationChange *= 1.0f + (speed - 10) / 100.0f;
+                rotationChange *= 1.0f + (speed - LowSpeedThreshold) / HighSpeedRotationDivisor;
             }
         }
 
@@ -631,7 +699,7 @@ public class CarPhysics : BasePlayer
         // Smooth over 200ms
         float interpolatedRotationChange =
             (rotationChange + virtualRotationAmount) *
-            moveFactor / 0.225f;
+            moveFactor / RotationInterpolationFactor;
         virtualRotationAmount -= interpolatedRotationChange;
         if (isCarOnGround)
         {
@@ -645,18 +713,18 @@ public class CarPhysics : BasePlayer
         if (Input.Keyboard.IsKeyDown(Keys.PageUp) ||
             Input.GamePadXPressed)
         {
-            viewDistance -= moveFactor * 2.0f;
+            viewDistance -= moveFactor * ViewDistanceChangeRate;
         }
 
         if (Input.Keyboard.IsKeyDown(Keys.PageDown) ||
             Input.GamePadYPressed)
         {
-            viewDistance += moveFactor * 2.0f;
+            viewDistance += moveFactor * ViewDistanceChangeRate;
         }
 
         if (Input.MouseWheelDelta != 0)
         {
-            viewDistance -= Input.MouseWheelDelta / 500.0f;
+            viewDistance -= Input.MouseWheelDelta / MouseWheelViewDivisor;
         }
 
         // Restrict the camera's distance to a range, but allow the camera
@@ -731,7 +799,7 @@ public class CarPhysics : BasePlayer
         if (isCarOnGround)
         {
             carForce +=
-                carDir * newAccelerationForce * (moveFactor * 85);
+                carDir * newAccelerationForce * (moveFactor * AccelerationForceFactor);
         }
 
         // Change speed with standard formula, use acceleration as our force
@@ -815,14 +883,14 @@ public class CarPhysics : BasePlayer
                     (speed < 0 ? 0.33f : 1.0f);
                 speed *= Math.Max(0, slowdown);
                 // Limit to max. 100 mph slowdown per sec
-                if (speed > oldSpeed + 100 * moveFactor)
+                if (speed > oldSpeed + MaxSpeedChangePerSec * moveFactor)
                 {
-                    speed = (oldSpeed + 100 * moveFactor);
+                    speed = (oldSpeed + MaxSpeedChangePerSec * moveFactor);
                 }
 
-                if (speed < oldSpeed - 100 * moveFactor)
+                if (speed < oldSpeed - MaxSpeedChangePerSec * moveFactor)
                 {
-                    speed = (oldSpeed - 100 * moveFactor);
+                    speed = (oldSpeed - MaxSpeedChangePerSec * moveFactor);
                 }
 
                 isBraking = true;
@@ -875,7 +943,7 @@ public class CarPhysics : BasePlayer
         }
 
         // Apply speed and calculate new car position.
-        carPos += speed * carDir * moveFactor * 1.75f;
+        carPos += speed * carDir * moveFactor * CarSpeedPositionFactor;
 
         // Handle pitch spring
         carPitchPhysics.Simulate(moveFactor);
@@ -1082,25 +1150,25 @@ public class CarPhysics : BasePlayer
                     // For front wheels to full collision rotation, for back half!
                     if (num < 2)
                     {
-                        rotateCarAfterCollision = -collisionAngle / 1.5f;
+                        rotateCarAfterCollision = -collisionAngle / FrontGlancingCollisionRotationDivisor;
 
-                        speed *= 0.93f;
-                        if (viewDistance > 0.75f)
+                        speed *= FrontLeftGlanceSpeedFactor;
+                        if (viewDistance > CollisionViewDistanceMin)
                         {
-                            viewDistance -= 0.1f;
+                            viewDistance -= FrontCollisionViewDecrement;
                         }
                     }
                     else
                     {
-                        rotateCarAfterCollision = -collisionAngle / 2.5f;
+                        rotateCarAfterCollision = -collisionAngle / RearGlancingCollisionRotationDivisor;
 
-                        speed *= 0.96f;
-                        if (viewDistance > 0.75f)
+                        speed *= RearGlanceSpeedFactor;
+                        if (viewDistance > CollisionViewDistanceMin)
                         {
-                            viewDistance -= 0.05f;
+                            viewDistance -= RearCollisionViewDecrement;
                         }
                     }
-                    ChaseCamera.WobbleCamera(0.00075f * speed);
+                    ChaseCamera.WobbleCamera(GlancingCollisionWobbleFactor * speed);
                 }
 
                 // If 90-45 degrees (in either direction), make frontal crash
@@ -1110,14 +1178,14 @@ public class CarPhysics : BasePlayer
                     // Also rotate car if less than 60 degrees
                     if (Math.Abs(collisionAngle) < MathHelper.Pi / 3.0f)
                     {
-                        rotateCarAfterCollision = +collisionAngle / 3.0f;
+                        rotateCarAfterCollision = +collisionAngle / FrontalCollisionRotationDivisor;
                     }
 
                     // Play crash sound
                     Sound.PlayCrashSound(true);
 
                     // Shake camera
-                    ChaseCamera.WobbleCamera(0.005f * speed);
+                    ChaseCamera.WobbleCamera(FrontalCollisionWobbleFactor * speed);
 
                     // Just stop car!
                     speed = 0;
@@ -1163,25 +1231,25 @@ public class CarPhysics : BasePlayer
                     // For front wheels to full collision rotation, for back half!
                     if (num < 2)
                     {
-                        rotateCarAfterCollision = +collisionAngle / 1.5f;
+                        rotateCarAfterCollision = +collisionAngle / FrontGlancingCollisionRotationDivisor;
 
-                        speed *= 0.935f;
-                        if (viewDistance > 0.75f)
+                        speed *= FrontRightGlanceSpeedFactor;
+                        if (viewDistance > CollisionViewDistanceMin)
                         {
-                            viewDistance -= 0.1f;
+                            viewDistance -= FrontCollisionViewDecrement;
                         }
                     }
                     else
                     {
-                        rotateCarAfterCollision = +collisionAngle / 2.5f;
+                        rotateCarAfterCollision = +collisionAngle / RearGlancingCollisionRotationDivisor;
 
-                        speed *= 0.96f;
-                        if (viewDistance > 0.75f)
+                        speed *= RearGlanceSpeedFactor;
+                        if (viewDistance > CollisionViewDistanceMin)
                         {
-                            viewDistance -= 0.05f;
+                            viewDistance -= RearCollisionViewDecrement;
                         }
                     }
-                    ChaseCamera.WobbleCamera(0.00075f * speed);
+                    ChaseCamera.WobbleCamera(GlancingCollisionWobbleFactor * speed);
                 }
 
                 // If 90-45 degrees (in either direction), make frontal crash
@@ -1191,14 +1259,14 @@ public class CarPhysics : BasePlayer
                     // Also rotate car if less than 60 degrees
                     if (Math.Abs(collisionAngle) < MathHelper.Pi / 3.0f)
                     {
-                        rotateCarAfterCollision = +collisionAngle / 3.0f;
+                        rotateCarAfterCollision = +collisionAngle / FrontalCollisionRotationDivisor;
                     }
 
                     // Play crash sound
                     Sound.PlayCrashSound(true);
 
                     // Shake camera
-                    ChaseCamera.WobbleCamera(0.005f * speed);
+                    ChaseCamera.WobbleCamera(FrontalCollisionWobbleFactor * speed);
 
                     // Just stop car!
                     speed = 0;
