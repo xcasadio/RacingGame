@@ -83,33 +83,33 @@ public class ChaseCamera : CarPhysics
     }
     #endregion
 
-    #region Camera wobbel
+    #region Camera wobble
     /// <summary>
-    /// Max. value for camera wobbel timeout.
+    /// Max. value for camera wobble timeout.
     /// </summary>
-    const int MaxCameraWobbelTimeoutMs = 700;
+    const int MaxCameraWobbleTimeoutMs = 700;
 
     /// <summary>
-    /// Camera wobbel timeout.
+    /// Camera wobble timeout.
     /// Used to shake camera after a collision.
     /// </summary>
-    static float cameraWobbelTimeoutMs = 0;
+    static float cameraWobbleTimeoutMs = 0;
 
     /// <summary>
-    /// Camera wobbel factor.
+    /// Camera wobble factor.
     /// </summary>
-    static float cameraWobbelFactor = 1.0f;
+    static float cameraWobbleFactor = 1.0f;
 
     /// <summary>
     /// Sets the camera to wobble which fades over time.
     /// </summary>
     /// <param name="factor">Factor</param>
-    public static void WobbelCamera(float wobbelFactor)
+    public static void WobbleCamera(float wobbleFactor)
     {
-        cameraWobbelTimeoutMs = (int)
-            //((0.75f + 0.5f * wobbelFactor) *
-            (MaxCameraWobbelTimeoutMs);
-        cameraWobbelFactor = wobbelFactor;
+        cameraWobbleTimeoutMs = (int)
+            //((0.75f + 0.5f * wobbleFactor) *
+            (MaxCameraWobbleTimeoutMs);
+        cameraWobbleFactor = wobbleFactor;
     }
     #endregion
 
@@ -484,23 +484,23 @@ public class ChaseCamera : CarPhysics
         // Build look at matrix
         rotMatrix = Matrix.CreateLookAt(cameraPos, LookAtPos, CarUpVector);
 
-        // Is camera wobbeling?
-        if (cameraWobbelTimeoutMs > 0)
+        // Is camera wobbling?
+        if (cameraWobbleTimeoutMs > 0)
         {
-            cameraWobbelTimeoutMs -= BaseGame.ElapsedTimeThisFrameInMilliseconds;
-            if (cameraWobbelTimeoutMs < 0)
+            cameraWobbleTimeoutMs -= BaseGame.ElapsedTimeThisFrameInMilliseconds;
+            if (cameraWobbleTimeoutMs < 0)
             {
-                cameraWobbelTimeoutMs = 0;
+                cameraWobbleTimeoutMs = 0;
             }
         }
 
-        // Add camera shake if camera wobbel effect is on
-        if (cameraWobbelTimeoutMs > 0 &&
+        // Add camera shake if camera wobble effect is on
+        if (cameraWobbleTimeoutMs > 0 &&
             // But only if not zooming in and if in game.
             ZoomInTime <= StartGameZoomTimeMilliseconds)
         {
-            float effectStrength = 1.5f * cameraWobbelFactor *
-                                   (cameraWobbelTimeoutMs / (float)MaxCameraWobbelTimeoutMs);
+            float effectStrength = 1.5f * cameraWobbleFactor *
+                                   (cameraWobbleTimeoutMs / (float)MaxCameraWobbleTimeoutMs);
             // Interpolate, make wobbleing more smoooth than in Rocket Commander
             lastCameraWobble =
                 lastCameraWobble * 0.9f +
@@ -516,12 +516,12 @@ public class ChaseCamera : CarPhysics
 
     #region Reset
     /// <summary>
-    /// Resets just the camera wobbel factor here.
+    /// Resets just the camera wobble factor here.
     /// </summary>
     public override void Reset()
     {
         base.Reset();
-        cameraWobbelFactor = 0;
+        cameraWobbleFactor = 0;
     }
 
     /// <summary>
@@ -530,7 +530,7 @@ public class ChaseCamera : CarPhysics
     public override void ClearVariablesForGameOver()
     {
         base.ClearVariablesForGameOver();
-        cameraWobbelFactor = 0;
+        cameraWobbleFactor = 0;
     }
     #endregion
 

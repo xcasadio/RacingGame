@@ -1091,7 +1091,7 @@ public class CarPhysics : BasePlayer
                             viewDistance -= 0.05f;
                         }
                     }
-                    ChaseCamera.WobbelCamera(0.00075f * speed);
+                    ChaseCamera.WobbleCamera(0.00075f * speed);
                 }
 
                 // If 90-45 degrees (in either direction), make frontal crash
@@ -1108,7 +1108,7 @@ public class CarPhysics : BasePlayer
                     Sound.PlayCrashSound(true);
 
                     // Shake camera
-                    ChaseCamera.WobbelCamera(0.005f * speed);
+                    ChaseCamera.WobbleCamera(0.005f * speed);
 
                     // Just stop car!
                     speed = 0;
@@ -1172,7 +1172,7 @@ public class CarPhysics : BasePlayer
                             viewDistance -= 0.05f;
                         }
                     }
-                    ChaseCamera.WobbelCamera(0.00075f * speed);
+                    ChaseCamera.WobbleCamera(0.00075f * speed);
                 }
 
                 // If 90-45 degrees (in either direction), make frontal crash
@@ -1189,7 +1189,7 @@ public class CarPhysics : BasePlayer
                     Sound.PlayCrashSound(true);
 
                     // Shake camera
-                    ChaseCamera.WobbelCamera(0.005f * speed);
+                    ChaseCamera.WobbleCamera(0.005f * speed);
 
                     // Just stop car!
                     speed = 0;
