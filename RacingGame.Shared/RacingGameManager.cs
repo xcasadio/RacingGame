@@ -1,14 +1,3 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// RacingGameManager.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using directives
-
 using System.Threading;
 using RacingGame.GameLogic;
 using RacingGame.GameScreens;
@@ -19,8 +8,6 @@ using Model = RacingGame.Graphics.Model;
 using Texture = RacingGame.Graphics.Texture;
 using RacingGame.Properties;
 using RacingGame.Shaders;
-#endregion
-
 namespace RacingGame;
 
 /// <summary>

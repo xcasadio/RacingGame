@@ -1,12 +1,3 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// LineManager2D.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
 #region Unit Testing
 
 using RacingGame.Helpers;

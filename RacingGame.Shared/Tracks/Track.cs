@@ -1,20 +1,7 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// Track.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using directives
-
 using RacingGame.Graphics;
 using RacingGame.Helpers;
 using RacingGame.Landscapes;
 using RacingGame.Shaders;
-
-#endregion
 
 namespace RacingGame.Tracks;
 

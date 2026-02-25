@@ -1,18 +1,5 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// LoadingScreen.cs
-//
-// Display a screen to inform the player that their game is still responding,
-// while loading content in the background.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using directives
-
 using System.Threading;
 using RacingGame.Graphics;
-#endregion
-
 namespace RacingGame.GameScreens;
 
 /// <summary>

@@ -1,20 +1,8 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// ScreenshotCapturer.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
 // Does not work on the Xbox360, no Save method in the Texture class!
 
-#region Using Statements
 
 using RacingGame.Helpers;
 using RacingGame.Graphics;
-#endregion
-
 namespace RacingGame.GameLogic;
 
 /// <summary>

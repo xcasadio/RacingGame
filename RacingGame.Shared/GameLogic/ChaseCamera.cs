@@ -1,18 +1,5 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// ChaseCamera.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using directives
-
 using RacingGame.Graphics;
 using RacingGame.Helpers;
-
-#endregion
 
 namespace RacingGame.GameLogic;
 

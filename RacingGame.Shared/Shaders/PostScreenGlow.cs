@@ -1,19 +1,6 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// PostScreenGlow.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using directives
-
 using RacingGame.GameLogic;
 using RacingGame.Graphics;
 using Texture = RacingGame.Graphics.Texture;
-
-#endregion
 
 namespace RacingGame.Shaders;
 

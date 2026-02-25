@@ -1,19 +1,6 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// RenderToTexture.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using directives
-
 using RacingGame.Graphics;
 using Texture = RacingGame.Graphics.Texture;
 using XnaTexture = Microsoft.Xna.Framework.Graphics.Texture2D;
-
-#endregion
 
 namespace RacingGame.Shaders;
 

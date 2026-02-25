@@ -1,19 +1,6 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// SplashScreen.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using directives
-
 using RacingGame.Graphics;
 using RacingGame.GameLogic;
 using RacingGame.Shaders;
-#endregion
-
 namespace RacingGame.GameScreens;
 
 /// <summary>

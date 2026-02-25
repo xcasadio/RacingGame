@@ -1,19 +1,6 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// Model.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using directives
-
 using RacingGame.Helpers;
 using RacingGame.Shaders;
 using XnaModel = Microsoft.Xna.Framework.Graphics.Model;
-#endregion
-
 namespace RacingGame.Graphics;
 
 /// <summary>

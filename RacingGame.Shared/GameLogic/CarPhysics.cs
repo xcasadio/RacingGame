@@ -1,22 +1,9 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// CarPhysics.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using directives
-
 using RacingGame.GameLogic.Physics;
 using RacingGame.Graphics;
 using RacingGame.Helpers;
 using RacingGame.Sounds;
 using RacingGame.Tracks;
 using RacingGame.Properties;
-#endregion
-
 namespace RacingGame.GameLogic;
 
 /// <summary>

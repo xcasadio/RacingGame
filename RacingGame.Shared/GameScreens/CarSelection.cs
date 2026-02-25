@@ -1,21 +1,8 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// CarSelection.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using directives
-
 using RacingGame.GameLogic;
 using RacingGame.Graphics;
 using RacingGame.Sounds;
 using Texture = RacingGame.Graphics.Texture;
 using RacingGame.Shaders;
-
-#endregion
 
 namespace RacingGame.GameScreens;
 

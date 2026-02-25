@@ -1,18 +1,5 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// TrackCombiModels.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using directives
-
 using System.Xml.Serialization;
 using RacingGame.Landscapes;
-#endregion
-
 namespace RacingGame.Tracks;
 
 /// <summary>

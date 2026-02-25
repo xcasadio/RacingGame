@@ -1,14 +1,3 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// Landscape.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using directives
-
 using RacingGame.Graphics;
 using RacingGame.Helpers;
 using RacingGame.Shaders;
@@ -18,8 +7,6 @@ using RacingGame.GameLogic;
 using RacingGame.GameScreens;
 using RacingGame.Sounds;
 using System.Threading;
-#endregion
-
 namespace RacingGame.Landscapes;
 
 /// <summary>
