@@ -386,7 +386,7 @@ class Options : IGameScreen
 
         int yOffset = BaseGame.YToRes768(125);
 
-        // Dark colour used to cover the baked-in texture text on each unselected slot.
+        // Dark colour used to cover the baked-in texture text on every slot.
         Color coverColor = new Color(15, 15, 15, 230);
 
         for (int i = 0; i < slotSrcRects.Length; i++)
@@ -394,19 +394,18 @@ class Options : IGameScreen
             Rectangle destRect = BaseGame.CalcRectangleKeep4To3(slotSrcRects[i]);
             destRect.Y += yOffset;
 
-            // Render the button slot always: dark cover for unselected, amber for selected.
-            // This hides the baked-in texture label so only the dynamic text is visible.
-            Color drawColor = currentResolution == i ? selColor : coverColor;
+            // Always render the opaque dark cover to hide the baked-in texture label.
             BaseGame.UI.OptionsScreen.RenderOnScreen(
-                destRect, slotSrcRects[i], drawColor, BlendState.AlphaBlend);
+                destRect, slotSrcRects[i], coverColor, BlendState.AlphaBlend);
 
-            // Overlay dynamic label text, centred within the button.
+            // Dynamic label: amber for the active slot, white for others.
+            Color textColor = currentResolution == i ? new Color(255, 156, 0) : Color.White;
             if (!string.IsNullOrEmpty(labels[i]))
             {
                 int textWidth = TextureFont.GetTextWidth(labels[i]);
                 int textX = destRect.X + (destRect.Width - textWidth) / 2;
                 int textY = destRect.Y + (destRect.Height - TextureFont.Height) / 2;
-                TextureFont.WriteText(textX, textY, labels[i], Color.White);
+                TextureFont.WriteText(textX, textY, labels[i], textColor);
             }
         }
     }
