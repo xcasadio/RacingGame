@@ -246,7 +246,7 @@ public class RacingGameManager : BaseGame
     {
         get
         {
-            return carTextures.Length;
+            return carTextures?.Length ?? 0;
         }
     }
 
@@ -362,27 +362,37 @@ public class RacingGameManager : BaseGame
     /// </summary>
     private void LoadResources()
     {
-        LoadEvent("Models...", null);
-        // Load models
-        carModel = new Model("Car");
-        carSelectionPlate = new Model("CarSelectionPlate");
+        try
+        {
+            LoadEvent("Models...", null);
+            // Load models
+            carModel = new Model("Car");
+            carSelectionPlate = new Model("CarSelectionPlate");
 
-        LoadEvent("Landscape...", null);
-        // Load landscape
-        landscape = new Landscape(Level.Beginner);
+            LoadEvent("Landscape...", null);
+            // Load landscape
+            landscape = new Landscape(Level.Beginner);
 
-        LoadEvent("Textures...", null);
-        // Load textures, first one is grabbed from the imported one through
-        // the car.x model, the other two are loaded seperately.
-        carTextures = new Texture[3];
-        carTextures[0] = new Texture("RacerCar");
-        carTextures[1] = new Texture("RacerCar2");
-        carTextures[2] = new Texture("RacerCar3");
-        colorSelectionTexture = new Texture("ColorSelection");
-        brakeTrackMaterial = new Material("track");
+            LoadEvent("Textures...", null);
+            // Load textures, first one is grabbed from the imported one through
+            // the car.x model, the other two are loaded seperately.
+            carTextures = new Texture[3];
+            carTextures[0] = new Texture("RacerCar");
+            carTextures[1] = new Texture("RacerCar2");
+            carTextures[2] = new Texture("RacerCar3");
+            colorSelectionTexture = new Texture("ColorSelection");
+            brakeTrackMaterial = new Material("track");
 
-        LoadEvent("All systems go!", null);
-        Thread.Sleep(1000);
+            LoadEvent("All systems go!", null);
+            Thread.Sleep(1000);
+        }
+        catch (Exception exc)
+        {
+            System.Diagnostics.Debug.WriteLine("LoadResources failed: " + exc);
+            Log.Write("LoadResources failed: " + exc.Message);
+            // Signal loading complete so the game doesn't hang on the loading screen
+            contentLoaded = true;
+        }
     }
     #endregion
 

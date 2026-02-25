@@ -139,8 +139,10 @@ public class GameSettings
         {
             System.Diagnostics.Debug.WriteLine("Settings Load Failure: " + exc.ToString());
         }
-
-        FileHelper.StorageContainerMRE.Set();
+        finally
+        {
+            FileHelper.StorageContainerMRE.Set();
+        }
 
         if (saveImmediately)
         {
@@ -193,8 +195,10 @@ public class GameSettings
         {
             System.Diagnostics.Debug.WriteLine("Settings Load Failure: " + exc.ToString());
         }
-
-        FileHelper.StorageContainerMRE.Set();
+        finally
+        {
+            FileHelper.StorageContainerMRE.Set();
+        }
     }
 
     /// <summary>

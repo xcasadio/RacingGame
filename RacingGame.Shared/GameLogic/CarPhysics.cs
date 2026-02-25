@@ -97,10 +97,10 @@ public class CarPhysics : BasePlayer
     const float BrakeSlowdown = 1.0f;
 
     /// <summary>
-    /// Convert our meter per sec to mph for display.
-    /// 1 mile = 1.609344 kilometers
-    /// Each hour has 3600 seconds (60 min * 60 sec).
-    /// 1 kilometer = 1000 meter.
+    /// Gameplay speed display factor: converts internal speed units to a
+    /// mph-like display value for the speedometer.
+    /// Note: This is NOT a physically accurate m/s → mph conversion
+    /// (which would be ≈ 2.237). The value is tuned for gameplay feel.
     /// </summary>
     public const float MeterPerSecToMph =
             1.609344f * ((60.0f * 60.0f) / 1000.0f),

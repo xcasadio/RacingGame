@@ -117,22 +117,30 @@ class Highscores : IGameScreen
             return false;
         }
 
-        string highscoreString = GameSettings.Default.Highscores;
-        string[] allHighscores = highscoreString.Split(',');
-        for (int level = 0; level < NumOfHighscoreLevels; level++)
+        try
         {
-            for (int num = 0; num < NumOfHighscores &&
-                              level * NumOfHighscores + num < allHighscores.Length; num++)
+            string highscoreString = GameSettings.Default.Highscores;
+            string[] allHighscores = highscoreString.Split(',');
+            for (int level = 0; level < NumOfHighscoreLevels; level++)
             {
-                string[] oneHighscore =
-                    allHighscores[level * NumOfHighscores + num].
-                        Split(new char[] { ':' });
-                highscores[level, num] = new HighscoreInLevel(
-                    oneHighscore[0], Convert.ToInt32(oneHighscore[1]));
+                for (int num = 0; num < NumOfHighscores &&
+                                  level * NumOfHighscores + num < allHighscores.Length; num++)
+                {
+                    string[] oneHighscore =
+                        allHighscores[level * NumOfHighscores + num].
+                            Split(new char[] { ':' });
+                    highscores[level, num] = new HighscoreInLevel(
+                        oneHighscore[0], Convert.ToInt32(oneHighscore[1]));
+                }
             }
-        }
 
-        return true;
+            return true;
+        }
+        catch (Exception exc)
+        {
+            System.Diagnostics.Debug.WriteLine("Failed to parse highscores: " + exc.Message);
+            return false;
+        }
     }
     #endregion
 

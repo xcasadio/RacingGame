@@ -224,8 +224,10 @@ public class Replay : ICloneable
         {
             System.Diagnostics.Debug.WriteLine("Settings Load Failure: " + exc.ToString());
         }
-
-        FileHelper.StorageContainerMRE.Set();
+        finally
+        {
+            FileHelper.StorageContainerMRE.Set();
+        }
 
         // Load if possible
         if (!replayFileFound && File.Exists(Path.Combine(
@@ -376,8 +378,10 @@ public class Replay : ICloneable
         {
             System.Diagnostics.Debug.WriteLine("Settings Load Failure: " + exc.ToString());
         }
-
-        FileHelper.StorageContainerMRE.Set();
+        finally
+        {
+            FileHelper.StorageContainerMRE.Set();
+        }
     }
 
     /// <summary>
