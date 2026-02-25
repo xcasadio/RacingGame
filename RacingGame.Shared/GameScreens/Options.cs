@@ -24,6 +24,10 @@ class Options : IGameScreen
         PostScreenEffectsGfxRect = new Rectangle(339, 226, 206, 36),
         ShadowsGfxRect = new Rectangle(616, 226, 90, 36),
         HighDetailGfxRect = new Rectangle(784, 226, 120, 36),
+        // ShowFPS and GamepadVibration checkboxes sit on the row between the
+        // graphics checkboxes and the audio sliders (texture-space y ≈ 262).
+        ShowFpsGfxRect = new Rectangle(339, 262, 110, 32),
+        GamepadVibrationGfxRect = new Rectangle(470, 262, 180, 32),
         SoundGfxRect = new Rectangle(384, 281, 448, 39),
         MusicGfxRect = new Rectangle(384, 354, 448, 39),
         SensitivityGfxRect = new Rectangle(384, 428, 448, 39);
@@ -35,6 +39,19 @@ class Options : IGameScreen
     /// </summary>
     string currentPlayerName = GameSettings.Default.PlayerName;
     private bool _isFinished = false;
+
+    /// <summary>
+    /// Available resolutions built at construction time from
+    /// <see cref="GraphicsAdapter.DefaultAdapter.SupportedDisplayModes"/>.
+    /// Always contains exactly 4 entries; index 4 (Auto) is handled separately.
+    /// </summary>
+    private List<(int Width, int Height)> _availableResolutions = new();
+
+    /// <summary>Local copy of <see cref="GameSettings.ShowFPS"/>, applied on exit.</summary>
+    bool showFps = false;
+
+    /// <summary>Local copy of <see cref="GameSettings.GamepadVibration"/>, applied on exit.</summary>
+    bool useGamepadVibration = true;
     #endregion
 
     #region Constructor
@@ -52,26 +69,19 @@ class Options : IGameScreen
     /// </summary>
     public Options()
     {
-        // Current resolution:
-        // 0=640x480, 1=800x600, 2=1024x768, 3=1280x1024, 4=auto (default)
-        if (BaseGame.Width == 640 && BaseGame.Height == 480)
-        {
-            currentResolution = 0;
-        }
+        // Build the dynamic resolution list before detecting current resolution.
+        BuildResolutionList();
 
-        if (BaseGame.Width == 800 && BaseGame.Height == 600)
+        // Detect which slot matches the current window size; default to "Auto" (index 4).
+        currentResolution = 4;
+        for (int i = 0; i < _availableResolutions.Count; i++)
         {
-            currentResolution = 1;
-        }
-
-        if (BaseGame.Width == 1024 && BaseGame.Height == 768)
-        {
-            currentResolution = 2;
-        }
-
-        if (BaseGame.Width == 1280 && BaseGame.Height == 1024)
-        {
-            currentResolution = 3;
+            if (BaseGame.Width == _availableResolutions[i].Width &&
+                BaseGame.Height == _availableResolutions[i].Height)
+            {
+                currentResolution = i;
+                break;
+            }
         }
 
         // Get graphics detail settings
@@ -79,6 +89,8 @@ class Options : IGameScreen
         usePostScreenShaders = BaseGame.UsePostScreenShaders;
         useShadowMapping = BaseGame.AllowShadowMapping;
         useHighDetail = BaseGame.HighDetail;
+        showFps = GameSettings.Default.ShowFPS;
+        useGamepadVibration = GameSettings.Default.GamepadVibration;
 
         // Get music and sound volume
         currentMusicVolume = GameSettings.Default.MusicVolume;
@@ -86,6 +98,57 @@ class Options : IGameScreen
 
         // Get sensitivity
         currentSensitivity = GameSettings.Default.ControllerSensitivity;
+    }
+
+    /// <summary>
+    /// Populates <see cref="_availableResolutions"/> with up to 4 entries derived
+    /// from <see cref="GraphicsAdapter.DefaultAdapter.SupportedDisplayModes"/>.
+    /// Preferred modern resolutions are tried first; if fewer than 4 are found the
+    /// list is padded with classic fallback entries.
+    /// </summary>
+    private void BuildResolutionList()
+    {
+        // Preferred modern resolutions, ordered from smallest to largest.
+        var preferred = new List<(int W, int H)>
+        {
+            (1280, 720),
+            (1920, 1080),
+            (2560, 1440),
+            (3840, 2160),
+        };
+
+        // Classic fallbacks used when few modern resolutions are supported.
+        var classic = new List<(int W, int H)>
+        {
+            (800, 600),
+            (1024, 768),
+            (1280, 1024),
+            (1600, 900),
+        };
+
+        try
+        {
+            var supported = new HashSet<(int, int)>();
+            foreach (DisplayMode mode in GraphicsAdapter.DefaultAdapter.SupportedDisplayModes)
+                supported.Add((mode.Width, mode.Height));
+
+            foreach (var (w, h) in preferred)
+                if (supported.Contains((w, h)))
+                    _availableResolutions.Add((w, h));
+        }
+        catch (Exception)
+        {
+            // If the adapter query fails, fall through to classic fallback below.
+        }
+
+        // Pad with classic resolutions until we have exactly 4 slots.
+        foreach (var (w, h) in classic)
+        {
+            if (_availableResolutions.Count >= 4)
+                break;
+            if (!_availableResolutions.Contains((w, h)))
+                _availableResolutions.Add((w, h));
+        }
     }
     #endregion
 
@@ -144,6 +207,16 @@ class Options : IGameScreen
         hdRect.Y += BaseGame.YToRes768(125);
         if (Input.MouseInBox(hdRect) && Input.MouseLeftButtonJustPressed)
         { Sound.Play(Sound.Sounds.ButtonClick); useHighDetail = !useHighDetail; }
+
+        Rectangle showFpsRect = BaseGame.CalcRectangleKeep4To3(ShowFpsGfxRect);
+        showFpsRect.Y += BaseGame.YToRes768(125);
+        if (Input.MouseInBox(showFpsRect) && Input.MouseLeftButtonJustPressed)
+        { Sound.Play(Sound.Sounds.ButtonClick); showFps = !showFps; }
+
+        Rectangle vibrationRect = BaseGame.CalcRectangleKeep4To3(GamepadVibrationGfxRect);
+        vibrationRect.Y += BaseGame.YToRes768(125);
+        if (Input.MouseInBox(vibrationRect) && Input.MouseLeftButtonJustPressed)
+        { Sound.Play(Sound.Sounds.ButtonClick); useGamepadVibration = !useGamepadVibration; }
 
         // Sound slider
         Rectangle soundRect = BaseGame.CalcRectangleKeep4To3(SoundGfxRect);
@@ -224,33 +297,23 @@ class Options : IGameScreen
             BaseGame.UI.backButtonPressed)
         {
             GameSettings.Default.PlayerName = currentPlayerName;
-            switch (currentResolution)
+            // Persist width/height from the dynamic resolution list; index 4 = Auto (0×0).
+            if (currentResolution >= 0 && currentResolution < _availableResolutions.Count)
             {
-                case 0:
-                    GameSettings.Default.ResolutionWidth = 640;
-                    GameSettings.Default.ResolutionHeight = 480;
-                    break;
-                case 1:
-                    GameSettings.Default.ResolutionWidth = 800;
-                    GameSettings.Default.ResolutionHeight = 600;
-                    break;
-                case 2:
-                    GameSettings.Default.ResolutionWidth = 1024;
-                    GameSettings.Default.ResolutionHeight = 768;
-                    break;
-                case 3:
-                    GameSettings.Default.ResolutionWidth = 1280;
-                    GameSettings.Default.ResolutionHeight = 1024;
-                    break;
-                case 4:
-                    GameSettings.Default.ResolutionWidth = 0;
-                    GameSettings.Default.ResolutionHeight = 0;
-                    break;
+                GameSettings.Default.ResolutionWidth  = _availableResolutions[currentResolution].Width;
+                GameSettings.Default.ResolutionHeight = _availableResolutions[currentResolution].Height;
+            }
+            else
+            {
+                GameSettings.Default.ResolutionWidth  = 0;
+                GameSettings.Default.ResolutionHeight = 0;
             }
             GameSettings.Default.Fullscreen = fullscreen;
             GameSettings.Default.PostScreenEffects = usePostScreenShaders;
             GameSettings.Default.ShadowMapping = useShadowMapping;
             GameSettings.Default.HighDetail = useHighDetail;
+            GameSettings.Default.ShowFPS = showFps;
+            GameSettings.Default.GamepadVibration = useGamepadVibration;
             GameSettings.Default.MusicVolume = currentMusicVolume;
             GameSettings.Default.SoundVolume = currentSoundVolume;
             GameSettings.Default.ControllerSensitivity = currentSensitivity;
@@ -299,38 +362,49 @@ class Options : IGameScreen
             ((int)(BaseGame.TotalTime / 0.35f) % 2 == 0 ? "|" : ""));
     }
 
-    /// <summary>Draws the selection highlight over the active resolution button.</summary>
+    /// <summary>Draws the selection highlight over the active resolution button and
+    /// overlays each button with its dynamic resolution label.</summary>
     private void RenderResolutionOptions(Color selColor)
     {
-        Rectangle res0Rect = BaseGame.CalcRectangleKeep4To3(Resolution640x480GfxRect);
-        res0Rect.Y += BaseGame.YToRes768(125);
-        if (currentResolution == 0)
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                res0Rect, Resolution640x480GfxRect, selColor, BlendState.AlphaBlend);
+        // Source rectangles for the five button slots in the texture sheet.
+        Rectangle[] slotSrcRects = new Rectangle[]
+        {
+            Resolution640x480GfxRect,
+            Resolution800x600GfxRect,
+            Resolution1024x768GfxRect,
+            Resolution1280x1024GfxRect,
+            ResolutionAutoGfxRect,
+        };
 
-        Rectangle res1Rect = BaseGame.CalcRectangleKeep4To3(Resolution800x600GfxRect);
-        res1Rect.Y += BaseGame.YToRes768(125);
-        if (currentResolution == 1)
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                res1Rect, Resolution800x600GfxRect, selColor, BlendState.AlphaBlend);
+        // Labels: slots 0-3 come from the dynamic list; slot 4 is always "Auto".
+        string[] labels = new string[5];
+        for (int i = 0; i < 4; i++)
+            labels[i] = i < _availableResolutions.Count
+                ? $"{_availableResolutions[i].Width}x{_availableResolutions[i].Height}"
+                : "";
+        labels[4] = "Auto";
 
-        Rectangle res2Rect = BaseGame.CalcRectangleKeep4To3(Resolution1024x768GfxRect);
-        res2Rect.Y += BaseGame.YToRes768(125);
-        if (currentResolution == 2)
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                res2Rect, Resolution1024x768GfxRect, selColor, BlendState.AlphaBlend);
+        int yOffset = BaseGame.YToRes768(125);
 
-        Rectangle res3Rect = BaseGame.CalcRectangleKeep4To3(Resolution1280x1024GfxRect);
-        res3Rect.Y += BaseGame.YToRes768(125);
-        if (currentResolution == 3)
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                res3Rect, Resolution1280x1024GfxRect, selColor, BlendState.AlphaBlend);
+        for (int i = 0; i < slotSrcRects.Length; i++)
+        {
+            Rectangle destRect = BaseGame.CalcRectangleKeep4To3(slotSrcRects[i]);
+            destRect.Y += yOffset;
 
-        Rectangle res4Rect = BaseGame.CalcRectangleKeep4To3(ResolutionAutoGfxRect);
-        res4Rect.Y += BaseGame.YToRes768(125);
-        if (currentResolution == 4)
-            BaseGame.UI.OptionsScreen.RenderOnScreen(
-                res4Rect, ResolutionAutoGfxRect, selColor, BlendState.AlphaBlend);
+            // Highlight selected slot.
+            if (currentResolution == i)
+                BaseGame.UI.OptionsScreen.RenderOnScreen(
+                    destRect, slotSrcRects[i], selColor, BlendState.AlphaBlend);
+
+            // Overlay dynamic label text, centred vertically within the button.
+            if (!string.IsNullOrEmpty(labels[i]))
+            {
+                int textWidth = TextureFont.GetTextWidth(labels[i]);
+                int textX = destRect.X + (destRect.Width - textWidth) / 2;
+                int textY = destRect.Y + (destRect.Height - TextureFont.Height) / 2;
+                TextureFont.WriteText(textX, textY, labels[i], Color.White);
+            }
+        }
     }
 
     /// <summary>Draws selection highlights over the active graphics-option checkboxes.</summary>
@@ -359,6 +433,38 @@ class Options : IGameScreen
         if (useHighDetail)
             BaseGame.UI.OptionsScreen.RenderOnScreen(
                 hdRect, HighDetailGfxRect, selColor, BlendState.AlphaBlend);
+
+        // Show FPS toggle (text-based button, no dedicated texture label).
+        Rectangle showFpsRect = BaseGame.CalcRectangleKeep4To3(ShowFpsGfxRect);
+        showFpsRect.Y += BaseGame.YToRes768(125);
+        Color fpsColor = showFps ? selColor : new Color(180, 180, 180, 120);
+
+        BaseGame.UI.Buttons.RenderOnScreen(
+            new Rectangle(showFpsRect.X, showFpsRect.Y,
+                BaseGame.XToRes(UIRenderer.SelectionRadioButtonGfxRect.Width),
+                BaseGame.YToRes768(UIRenderer.SelectionRadioButtonGfxRect.Height)),
+            UIRenderer.SelectionRadioButtonGfxRect, fpsColor);
+
+        TextureFont.WriteText(
+            showFpsRect.X + BaseGame.XToRes(UIRenderer.SelectionRadioButtonGfxRect.Width + 4),
+            showFpsRect.Y + (showFpsRect.Height - TextureFont.Height) / 2,
+            "Show FPS", Color.White);
+
+        // Gamepad vibration toggle.
+        Rectangle vibrationRect = BaseGame.CalcRectangleKeep4To3(GamepadVibrationGfxRect);
+        vibrationRect.Y += BaseGame.YToRes768(125);
+        Color vibColor = useGamepadVibration ? selColor : new Color(180, 180, 180, 120);
+
+        BaseGame.UI.Buttons.RenderOnScreen(
+            new Rectangle(vibrationRect.X, vibrationRect.Y,
+                BaseGame.XToRes(UIRenderer.SelectionRadioButtonGfxRect.Width),
+                BaseGame.YToRes768(UIRenderer.SelectionRadioButtonGfxRect.Height)),
+            UIRenderer.SelectionRadioButtonGfxRect, vibColor);
+
+        TextureFont.WriteText(
+            vibrationRect.X + BaseGame.XToRes(UIRenderer.SelectionRadioButtonGfxRect.Width + 4),
+            vibrationRect.Y + (vibrationRect.Height - TextureFont.Height) / 2,
+            "Gamepad Vibration", Color.White);
     }
 
     /// <summary>Draws the sound-volume, music-volume and sensitivity slider knobs.</summary>

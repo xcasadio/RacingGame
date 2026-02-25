@@ -451,5 +451,31 @@ public class GameSettings
             controllerSensitivity = value;
         }
     }
+
+    /// <summary>Whether to overlay the current FPS on screen during gameplay.</summary>
+    bool showFps = false;
+    /// <summary>Whether to overlay the current FPS on screen during gameplay.</summary>
+    public bool ShowFPS
+    {
+        get { return showFps; }
+        set
+        {
+            if (showFps != value) needSave = true;
+            showFps = value;
+        }
+    }
+
+    /// <summary>Whether to trigger gamepad vibration on car collisions.</summary>
+    bool gamepadVibration = true;
+    /// <summary>Whether to trigger gamepad vibration on car collisions.</summary>
+    public bool GamepadVibration
+    {
+        get { return gamepadVibration; }
+        set
+        {
+            if (gamepadVibration != value) needSave = true;
+            gamepadVibration = value;
+        }
+    }
     #endregion
 }
