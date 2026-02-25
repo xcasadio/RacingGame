@@ -144,6 +144,9 @@ class GameScreen : IGameScreen
             RacingGameManager.Landscape.CurrentTrackName,
             Highscores.GetTop5LapTimes(TrackSelection.SelectedTrackNumber));
 
+        // Render game-over overlay if applicable (victory/defeat message + stats)
+        RacingGameManager.Player.RenderGameOver();
+
         if (Input.KeyboardEscapeJustPressed ||
             Input.GamePadBackJustPressed ||
             (RacingGameManager.Player.GameOver &&

@@ -16,7 +16,7 @@ namespace RacingGame.Helpers;
 /// <summary>
 /// Helper class which stores all used directories.
 /// </summary>
-class Directories
+static class Directories
 {
     #region Game base directory
     /// <summary>
@@ -50,11 +50,7 @@ class Directories
     {
         get
         {
-            return Path.Combine(GameBaseDirectory, "Content\\Audio");
-        }
-    }
-
-    /// <summary>
+                return Path.Combine(GameBaseDirectory, "Content", "Audio");
     /// Default Screenshots directory.
     /// </summary>
     /// <returns>String</returns>
@@ -67,12 +63,4 @@ class Directories
     }
     #endregion
 
-    #region Constructor
-    /// <summary>
-    /// Private constructor to prevent instantiation.
-    /// </summary>
-    private Directories()
-    {
-    }
-    #endregion
 }

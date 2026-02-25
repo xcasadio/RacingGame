@@ -104,44 +104,7 @@ public class Player : ChaseCamera
                                 Matrix.CreateRotationZ(BaseGame.TotalTimeMilliseconds / 2593.0f));
                 BaseGame.ViewMatrix = Matrix.CreateLookAt(
                     cameraPos, CarPosition, CarUpVector);
-                int rank = Highscores.GetRankFromCurrentTime(
-                    this.levelNum, (int)this.BestTimeMilliseconds);
                 this.currentGameTimeMilliseconds = this.BestTimeMilliseconds;
-
-                if (victory)
-                {
-                    // Display Victory message
-                    TextureFont.WriteTextCentered(
-                        BaseGame.Width / 2, BaseGame.Height / 7,
-                        "Victory! You won.",
-                        Color.LightGreen, 1.25f);
-                }
-                else
-                {
-                    // Display game over message
-                    TextureFont.WriteTextCentered(
-                        BaseGame.Width / 2, BaseGame.Height / 7,
-                        "Game Over! You lost.",
-                        Color.Red, 1.25f);
-                }
-
-                for (int num = 0; num < lapTimes.Count; num++)
-                {
-                    TextureFont.WriteTextCentered(
-                        BaseGame.Width / 2,
-                        BaseGame.Height / 7 + BaseGame.YToRes(35) * (1 + num),
-                        "Lap " + (num + 1) + " Time: " +
-                        (((int)lapTimes[num]) / 60).ToString("00") + ":" +
-                        (((int)lapTimes[num]) % 60).ToString("00") + "." +
-                        (((int)(lapTimes[num] * 100)) % 100).ToString("00"),
-                        Color.White, 1.25f);
-                }
-
-                TextureFont.WriteTextCentered(
-                    BaseGame.Width / 2,
-                    BaseGame.Height / 7 + BaseGame.YToRes(35) * (1 + lapTimes.Count),
-                    "Rank: " + (1 + rank),
-                    Color.White, 1.25f);
 
                 // Don't continue processing game logic
                 return;
@@ -198,6 +161,54 @@ public class Player : ChaseCamera
         }
 
         base.Update();
+    }
+    #endregion
+
+    #region Render
+    /// <summary>
+    /// Render game-over overlay: victory/defeat message, lap times and rank.
+    /// Must be called during the render phase, not during Update.
+    /// </summary>
+    public void RenderGameOver()
+    {
+        if (!isGameOver)
+            return;
+
+        int rank = Highscores.GetRankFromCurrentTime(
+            this.levelNum, (int)this.BestTimeMilliseconds);
+
+        if (victory)
+        {
+            TextureFont.WriteTextCentered(
+                BaseGame.Width / 2, BaseGame.Height / 7,
+                "Victory! You won.",
+                Color.LightGreen, 1.25f);
+        }
+        else
+        {
+            TextureFont.WriteTextCentered(
+                BaseGame.Width / 2, BaseGame.Height / 7,
+                "Game Over! You lost.",
+                Color.Red, 1.25f);
+        }
+
+        for (int num = 0; num < lapTimes.Count; num++)
+        {
+            TextureFont.WriteTextCentered(
+                BaseGame.Width / 2,
+                BaseGame.Height / 7 + BaseGame.YToRes(35) * (1 + num),
+                "Lap " + (num + 1) + " Time: " +
+                (((int)lapTimes[num]) / 60).ToString("00") + ":" +
+                (((int)lapTimes[num]) % 60).ToString("00") + "." +
+                (((int)(lapTimes[num] * 100)) % 100).ToString("00"),
+                Color.White, 1.25f);
+        }
+
+        TextureFont.WriteTextCentered(
+            BaseGame.Width / 2,
+            BaseGame.Height / 7 + BaseGame.YToRes(35) * (1 + lapTimes.Count),
+            "Rank: " + (1 + rank),
+            Color.White, 1.25f);
     }
     #endregion
 }

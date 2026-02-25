@@ -16,18 +16,9 @@ namespace RacingGame.Helpers;
 /// <summary>
 /// Vector 3 helper
 /// </summary>
-class Vector3Helper
+static class Vector3Helper
 {
-    #region Constructor
-    /// <summary>
-    /// Private constructor to prevent instantiation.
-    /// </summary>
-    private Vector3Helper()
-    {
-    }
-    #endregion
-
-    #region GetAngleBetweenVectors
+#region GetAngleBetweenVectors
     /// <summary>
     /// Return angle between two vectors. Used for visbility testing and
     /// for checking angles between vectors for the road sign generation.
