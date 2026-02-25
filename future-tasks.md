@@ -95,26 +95,21 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
   3. Options : Reprendre, Recommencer, Menu principal
   4. Mettre en pause le son moteur et les positions de physique
 
-### 📋 FEAT-004 : Résolutions modernes dans Options
+### ✅ FEAT-004 : Résolutions modernes dans Options
 - **Priorité** : Moyenne
 - **Description** : Résolutions obsolètes (640x480, 800x600, 1024x768).
-- **Plan** :
-  1. Utiliser `GraphicsAdapter.DefaultAdapter.SupportedDisplayModes` pour lister les résolutions disponibles
-  2. Filtrer les doublons et trier par taille
-  3. Afficher dynamiquement dans le menu Options
+- **Implémenté** : `BuildResolutionList()` dans `Options` interroge `GraphicsAdapter.DefaultAdapter.SupportedDisplayModes`, préfère 1280×720 / 1920×1080 / 2560×1440 / 3840×2160 avec fallback classique. Labels dynamiques rendus via `TextureFont.WriteText`. Commit `ab7b85b`.
 
-### 📋 FEAT-005 : Afficher le FPS en option
+### ✅ FEAT-005 : Afficher le FPS en option
 - **Priorité** : Basse
 - **Description** : `BaseGame.FPS` est calculé mais jamais affiché.
-- **Plan** : Ajouter un booléen `GameSettings.ShowFPS` et afficher `TextureFont.WriteText(fps, ...)` dans une position fixe si activé.
+- **Implémenté** : Propriété `GameSettings.ShowFPS` (bool, défaut `false`). Checkbox dans Options. `RacingGameManager.PostUIRender()` overlay `FPS: {BaseGame.Fps}` en haut à gauche si activé. Commit `d590f75`.
 
-### 📋 FEAT-006 : Support des manettes modernes
+### ✅ FEAT-006 : Vibration manette sur collisions
 - **Priorité** : Moyenne
 - **Description** : Un seul gamepad (`PlayerIndex.One`), pas de vibration, pas de remapping.
-- **Plan** :
-  1. Ajouter `GamePad.SetVibration()` lors des collisions
-  2. Créer un `InputMapper` pour le remapping
-  3. Persister le mapping dans `GameSettings`
+- **Implémenté** : `GameSettings.GamepadVibration` (bool, défaut `true`). Checkbox dans Options. `ApplyVibration()` dans `CarPhysics` déclenche `GamePad.SetVibration` (0.35/0.85) sur chaque collision, timer `_vibrationRemainingSeconds` l'éteint après 0.25 s / 0.4 s. Commit `fc9cab0`.
+- **Restant** : InputMapper (remapping touches) non implémenté.
 
 ### 📋 FEAT-008 : Voitures IA adversaires
 - **Priorité** : Basse
@@ -132,13 +127,10 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
   2. `GamePad.SetVibration()` proportionnel à la force de collision
   3. Flash d'écran lors d'une collision forte
 
-### 📋 FEAT-010 : Barre de progression sur l'écran de chargement
+### ✅ FEAT-010 : Barre de progression sur l'écran de chargement
 - **Priorité** : Basse
 - **Description** : Écran de chargement sans feedback quantitatif.
-- **Plan** :
-  1. Ajouter une propriété `LoadProgress` (0..1) dans `RacingGameManager`
-  2. `LoadResources()` met à jour `LoadProgress` à chaque étape
-  3. `LoadingScreen.Render()` dessine une barre proportionnelle
+- **Implémenté** : `RacingGameManager.LoadProgress` (float 0..1) mis à jour à chaque étape de `LoadResources()`. `LoadingScreen.Render()` dessine une barre (300 px large, 14 px haut, fond noir, remplissage orange, contour gris) + pourcentage via `Texture2D` 1×1 lazily created. Commit `8cbc2f7`.
 
 ---
 
