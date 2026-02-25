@@ -60,9 +60,10 @@ public class GameSettings
 
     #region Constructor
     /// <summary>
-    /// Create game settings, don't allow public constructor!
+    /// Create game settings. XmlSerializer requires a public parameterless
+    /// constructor; use GameSettings.Default to access the singleton instance.
     /// </summary>
-    private GameSettings()
+    public GameSettings()
     {
     }
 
@@ -75,6 +76,21 @@ public class GameSettings
     public static void Initialize()
     {
         Load();
+    }
+    #endregion
+
+    #region Settings file path
+    /// <summary>
+    /// Returns the full path to the settings file in the user's AppData folder.
+    /// Creates the directory if it does not exist.
+    /// </summary>
+    private static string GetSettingsFilePath()
+    {
+        string dir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "RacingGame");
+        Directory.CreateDirectory(dir);
+        return Path.Combine(dir, SettingsFilename);
     }
     #endregion
 
@@ -92,48 +108,29 @@ public class GameSettings
 
         try
         {
-            //TODO: Use Nick Gravlyn's easy storage?
-            /*
-            StorageDevice storageDevice = FileHelper.XnaUserDevice;
-            if ((storageDevice != null) && storageDevice.IsConnected)
+            string settingsPath = GetSettingsFilePath();
+            if (File.Exists(settingsPath))
             {
-                IAsyncResult async = storageDevice.BeginOpenContainer("RacingGame", null, null);
-
-                async.AsyncWaitHandle.WaitOne();
-
-                using (StorageContainer container =
-                    storageDevice.EndOpenContainer(async))
+                using FileStream file = File.OpenRead(settingsPath);
+                if (file.Length > 0)
                 {
-                    async.AsyncWaitHandle.Close();
-                    if (container.FileExists(SettingsFilename))
-                    {
-                        using (Stream file = container.OpenFile(SettingsFilename,
-                            FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        {
-                            if (file.Length > 0)
-                            {
-                                GameSettings loadedGameSettings =
-                                    (GameSettings)new XmlSerializer(
-                                    typeof(GameSettings)).Deserialize(file);
-                                if (loadedGameSettings != null)
-                                    defaultInstance = loadedGameSettings;
-                            }
-                            else
-                            {
-                                // If the file is empty, just create a new file with the
-                                // default settings.
-                                needSave = true;
-                                saveImmediately = true;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Create new file after exiting
-                        needSave = true;
-                    }
+                    GameSettings loaded = (GameSettings)new System.Xml.Serialization.XmlSerializer(
+                        typeof(GameSettings)).Deserialize(file);
+                    if (loaded != null)
+                        defaultInstance = loaded;
                 }
-            }*/
+                else
+                {
+                    // Empty file — recreate with defaults
+                    needSave = true;
+                    saveImmediately = true;
+                }
+            }
+            else
+            {
+                // First run — persist defaults
+                needSave = true;
+            }
         }
         catch (Exception exc)
         {
@@ -168,32 +165,16 @@ public class GameSettings
         FileHelper.StorageContainerMRE.WaitOne();
         FileHelper.StorageContainerMRE.Reset();
 
-        // Open a storage container
         try
         {
-            /*
-            StorageDevice storageDevice = FileHelper.XnaUserDevice;
-            if ((storageDevice != null) && storageDevice.IsConnected)
-            {
-                IAsyncResult async = storageDevice.BeginOpenContainer("RacingGame", null, null);
-
-                async.AsyncWaitHandle.WaitOne();
-
-                using (StorageContainer container = storageDevice.EndOpenContainer(async))
-                {
-                    async.AsyncWaitHandle.Close();
-                    using (Stream file = container.CreateFile(SettingsFilename))
-                    {
-                        // Save everything in this class with help of the XmlSerializer.
-                        new XmlSerializer(typeof(GameSettings)).
-                            Serialize(file, defaultInstance);
-                    }
-                }
-            }*/
+            string settingsPath = GetSettingsFilePath();
+            using FileStream file = File.Create(settingsPath);
+            new System.Xml.Serialization.XmlSerializer(typeof(GameSettings))
+                .Serialize(file, defaultInstance);
         }
         catch (Exception exc)
         {
-            System.Diagnostics.Debug.WriteLine("Settings Load Failure: " + exc.ToString());
+            System.Diagnostics.Debug.WriteLine("Settings Save Failure: " + exc.ToString());
         }
         finally
         {
