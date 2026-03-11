@@ -1,12 +1,13 @@
 using System.Threading;
 using RacingGame.Graphics;
+using RacingGame.UI.MGUI;
 using XnaTexture = RacingGame.Graphics.Texture;
 namespace RacingGame.GameScreens;
 
 /// <summary>
 /// Loading screen
 /// </summary>
-class LoadingScreen : IGameScreen
+class LoadingScreen : IGameScreen, IMguiScreen
 {
 	#region Variables
 	private const string loadingText = "Loading...";
@@ -16,6 +17,7 @@ class LoadingScreen : IGameScreen
 
 	/// <summary>1×1 white texture used to draw the progress bar rectangles.</summary>
 	private static Texture2D _pixelTex;
+	private IMguiScreenView _mguiView;
 	#endregion
 
 	#region Constructor
@@ -23,6 +25,16 @@ class LoadingScreen : IGameScreen
 	{
 		//Setup the handler before we start the thread
 		RacingGameManager.LoadEvent += OnLoadStatusChanged;
+	}
+
+	public IMguiScreenView GetOrCreateMguiView(MguiUiHost host)
+	{
+		if (_mguiView == null)
+		{
+			_mguiView = new EmptyMguiScreenView(host.CreateFullscreenWindow(true));
+		}
+
+		return _mguiView;
 	}
 	#endregion
 

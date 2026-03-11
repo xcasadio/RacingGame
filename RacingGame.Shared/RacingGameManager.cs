@@ -452,6 +452,8 @@ public class RacingGameManager : BaseGame
         }
         if (updateScreen != null)
         {
+            MguiUi?.ScreenBridge.SyncTopScreen(updateScreen);
+
             if (!skipPlayerUpdate)
                 player.Update();
             updateScreen.Update(gameTime);
