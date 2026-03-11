@@ -1056,6 +1056,7 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
         lineManager2D = new LineManager2D();
         lineManager3D = new LineManager3D();
         ui = new UIRenderer();
+        InitializeMgui();
     }
 
     /// <summary>
@@ -1264,6 +1265,8 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
     {
         base.Update(gameTime);
 
+        RaisePreviewUpdate(gameTime.TotalGameTime);
+
         // Update all input states
         Input.Update();
 
@@ -1327,6 +1330,9 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
 
         // Update sound and music
         Sound.Update();
+
+        UpdateMgui(gameTime);
+        RaiseEndUpdate();
     }
     #endregion
 
@@ -1426,6 +1432,8 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
 
                 Texture.alphaSprite.End();
             }
+
+            DrawMgui();
 
             ui.RenderTextsAndMouseCursor();
         }
@@ -1587,6 +1595,7 @@ public partial class BaseGame : Microsoft.Xna.Framework.Game
     {
         if (disposing)
         {
+            DisposeMgui();
             ui?.Dispose();             ui            = null;
             lineManager2D?.Dispose();  lineManager2D  = null;
             lineManager3D?.Dispose();  lineManager3D  = null;
