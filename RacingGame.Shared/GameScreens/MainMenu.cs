@@ -56,7 +56,6 @@ class MainMenu : IGameScreen, IMguiScreen
             BaseGame.UI.PostScreenMenuShader.Start();
 
         BaseGame.UI.RenderMenuBackground();
-        BaseGame.UI.RenderBlackBar(280, 192);
         return _isFinished;
     }
 

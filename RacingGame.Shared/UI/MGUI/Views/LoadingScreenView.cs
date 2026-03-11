@@ -15,8 +15,9 @@ internal sealed class LoadingScreenView : IMguiScreenView
         _screen = screen;
         Window = MguiUiTheme.CreateRootWindow(host, true);
 
-        var panel = MguiUiTheme.CreatePanel(Window, 24);
         var root = MguiUiTheme.CreateVerticalStack(Window, 12, 0);
+        root.HorizontalAlignment = HorizontalAlignment.Center;
+        root.VerticalAlignment = VerticalAlignment.Center;
 
         _title = MguiUiTheme.CreateHeading(Window, screen.LoadingTitle);
         _status = MguiUiTheme.CreateSubheading(Window, screen.LoadingStatus);
@@ -31,8 +32,7 @@ internal sealed class LoadingScreenView : IMguiScreenView
         root.TryAddChild(_title);
         root.TryAddChild(_status);
         root.TryAddChild(_progress);
-        panel.SetContent(root);
-        Window.SetContent(panel);
+        Window.SetContent(root);
     }
 
     public MGWindow Window { get; }

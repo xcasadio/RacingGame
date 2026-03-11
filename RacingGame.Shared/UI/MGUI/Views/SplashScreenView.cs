@@ -1,5 +1,7 @@
 using MGUI.Core.UI;
+using MGUI.Core.UI.Brushes.Border_Brushes;
 using RacingGame.GameScreens;
+using RacingGame.Graphics;
 
 namespace RacingGame.UI.MGUI.Views;
 
@@ -13,10 +15,20 @@ internal sealed class SplashScreenView : IMguiScreenView
         _screen = screen;
         Window = MguiUiTheme.CreateRootWindow(host, true);
 
+        var bandAnchor = new MGBorder(Window, new(0), new MGUniformBorderBrush(Color.Transparent))
+        {
+            BackgroundBrush = MguiUiTheme.TransparentBackground,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new(0, BaseGame.YToRes(518), 0, 0),
+            PreferredHeight = BaseGame.YToRes(61),
+        };
+
         _prompt = MguiUiTheme.CreateHeading(Window, "Press Start");
         _prompt.HorizontalAlignment = HorizontalAlignment.Center;
         _prompt.VerticalAlignment = VerticalAlignment.Center;
-        Window.SetContent(_prompt);
+        bandAnchor.SetContent(_prompt);
+        Window.SetContent(bandAnchor);
     }
 
     public MGWindow Window { get; }
