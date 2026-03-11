@@ -2,15 +2,18 @@ using RacingGame.GameLogic;
 using RacingGame.Graphics;
 using RacingGame.Shaders;
 using RacingGame.Sounds;
+using RacingGame.UI.MGUI;
+using RacingGame.UI.MGUI.Views;
 namespace RacingGame.GameScreens;
 
 /// <summary>
 /// GameScreen, just manages the on screen display for the game.
 /// </summary>
-class GameScreen : IGameScreen
+class GameScreen : IGameScreen, IMguiScreen
 {
     #region Variables
     private bool _isFinished = false;
+    private IMguiScreenView _mguiView;
     #endregion
 
     #region Constructor
@@ -127,24 +130,43 @@ class GameScreen : IGameScreen
             BaseGame.UI.PostScreenGlowShader.Show();
         }
 
-        // Show on screen UI for the game.
-        BaseGame.UI.RenderGameUI(
-            (int)RacingGameManager.Player.GameTimeMilliseconds,
-            (int)RacingGameManager.Player.BestTimeMilliseconds,
-            RacingGameManager.Player.CurrentLap + 1,
-            RacingGameManager.Player.Speed * CarPhysics.MeterPerSecToMph,
-            1 + (int)(5 * RacingGameManager.Player.Speed /
-                      CarPhysics.MaxPossibleSpeed),
-            0.5f * RacingGameManager.Player.Speed /
-            CarPhysics.MaxPossibleSpeed +
-            0.5f * RacingGameManager.Player.Acceleration,
-            RacingGameManager.Landscape.CurrentTrackName,
-            Highscores.GetTop5LapTimes(TrackSelection.SelectedTrackNumber));
-
-        // Render game-over overlay if applicable (victory/defeat message + stats)
-        RacingGameManager.Player.RenderGameOver();
-
         return _isFinished;
     }
     #endregion
+
+    public IMguiScreenView GetOrCreateMguiView(MguiUiHost host)
+    {
+        _mguiView ??= new GameHudView(this, host);
+        return _mguiView;
+    }
+
+    internal int CurrentGameTime => (int)RacingGameManager.Player.GameTimeMilliseconds;
+    internal int BestLapTime => (int)RacingGameManager.Player.BestTimeMilliseconds;
+    internal int CurrentLapDisplay => RacingGameManager.Player.CurrentLap + 1;
+    internal int SpeedDisplay => (int)Math.Round(RacingGameManager.Player.Speed * CarPhysics.MeterPerSecToMph);
+    internal int GearDisplay => 1 + (int)(5 * RacingGameManager.Player.Speed / CarPhysics.MaxPossibleSpeed);
+    internal string TrackName => RacingGameManager.Landscape.CurrentTrackName;
+    internal IReadOnlyList<int> TopLapTimes => Highscores.GetTop5LapTimes(TrackSelection.SelectedTrackNumber);
+    internal bool IsGameOver => RacingGameManager.Player.GameOver;
+    internal string GameOverTitle => RacingGameManager.Player.WonGame ? "Victory! You won." : "Game Over! You lost.";
+    internal string ExitHint => RacingGameManager.Player.GameOver ? "Press Space, A, B, X, or click to return to menu." : "Esc or Back returns to menu.";
+
+    internal IReadOnlyList<string> GetGameOverLines()
+    {
+        var lines = new List<string>();
+        var lapTimes = RacingGameManager.Player.LapTimes;
+        for (int i = 0; i < lapTimes.Count; i++)
+            lines.Add($"Lap {i + 1} Time: {FormatLapTime(lapTimes[i])}");
+
+        int rank = Highscores.GetRankFromCurrentTime(RacingGameManager.Player.LevelNum, BestLapTime);
+        lines.Add($"Rank: {1 + rank}");
+        return lines;
+    }
+
+    private static string FormatLapTime(float seconds)
+    {
+        int totalCentiseconds = (int)(seconds * 100);
+        int totalSeconds = totalCentiseconds / 100;
+        return $"{totalSeconds / 60:00}:{totalSeconds % 60:00}.{totalCentiseconds % 100:00}";
+    }
 }

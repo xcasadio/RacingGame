@@ -19,6 +19,8 @@ public class Player : CarPhysics
     /// </summary>
     private List<float> lapTimes = new List<float>();
 
+    internal IReadOnlyList<float> LapTimes => lapTimes;
+
     /// <summary>
     /// The number of laps in each race
     /// </summary>
