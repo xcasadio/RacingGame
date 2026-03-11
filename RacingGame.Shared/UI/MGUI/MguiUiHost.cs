@@ -37,7 +37,7 @@ internal sealed class MguiUiHost : IDisposable
             BorderThickness = new(0),
             Padding = new(0),
             AllowsClickThrough = allowsClickThrough,
-            BackgroundBrush = null,
+            BackgroundBrush = MguiUiTheme.TransparentBackground,
         };
         window.WindowWidth = ViewportBounds.Width;
         window.WindowHeight = ViewportBounds.Height;

@@ -30,6 +30,7 @@ This fork brings a series of bug fixes and improvements over the original MonoGa
 - `Update(GameTime)` / `Render()` separated in all GameScreens via `IGameScreen`.
 - `Sound` split into `MusicManager`, `SfxManager` and `EngineSound`.
 - Screen stack protected by a lock (`_screenLock`) for thread safety.
+- `RacingGame.Shared` now hosts MGUI through a dedicated bridge layer instead of coupling screens directly to the renderer.
 - All obsolete Xbox 360 / GamerServices / UWP preprocessor blocks removed.
 - Public fields converted to properties; magic numbers extracted to named constants.
 - `IDisposable` properly implemented (`ShaderEffect`, `BaseGame`, `RacingGameManager`).
@@ -39,7 +40,18 @@ This fork brings a series of bug fixes and improvements over the original MonoGa
 - Dynamic resolutions in Options (sourced from `GraphicsAdapter.SupportedDisplayModes`; prefers modern 16:9).
 - Configurable FPS display (menu option, toggleable in-game).
 - Gamepad vibration on collisions (glancing 0.35 / frontal 0.85, variable duration, On/Off option).
-- Progress bar on the loading screen with wave animation on all texts.
+- Loading, menu, selection, help, highscores, and in-game HUD overlays now render through MGUI.
+
+## UI Architecture
+
+The UI stack in `RacingGame.Shared` is now split between legacy scene rendering and MGUI overlays.
+
+- `BaseGame` owns the MGUI lifecycle and updates a shared `MguiUiHost`.
+- `RacingGameManager` still owns the `IGameScreen` stack, but the top screen can now expose an `IMguiScreenView` through `IMguiScreen`.
+- Each migrated screen has a dedicated view under `RacingGame.Shared/UI/MGUI/Views/`.
+- Legacy rendering is still used for backgrounds, 3D previews, and fullscreen shader effects. Interactive controls and HUD text live in MGUI.
+
+For new screens, keep gameplay or scene rendering inside the `GameScreen` implementation and place interactive UI composition in a corresponding MGUI view.
 
 ## Screenshot
 ![image 1](/github/XNA_Racing-Game_01_small.jpg)

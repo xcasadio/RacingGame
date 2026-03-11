@@ -15,11 +15,12 @@ internal static class MguiUiTheme
     public static readonly Color SecondaryTextColor = new(205, 212, 224);
     public static readonly Color SuccessColor = Color.LightGreen;
     public static readonly Color DangerColor = new(255, 104, 92);
+    public static readonly VisualStateFillBrush TransparentBackground = new(Color.Transparent.AsFillBrush());
 
     public static MGWindow CreateRootWindow(MguiUiHost host, bool allowsClickThrough = false)
     {
         var window = host.CreateFullscreenWindow(allowsClickThrough);
-        window.BackgroundBrush = null;
+        window.BackgroundBrush = TransparentBackground;
         return window;
     }
 
