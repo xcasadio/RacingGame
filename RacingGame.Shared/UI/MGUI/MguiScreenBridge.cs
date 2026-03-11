@@ -13,6 +13,8 @@ internal sealed class MguiScreenBridge
         _host = host;
     }
 
+    public IMguiScreenView ActiveView => _activeView;
+
     public void SyncTopScreen(IGameScreen screen)
     {
         if (ReferenceEquals(_activeScreen, screen))

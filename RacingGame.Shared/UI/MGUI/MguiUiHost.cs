@@ -24,6 +24,8 @@ internal sealed class MguiUiHost : IDisposable
 
     public MguiScreenBridge ScreenBridge { get; }
 
+    public bool BlocksGameplayInput => ScreenBridge.ActiveView?.BlocksGameplayInput == true;
+
     public Rectangle ViewportBounds => new(0, 0, _game.Window.ClientBounds.Width, _game.Window.ClientBounds.Height);
 
     public MGWindow CreateFullscreenWindow(bool allowsClickThrough)
@@ -48,6 +50,11 @@ internal sealed class MguiUiHost : IDisposable
         if (!Desktop.Windows.Contains(view.Window))
         {
             Desktop.Windows.Add(view.Window);
+        }
+
+        if (view.InitialFocusElement?.IsFocusable == true)
+        {
+            view.InitialFocusElement.Focus();
         }
     }
 

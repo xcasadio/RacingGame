@@ -6,6 +6,10 @@ internal interface IMguiScreenView
 {
     MGWindow Window { get; }
 
+    MGElement InitialFocusElement { get; }
+
+    bool BlocksGameplayInput { get; }
+
     void Activate();
 
     void Deactivate();

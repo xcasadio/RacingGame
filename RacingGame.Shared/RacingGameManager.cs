@@ -446,7 +446,9 @@ public class RacingGameManager : BaseGame
             if (gameScreens.Count > 0)
             {
                 skipPlayerUpdate =
-                    gameScreens.Peek().GetType() == typeof(LoadingScreen);
+                    gameScreens.Peek().GetType() == typeof(LoadingScreen) ||
+                    (gameScreens.Peek().GetType() == typeof(GameScreen) &&
+                     MguiUi?.BlocksGameplayInput == true);
                 updateScreen = gameScreens.Peek();
             }
         }
