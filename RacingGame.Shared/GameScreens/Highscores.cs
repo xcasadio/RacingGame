@@ -3,13 +3,15 @@ using RacingGame.GameLogic;
 using RacingGame.Graphics;
 using RacingGame.Properties;
 using RacingGame.Sounds;
+using RacingGame.UI.MGUI;
+using RacingGame.UI.MGUI.Views;
 namespace RacingGame.GameScreens;
 
 /// <summary>
 /// Highscores
 /// </summary>
 /// <returns>IGame screen</returns>
-class Highscores : IGameScreen
+class Highscores : IGameScreen, IMguiScreen
 {
     #region Highscore helper class
     /// <summary>
@@ -261,63 +263,29 @@ class Highscores : IGameScreen
 
     #region Update
     private bool _isFinished = false;
-    int selectedLevel = 1;
+    private int selectedLevel = 1;
+    private IMguiScreenView _mguiView;
 
     /// <summary>
     /// Process input: level-tab selection, keyboard navigation, exit.
     /// </summary>
     public void Update(GameTime gameTime)
     {
-        int yPos = BaseGame.YToRes(182);
-        int lineHeight = BaseGame.YToRes(27);
-        int xPos = BaseGame.XToRes(512 - 160 * 3 / 2 + 25);
-
-        // Tab click detection (rects match those drawn in Render)
-        if (Input.MouseInBox(new Rectangle(xPos, yPos, BaseGame.XToRes(125), lineHeight)) &&
-            Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            selectedLevel = 0;
-        }
-        xPos += BaseGame.XToRes(160 + 8);
-
-        if (Input.MouseInBox(new Rectangle(xPos, yPos, BaseGame.XToRes(125), lineHeight)) &&
-            Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            selectedLevel = 1;
-        }
-        xPos += BaseGame.XToRes(160 + 30 - 8);
-
-        if (Input.MouseInBox(new Rectangle(xPos, yPos, BaseGame.XToRes(125), lineHeight)) &&
-            Input.MouseLeftButtonJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            selectedLevel = 2;
-        }
-
-        // Keyboard / gamepad tab navigation
         if (Input.GamePadLeftJustPressed || Input.KeyboardLeftJustPressed)
         {
             Sound.Play(Sound.Sounds.ButtonClick);
-            selectedLevel = (selectedLevel + 2) % 3;
+            selectedLevel = (selectedLevel + 2) % NumOfHighscoreLevels;
         }
         else if (Input.GamePadRightJustPressed || Input.KeyboardRightJustPressed)
         {
             Sound.Play(Sound.Sounds.ButtonClick);
-            selectedLevel = (selectedLevel + 1) % 3;
+            selectedLevel = (selectedLevel + 1) % NumOfHighscoreLevels;
         }
 
-        BaseGame.UI.UpdateBottomButtons(true);
-
-        // Exit when clicking below the highscore rows, pressing Esc / Back
-        int lastRowY = BaseGame.YToRes(220) + NumOfHighscores * lineHeight;
         _isFinished =
             Input.KeyboardEscapeJustPressed ||
             Input.GamePadBJustPressed ||
-            Input.GamePadBackJustPressed ||
-            (Input.MouseLeftButtonJustPressed && Input.MousePos.Y > lastRowY) ||
-            BaseGame.UI.backButtonPressed;
+            Input.GamePadBackJustPressed;
     }
     #endregion
 
@@ -328,71 +296,61 @@ class Highscores : IGameScreen
     /// <returns>Bool</returns>
     public bool Render()
     {
-        // This starts both menu and in game post screen shader!
         if (BaseGame.UsePostScreenShaders)
-        {
             BaseGame.UI.PostScreenMenuShader.Start();
-        }
 
-        // Render background
         BaseGame.UI.RenderMenuBackground();
-        BaseGame.UI.RenderBlackBar(160, 498 - 160);
-
-        // Highscores header
-        BaseGame.UI.Headers.RenderOnScreenRelative1600(
-            10, 18, UIRenderer.HeaderHighscoresGfxRect);
-
-        // Track selection tabs
-        int xPos = BaseGame.XToRes(512 - 160 * 3 / 2 + 25);
-        int yPos = BaseGame.YToRes(182);
-        int lineHeight = BaseGame.YToRes(27);
-
-        // Draw tabs; mouse-over highlight is visual-only (no state change here)
-        bool inBox = Input.MouseInBox(new Rectangle(xPos, yPos, BaseGame.XToRes(125), lineHeight));
-        TextureFont.WriteText(xPos, yPos, "Beginner",
-            selectedLevel == 0 ? Color.Yellow : inBox ? Color.White : Color.LightGray);
-        xPos += BaseGame.XToRes(160 + 8);
-
-        inBox = Input.MouseInBox(new Rectangle(xPos, yPos, BaseGame.XToRes(125), lineHeight));
-        TextureFont.WriteText(xPos, yPos, "Advanced",
-            selectedLevel == 1 ? Color.Yellow : inBox ? Color.White : Color.LightGray);
-        xPos += BaseGame.XToRes(160 + 30 - 8);
-
-        inBox = Input.MouseInBox(new Rectangle(xPos, yPos, BaseGame.XToRes(125), lineHeight));
-        TextureFont.WriteText(xPos, yPos, "Expert",
-            selectedLevel == 2 ? Color.Yellow : inBox ? Color.White : Color.LightGray);
-
-        // Separation line
-        int xPos1 = BaseGame.XToRes(300);
-        int xPos2 = BaseGame.XToRes(350);
-        int xPos3 = BaseGame.XToRes(640);
-        yPos = BaseGame.YToRes(208);
-        BaseGame.DrawLine(
-            new Point(xPos1, yPos),
-            new Point(xPos3 + TextureFont.GetTextWidth("5:67:89"), yPos),
-            new Color(192, 192, 192, 128));
-        BaseGame.DrawLine(
-            new Point(xPos1, yPos + 1),
-            new Point(xPos3 + TextureFont.GetTextWidth("5:67:89"), yPos + 1),
-            new Color(192, 192, 192, 128));
-
-        yPos = BaseGame.YToRes(220);
-
-        for (int num = 0; num < NumOfHighscores; num++)
-        {
-            Rectangle lineRect = new Rectangle(0, yPos, BaseGame.Width, lineHeight);
-            // Mouse-over highlight is a visual-only effect — no state change
-            Color col = Input.MouseInBox(lineRect) ? Color.White : new Color(200, 200, 200);
-            TextureFont.WriteText(xPos1, yPos, (1 + num) + ".", col);
-            TextureFont.WriteText(xPos2, yPos, highscores[selectedLevel, num].name, col);
-            TextureFont.WriteGameTime(xPos3, yPos,
-                highscores[selectedLevel, num].timeMilliseconds, Color.Yellow);
-            yPos += lineHeight;
-        }
-
-        BaseGame.UI.RenderBottomButtons(true);
-
         return _isFinished;
     }
     #endregion
+
+    public IMguiScreenView GetOrCreateMguiView(MguiUiHost host)
+    {
+        _mguiView ??= new HighscoresView(this, host);
+        return _mguiView;
+    }
+
+    internal int SelectedLevel => selectedLevel;
+
+    internal string GetLevelLabel(int level) => level switch
+    {
+        0 => "Beginner",
+        1 => "Advanced",
+        2 => "Expert",
+        _ => "Unknown",
+    };
+
+    internal void SelectLevel(int level)
+    {
+        if (level < 0 || level >= NumOfHighscoreLevels || selectedLevel == level)
+            return;
+
+        Sound.Play(Sound.Sounds.ButtonClick);
+        selectedLevel = level;
+    }
+
+    internal void RequestBack()
+    {
+        _isFinished = true;
+    }
+
+    internal IReadOnlyList<(int Rank, string Name, string Time)> GetEntries()
+    {
+        var result = new List<(int Rank, string Name, string Time)>(NumOfHighscores);
+        for (int num = 0; num < NumOfHighscores; num++)
+        {
+            result.Add((num + 1, highscores[selectedLevel, num].name,
+                FormatTime(highscores[selectedLevel, num].timeMilliseconds)));
+        }
+        return result;
+    }
+
+    private static string FormatTime(int timeMilliseconds)
+    {
+        return
+            (timeMilliseconds < 0 ? "-" : "") +
+            ((Math.Abs(timeMilliseconds) / 1000) / 60) + ":" +
+            ((Math.Abs(timeMilliseconds) / 1000) % 60).ToString("00") + "." +
+            ((Math.Abs(timeMilliseconds) / 10) % 100).ToString("00");
+    }
 }
