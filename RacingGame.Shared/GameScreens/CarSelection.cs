@@ -1,6 +1,8 @@
 using RacingGame.GameLogic;
 using RacingGame.Graphics;
 using RacingGame.Sounds;
+using RacingGame.UI.MGUI;
+using RacingGame.UI.MGUI.Views;
 using Texture = RacingGame.Graphics.Texture;
 using RacingGame.Shaders;
 
@@ -10,7 +12,7 @@ namespace RacingGame.GameScreens;
 /// Car selection
 /// </summary>
 /// <returns>IGame screen</returns>
-class CarSelection : IGameScreen
+class CarSelection : IGameScreen, IMguiScreen
 {
     #region Car type variables (max speed, acceleration, etc.)
     /// <summary>
@@ -56,6 +58,7 @@ class CarSelection : IGameScreen
 
     #region Update
     private bool _isFinished = false;
+    private IMguiScreenView _mguiView;
 
     /// <summary>
     /// Process input: car/color navigation, A button, exit.
@@ -70,71 +73,10 @@ class CarSelection : IGameScreen
             carSelectionRotationZ, newCarSelectionRotationZ,
             BaseGame.MoveFactorPerSecond * 5.0f);
 
-        // Color swatch mouse hover + click detection
-        for (int num = 0; num < RacingGameManager.CarColors.Count; num++)
-        {
-            Rectangle rect =
-                RacingGameManager.CurrentCarColor == num
-                    ? BaseGame.CalcRectangle(250 + num * 50 - 6, 500 - 6, 46 + 12, 46 + 12)
-                    : BaseGame.CalcRectangle(250 + num * 50, 500, 46, 46);
-            if (Input.MouseInBox(rect) && Input.MouseLeftButtonPressed)
-            {
-                if (RacingGameManager.CurrentCarColor != num)
-                    Sound.Play(Sound.Sounds.Highlight);
-                RacingGameManager.CurrentCarColor = num;
-            }
-        }
-
-        // Car number left/right (keyboard, gamepad, mouse click zones)
-        if (Input.GamePadLeftJustPressed ||
-            Input.KeyboardLeftJustPressed ||
-            (Input.MouseLeftButtonJustPressed &&
-             Input.MouseInBoxRelative(new Rectangle(512 + 50, 170, 512 - 150, 135))))
-        {
-            Sound.Play(Sound.Sounds.Highlight);
-            RacingGameManager.CurrentCarNumber =
-                (RacingGameManager.CurrentCarNumber + 1) % 3;
-        }
-        else if (Input.GamePadRightJustPressed ||
-                 Input.KeyboardRightJustPressed ||
-                 (Input.MouseLeftButtonJustPressed &&
-                  Input.MouseInBoxRelative(new Rectangle(100, 170, 512 - 200, 135))))
-        {
-            Sound.Play(Sound.Sounds.Highlight);
-            RacingGameManager.CurrentCarNumber =
-                (RacingGameManager.CurrentCarNumber + 2) % 3;
-        }
-
-        // Car color up/down (gamepad / keyboard)
-        if (Input.GamePadUpJustPressed || Input.KeyboardUpJustPressed)
-        {
-            Sound.Play(Sound.Sounds.Highlight);
-            RacingGameManager.CurrentCarColor =
-                (RacingGameManager.CurrentCarColor +
-                 RacingGameManager.NumberOfCarColors - 1) %
-                RacingGameManager.NumberOfCarColors;
-        }
-        else if (Input.GamePadDownJustPressed || Input.KeyboardDownJustPressed)
-        {
-            Sound.Play(Sound.Sounds.Highlight);
-            RacingGameManager.CurrentCarColor =
-                (RacingGameManager.CurrentCarColor + 1) %
-                RacingGameManager.NumberOfCarColors;
-        }
-
-        bool aButtonPressed = BaseGame.UI.UpdateBottomButtons(false);
-        if (Input.GamePadAJustPressed ||
-            Input.KeyboardSpaceJustPressed ||
-            aButtonPressed)
-        {
-            RacingGameManager.AddGameScreen(new TrackSelection());
-        }
-
         _isFinished =
             Input.KeyboardEscapeJustPressed ||
             Input.GamePadBJustPressed ||
-            Input.GamePadBackJustPressed ||
-            BaseGame.UI.backButtonPressed;
+            Input.GamePadBackJustPressed;
     }
     #endregion
 
@@ -203,99 +145,78 @@ class CarSelection : IGameScreen
         Texture.additiveSprite.Begin(SpriteSortMode.Deferred, BlendState.Additive);
         Texture.alphaSprite.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
 
-        BaseGame.UI.Headers.RenderOnScreenRelative1600(
-            10, 18, UIRenderer.HeaderChooseCarGfxRect);
-
-        // Draw car color swatches (no input here)
-        TextureFont.WriteText(BaseGame.XToRes(85), BaseGame.YToRes(512),
-            "Car Color: ");
-        for (int num = 0; num < RacingGameManager.CarColors.Count; num++)
-        {
-            Rectangle rect =
-                RacingGameManager.CurrentCarColor == num
-                    ? BaseGame.CalcRectangle(250 + num * 50 - 6, 500 - 6, 46 + 12, 46 + 12)
-                    : BaseGame.CalcRectangle(250 + num * 50, 500, 46, 46);
-            RacingGameManager.ColorSelectionTexture.RenderOnScreen(
-                rect, RacingGameManager.ColorSelectionTexture.GfxRectangle,
-                RacingGameManager.CarColors[num]);
-        }
-
-        // Update car physics values for property bars
-        CarPhysics.SetCarVariablesForCarType(
-            CarTypeMaxSpeed[RacingGameManager.CurrentCarNumber],
-            CarTypeMass[RacingGameManager.CurrentCarNumber],
-            CarTypeMaxAcceleration[RacingGameManager.CurrentCarNumber]);
-
-        float maxSpeed =
-            -1.5f + 2.45f *
-            (CarTypeMaxSpeed[RacingGameManager.CurrentCarNumber] /
-             CarPhysics.DefaultMaxSpeed);
-        float acceleration =
-            -1.25f + 1.85f *
-            (CarTypeMaxAcceleration[RacingGameManager.CurrentCarNumber] /
-             CarPhysics.DefaultMaxAccelerationPerSec);
-        float mass =
-            -0.65f + 1.5f *
-            (CarTypeMass[RacingGameManager.CurrentCarNumber] /
-             CarPhysics.DefaultCarMass);
-        float braking = -0.2f + acceleration - mass + maxSpeed;
-        float friction = -1 + (1 / mass + maxSpeed / 5);
-        float engine = -0.2f + 0.5f * (maxSpeed / mass + acceleration - maxSpeed * 5 + 5);
-        if (engine > 0.95f)
-            engine = 0.95f;
-
-        ShowCarPropertyBar(
-            BaseGame.XToRes(1024 - 258), BaseGame.YToRes(190),
-            "Max Speed: " +
-            (int)(CarTypeMaxSpeed[RacingGameManager.CurrentCarNumber] /
-                  CarPhysics.MphToMeterPerSec) + "mph",
-            maxSpeed);
-        ShowCarPropertyBar(
-            BaseGame.XToRes(1024 - 258), BaseGame.YToRes(235),
-            "Acceleration:", acceleration);
-        ShowCarPropertyBar(
-            BaseGame.XToRes(1024 - 258), BaseGame.YToRes(280),
-            "Car Mass:", mass);
-        ShowCarPropertyBar(
-            BaseGame.XToRes(1024 - 258), BaseGame.YToRes(335),
-            "Braking:", braking);
-        ShowCarPropertyBar(
-            BaseGame.XToRes(1024 - 258), BaseGame.YToRes(390),
-            "Friction:", friction);
-        ShowCarPropertyBar(
-            BaseGame.XToRes(1024 - 258), BaseGame.YToRes(445),
-            "Engine:", engine);
-
-        // Animated selection arrows
-        float arrowWave =
-            (float)Math.Sin(BaseGame.TotalTime / 0.46f) *
-            (float)Math.Cos(BaseGame.TotalTime / 0.285f);
-        float arrowScale = 0.75f - 0.065f * arrowWave;
-        Rectangle arrowRect = BaseGame.CalcRectangle(512, 120,
-            (int)Math.Round(UIRenderer.BigArrowGfxRect.Width * arrowScale),
-            (int)Math.Round(UIRenderer.BigArrowGfxRect.Width * arrowScale));
-        arrowRect.X -= arrowRect.Width / 2;
-
-        Rectangle selArrowGfxRect = UIRenderer.SelectionArrowGfxRect;
-        Rectangle leftRect = BaseGame.CalcRectangle(35, 250,
-            selArrowGfxRect.Width, selArrowGfxRect.Height);
-        leftRect.Y = BaseGame.YToRes(300 + 60) + arrowRect.Y / 3;
-        leftRect.X += (int)Math.Round(BaseGame.XToRes(12) * arrowWave);
-        BaseGame.UI.Buttons.RenderOnScreen(
-            leftRect, new Rectangle(selArrowGfxRect.X + selArrowGfxRect.Width,
-                selArrowGfxRect.Y, -selArrowGfxRect.Width, selArrowGfxRect.Height));
-
-        Rectangle rightRect = BaseGame.CalcRectangle(
-            1024 - 335 - selArrowGfxRect.Width, 250,
-            selArrowGfxRect.Width, selArrowGfxRect.Height);
-        rightRect.Y = BaseGame.YToRes(300 + 60) + arrowRect.Y / 3;
-        rightRect.X -= (int)Math.Round(BaseGame.XToRes(12) * arrowWave);
-        BaseGame.UI.Buttons.RenderOnScreen(
-            rightRect, UIRenderer.SelectionArrowGfxRect);
-
-        BaseGame.UI.RenderBottomButtons(false);
-
         return _isFinished;
+    }
+
+    public IMguiScreenView GetOrCreateMguiView(MguiUiHost host)
+    {
+        _mguiView ??= new CarSelectionView(this, host);
+        return _mguiView;
+    }
+
+    internal int CurrentCarNumber => RacingGameManager.CurrentCarNumber;
+
+    internal int CurrentCarColor => RacingGameManager.CurrentCarColor;
+
+    internal IReadOnlyList<Color> AvailableColors => RacingGameManager.CarColors;
+
+    internal void MoveToPreviousCar()
+    {
+        Sound.Play(Sound.Sounds.Highlight);
+        RacingGameManager.CurrentCarNumber = (RacingGameManager.CurrentCarNumber + 1) % 3;
+    }
+
+    internal void MoveToNextCar()
+    {
+        Sound.Play(Sound.Sounds.Highlight);
+        RacingGameManager.CurrentCarNumber = (RacingGameManager.CurrentCarNumber + 2) % 3;
+    }
+
+    internal void SelectCarColor(int colorIndex)
+    {
+        if (colorIndex < 0 || colorIndex >= RacingGameManager.NumberOfCarColors)
+            return;
+
+        if (RacingGameManager.CurrentCarColor != colorIndex)
+            Sound.Play(Sound.Sounds.Highlight);
+
+        RacingGameManager.CurrentCarColor = colorIndex;
+    }
+
+    internal void ConfirmSelection()
+    {
+        RacingGameManager.AddGameScreen(new TrackSelection());
+    }
+
+    internal void RequestBack()
+    {
+        _isFinished = true;
+    }
+
+    internal string GetSelectedCarTitle() => $"Car {RacingGameManager.CurrentCarNumber + 1}";
+
+    internal IReadOnlyList<string> GetCurrentCarStats()
+    {
+        int car = RacingGameManager.CurrentCarNumber;
+        CarPhysics.SetCarVariablesForCarType(
+            CarTypeMaxSpeed[car],
+            CarTypeMass[car],
+            CarTypeMaxAcceleration[car]);
+
+        float maxSpeed = CarTypeMaxSpeed[car] / CarPhysics.MphToMeterPerSec;
+        float acceleration = CarTypeMaxAcceleration[car] / CarPhysics.DefaultMaxAccelerationPerSec;
+        float mass = CarTypeMass[car] / CarPhysics.DefaultCarMass;
+        float braking = -0.2f + (-1.25f + 1.85f * acceleration) - (-0.65f + 1.5f * mass) + (-1.5f + 2.45f * (CarTypeMaxSpeed[car] / CarPhysics.DefaultMaxSpeed));
+        float friction = -1 + (1 / mass + (CarTypeMaxSpeed[car] / CarPhysics.DefaultMaxSpeed) / 5);
+
+        return new[]
+        {
+            $"Top Speed: {(int)maxSpeed} mph",
+            $"Acceleration: {acceleration:0.00}x",
+            $"Mass: {mass:0.00}x",
+            $"Braking: {braking:0.00}",
+            $"Friction: {friction:0.00}",
+        };
     }
     #endregion
 
@@ -382,28 +303,7 @@ class CarSelection : IGameScreen
     }
     #endregion
 
-    #region Show car properties bar
-    Rectangle gfxBarFromOptionsScreen = new Rectangle(
-        372, 297, 472, 6);
-    /// <summary>
-    /// Show car property bar for car selection to differentiate
-    /// the different cars.
-    /// </summary>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
-    /// <param name="propertyName"></param>
-    /// <param name="value"></param>
-    private void ShowCarPropertyBar(int x, int y,
-        string propertyName, float value)
-    {
-        TextureFont.WriteText(x, y, propertyName);
-        RacingGameManager.UI.OptionsScreen.RenderOnScreen(
-            new Rectangle(x, y + BaseGame.YToRes(29),
-                BaseGame.XToRes((int)(192 * value)), BaseGame.YToRes(6)),
-            gfxBarFromOptionsScreen);
-    }
-    #endregion
-
+    #region PostUIRender
     /// <summary>
     /// Post user interface render
     /// </summary>
@@ -466,5 +366,6 @@ class CarSelection : IGameScreen
         BaseGame.WorldMatrix = Matrix.Identity;
         BaseGame.ViewMatrix = remViewMatrix;
     }
+    #endregion
     #endregion
 }
