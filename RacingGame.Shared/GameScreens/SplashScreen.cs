@@ -1,15 +1,18 @@
 using RacingGame.Graphics;
 using RacingGame.GameLogic;
 using RacingGame.Shaders;
+using RacingGame.UI.MGUI;
+using RacingGame.UI.MGUI.Views;
 namespace RacingGame.GameScreens;
 
 /// <summary>
 /// Splash screen
 /// </summary>
-class SplashScreen : IGameScreen
+class SplashScreen : IGameScreen, IMguiScreen
 {
 	#region Variables
 	private bool _isFinished = false;
+	private IMguiScreenView _mguiView;
 	#endregion
 
 	#region Update
@@ -47,16 +50,15 @@ class SplashScreen : IGameScreen
 			ShaderEffect.shadowMapping.ShowShadows();
 		}
 
-		// Show Press Start to continue.
-		if ((int)(BaseGame.TotalTime / 0.375f) % 3 != 0)
-		{
-			BaseGame.UI.Headers.RenderOnScreen(
-				BaseGame.CalcRectangleCenteredWithGivenHeight(
-					512, 518 + 61 / 2, 26, UIRenderer.PressStartGfxRect),
-				UIRenderer.PressStartGfxRect);
-		}
-
 		return _isFinished;
 	}
 	#endregion
+
+	public IMguiScreenView GetOrCreateMguiView(MguiUiHost host)
+	{
+		_mguiView ??= new SplashScreenView(this, host);
+		return _mguiView;
+	}
+
+	internal bool ShouldShowPrompt => (int)(BaseGame.TotalTime / 0.375f) % 3 != 0;
 }
