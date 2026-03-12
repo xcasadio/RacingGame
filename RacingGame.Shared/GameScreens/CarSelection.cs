@@ -14,6 +14,8 @@ namespace RacingGame.GameScreens;
 /// <returns>IGame screen</returns>
 class CarSelection : IGameScreen, IMguiScreen
 {
+    private Point? _mguiViewSize;
+
     #region Car type variables (max speed, acceleration, etc.)
     /// <summary>
     /// Max speed for each car type
@@ -151,7 +153,13 @@ class CarSelection : IGameScreen, IMguiScreen
 
     public IMguiScreenView GetOrCreateMguiView(MguiUiHost host)
     {
-        _mguiView ??= new CarSelectionView(this, host);
+        Point viewportSize = new(host.ViewportBounds.Width, host.ViewportBounds.Height);
+        if (_mguiView == null || _mguiViewSize != viewportSize)
+        {
+            _mguiView = new CarSelectionView(this, host);
+            _mguiViewSize = viewportSize;
+        }
+
         return _mguiView;
     }
 
