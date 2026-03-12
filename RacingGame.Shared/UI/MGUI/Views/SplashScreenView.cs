@@ -20,8 +20,8 @@ internal sealed class SplashScreenView : IMguiScreenView
             BackgroundBrush = MguiUiTheme.TransparentBackground,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Top,
-            Margin = new(0, BaseGame.YToRes(518), 0, 0),
-            PreferredHeight = BaseGame.YToRes(61),
+            Margin = new(0, MguiUiTheme.ScaleY(583), 0, 0),
+            PreferredHeight = MguiUiTheme.ScaleY(69),
         };
 
         _prompt = MguiUiTheme.CreateHeading(Window, "Press Start");

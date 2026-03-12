@@ -110,10 +110,6 @@ class Options : IGameScreen, IMguiScreen
             BaseGame.UI.PostScreenMenuShader.Start();
 
         BaseGame.UI.RenderMenuBackground();
-        BaseGame.UI.Headers.RenderOnScreenRelative1600(
-            10, 18, UIRenderer.HeaderOptionsGfxRect);
-        BaseGame.UI.OptionsScreen.RenderOnScreenRelative4To3(
-            0, 125, BaseGame.UI.OptionsScreen.GfxRectangle);
 
         return _isFinished;
     }
@@ -186,6 +182,7 @@ class Options : IGameScreen, IMguiScreen
         GameSettings.Default.ControllerSensitivity = currentSensitivity;
         GameSettings.Save();
         BaseGame.CheckOptionsAndPSVersion();
+        BaseGame.ApplyResolutionChange();
         _isFinished = true;
     }
 }

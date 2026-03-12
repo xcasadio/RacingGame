@@ -22,10 +22,12 @@ class Help : IGameScreen, IMguiScreen
 	/// </summary>
 	public void Update(GameTime gameTime)
 	{
-		_isFinished =
-			Input.KeyboardEscapeJustPressed ||
+		if (Input.KeyboardEscapeJustPressed ||
 			Input.GamePadBJustPressed ||
-			Input.GamePadBackJustPressed;
+			Input.GamePadBackJustPressed)
+		{
+			_isFinished = true;
+		}
 	}
 	#endregion
 

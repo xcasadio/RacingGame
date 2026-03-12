@@ -8,39 +8,59 @@ internal sealed class HighscoresView : IMguiScreenView
     private readonly Highscores _screen;
     private readonly MGButton[] _levelButtons;
     private readonly MGTextBlock[] _entryTexts;
+    private readonly MGButton _backButton;
 
     public HighscoresView(Highscores screen, MguiUiHost host)
     {
         _screen = screen;
         Window = MguiUiTheme.CreateRootWindow(host);
 
-        var panel = MguiUiTheme.CreatePanel(Window, 24);
-        var root = MguiUiTheme.CreateVerticalStack(Window, 10, 0);
+        var band = MguiUiTheme.CreateMenuBand(Window, 165, 390, MguiUiTheme.ScaleThickness(32, 22, 32, 20));
+        var root = MguiUiTheme.CreateVerticalStack(Window, MguiUiTheme.ScaleY(12), 0);
+        root.HorizontalAlignment = HorizontalAlignment.Center;
+        root.VerticalAlignment = VerticalAlignment.Center;
 
         root.TryAddChild(MguiUiTheme.CreateHeading(Window, "Highscores"));
-        root.TryAddChild(MguiUiTheme.CreateSubheading(Window, "Switch between circuits to inspect the best lap times recorded in local settings."));
 
-        var tabs = MguiUiTheme.CreateHorizontalStack(Window, 8);
+        var scrollViewer = new MGScrollViewer(Window)
+        {
+            PreferredWidth = MguiUiTheme.ScaleX(1040),
+            PreferredHeight = MguiUiTheme.ScaleY(250),
+            AllowClickDragScrolling = true,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+
+        var content = MguiUiTheme.CreateVerticalStack(Window, MguiUiTheme.ScaleY(10), 0);
+        content.HorizontalAlignment = HorizontalAlignment.Center;
+        content.VerticalAlignment = VerticalAlignment.Top;
+
+        var tabs = MguiUiTheme.CreateHorizontalStack(Window, MguiUiTheme.ScaleX(10));
         _levelButtons = new MGButton[3];
         for (int i = 0; i < _levelButtons.Length; i++)
         {
             int level = i;
-            _levelButtons[i] = MguiUiTheme.CreateSecondaryButton(Window, _screen.GetLevelLabel(i), () => _screen.SelectLevel(level));
+            _levelButtons[i] = MguiUiTheme.CreateBandButton(Window, _screen.GetLevelLabel(i), () => _screen.SelectLevel(level));
             tabs.TryAddChild(_levelButtons[i]);
         }
-        root.TryAddChild(tabs);
+        content.TryAddChild(tabs);
 
         _entryTexts = new MGTextBlock[10];
         for (int i = 0; i < _entryTexts.Length; i++)
         {
             _entryTexts[i] = MguiUiTheme.CreateBodyText(Window, string.Empty);
-            root.TryAddChild(_entryTexts[i]);
+            _entryTexts[i].PreferredWidth = MguiUiTheme.ScaleX(520);
+            content.TryAddChild(_entryTexts[i]);
         }
 
-        root.TryAddChild(MguiUiTheme.CreateSecondaryButton(Window, "Back", _screen.RequestBack));
+        scrollViewer.SetContent(content);
+        root.TryAddChild(scrollViewer);
 
-        panel.SetContent(root);
-        Window.SetContent(panel);
+        _backButton = MguiUiTheme.CreateMenuTextButton(Window, "Back", _screen.RequestBack, 150);
+        root.TryAddChild(_backButton);
+
+        band.SetContent(root);
+        Window.SetContent(band);
     }
 
     public MGWindow Window { get; }
@@ -65,7 +85,10 @@ internal sealed class HighscoresView : IMguiScreenView
     private void Refresh()
     {
         for (int i = 0; i < _levelButtons.Length; i++)
-            _levelButtons[i].BorderThickness = _screen.SelectedLevel == i ? new(3) : new(1);
+        {
+            bool isActive = _screen.SelectedLevel == i || _levelButtons[i].VisualState.IsFocused || _levelButtons[i].IsHovered;
+            MguiUiTheme.ApplyBandButtonState(_levelButtons[i], isActive);
+        }
 
         var entries = _screen.GetEntries();
         for (int i = 0; i < _entryTexts.Length && i < entries.Count; i++)
@@ -75,5 +98,7 @@ internal sealed class HighscoresView : IMguiScreenView
             Color color = i == 0 ? MguiUiTheme.AccentColor : MguiUiTheme.PrimaryTextColor;
             _entryTexts[i].Foreground = new(color, color, color);
         }
+
+        MguiUiTheme.ApplyMenuTextButtonState(_backButton, _backButton.VisualState.IsFocused || _backButton.IsHovered);
     }
 }

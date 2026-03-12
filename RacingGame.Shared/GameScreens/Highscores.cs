@@ -282,10 +282,12 @@ class Highscores : IGameScreen, IMguiScreen
             selectedLevel = (selectedLevel + 1) % NumOfHighscoreLevels;
         }
 
-        _isFinished =
-            Input.KeyboardEscapeJustPressed ||
+        if (Input.KeyboardEscapeJustPressed ||
             Input.GamePadBJustPressed ||
-            Input.GamePadBackJustPressed;
+            Input.GamePadBackJustPressed)
+        {
+            _isFinished = true;
+        }
     }
     #endregion
 

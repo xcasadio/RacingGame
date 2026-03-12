@@ -23,7 +23,7 @@ internal sealed class LoadingScreenView : IMguiScreenView
         _status = MguiUiTheme.CreateSubheading(Window, screen.LoadingStatus);
         _progress = new MGProgressBar(Window, 0, 100, 0, 18, true)
         {
-            PreferredWidth = 360,
+            PreferredWidth = MguiUiTheme.ScaleX(360),
             NumberFormat = "0",
             ValueDisplayFormat = MGProgressBar.RecommendedPercentageValueDisplayFormat,
             HorizontalAlignment = HorizontalAlignment.Stretch,

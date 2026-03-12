@@ -28,10 +28,12 @@ class TrackSelection : IGameScreen, IMguiScreen
     /// </summary>
     public void Update(GameTime gameTime)
     {
-        _isFinished =
-            Input.KeyboardEscapeJustPressed ||
+        if (Input.KeyboardEscapeJustPressed ||
             Input.GamePadBJustPressed ||
-            Input.GamePadBackJustPressed;
+            Input.GamePadBackJustPressed)
+        {
+            _isFinished = true;
+        }
     }
     #endregion
 
@@ -73,7 +75,6 @@ class TrackSelection : IGameScreen, IMguiScreen
             BaseGame.UI.PostScreenMenuShader.Start();
 
         BaseGame.UI.RenderMenuBackground();
-        BaseGame.UI.RenderBlackBar(220, 280);
 
         return _isFinished;
     }

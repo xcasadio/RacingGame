@@ -14,12 +14,6 @@ internal sealed class MainMenuView : IMguiScreenView
     private readonly MGBorder[] _buttonFaces;
     private readonly MGTextBlock[] _labels;
 
-    private const int ButtonSize = 105;
-    private const int ButtonBorderThickness = 5;
-    private const int ButtonInnerSize = 95;
-    private const int IconSize = 45;
-    private const int RoundedRowSpacing = 10;
-
     private static readonly MGUniformBorderBrush ActiveBorderBrush = new(new Color(255, 176, 42));
     private static readonly MGUniformBorderBrush InactiveBorderBrush = new(new Color(28, 28, 28));
     private static readonly MGUniformBorderBrush FaceBorderBrush = new(new Color(118, 118, 118));
@@ -30,17 +24,9 @@ internal sealed class MainMenuView : IMguiScreenView
     {
         Window = MguiUiTheme.CreateRootWindow(host);
 
-        var band = new MGBorder(Window, new(0), InactiveBorderBrush)
-        {
-            BackgroundBrush = new VisualStateFillBrush(new Color(0, 0, 0, 132).AsFillBrush()),
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Top,
-            Margin = new(0, BaseGame.YToRes(280), 0, 0),
-            PreferredHeight = BaseGame.YToRes(192),
-            Padding = new(28, 20, 28, 18),
-        };
+        var band = MguiUiTheme.CreateMenuBand(Window, 315, 216, MguiUiTheme.ScaleThickness(28, 20, 28, 18));
 
-        var content = MguiUiTheme.CreateVerticalStack(Window, 10, 0);
+        var content = MguiUiTheme.CreateVerticalStack(Window, MguiUiTheme.ScaleY(10), 0);
         content.HorizontalAlignment = HorizontalAlignment.Center;
         content.VerticalAlignment = VerticalAlignment.Center;
 
@@ -52,7 +38,7 @@ internal sealed class MainMenuView : IMguiScreenView
             new MenuButtonDefinition("Help", "HELP", UIRenderer.MenuButtonHelpGfxRect, screen.OpenHelp),
             new MenuButtonDefinition("Quit", "QUIT", UIRenderer.MenuButtonQuitGfxRect, screen.RequestExit),
         };
-        var buttonsRow = MguiUiTheme.CreateHorizontalStack(Window, RoundedRowSpacing);
+        var buttonsRow = MguiUiTheme.CreateHorizontalStack(Window, MguiUiTheme.ScaleX(10));
 
         _buttons = buttonDefinitions.Select(x => CreateMenuButton(x.Tooltip, x.SourceRect, x.Action)).ToArray();
         _buttonFaces = _buttons.Select(button => (MGBorder)button.Content).ToArray();
@@ -107,11 +93,11 @@ internal sealed class MainMenuView : IMguiScreenView
         {
             BackgroundBrush = CreateOuterButtonBrush(false),
             BorderBrush = InactiveBorderBrush,
-            BorderThickness = new(ButtonBorderThickness),
+            BorderThickness = new(Math.Max(2, MguiUiTheme.ScaleX(5))),
             CornerRadius = ButtonCornerRadius,
             Padding = new(0),
-            PreferredWidth = ButtonSize,
-            PreferredHeight = ButtonSize,
+            PreferredWidth = MguiUiTheme.ScaleX(105),
+            PreferredHeight = MguiUiTheme.ScaleY(105),
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };
@@ -120,10 +106,10 @@ internal sealed class MainMenuView : IMguiScreenView
         {
             CornerRadius = new MGCornerRadius(18),
             BackgroundBrush = CreateFaceOuterBrush(false),
-            Padding = new(6),
+            Padding = MguiUiTheme.ScaleThickness(6, 6),
             Margin = new(0),
-            PreferredWidth = ButtonInnerSize,
-            PreferredHeight = ButtonInnerSize,
+            PreferredWidth = MguiUiTheme.ScaleX(95),
+            PreferredHeight = MguiUiTheme.ScaleY(95),
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };
@@ -132,7 +118,7 @@ internal sealed class MainMenuView : IMguiScreenView
         {
             CornerRadius = new MGCornerRadius(14),
             BackgroundBrush = CreateFaceMiddleBrush(false),
-            Padding = new(8),
+            Padding = MguiUiTheme.ScaleThickness(8, 8),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
         };
@@ -141,15 +127,15 @@ internal sealed class MainMenuView : IMguiScreenView
         {
             CornerRadius = new MGCornerRadius(10),
             BackgroundBrush = CreateFaceCenterBrush(false),
-            Padding = new(10),
+            Padding = MguiUiTheme.ScaleThickness(10, 10),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
         };
 
         centerPlate.SetContent(new MGImage(Window, BaseGame.UI.Buttons.XnaTexture, iconRect, null, Stretch.Uniform)
         {
-            PreferredWidth = IconSize,
-            PreferredHeight = IconSize,
+            PreferredWidth = MguiUiTheme.ScaleX(45),
+            PreferredHeight = MguiUiTheme.ScaleY(45),
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         });
@@ -201,7 +187,7 @@ internal sealed class MainMenuView : IMguiScreenView
         for (int i = 0; i < _buttons.Length; i++)
         {
             bool isActive = _buttons[i].VisualState.IsFocused || _buttons[i].IsHovered;
-            _buttons[i].BorderThickness = new(ButtonBorderThickness);
+            _buttons[i].BorderThickness = new(Math.Max(2, MguiUiTheme.ScaleX(5)));
             _buttons[i].BorderBrush = isActive ? ActiveBorderBrush : InactiveBorderBrush;
             _buttonFaces[i].BorderBrush = isActive ? FaceActiveBorderBrush : FaceBorderBrush;
             _buttonFaces[i].Margin = new(0);

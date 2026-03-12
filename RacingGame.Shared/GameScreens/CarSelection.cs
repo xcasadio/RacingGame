@@ -73,10 +73,12 @@ class CarSelection : IGameScreen, IMguiScreen
             carSelectionRotationZ, newCarSelectionRotationZ,
             BaseGame.MoveFactorPerSecond * 5.0f);
 
-        _isFinished =
-            Input.KeyboardEscapeJustPressed ||
+        if (Input.KeyboardEscapeJustPressed ||
             Input.GamePadBJustPressed ||
-            Input.GamePadBackJustPressed;
+            Input.GamePadBackJustPressed)
+        {
+            _isFinished = true;
+        }
     }
     #endregion
 
@@ -138,7 +140,6 @@ class CarSelection : IGameScreen, IMguiScreen
             BaseGame.UI.PostScreenMenuShader.Start();
 
         BaseGame.UI.RenderMenuBackground();
-        BaseGame.UI.RenderBlackBar(170, 390);
 
         Texture.additiveSprite.End();
         Texture.alphaSprite.End();
@@ -195,6 +196,57 @@ class CarSelection : IGameScreen, IMguiScreen
 
     internal string GetSelectedCarTitle() => $"Car {RacingGameManager.CurrentCarNumber + 1}";
 
+    internal IReadOnlyList<CarStatEntry> GetCurrentCarStatEntries()
+    {
+        int car = RacingGameManager.CurrentCarNumber;
+        float speedRatio = CarTypeMaxSpeed[car] / CarPhysics.DefaultMaxSpeed;
+        float acceleration = CarTypeMaxAcceleration[car] / CarPhysics.DefaultMaxAccelerationPerSec;
+        float mass = CarTypeMass[car] / CarPhysics.DefaultCarMass;
+        float braking = -0.2f + (-1.25f + 1.85f * acceleration) - (-0.65f + 1.5f * mass) + (-1.5f + 2.45f * speedRatio);
+        float friction = -1 + (1 / mass + speedRatio / 5);
+        float engine = speedRatio * 0.55f + acceleration * 0.45f;
+
+        static float Normalize(float value, IEnumerable<float> allValues)
+        {
+            float min = allValues.Min();
+            float max = allValues.Max();
+            return Math.Clamp(max <= min ? 1f : (value - min) / (max - min), 0f, 1f);
+        }
+
+        IEnumerable<float> speedValues = Enumerable.Range(0, 3).Select(index => CarTypeMaxSpeed[index] / CarPhysics.DefaultMaxSpeed);
+        IEnumerable<float> accelerationValues = Enumerable.Range(0, 3).Select(index => CarTypeMaxAcceleration[index] / CarPhysics.DefaultMaxAccelerationPerSec);
+        IEnumerable<float> massValues = Enumerable.Range(0, 3).Select(index => CarTypeMass[index] / CarPhysics.DefaultCarMass);
+        IEnumerable<float> brakingValues = Enumerable.Range(0, 3).Select(index =>
+        {
+            float currentSpeedRatio = CarTypeMaxSpeed[index] / CarPhysics.DefaultMaxSpeed;
+            float currentAcceleration = CarTypeMaxAcceleration[index] / CarPhysics.DefaultMaxAccelerationPerSec;
+            float currentMass = CarTypeMass[index] / CarPhysics.DefaultCarMass;
+            return -0.2f + (-1.25f + 1.85f * currentAcceleration) - (-0.65f + 1.5f * currentMass) + (-1.5f + 2.45f * currentSpeedRatio);
+        });
+        IEnumerable<float> frictionValues = Enumerable.Range(0, 3).Select(index =>
+        {
+            float currentSpeedRatio = CarTypeMaxSpeed[index] / CarPhysics.DefaultMaxSpeed;
+            float currentMass = CarTypeMass[index] / CarPhysics.DefaultCarMass;
+            return -1 + (1 / currentMass + currentSpeedRatio / 5);
+        });
+        IEnumerable<float> engineValues = Enumerable.Range(0, 3).Select(index =>
+        {
+            float currentSpeedRatio = CarTypeMaxSpeed[index] / CarPhysics.DefaultMaxSpeed;
+            float currentAcceleration = CarTypeMaxAcceleration[index] / CarPhysics.DefaultMaxAccelerationPerSec;
+            return currentSpeedRatio * 0.55f + currentAcceleration * 0.45f;
+        });
+
+        return new[]
+        {
+            new CarStatEntry($"Max Speed: {(int)(CarTypeMaxSpeed[car] / CarPhysics.MphToMeterPerSec)}mph", Normalize(speedRatio, speedValues)),
+            new CarStatEntry("Acceleration", Normalize(acceleration, accelerationValues)),
+            new CarStatEntry("Car Mass", Normalize(mass, massValues)),
+            new CarStatEntry("Braking", Normalize(braking, brakingValues)),
+            new CarStatEntry("Friction", Normalize(friction, frictionValues)),
+            new CarStatEntry("Engine", Normalize(engine, engineValues)),
+        };
+    }
+
     internal IReadOnlyList<string> GetCurrentCarStats()
     {
         int car = RacingGameManager.CurrentCarNumber;
@@ -218,6 +270,8 @@ class CarSelection : IGameScreen, IMguiScreen
             $"Friction: {friction:0.00}",
         };
     }
+
+    internal readonly record struct CarStatEntry(string Label, float FillPercent);
     #endregion
 
     #region PostUIRender
