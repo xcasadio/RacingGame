@@ -2,7 +2,8 @@ using MGUI.Core.UI;
 using MGUI.Core.UI.Brushes.Border_Brushes;
 using MGUI.Core.UI.Brushes.Fill_Brushes;
 using MGUI.Core.UI.Containers;
-using MGUI.Core.UI.Containers.Grids;
+using MGUI.Core.UI.Responsive;
+using MonoGame.Extended;
 using RacingGame.GameScreens;
 using RacingGame.Graphics;
 
@@ -23,55 +24,33 @@ internal sealed class CarSelectionView : IMguiScreenView
     {
         _screen = screen;
         Window = MguiUiTheme.CreateRootWindow(host);
+        var root = new MGOverlayPanel(Window)
+        {
+            UseResponsiveLayout = true,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
 
-        var root = new MGGrid(Window)
+        var band = MguiUiTheme.CreateMenuBand(Window, 191, 439, new Thickness(28, 14, 28, 18));
+
+        var bandContent = new MGOverlayPanel(Window)
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
         };
-        root.AddColumn(GridLength.CreateWeightedLength(1));
-        root.AddRows(new[]
-        {
-            GridLength.CreatePixelLength(MguiUiTheme.ScaleY(191)),
-            GridLength.CreatePixelLength(MguiUiTheme.ScaleY(439)),
-            GridLength.CreatePixelLength(MguiUiTheme.ScaleY(90)),
-        });
-
-        var band = new MGBorder(Window, new(0), new MGUniformBorderBrush(Color.Transparent))
-        {
-            BackgroundBrush = new VisualStateFillBrush(new Color(0, 0, 0, 132).AsFillBrush()),
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-            Padding = MguiUiTheme.ScaleThickness(28, 14, 28, 18),
-        };
-        root.TryAddChild(1, 0, band);
-
-        var bandGrid = new MGGrid(Window)
-        {
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-        };
-        bandGrid.AddColumns(new[]
-        {
-            GridLength.CreatePixelLength(MguiUiTheme.ScaleX(90)),
-            GridLength.CreateWeightedLength(1),
-            GridLength.CreatePixelLength(MguiUiTheme.ScaleX(90)),
-            GridLength.CreatePixelLength(MguiUiTheme.ScaleX(300)),
-        });
-        bandGrid.AddRows(new[]
-        {
-            GridLength.CreateWeightedLength(1),
-            GridLength.CreatePixelLength(MguiUiTheme.ScaleY(108)),
-        });
 
         _previousButton = CreateArrowButton("<", screen.MoveToPreviousCar);
         _nextButton = CreateArrowButton(">", screen.MoveToNextCar);
-        bandGrid.TryAddChild(0, 0, _previousButton);
-        bandGrid.TryAddChild(0, 2, _nextButton);
+        _previousButton.ResponsiveAnchor = ResponsiveAnchor.MiddleLeft;
+        _nextButton.ResponsiveAnchor = ResponsiveAnchor.MiddleRight;
+        bandContent.TryAddChild(_previousButton, new Thickness(0, 0, 0, 84));
+        bandContent.TryAddChild(_nextButton, new Thickness(0, 0, 0, 84));
 
         var statsPanel = MguiUiTheme.CreateVerticalStack(Window, MguiUiTheme.ScaleY(8), 0);
         statsPanel.HorizontalAlignment = HorizontalAlignment.Stretch;
         statsPanel.VerticalAlignment = VerticalAlignment.Center;
+        statsPanel.PreferredWidth = 300;
+        statsPanel.ResponsiveAnchor = ResponsiveAnchor.MiddleRight;
         _statLabels = new();
         _statBars = new();
         foreach (var stat in screen.GetCurrentCarStatEntries())
@@ -86,7 +65,7 @@ internal sealed class CarSelectionView : IMguiScreenView
 
             var progress = new MGProgressBar(Window, 0, 100, stat.FillPercent * 100f, MguiUiTheme.ScaleY(10), false)
             {
-                PreferredWidth = MguiUiTheme.ScaleX(240),
+                PreferredWidth = 240,
                 BorderThickness = new(0),
                 CornerRadius = new MGCornerRadius(0),
                 BackgroundBrush = MguiUiTheme.TransparentBackground,
@@ -100,11 +79,12 @@ internal sealed class CarSelectionView : IMguiScreenView
             item.TryAddChild(progress);
             statsPanel.TryAddChild(item);
         }
-        bandGrid.TryAddChild(0, 3, statsPanel);
+        bandContent.TryAddChild(statsPanel, new Thickness(0, 0, 0, 84));
 
         var colorPanel = MguiUiTheme.CreateVerticalStack(Window, MguiUiTheme.ScaleY(8), 0);
         colorPanel.HorizontalAlignment = HorizontalAlignment.Center;
         colorPanel.VerticalAlignment = VerticalAlignment.Center;
+        colorPanel.ResponsiveAnchor = ResponsiveAnchor.BottomCenter;
         colorPanel.TryAddChild(MguiUiTheme.CreateBodyText(Window, "Car Color:", MguiUiTheme.PrimaryTextColor));
 
         var colors = MguiUiTheme.CreateHorizontalStack(Window, MguiUiTheme.ScaleX(10));
@@ -117,8 +97,8 @@ internal sealed class CarSelectionView : IMguiScreenView
                 BackgroundBrush = new VisualStateFillBrush(screen.AvailableColors[i].AsFillBrush()),
                 BorderThickness = new(2),
                 BorderBrush = new MGUniformBorderBrush(Color.White * 0.6f),
-                PreferredWidth = MguiUiTheme.ScaleX(56),
-                PreferredHeight = MguiUiTheme.ScaleY(56),
+                PreferredWidth = 56,
+                PreferredHeight = 56,
                 Padding = new(0),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
@@ -128,19 +108,18 @@ internal sealed class CarSelectionView : IMguiScreenView
             colors.TryAddChild(button);
         }
         colorPanel.TryAddChild(colors);
-        bandGrid.TryAddChild(1, 0, new GridSpan(1, 4, true), colorPanel);
+        bandContent.TryAddChild(colorPanel, new Thickness(0, 0, 0, 4));
 
-        band.SetContent(bandGrid);
+        band.SetContent(bandContent);
 
         var actions = MguiUiTheme.CreateHorizontalStack(Window, MguiUiTheme.ScaleX(14));
-        actions.HorizontalAlignment = HorizontalAlignment.Right;
-        actions.VerticalAlignment = VerticalAlignment.Center;
-        actions.Margin = MguiUiTheme.ScaleThickness(0, 10, 48, 0);
+        actions.ResponsiveAnchor = ResponsiveAnchor.BottomRight;
         _selectButton = CreateSpriteButton(UIRenderer.BottomButtonAButtonGfxRect, screen.ConfirmSelection);
         _cancelButton = CreateSpriteButton(UIRenderer.BottomButtonBButtonGfxRect, screen.RequestBack);
         actions.TryAddChild(_selectButton);
         actions.TryAddChild(_cancelButton);
-        root.TryAddChild(2, 0, actions);
+        root.TryAddChild(band);
+        root.TryAddChild(actions, new Thickness(0, 0, 48, 20));
 
         Window.SetContent(root);
     }
@@ -193,11 +172,11 @@ internal sealed class CarSelectionView : IMguiScreenView
     private MGButton CreateArrowButton(string text, Action action)
     {
         var button = MguiUiTheme.CreateBandButton(Window, text, action);
-        button.MinWidth = MguiUiTheme.ScaleX(72);
-        button.MinHeight = MguiUiTheme.ScaleY(96);
+        button.MinWidth = 72;
+        button.MinHeight = 96;
         if (button.Tag is MGTextBlock label)
         {
-            label.FontSize = MguiUiTheme.ScaleFont(30);
+            label.FontSize = 30;
         }
         return button;
     }
@@ -215,8 +194,8 @@ internal sealed class CarSelectionView : IMguiScreenView
 
         var image = new MGImage(Window, BaseGame.UI.Buttons.XnaTexture, sourceRect, null, Stretch.Uniform)
         {
-            PreferredWidth = MguiUiTheme.ScaleX(136),
-            PreferredHeight = MguiUiTheme.ScaleY(60),
+            PreferredWidth = 136,
+            PreferredHeight = 60,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };

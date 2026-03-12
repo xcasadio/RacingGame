@@ -14,6 +14,7 @@ class LoadingScreen : IGameScreen, IMguiScreen
 	private string loadingStatus = "";
 	private bool _isFinished = false;
 	private IMguiScreenView _mguiView;
+	private Point? _mguiViewSize;
 	private bool _isSubscribed = true;
 	#endregion
 
@@ -26,7 +27,13 @@ class LoadingScreen : IGameScreen, IMguiScreen
 
 	public IMguiScreenView GetOrCreateMguiView(MguiUiHost host)
 	{
-		_mguiView ??= new LoadingScreenView(this, host);
+		Point viewportSize = new(host.ViewportBounds.Width, host.ViewportBounds.Height);
+		if (_mguiView == null || _mguiViewSize != viewportSize)
+		{
+			_mguiView = new LoadingScreenView(this, host);
+			_mguiViewSize = viewportSize;
+		}
+
 		return _mguiView;
 	}
 	#endregion

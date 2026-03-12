@@ -2,7 +2,8 @@ using MGUI.Core.UI;
 using MGUI.Core.UI.Brushes.Border_Brushes;
 using MGUI.Core.UI.Brushes.Fill_Brushes;
 using MGUI.Core.UI.Containers;
-using MGUI.Core.UI.Containers.Grids;
+using MGUI.Core.UI.Responsive;
+using MonoGame.Extended;
 using RacingGame.GameScreens;
 using RacingGame.Graphics;
 
@@ -21,28 +22,14 @@ internal sealed class TrackSelectionView : IMguiScreenView
     {
         _screen = screen;
         Window = MguiUiTheme.CreateRootWindow(host);
-
-        var root = new MGGrid(Window)
+        var root = new MGOverlayPanel(Window)
         {
+            UseResponsiveLayout = true,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
         };
-        root.AddColumn(GridLength.CreateWeightedLength(1));
-        root.AddRows(new[]
-        {
-            GridLength.CreatePixelLength(MguiUiTheme.ScaleY(248)),
-            GridLength.CreatePixelLength(MguiUiTheme.ScaleY(315)),
-            GridLength.CreatePixelLength(MguiUiTheme.ScaleY(90)),
-        });
 
-        var band = new MGBorder(Window, new(0), new MGUniformBorderBrush(Color.Transparent))
-        {
-            BackgroundBrush = new VisualStateFillBrush(new Color(0, 0, 0, 132).AsFillBrush()),
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-            Padding = MguiUiTheme.ScaleThickness(32, 22, 32, 18),
-        };
-        root.TryAddChild(1, 0, band);
+        var band = MguiUiTheme.CreateMenuBand(Window, 248, 315, new Thickness(32, 22, 32, 18));
 
         var stack = MguiUiTheme.CreateHorizontalStack(Window, MguiUiTheme.ScaleX(48));
         stack.HorizontalAlignment = HorizontalAlignment.Center;
@@ -80,14 +67,13 @@ internal sealed class TrackSelectionView : IMguiScreenView
         band.SetContent(stack);
 
         var actions = MguiUiTheme.CreateHorizontalStack(Window, MguiUiTheme.ScaleX(14));
-        actions.HorizontalAlignment = HorizontalAlignment.Right;
-        actions.VerticalAlignment = VerticalAlignment.Center;
-        actions.Margin = MguiUiTheme.ScaleThickness(0, 8, 48, 0);
+        actions.ResponsiveAnchor = ResponsiveAnchor.BottomRight;
         _selectButton = CreateSpriteButton(UIRenderer.BottomButtonAButtonGfxRect, _screen.ConfirmSelection);
         _backButton = CreateSpriteButton(UIRenderer.BottomButtonBButtonGfxRect, _screen.RequestBack);
         actions.TryAddChild(_selectButton);
         actions.TryAddChild(_backButton);
-        root.TryAddChild(2, 0, actions);
+        root.TryAddChild(band);
+        root.TryAddChild(actions, new Thickness(0, 0, 48, 20));
 
         Window.SetContent(root);
     }
@@ -149,16 +135,16 @@ internal sealed class TrackSelectionView : IMguiScreenView
             CornerRadius = new MGCornerRadius(18),
             BackgroundBrush = new VisualStateFillBrush(new Color(0, 0, 0, 24).AsFillBrush()),
             Padding = new(0),
-            PreferredWidth = MguiUiTheme.ScaleX(172),
-            PreferredHeight = MguiUiTheme.ScaleY(286),
+            PreferredWidth = 172,
+            PreferredHeight = 286,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };
 
         frame.SetContent(new MGImage(Window, BaseGame.UI.Buttons.XnaTexture, sourceRect, null, Stretch.Uniform)
         {
-            PreferredWidth = MguiUiTheme.ScaleX(168),
-            PreferredHeight = MguiUiTheme.ScaleY(280),
+            PreferredWidth = 168,
+            PreferredHeight = 280,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         });
@@ -180,8 +166,8 @@ internal sealed class TrackSelectionView : IMguiScreenView
 
         var image = new MGImage(Window, BaseGame.UI.Buttons.XnaTexture, sourceRect, null, Stretch.Uniform)
         {
-            PreferredWidth = MguiUiTheme.ScaleX(136),
-            PreferredHeight = MguiUiTheme.ScaleY(60),
+            PreferredWidth = 136,
+            PreferredHeight = 60,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };

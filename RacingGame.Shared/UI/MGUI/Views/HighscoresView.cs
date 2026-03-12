@@ -16,6 +16,7 @@ internal sealed class HighscoresView : IMguiScreenView
         Window = MguiUiTheme.CreateRootWindow(host);
 
         var band = MguiUiTheme.CreateMenuBand(Window, 165, 390, MguiUiTheme.ScaleThickness(32, 22, 32, 20));
+        band.UseResponsiveLayout = true;
         var root = MguiUiTheme.CreateVerticalStack(Window, MguiUiTheme.ScaleY(12), 0);
         root.HorizontalAlignment = HorizontalAlignment.Center;
         root.VerticalAlignment = VerticalAlignment.Center;
@@ -26,7 +27,7 @@ internal sealed class HighscoresView : IMguiScreenView
         {
             PreferredWidth = MguiUiTheme.ScaleX(1040),
             PreferredHeight = MguiUiTheme.ScaleY(250),
-            AllowClickDragScrolling = true,
+            AllowClickDragScrolling = false,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };

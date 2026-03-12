@@ -15,6 +15,7 @@ class Options : IGameScreen, IMguiScreen
     private bool showFps = false;
     private bool useGamepadVibration = true;
     private IMguiScreenView _mguiView;
+    private Point? _mguiViewSize;
 
     private int currentResolution = 4;
     private bool fullscreen = true;
@@ -116,7 +117,13 @@ class Options : IGameScreen, IMguiScreen
 
     public IMguiScreenView GetOrCreateMguiView(MguiUiHost host)
     {
-        _mguiView ??= new OptionsView(this, host);
+        Point viewportSize = new(host.ViewportBounds.Width, host.ViewportBounds.Height);
+        if (_mguiView == null || _mguiViewSize != viewportSize)
+        {
+            _mguiView = new OptionsView(this, host);
+            _mguiViewSize = viewportSize;
+        }
+
         return _mguiView;
     }
 

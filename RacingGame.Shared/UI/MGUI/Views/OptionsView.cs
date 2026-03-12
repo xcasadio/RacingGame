@@ -29,6 +29,7 @@ internal sealed class OptionsView : IMguiScreenView
         Window = MguiUiTheme.CreateRootWindow(host);
 
         var band = MguiUiTheme.CreateMenuBand(Window, 118, 500, MguiUiTheme.ScaleThickness(32, 20, 32, 20));
+        band.UseResponsiveLayout = true;
         var root = MguiUiTheme.CreateVerticalStack(Window, MguiUiTheme.ScaleY(12), 0);
         root.HorizontalAlignment = HorizontalAlignment.Center;
         root.VerticalAlignment = VerticalAlignment.Center;
@@ -39,7 +40,7 @@ internal sealed class OptionsView : IMguiScreenView
         {
             PreferredWidth = MguiUiTheme.ScaleX(1120),
             PreferredHeight = MguiUiTheme.ScaleY(360),
-            AllowClickDragScrolling = true,
+            AllowClickDragScrolling = false,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };

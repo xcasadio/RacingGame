@@ -1,4 +1,5 @@
 using MGUI.Core.UI;
+using MGUI.Core.UI.Responsive;
 using MGUI.Shared.Input;
 using MGUI.Shared.Rendering;
 using RacingGame.Graphics;
@@ -14,6 +15,7 @@ internal sealed class MguiUiHost : IDisposable
         _game = game;
         Renderer = new MainRenderer(renderHost, rawInputSource);
         Desktop = new MGDesktop(Renderer);
+        Desktop.ResponsiveSettings = new UIResponsiveSettings(new UIDesignResolution(1280, 720));
         Desktop.LoadDefaultResources();
         ScreenBridge = new MguiScreenBridge(this);
     }

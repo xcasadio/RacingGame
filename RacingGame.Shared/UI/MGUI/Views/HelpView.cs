@@ -15,6 +15,7 @@ internal sealed class HelpView : IMguiScreenView
         Window = MguiUiTheme.CreateRootWindow(host);
 
         var band = MguiUiTheme.CreateMenuBand(Window, 120, 480, MguiUiTheme.ScaleThickness(32, 22, 32, 18));
+        band.UseResponsiveLayout = true;
         var root = MguiUiTheme.CreateVerticalStack(Window, MguiUiTheme.ScaleY(10), 0);
         root.HorizontalAlignment = HorizontalAlignment.Center;
         root.VerticalAlignment = VerticalAlignment.Center;
@@ -25,7 +26,7 @@ internal sealed class HelpView : IMguiScreenView
         {
             PreferredWidth = MguiUiTheme.ScaleX(900),
             PreferredHeight = MguiUiTheme.ScaleY(290),
-            AllowClickDragScrolling = true,
+            AllowClickDragScrolling = false,
         };
 
         var content = MguiUiTheme.CreateVerticalStack(Window, MguiUiTheme.ScaleY(12), MguiUiTheme.ScaleY(4));

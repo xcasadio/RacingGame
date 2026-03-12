@@ -3,7 +3,6 @@ using MGUI.Core.UI.Brushes.Border_Brushes;
 using MGUI.Core.UI.Brushes.Fill_Brushes;
 using MGUI.Core.UI.Containers;
 using MonoGame.Extended;
-using RacingGame.Graphics;
 
 namespace RacingGame.UI.MGUI;
 
@@ -26,19 +25,24 @@ internal static class MguiUiTheme
     private static readonly MGUniformBorderBrush BandButtonInactiveBorderBrush = new(new Color(255, 255, 255, 40));
     private static readonly MGCornerRadius MenuButtonCornerRadius = new(16);
 
-    public static int ScaleX(int xAt1280) => (int)Math.Round(xAt1280 * BaseGame.Width / 1280.0f);
-    public static int ScaleY(int yAt720) => (int)Math.Round(yAt720 * BaseGame.Height / 720.0f);
-    public static int ScaleFont(int sizeAt720) => Math.Max(10, ScaleY(sizeAt720));
+    public static int ScaleX(int xAt1280) => xAt1280;
+    public static int ScaleY(int yAt720) => yAt720;
+    public static int ScaleFont(int sizeAt720) => Math.Max(10, sizeAt720);
     public static Thickness ScaleThickness(int horizontalAt1280, int verticalAt720)
-        => new(ScaleX(horizontalAt1280), ScaleY(verticalAt720), ScaleX(horizontalAt1280), ScaleY(verticalAt720));
+        => new(horizontalAt1280, verticalAt720, horizontalAt1280, verticalAt720);
     public static Thickness ScaleThickness(int leftAt1280, int topAt720, int rightAt1280, int bottomAt720)
-        => new(ScaleX(leftAt1280), ScaleY(topAt720), ScaleX(rightAt1280), ScaleY(bottomAt720));
+        => new(leftAt1280, topAt720, rightAt1280, bottomAt720);
 
     public static MGWindow CreateRootWindow(MguiUiHost host, bool allowsClickThrough = false)
     {
         var window = host.CreateFullscreenWindow(allowsClickThrough);
         window.BackgroundBrush = TransparentBackground;
         return window;
+    }
+
+    public static MGResponsiveRoot CreateResponsiveRoot(MGWindow window)
+    {
+        return new MGResponsiveRoot(window);
     }
 
     public static MGBorder CreateMenuBand(MGWindow window, int topAt720, int heightAt720, Thickness? padding = null)
@@ -48,8 +52,8 @@ internal static class MguiUiTheme
             BackgroundBrush = new VisualStateFillBrush(new Color(0, 0, 0, 132).AsFillBrush()),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Top,
-            Margin = new(0, ScaleY(topAt720), 0, 0),
-            PreferredHeight = ScaleY(heightAt720),
+            Margin = new(0, topAt720, 0, 0),
+            PreferredHeight = heightAt720,
             Padding = padding ?? ScaleThickness(28, 18, 28, 18),
         };
     }
@@ -80,7 +84,7 @@ internal static class MguiUiTheme
         return new MGBorder(window, new(2), new MGUniformBorderBrush(PanelBorderColor))
         {
             BackgroundBrush = new VisualStateFillBrush(PanelColor.AsFillBrush()),
-            Padding = ScaleThickness(padding, padding),
+            Padding = new(padding),
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };
@@ -92,6 +96,7 @@ internal static class MguiUiTheme
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             TextAlignment = HorizontalAlignment.Center,
+            UseResponsiveTextScale = true,
         };
     }
 
@@ -102,6 +107,7 @@ internal static class MguiUiTheme
             HorizontalAlignment = HorizontalAlignment.Center,
             TextAlignment = HorizontalAlignment.Center,
             WrapText = true,
+            UseResponsiveTextScale = true,
         };
     }
 
@@ -110,6 +116,7 @@ internal static class MguiUiTheme
         return new MGTextBlock(window, text, color ?? PrimaryTextColor, ScaleFont(14))
         {
             WrapText = true,
+            UseResponsiveTextScale = true,
         };
     }
 
@@ -120,7 +127,7 @@ internal static class MguiUiTheme
             BackgroundBrush = new VisualStateFillBrush(AccentColor.AsFillBrush()),
             BorderBrush = new MGUniformBorderBrush(Color.Black),
             BorderThickness = new(1),
-            Padding = ScaleThickness(18, 10, 18, 10),
+            Padding = new(18, 10, 18, 10),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             HorizontalContentAlignment = HorizontalAlignment.Center,
         };
@@ -128,6 +135,7 @@ internal static class MguiUiTheme
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             TextAlignment = HorizontalAlignment.Center,
+            UseResponsiveTextScale = true,
         });
         return button;
     }
@@ -139,7 +147,7 @@ internal static class MguiUiTheme
             BackgroundBrush = new VisualStateFillBrush(new Color(36, 44, 58, 220).AsFillBrush()),
             BorderBrush = new MGUniformBorderBrush(AccentMutedColor),
             BorderThickness = new(1),
-            Padding = ScaleThickness(16, 8, 16, 8),
+            Padding = new(16, 8, 16, 8),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             HorizontalContentAlignment = HorizontalAlignment.Center,
         };
@@ -147,6 +155,7 @@ internal static class MguiUiTheme
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             TextAlignment = HorizontalAlignment.Center,
+            UseResponsiveTextScale = true,
         });
         return button;
     }
@@ -157,10 +166,10 @@ internal static class MguiUiTheme
         {
             BackgroundBrush = CreateMenuButtonOuterBrush(false),
             BorderBrush = MenuButtonInactiveBorderBrush,
-            BorderThickness = new(Math.Max(2, ScaleX(5))),
+            BorderThickness = new(5),
             CornerRadius = MenuButtonCornerRadius,
             Padding = new(0),
-            MinHeight = ScaleY(48),
+            MinHeight = 48,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
             HorizontalContentAlignment = HorizontalAlignment.Center,
@@ -168,14 +177,14 @@ internal static class MguiUiTheme
 
         if (minWidthAt1280 > 0)
         {
-            button.MinWidth = ScaleX(minWidthAt1280);
+            button.MinWidth = minWidthAt1280;
         }
 
         var outerFace = new MGBorder(window, new(2), MenuButtonFaceBorderBrush)
         {
             CornerRadius = new MGCornerRadius(12),
             BackgroundBrush = CreateMenuButtonOuterFaceBrush(false),
-            Padding = ScaleThickness(6, 6, 6, 6),
+            Padding = new(6),
             Margin = new(0),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
@@ -185,7 +194,7 @@ internal static class MguiUiTheme
         {
             CornerRadius = new MGCornerRadius(10),
             BackgroundBrush = CreateMenuButtonMiddleBrush(false),
-            Padding = ScaleThickness(14, 7, 14, 8),
+            Padding = new(14, 7, 14, 8),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
         };
@@ -194,7 +203,7 @@ internal static class MguiUiTheme
         {
             CornerRadius = new MGCornerRadius(8),
             BackgroundBrush = CreateMenuButtonCenterBrush(false),
-            Padding = ScaleThickness(12, 6, 12, 6),
+            Padding = new(12, 6, 12, 6),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
         };
@@ -203,6 +212,7 @@ internal static class MguiUiTheme
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             TextAlignment = HorizontalAlignment.Center,
+            UseResponsiveTextScale = true,
         };
 
         centerPlate.SetContent(label);
@@ -222,7 +232,7 @@ internal static class MguiUiTheme
         }
 
         button.BorderBrush = isActive ? MenuButtonActiveBorderBrush : MenuButtonInactiveBorderBrush;
-        button.BorderThickness = new(Math.Max(2, ScaleX(5)));
+    button.BorderThickness = new(5);
         button.BackgroundBrush = CreateMenuButtonOuterBrush(isActive);
         parts.OuterFace.BorderBrush = isActive ? MenuButtonFaceActiveBorderBrush : MenuButtonFaceBorderBrush;
         parts.OuterFace.BackgroundBrush = CreateMenuButtonOuterFaceBrush(isActive);
@@ -239,9 +249,9 @@ internal static class MguiUiTheme
         {
             BackgroundBrush = CreateBandButtonBrush(false),
             BorderBrush = BandButtonInactiveBorderBrush,
-            BorderThickness = new(Math.Max(1, ScaleX(2))),
+            BorderThickness = new(2),
             CornerRadius = new MGCornerRadius(10),
-            Padding = ScaleThickness(14, 8, 14, 8),
+            Padding = new(14, 8, 14, 8),
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
             HorizontalContentAlignment = HorizontalAlignment.Center,
@@ -251,6 +261,7 @@ internal static class MguiUiTheme
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             TextAlignment = HorizontalAlignment.Center,
+            UseResponsiveTextScale = true,
         };
 
         button.SetContent(label);
@@ -263,7 +274,7 @@ internal static class MguiUiTheme
     {
         button.BackgroundBrush = CreateBandButtonBrush(isActive);
         button.BorderBrush = isActive ? BandButtonActiveBorderBrush : BandButtonInactiveBorderBrush;
-        button.BorderThickness = new(Math.Max(1, ScaleX(isActive ? 3 : 2)));
+        button.BorderThickness = new(isActive ? 3 : 2);
 
         if (button.Tag is MGTextBlock label)
         {

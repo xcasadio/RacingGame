@@ -13,6 +13,8 @@ namespace RacingGame.GameScreens;
 /// <returns>IGame screen</returns>
 class Highscores : IGameScreen, IMguiScreen
 {
+    private Point? _mguiViewSize;
+
     #region Highscore helper class
     /// <summary>
     /// Highscore helper class
@@ -308,7 +310,13 @@ class Highscores : IGameScreen, IMguiScreen
 
     public IMguiScreenView GetOrCreateMguiView(MguiUiHost host)
     {
-        _mguiView ??= new HighscoresView(this, host);
+        Point viewportSize = new(host.ViewportBounds.Width, host.ViewportBounds.Height);
+        if (_mguiView == null || _mguiViewSize != viewportSize)
+        {
+            _mguiView = new HighscoresView(this, host);
+            _mguiViewSize = viewportSize;
+        }
+
         return _mguiView;
     }
 

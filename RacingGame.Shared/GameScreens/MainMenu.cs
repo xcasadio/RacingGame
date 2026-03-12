@@ -14,6 +14,7 @@ class MainMenu : IGameScreen, IMguiScreen
     private bool musicHasStarted = false;
     private bool _isFinished = false;
     private IMguiScreenView _mguiView;
+    private Point? _mguiViewSize;
 
     internal static Rectangle InterpolateRect(Rectangle rect1, Rectangle rect2, float interpolation)
     {
@@ -61,7 +62,13 @@ class MainMenu : IGameScreen, IMguiScreen
 
     public IMguiScreenView GetOrCreateMguiView(MguiUiHost host)
     {
-        _mguiView ??= new MainMenuView(this, host);
+        Point viewportSize = new(host.ViewportBounds.Width, host.ViewportBounds.Height);
+        if (_mguiView == null || _mguiViewSize != viewportSize)
+        {
+            _mguiView = new MainMenuView(this, host);
+            _mguiViewSize = viewportSize;
+        }
+
         return _mguiView;
     }
 

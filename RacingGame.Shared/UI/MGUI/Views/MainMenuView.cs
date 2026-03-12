@@ -25,10 +25,20 @@ internal sealed class MainMenuView : IMguiScreenView
         Window = MguiUiTheme.CreateRootWindow(host);
 
         var band = MguiUiTheme.CreateMenuBand(Window, 315, 216, MguiUiTheme.ScaleThickness(28, 20, 28, 18));
+        band.UseResponsiveLayout = true;
 
         var content = MguiUiTheme.CreateVerticalStack(Window, MguiUiTheme.ScaleY(10), 0);
         content.HorizontalAlignment = HorizontalAlignment.Center;
         content.VerticalAlignment = VerticalAlignment.Center;
+
+        var buttonScroller = new MGScrollViewer(Window, ScrollBarVisibility.Disabled, ScrollBarVisibility.Auto)
+        {
+            PreferredWidth = 1120,
+            PreferredHeight = 150,
+            AllowClickDragScrolling = false,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
 
         var buttonDefinitions = new[]
         {
@@ -58,7 +68,8 @@ internal sealed class MainMenuView : IMguiScreenView
             buttonsRow.TryAddChild(item);
         }
 
-        content.TryAddChild(buttonsRow);
+        buttonScroller.SetContent(buttonsRow);
+        content.TryAddChild(buttonScroller);
         band.SetContent(content);
         Window.SetContent(band);
 
@@ -93,11 +104,11 @@ internal sealed class MainMenuView : IMguiScreenView
         {
             BackgroundBrush = CreateOuterButtonBrush(false),
             BorderBrush = InactiveBorderBrush,
-            BorderThickness = new(Math.Max(2, MguiUiTheme.ScaleX(5))),
+            BorderThickness = new(5),
             CornerRadius = ButtonCornerRadius,
             Padding = new(0),
-            PreferredWidth = MguiUiTheme.ScaleX(105),
-            PreferredHeight = MguiUiTheme.ScaleY(105),
+            PreferredWidth = 105,
+            PreferredHeight = 105,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };
@@ -106,10 +117,10 @@ internal sealed class MainMenuView : IMguiScreenView
         {
             CornerRadius = new MGCornerRadius(18),
             BackgroundBrush = CreateFaceOuterBrush(false),
-            Padding = MguiUiTheme.ScaleThickness(6, 6),
+            Padding = new(6),
             Margin = new(0),
-            PreferredWidth = MguiUiTheme.ScaleX(95),
-            PreferredHeight = MguiUiTheme.ScaleY(95),
+            PreferredWidth = 95,
+            PreferredHeight = 95,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };
@@ -118,7 +129,7 @@ internal sealed class MainMenuView : IMguiScreenView
         {
             CornerRadius = new MGCornerRadius(14),
             BackgroundBrush = CreateFaceMiddleBrush(false),
-            Padding = MguiUiTheme.ScaleThickness(8, 8),
+            Padding = new(8),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
         };
@@ -127,15 +138,15 @@ internal sealed class MainMenuView : IMguiScreenView
         {
             CornerRadius = new MGCornerRadius(10),
             BackgroundBrush = CreateFaceCenterBrush(false),
-            Padding = MguiUiTheme.ScaleThickness(10, 10),
+            Padding = new(10),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
         };
 
         centerPlate.SetContent(new MGImage(Window, BaseGame.UI.Buttons.XnaTexture, iconRect, null, Stretch.Uniform)
         {
-            PreferredWidth = MguiUiTheme.ScaleX(45),
-            PreferredHeight = MguiUiTheme.ScaleY(45),
+            PreferredWidth = 45,
+            PreferredHeight = 45,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         });
@@ -187,7 +198,7 @@ internal sealed class MainMenuView : IMguiScreenView
         for (int i = 0; i < _buttons.Length; i++)
         {
             bool isActive = _buttons[i].VisualState.IsFocused || _buttons[i].IsHovered;
-            _buttons[i].BorderThickness = new(Math.Max(2, MguiUiTheme.ScaleX(5)));
+            _buttons[i].BorderThickness = new(5);
             _buttons[i].BorderBrush = isActive ? ActiveBorderBrush : InactiveBorderBrush;
             _buttonFaces[i].BorderBrush = isActive ? FaceActiveBorderBrush : FaceBorderBrush;
             _buttonFaces[i].Margin = new(0);

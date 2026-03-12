@@ -14,6 +14,7 @@ class GameScreen : IGameScreen, IMguiScreen
     #region Variables
     private bool _isFinished = false;
     private IMguiScreenView _mguiView;
+    private Point? _mguiViewSize;
     #endregion
 
     #region Constructor
@@ -136,15 +137,28 @@ class GameScreen : IGameScreen, IMguiScreen
 
     public IMguiScreenView GetOrCreateMguiView(MguiUiHost host)
     {
-        _mguiView ??= new GameHudView(this, host);
+        Point viewportSize = new(host.ViewportBounds.Width, host.ViewportBounds.Height);
+        if (_mguiView == null || _mguiViewSize != viewportSize)
+        {
+            _mguiView = new GameHudView(this, host);
+            _mguiViewSize = viewportSize;
+        }
+
         return _mguiView;
     }
 
     internal int CurrentGameTime => (int)RacingGameManager.Player.GameTimeMilliseconds;
     internal int BestLapTime => (int)RacingGameManager.Player.BestTimeMilliseconds;
     internal int CurrentLapDisplay => RacingGameManager.Player.CurrentLap + 1;
+    internal int TotalLapCount => 3;
     internal int SpeedDisplay => (int)Math.Round(RacingGameManager.Player.Speed * CarPhysics.MeterPerSecToMph);
     internal int GearDisplay => 1 + (int)(5 * RacingGameManager.Player.Speed / CarPhysics.MaxPossibleSpeed);
+    internal int HudSpeedDisplay => IsGameOver ? 0 : SpeedDisplay;
+    internal int HudGearDisplay => IsGameOver ? 1 : Math.Min(5, GearDisplay);
+    internal float TachometerNeedleValue => IsGameOver
+        ? 0f
+        : 0.5f * RacingGameManager.Player.Speed / CarPhysics.MaxPossibleSpeed +
+          0.5f * RacingGameManager.Player.Acceleration;
     internal string TrackName => RacingGameManager.Landscape.CurrentTrackName;
     internal IReadOnlyList<int> TopLapTimes => Highscores.GetTop5LapTimes(TrackSelection.SelectedTrackNumber);
     internal bool IsGameOver => RacingGameManager.Player.GameOver;

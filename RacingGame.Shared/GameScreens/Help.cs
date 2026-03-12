@@ -14,6 +14,7 @@ class Help : IGameScreen, IMguiScreen
 	#region Variables
 	private bool _isFinished = false;
 	private IMguiScreenView _mguiView;
+	private Point? _mguiViewSize;
 	#endregion
 
 	#region Update
@@ -48,7 +49,13 @@ class Help : IGameScreen, IMguiScreen
 
 	public IMguiScreenView GetOrCreateMguiView(MguiUiHost host)
 	{
-		_mguiView ??= new HelpView(this, host);
+		Point viewportSize = new(host.ViewportBounds.Width, host.ViewportBounds.Height);
+		if (_mguiView == null || _mguiViewSize != viewportSize)
+		{
+			_mguiView = new HelpView(this, host);
+			_mguiViewSize = viewportSize;
+		}
+
 		return _mguiView;
 	}
 

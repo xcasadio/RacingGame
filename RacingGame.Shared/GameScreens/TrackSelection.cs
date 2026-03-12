@@ -22,6 +22,7 @@ class TrackSelection : IGameScreen, IMguiScreen
     #region Update
     private bool _isFinished = false;
     private IMguiScreenView _mguiView;
+    private Point? _mguiViewSize;
 
     /// <summary>
     /// Process input: mouse, keyboard/gamepad navigation, track selection.
@@ -81,7 +82,13 @@ class TrackSelection : IGameScreen, IMguiScreen
 
     public IMguiScreenView GetOrCreateMguiView(MguiUiHost host)
     {
-        _mguiView ??= new TrackSelectionView(this, host);
+        Point viewportSize = new(host.ViewportBounds.Width, host.ViewportBounds.Height);
+        if (_mguiView == null || _mguiViewSize != viewportSize)
+        {
+            _mguiView = new TrackSelectionView(this, host);
+            _mguiViewSize = viewportSize;
+        }
+
         return _mguiView;
     }
 
