@@ -2,3 +2,7 @@
 	path = MGUI
 	url = https://github.com/xcasadio/MGUI.git
 	branch = develop
+[submodule "CasaEngine"]
+	path = CasaEngine
+	url = https://github.com/xcasadio/CasaEngineMonogame.git
+	branch = main
