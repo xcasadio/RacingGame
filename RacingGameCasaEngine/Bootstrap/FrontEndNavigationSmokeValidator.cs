@@ -1,0 +1,163 @@
+using CasaEngine.Core.Log;
+using RacingGameCasaEngine.Worlds;
+
+namespace RacingGameCasaEngine.Bootstrap;
+
+internal sealed class FrontEndNavigationSmokeValidator
+{
+    private enum ValidationStep
+    {
+        WaitForSplash,
+        VisitHighscores,
+        ReturnFromHighscores,
+        VisitOptions,
+        ReturnFromOptions,
+        VisitHelp,
+        ReturnFromHelp,
+        OpenCarSelection,
+        OpenTrackSelection,
+        StartRace,
+        ReturnToFrontEnd,
+        Completed,
+        Failed,
+    }
+
+    private readonly RacingGameCasaEngineGame _game;
+    private readonly RaceFrontEndFlow _flow;
+    private ValidationStep _step = ValidationStep.WaitForSplash;
+    private TimeSpan _startedAt;
+    private TimeSpan _lastTransitionAt;
+    private bool _started;
+
+    public FrontEndNavigationSmokeValidator(RacingGameCasaEngineGame game, RaceFrontEndFlow flow)
+    {
+        _game = game;
+        _flow = flow;
+        _game.PreviewUpdate += OnPreviewUpdate;
+    }
+
+    private void OnPreviewUpdate(object? sender, TimeSpan totalTime)
+    {
+        if (!_started)
+        {
+            _started = true;
+            _startedAt = totalTime;
+            _lastTransitionAt = totalTime;
+            Logs.WriteInfo("Smoke validation started for front-end navigation");
+        }
+
+        if (_step == ValidationStep.Failed)
+        {
+            return;
+        }
+
+        if (totalTime - _startedAt > TimeSpan.FromSeconds(12))
+        {
+            Fail("Smoke validation timed out before completing the front-end sequence.");
+            return;
+        }
+
+        if (totalTime - _lastTransitionAt < TimeSpan.FromMilliseconds(150))
+        {
+            return;
+        }
+
+        string? currentState = _game.GameManager.ScreenManager.CurrentState;
+        string? currentWorldName = _game.GameManager.CurrentWorld?.Name;
+
+        switch (_step)
+        {
+            case ValidationStep.WaitForSplash when currentState == RaceFrontEndFlow.SplashStateName:
+                _flow.OpenMainMenuForAutomation();
+                Advance(ValidationStep.VisitHighscores, totalTime, "Splash -> MainMenu");
+                break;
+
+            case ValidationStep.VisitHighscores when currentState == RaceFrontEndFlow.MainMenuStateName:
+                _flow.OpenHighscoresForAutomation();
+                Advance(ValidationStep.ReturnFromHighscores, totalTime, "MainMenu -> Highscores");
+                break;
+
+            case ValidationStep.ReturnFromHighscores when currentState == RaceFrontEndFlow.HighscoresStateName:
+                _flow.OpenMainMenuForAutomation();
+                Advance(ValidationStep.VisitOptions, totalTime, "Highscores -> MainMenu");
+                break;
+
+            case ValidationStep.VisitOptions when currentState == RaceFrontEndFlow.MainMenuStateName:
+                _flow.OpenOptionsForAutomation();
+                Advance(ValidationStep.ReturnFromOptions, totalTime, "MainMenu -> Options");
+                break;
+
+            case ValidationStep.ReturnFromOptions when currentState == RaceFrontEndFlow.OptionsStateName:
+                _flow.OpenMainMenuForAutomation();
+                Advance(ValidationStep.VisitHelp, totalTime, "Options -> MainMenu");
+                break;
+
+            case ValidationStep.VisitHelp when currentState == RaceFrontEndFlow.MainMenuStateName:
+                _flow.OpenHelpForAutomation();
+                Advance(ValidationStep.ReturnFromHelp, totalTime, "MainMenu -> Help");
+                break;
+
+            case ValidationStep.ReturnFromHelp when currentState == RaceFrontEndFlow.HelpStateName:
+                _flow.OpenMainMenuForAutomation();
+                Advance(ValidationStep.OpenCarSelection, totalTime, "Help -> MainMenu");
+                break;
+
+            case ValidationStep.OpenCarSelection when currentState == RaceFrontEndFlow.MainMenuStateName:
+                _flow.OpenCarSelectionForAutomation();
+                Advance(ValidationStep.OpenTrackSelection, totalTime, "MainMenu -> CarSelection");
+                break;
+
+            case ValidationStep.OpenTrackSelection when currentState == RaceFrontEndFlow.CarSelectionStateName:
+                _flow.OpenTrackSelectionForAutomation();
+                Advance(ValidationStep.StartRace, totalTime, "CarSelection -> TrackSelection");
+                break;
+
+            case ValidationStep.StartRace when currentState == RaceFrontEndFlow.TrackSelectionStateName:
+                _flow.StartRaceForAutomation();
+                Advance(ValidationStep.ReturnToFrontEnd, totalTime, "TrackSelection -> RaceHud");
+                break;
+
+            case ValidationStep.ReturnToFrontEnd when currentState == RaceFrontEndFlow.RaceHudStateName
+                && currentWorldName != null
+                && RaceWorldFactory.IsRaceWorld(_game.GameManager.CurrentWorld!):
+                _flow.ReturnToFrontEndForAutomation();
+                Advance(ValidationStep.Completed, totalTime, "RaceHud -> MainMenu");
+                break;
+
+            case ValidationStep.Completed when currentState == RaceFrontEndFlow.MainMenuStateName
+                && currentWorldName == RaceWorldFactory.FrontEndWorldName:
+                Complete();
+                break;
+        }
+
+        if (_step == ValidationStep.Completed
+            && currentState == RaceFrontEndFlow.MainMenuStateName
+            && currentWorldName == RaceWorldFactory.FrontEndWorldName)
+        {
+            Complete();
+        }
+    }
+
+    private void Advance(ValidationStep nextStep, TimeSpan totalTime, string message)
+    {
+        Logs.WriteInfo($"Smoke validation: {message}");
+        _step = nextStep;
+        _lastTransitionAt = totalTime;
+    }
+
+    private void Complete()
+    {
+        Logs.WriteInfo("Smoke validation completed successfully");
+        Environment.ExitCode = 0;
+        _step = ValidationStep.Completed;
+        _game.Exit();
+    }
+
+    private void Fail(string message)
+    {
+        Logs.WriteError(message);
+        Environment.ExitCode = 1;
+        _step = ValidationStep.Failed;
+        _game.Exit();
+    }
+}

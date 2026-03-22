@@ -4,7 +4,9 @@
     <Project Path="MGUI/MGUI.FontStashSharp/MGUI.FontStashSharp.csproj" />
     <Project Path="MGUI/MGUI.Shared/MGUI.Shared.csproj" />
   </Folder>
+  <Project Path="CasaEngine/CasaEngine/CasaEngine.csproj" />
   <Project Path="RacingGame.PipelineExtension/RacingGame.PipelineExtension.csproj" />
   <Project Path="RacingGame.Shared/RacingGame.Shared.csproj" />
   <Project Path="RacingGame/RacingGame.csproj" />
+  <Project Path="RacingGameCasaEngine/RacingGameCasaEngine.csproj" />
 </Solution>

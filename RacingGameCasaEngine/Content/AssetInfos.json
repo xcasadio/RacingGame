@@ -1,0 +1,16 @@
+{
+  "asset_infos": [
+    {
+      "id": "0d1cc5aa-ac4d-4205-b16b-e5d77f98bd4b",
+      "name": "MenuBackground",
+      "file_name": "Textures/background.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "2f50aa2a-6f39-429f-b95c-44e1f78af6db",
+      "name": "MenuButtons",
+      "file_name": "Textures/buttons.png",
+      "asset_type": "png"
+    }
+  ]
+}
