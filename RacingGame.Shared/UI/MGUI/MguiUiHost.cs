@@ -1,6 +1,9 @@
 using MGUI.Core.UI;
+using MGUI.Core.UI.InputRouting;
 using MGUI.Core.UI.Responsive;
 using MGUI.Shared.Input;
+using MGUI.Shared.Input.GamePad;
+using MGUI.Shared.Input.Semantic;
 using MGUI.Shared.Rendering;
 using RacingGame.Graphics;
 
@@ -9,6 +12,7 @@ namespace RacingGame.UI.MGUI;
 internal sealed class MguiUiHost : IDisposable
 {
     private readonly BaseGame _game;
+    private readonly InputRouter _inputRouter;
 
     public MguiUiHost(BaseGame game, IRenderHost renderHost, IRawInputSource rawInputSource)
     {
@@ -17,6 +21,10 @@ internal sealed class MguiUiHost : IDisposable
         Desktop = new MGDesktop(Renderer);
         Desktop.ResponsiveSettings = new UIResponsiveSettings(new UIDesignResolution(1280, 720));
         Desktop.LoadDefaultResources();
+        MguiUiTheme.LoadButtonThemes(Desktop);
+        Desktop.UseRawNavigationInput = false;
+        _inputRouter = new InputRouter();
+        _inputRouter.RegisterContext(new MGUIInputContext(Desktop, 100));
         ScreenBridge = new MguiScreenBridge(this);
     }
 
@@ -26,7 +34,7 @@ internal sealed class MguiUiHost : IDisposable
 
     public MguiScreenBridge ScreenBridge { get; }
 
-    public bool BlocksGameplayInput => ScreenBridge.ActiveView?.BlocksGameplayInput == true;
+    public bool BlocksGameplayInput => Desktop.ShouldCaptureGameplayInput() || ScreenBridge.ActiveView?.BlocksGameplayInput == true;
 
     public Rectangle ViewportBounds => new(0, 0, _game.Window.ClientBounds.Width, _game.Window.ClientBounds.Height);
 
@@ -67,6 +75,7 @@ internal sealed class MguiUiHost : IDisposable
 
     public void Update(GameTime gameTime)
     {
+        DispatchRoutedInputActions(gameTime.TotalGameTime);
         ScreenBridge.Update(gameTime);
 
         foreach (var window in Desktop.Windows)
@@ -91,6 +100,35 @@ internal sealed class MguiUiHost : IDisposable
         window.Top = 0;
         window.WindowWidth = ViewportBounds.Width;
         window.WindowHeight = ViewportBounds.Height;
+    }
+
+    private void DispatchRoutedInputActions(TimeSpan totalElapsed)
+    {
+        foreach (var keyEntry in Renderer.Input.Keyboard.CurrentKeyPressedEvents)
+        {
+            if (keyEntry.Value == null)
+            {
+                continue;
+            }
+
+            if (InputActionMapper.TryMapKeyboardAction(keyEntry.Key, Renderer.Input.Keyboard.IsShiftDown, out InputAction action) && action.IsUIAction())
+            {
+                _ = _inputRouter.Route(new(action, new InputActionContext(InputActionSource.Keyboard, InputActionPhase.Pressed, totalElapsed, false, keyEntry.Key)));
+            }
+        }
+
+        foreach (GamePadButton button in GamePadTracker.AllButtons)
+        {
+            if (!Renderer.Input.GamePad.WasTriggered(button))
+            {
+                continue;
+            }
+
+            if (InputActionMapper.TryMapGamePadAction(button, out InputAction action) && action.IsUIAction())
+            {
+                _ = _inputRouter.Route(new(action, new InputActionContext(InputActionSource.GamePad, InputActionPhase.Pressed, totalElapsed, false, GamePadButton: button)));
+            }
+        }
     }
 
     public void Dispose()

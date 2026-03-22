@@ -10,4 +10,10 @@
     <ProjectReference Include="..\MGUI\MGUI.FontStashSharp\MGUI.FontStashSharp.csproj" />
     <ProjectReference Include="..\MGUI\MGUI.Shared\MGUI.Shared.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="UI\MGUI\Themes\RacingGameButtonThemes.xaml" />
+    <EmbeddedResource Include="UI\MGUI\Themes\RacingGameButtonThemes.xaml">
+      <LogicalName>RacingGame.UI.MGUI.Themes.RacingGameButtonThemes.xaml</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

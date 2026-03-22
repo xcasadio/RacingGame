@@ -2,12 +2,23 @@ using MGUI.Core.UI;
 using MGUI.Core.UI.Brushes.Border_Brushes;
 using MGUI.Core.UI.Brushes.Fill_Brushes;
 using MGUI.Core.UI.Containers;
+using MGUI.Shared.Helpers;
 using MonoGame.Extended;
+using System.Reflection;
+using XamlDocumentSource = MGUI.Core.UI.XAML.XamlDocumentSource;
 
 namespace RacingGame.UI.MGUI;
 
 internal static class MguiUiTheme
 {
+    private const string ButtonThemesResourceName = "RacingGame.UI.MGUI.Themes.RacingGameButtonThemes.xaml";
+    private const string PrimaryButtonThemeName = "RacingGame.Button.Primary";
+    private const string SecondaryButtonThemeName = "RacingGame.Button.Secondary";
+    private const string BandButtonThemeName = "RacingGame.Button.Band";
+    private const string ActiveBandButtonThemeName = "RacingGame.Button.Band.Active";
+    private const string MenuTextButtonThemeName = "RacingGame.Button.MenuText";
+    private const string ActiveMenuTextButtonThemeName = "RacingGame.Button.MenuText.Active";
+
     public static readonly Color AccentColor = new(255, 156, 0);
     public static readonly Color AccentMutedColor = new(204, 110, 24);
     public static readonly Color PanelColor = new(8, 10, 16, 215);
@@ -17,10 +28,6 @@ internal static class MguiUiTheme
     public static readonly Color SuccessColor = Color.LightGreen;
     public static readonly Color DangerColor = new(255, 104, 92);
     public static readonly VisualStateFillBrush TransparentBackground = new(Color.Transparent.AsFillBrush());
-    private static readonly MGUniformBorderBrush MenuButtonActiveBorderBrush = new(new Color(255, 176, 42));
-    private static readonly MGUniformBorderBrush MenuButtonInactiveBorderBrush = new(new Color(28, 28, 28));
-    private static readonly MGUniformBorderBrush MenuButtonFaceBorderBrush = new(new Color(118, 118, 118));
-    private static readonly MGUniformBorderBrush MenuButtonFaceActiveBorderBrush = new(new Color(255, 212, 148));
     private static readonly MGUniformBorderBrush BandButtonActiveBorderBrush = new(new Color(255, 176, 42, 220));
     private static readonly MGUniformBorderBrush BandButtonInactiveBorderBrush = new(new Color(255, 255, 255, 40));
     private static readonly MGCornerRadius MenuButtonCornerRadius = new(16);
@@ -32,6 +39,12 @@ internal static class MguiUiTheme
         => new(horizontalAt1280, verticalAt720, horizontalAt1280, verticalAt720);
     public static Thickness ScaleThickness(int leftAt1280, int topAt720, int rightAt1280, int bottomAt720)
         => new(leftAt1280, topAt720, rightAt1280, bottomAt720);
+
+    public static void LoadButtonThemes(MGDesktop desktop)
+    {
+        string xaml = GeneralUtils.ReadEmbeddedResourceAsString(Assembly.GetExecutingAssembly(), ButtonThemesResourceName);
+        desktop.Resources.LoadThemesFromXaml(XamlDocumentSource.FromString(xaml, ButtonThemesResourceName));
+    }
 
     public static MGWindow CreateRootWindow(MguiUiHost host, bool allowsClickThrough = false)
     {
@@ -124,14 +137,15 @@ internal static class MguiUiTheme
     {
         var button = new MGButton(window, _ => action())
         {
-            BackgroundBrush = new VisualStateFillBrush(AccentColor.AsFillBrush()),
             BorderBrush = new MGUniformBorderBrush(Color.Black),
-            BorderThickness = new(1),
+            BorderThickness = new(2),
+            CornerRadius = new MGCornerRadius(12),
             Padding = new(18, 10, 18, 10),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             HorizontalContentAlignment = HorizontalAlignment.Center,
         };
-        button.SetContent(new MGTextBlock(window, text, Color.Black, ScaleFont(16))
+        ApplyButtonTheme(button, PrimaryButtonThemeName);
+        button.SetContent(new MGTextBlock(window, text, null, ScaleFont(16))
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             TextAlignment = HorizontalAlignment.Center,
@@ -144,14 +158,15 @@ internal static class MguiUiTheme
     {
         var button = new MGButton(window, _ => action())
         {
-            BackgroundBrush = new VisualStateFillBrush(new Color(36, 44, 58, 220).AsFillBrush()),
             BorderBrush = new MGUniformBorderBrush(AccentMutedColor),
-            BorderThickness = new(1),
+            BorderThickness = new(2),
+            CornerRadius = new MGCornerRadius(12),
             Padding = new(16, 8, 16, 8),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             HorizontalContentAlignment = HorizontalAlignment.Center,
         };
-        button.SetContent(new MGTextBlock(window, text, PrimaryTextColor, ScaleFont(15))
+        ApplyButtonTheme(button, SecondaryButtonThemeName);
+        button.SetContent(new MGTextBlock(window, text, null, ScaleFont(15))
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             TextAlignment = HorizontalAlignment.Center,
@@ -164,90 +179,47 @@ internal static class MguiUiTheme
     {
         var button = new MGButton(window, _ => action())
         {
-            BackgroundBrush = CreateMenuButtonOuterBrush(false),
-            BorderBrush = MenuButtonInactiveBorderBrush,
-            BorderThickness = new(5),
+            BorderBrush = new MGUniformBorderBrush(new Color(96, 96, 96)),
+            BorderThickness = new(2),
             CornerRadius = MenuButtonCornerRadius,
-            Padding = new(0),
+            Padding = new(20, 10, 20, 11),
             MinHeight = 48,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
             HorizontalContentAlignment = HorizontalAlignment.Center,
         };
+        ApplyButtonTheme(button, MenuTextButtonThemeName);
 
         if (minWidthAt1280 > 0)
         {
             button.MinWidth = minWidthAt1280;
         }
 
-        var outerFace = new MGBorder(window, new(2), MenuButtonFaceBorderBrush)
-        {
-            CornerRadius = new MGCornerRadius(12),
-            BackgroundBrush = CreateMenuButtonOuterFaceBrush(false),
-            Padding = new(6),
-            Margin = new(0),
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-        };
-
-        var middlePlate = new MGBorder(window, new(0), MenuButtonFaceBorderBrush)
-        {
-            CornerRadius = new MGCornerRadius(10),
-            BackgroundBrush = CreateMenuButtonMiddleBrush(false),
-            Padding = new(14, 7, 14, 8),
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-        };
-
-        var centerPlate = new MGBorder(window, new(0), MenuButtonFaceBorderBrush)
-        {
-            CornerRadius = new MGCornerRadius(8),
-            BackgroundBrush = CreateMenuButtonCenterBrush(false),
-            Padding = new(12, 6, 12, 6),
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-        };
-
-        var label = new MGTextBlock(window, text, SecondaryTextColor, ScaleFont(15))
+        button.SetContent(new MGTextBlock(window, text, null, ScaleFont(15))
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             TextAlignment = HorizontalAlignment.Center,
             UseResponsiveTextScale = true,
-        };
+        });
 
-        centerPlate.SetContent(label);
-        middlePlate.SetContent(centerPlate);
-        outerFace.SetContent(middlePlate);
-        button.SetContent(outerFace);
-        button.Tag = new MenuTextButtonParts(outerFace, middlePlate, centerPlate, label);
         ApplyMenuTextButtonState(button, false);
         return button;
     }
 
     public static void ApplyMenuTextButtonState(MGButton button, bool isActive)
     {
-        if (button.Tag is not MenuTextButtonParts parts)
-        {
-            return;
-        }
-
-        button.BorderBrush = isActive ? MenuButtonActiveBorderBrush : MenuButtonInactiveBorderBrush;
-    button.BorderThickness = new(5);
-        button.BackgroundBrush = CreateMenuButtonOuterBrush(isActive);
-        parts.OuterFace.BorderBrush = isActive ? MenuButtonFaceActiveBorderBrush : MenuButtonFaceBorderBrush;
-        parts.OuterFace.BackgroundBrush = CreateMenuButtonOuterFaceBrush(isActive);
-        parts.MiddlePlate.BackgroundBrush = CreateMenuButtonMiddleBrush(isActive);
-        parts.CenterPlate.BackgroundBrush = CreateMenuButtonCenterBrush(isActive);
-        Color foreground = isActive ? AccentColor : SecondaryTextColor;
-        parts.Label.Foreground = new(foreground, foreground, foreground);
-        parts.Label.Opacity = isActive ? 1f : 0.9f;
+        ApplyButtonTheme(button, isActive ? ActiveMenuTextButtonThemeName : MenuTextButtonThemeName);
+        button.BorderBrush = isActive
+            ? new MGUniformBorderBrush(new Color(255, 176, 42))
+            : new MGUniformBorderBrush(new Color(96, 96, 96));
+        button.BorderThickness = new(isActive ? 3 : 2);
+        button.Opacity = isActive ? 1f : 0.94f;
     }
 
     public static MGButton CreateBandButton(MGWindow window, string text, Action action)
     {
         var button = new MGButton(window, _ => action())
         {
-            BackgroundBrush = CreateBandButtonBrush(false),
             BorderBrush = BandButtonInactiveBorderBrush,
             BorderThickness = new(2),
             CornerRadius = new MGCornerRadius(10),
@@ -256,8 +228,9 @@ internal static class MguiUiTheme
             VerticalAlignment = VerticalAlignment.Center,
             HorizontalContentAlignment = HorizontalAlignment.Center,
         };
+        ApplyButtonTheme(button, BandButtonThemeName);
 
-        var label = new MGTextBlock(window, text, PrimaryTextColor, ScaleFont(15))
+        var label = new MGTextBlock(window, text, null, ScaleFont(15))
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             TextAlignment = HorizontalAlignment.Center,
@@ -265,54 +238,26 @@ internal static class MguiUiTheme
         };
 
         button.SetContent(label);
-        button.Tag = label;
         ApplyBandButtonState(button, false);
         return button;
     }
 
     public static void ApplyBandButtonState(MGButton button, bool isActive)
     {
-        button.BackgroundBrush = CreateBandButtonBrush(isActive);
+        ApplyButtonTheme(button, isActive ? ActiveBandButtonThemeName : BandButtonThemeName);
         button.BorderBrush = isActive ? BandButtonActiveBorderBrush : BandButtonInactiveBorderBrush;
         button.BorderThickness = new(isActive ? 3 : 2);
 
-        if (button.Tag is MGTextBlock label)
+        if (button.Content is MGTextBlock label)
         {
-            Color foreground = isActive ? AccentColor : PrimaryTextColor;
-            label.Foreground = new(foreground, foreground, foreground);
             label.Opacity = isActive ? 1f : 0.92f;
         }
     }
 
-    private static VisualStateFillBrush CreateMenuButtonOuterBrush(bool isActive)
+    private static void ApplyButtonTheme(MGButton button, string themeName)
     {
-        Color baseColor = isActive ? new Color(146, 84, 18) : new Color(52, 52, 52);
-        return new VisualStateFillBrush(baseColor.AsFillBrush(), Color.White * 0.08f, PressedModifierType.Darken, 0.10f);
+        MGTheme theme = button.SelfOrParentWindow.GetResources().GetThemeOrDefault(themeName, button.GetTheme(), false);
+        button.EnsureResourceScope().DefaultTheme = theme;
+        button.DefaultTextForeground.SetAll(theme.TextBlockFallbackForeground.GetValue(true).NormalValue);
     }
-
-    private static VisualStateFillBrush CreateMenuButtonOuterFaceBrush(bool isActive)
-    {
-        Color color = isActive ? new Color(184, 184, 184) : new Color(172, 172, 172);
-        return new VisualStateFillBrush(color.AsFillBrush(), Color.White * 0.04f, PressedModifierType.Darken, 0.10f);
-    }
-
-    private static VisualStateFillBrush CreateMenuButtonMiddleBrush(bool isActive)
-    {
-        Color color = isActive ? new Color(228, 223, 214) : new Color(224, 224, 224);
-        return new VisualStateFillBrush(color.AsFillBrush(), Color.White * 0.05f, PressedModifierType.Darken, 0.10f);
-    }
-
-    private static VisualStateFillBrush CreateMenuButtonCenterBrush(bool isActive)
-    {
-        Color color = isActive ? new Color(255, 248, 236) : new Color(248, 248, 248);
-        return new VisualStateFillBrush(color.AsFillBrush(), Color.White * 0.03f, PressedModifierType.Darken, 0.10f);
-    }
-
-    private static VisualStateFillBrush CreateBandButtonBrush(bool isActive)
-    {
-        Color color = isActive ? new Color(0, 0, 0, 168) : new Color(0, 0, 0, 132);
-        return new VisualStateFillBrush(color.AsFillBrush(), Color.White * 0.05f, PressedModifierType.Darken, 0.08f);
-    }
-
-    private sealed record MenuTextButtonParts(MGBorder OuterFace, MGBorder MiddlePlate, MGBorder CenterPlate, MGTextBlock Label);
 }

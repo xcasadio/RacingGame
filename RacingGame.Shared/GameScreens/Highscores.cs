@@ -273,17 +273,6 @@ class Highscores : IGameScreen, IMguiScreen
     /// </summary>
     public void Update(GameTime gameTime)
     {
-        if (Input.GamePadLeftJustPressed || Input.KeyboardLeftJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            selectedLevel = (selectedLevel + 2) % NumOfHighscoreLevels;
-        }
-        else if (Input.GamePadRightJustPressed || Input.KeyboardRightJustPressed)
-        {
-            Sound.Play(Sound.Sounds.ButtonClick);
-            selectedLevel = (selectedLevel + 1) % NumOfHighscoreLevels;
-        }
-
         if (Input.KeyboardEscapeJustPressed ||
             Input.GamePadBJustPressed ||
             Input.GamePadBackJustPressed)

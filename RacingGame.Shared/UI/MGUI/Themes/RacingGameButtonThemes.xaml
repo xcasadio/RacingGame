@@ -1,0 +1,157 @@
+<ThemeDefinitionsDocument xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core">
+  <ThemeDefinition Name="RacingGame.Button.Primary" BasedOn="Light_Gray">
+    <ThemeDefinition.Backgrounds>
+      <ThemeBackgroundDefinition ElementType="Button">
+        <ThemeBackgroundDefinition.Value>
+          <ThemeVisualStateFillBrushDefinition NormalValue="rgb(255,156,0)"
+                                               SelectedValue="rgb(255,156,0)"
+                                               FocusedValue="rgb(255,186,72)"
+                                               DisabledValue="rgb(255,156,0) * 0.45"
+                                               FocusedColor="White * 0.08"
+                                               PressedModifierType="Darken"
+                                               PressedModifier="0.10" />
+        </ThemeBackgroundDefinition.Value>
+      </ThemeBackgroundDefinition>
+    </ThemeDefinition.Backgrounds>
+    <ThemeDefinition.Properties>
+      <ThemePropertyDefinition Target="TextBlockFallbackForeground">
+        <ThemePropertyDefinition.VisualStateColorBrush>
+          <ThemeVisualStateColorBrushDefinition NormalValue="Black"
+                                                SelectedValue="Black"
+                                                FocusedValue="Black"
+                                                DisabledValue="rgb(24,24,24) * 0.60" />
+        </ThemePropertyDefinition.VisualStateColorBrush>
+      </ThemePropertyDefinition>
+    </ThemeDefinition.Properties>
+  </ThemeDefinition>
+
+  <ThemeDefinition Name="RacingGame.Button.Secondary" BasedOn="Light_Gray">
+    <ThemeDefinition.Backgrounds>
+      <ThemeBackgroundDefinition ElementType="Button">
+        <ThemeBackgroundDefinition.Value>
+          <ThemeVisualStateFillBrushDefinition NormalValue="rgba(36,44,58,220)"
+                                               SelectedValue="rgba(36,44,58,220)"
+                                               FocusedValue="rgba(58,69,88,232)"
+                                               DisabledValue="rgba(36,44,58,220) * 0.45"
+                                               FocusedColor="White * 0.05"
+                                               PressedModifierType="Darken"
+                                               PressedModifier="0.08" />
+        </ThemeBackgroundDefinition.Value>
+      </ThemeBackgroundDefinition>
+    </ThemeDefinition.Backgrounds>
+    <ThemeDefinition.Properties>
+      <ThemePropertyDefinition Target="TextBlockFallbackForeground">
+        <ThemePropertyDefinition.VisualStateColorBrush>
+          <ThemeVisualStateColorBrushDefinition NormalValue="White"
+                                                SelectedValue="White"
+                                                FocusedValue="White"
+                                                DisabledValue="rgb(255,255,255) * 0.55" />
+        </ThemePropertyDefinition.VisualStateColorBrush>
+      </ThemePropertyDefinition>
+    </ThemeDefinition.Properties>
+  </ThemeDefinition>
+
+  <ThemeDefinition Name="RacingGame.Button.Band" BasedOn="Light_Gray">
+    <ThemeDefinition.Backgrounds>
+      <ThemeBackgroundDefinition ElementType="Button">
+        <ThemeBackgroundDefinition.Value>
+          <ThemeVisualStateFillBrushDefinition NormalValue="rgba(0,0,0,132)"
+                                               SelectedValue="rgba(0,0,0,132)"
+                                               FocusedValue="rgba(16,20,28,180)"
+                                               DisabledValue="rgba(0,0,0,132) * 0.45"
+                                               FocusedColor="White * 0.04"
+                                               PressedModifierType="Darken"
+                                               PressedModifier="0.08" />
+        </ThemeBackgroundDefinition.Value>
+      </ThemeBackgroundDefinition>
+    </ThemeDefinition.Backgrounds>
+    <ThemeDefinition.Properties>
+      <ThemePropertyDefinition Target="TextBlockFallbackForeground">
+        <ThemePropertyDefinition.VisualStateColorBrush>
+          <ThemeVisualStateColorBrushDefinition NormalValue="White"
+                                                SelectedValue="White"
+                                                FocusedValue="White"
+                                                DisabledValue="rgb(255,255,255) * 0.55" />
+        </ThemePropertyDefinition.VisualStateColorBrush>
+      </ThemePropertyDefinition>
+    </ThemeDefinition.Properties>
+  </ThemeDefinition>
+
+  <ThemeDefinition Name="RacingGame.Button.Band.Active" BasedOn="Light_Gray">
+    <ThemeDefinition.Backgrounds>
+      <ThemeBackgroundDefinition ElementType="Button">
+        <ThemeBackgroundDefinition.Value>
+          <ThemeVisualStateFillBrushDefinition NormalValue="rgba(24,18,8,188)"
+                                               SelectedValue="rgba(24,18,8,188)"
+                                               FocusedValue="rgba(56,38,12,214)"
+                                               DisabledValue="rgba(24,18,8,188) * 0.45"
+                                               FocusedColor="White * 0.04"
+                                               PressedModifierType="Darken"
+                                               PressedModifier="0.08" />
+        </ThemeBackgroundDefinition.Value>
+      </ThemeBackgroundDefinition>
+    </ThemeDefinition.Backgrounds>
+    <ThemeDefinition.Properties>
+      <ThemePropertyDefinition Target="TextBlockFallbackForeground">
+        <ThemePropertyDefinition.VisualStateColorBrush>
+          <ThemeVisualStateColorBrushDefinition NormalValue="rgb(255,156,0)"
+                                                SelectedValue="rgb(255,156,0)"
+                                                FocusedValue="rgb(255,180,44)"
+                                                DisabledValue="rgb(255,156,0) * 0.55" />
+        </ThemePropertyDefinition.VisualStateColorBrush>
+      </ThemePropertyDefinition>
+    </ThemeDefinition.Properties>
+  </ThemeDefinition>
+
+  <ThemeDefinition Name="RacingGame.Button.MenuText" BasedOn="Light_Gray">
+    <ThemeDefinition.Backgrounds>
+      <ThemeBackgroundDefinition ElementType="Button">
+        <ThemeBackgroundDefinition.Value>
+          <ThemeVisualStateFillBrushDefinition NormalValue="rgb(212,212,212)"
+                                               SelectedValue="rgb(212,212,212)"
+                                               FocusedValue="rgb(226,226,226)"
+                                               DisabledValue="rgb(212,212,212) * 0.45"
+                                               FocusedColor="White * 0.02"
+                                               PressedModifierType="Darken"
+                                               PressedModifier="0.10" />
+        </ThemeBackgroundDefinition.Value>
+      </ThemeBackgroundDefinition>
+    </ThemeDefinition.Backgrounds>
+    <ThemeDefinition.Properties>
+      <ThemePropertyDefinition Target="TextBlockFallbackForeground">
+        <ThemePropertyDefinition.VisualStateColorBrush>
+          <ThemeVisualStateColorBrushDefinition NormalValue="rgb(52,52,52)"
+                                                SelectedValue="rgb(52,52,52)"
+                                                FocusedValue="rgb(52,52,52)"
+                                                DisabledValue="rgb(52,52,52) * 0.55" />
+        </ThemePropertyDefinition.VisualStateColorBrush>
+      </ThemePropertyDefinition>
+    </ThemeDefinition.Properties>
+  </ThemeDefinition>
+
+  <ThemeDefinition Name="RacingGame.Button.MenuText.Active" BasedOn="Light_Gray">
+    <ThemeDefinition.Backgrounds>
+      <ThemeBackgroundDefinition ElementType="Button">
+        <ThemeBackgroundDefinition.Value>
+          <ThemeVisualStateFillBrushDefinition NormalValue="rgb(248,234,206)"
+                                               SelectedValue="rgb(248,234,206)"
+                                               FocusedValue="rgb(255,242,220)"
+                                               DisabledValue="rgb(248,234,206) * 0.45"
+                                               FocusedColor="White * 0.02"
+                                               PressedModifierType="Darken"
+                                               PressedModifier="0.10" />
+        </ThemeBackgroundDefinition.Value>
+      </ThemeBackgroundDefinition>
+    </ThemeDefinition.Backgrounds>
+    <ThemeDefinition.Properties>
+      <ThemePropertyDefinition Target="TextBlockFallbackForeground">
+        <ThemePropertyDefinition.VisualStateColorBrush>
+          <ThemeVisualStateColorBrushDefinition NormalValue="rgb(255,156,0)"
+                                                SelectedValue="rgb(255,156,0)"
+                                                FocusedValue="rgb(255,180,44)"
+                                                DisabledValue="rgb(255,156,0) * 0.55" />
+        </ThemePropertyDefinition.VisualStateColorBrush>
+      </ThemePropertyDefinition>
+    </ThemeDefinition.Properties>
+  </ThemeDefinition>
+</ThemeDefinitionsDocument>

@@ -85,6 +85,12 @@ internal sealed class HighscoresView : IMguiScreenView
 
     private void Refresh()
     {
+        int focusedLevel = Array.FindIndex(_levelButtons, button => button.VisualState.IsFocused);
+        if (focusedLevel >= 0 && focusedLevel != _screen.SelectedLevel)
+        {
+            _screen.SelectLevel(focusedLevel);
+        }
+
         for (int i = 0; i < _levelButtons.Length; i++)
         {
             bool isActive = _screen.SelectedLevel == i || _levelButtons[i].VisualState.IsFocused || _levelButtons[i].IsHovered;
