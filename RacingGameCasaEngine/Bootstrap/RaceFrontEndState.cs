@@ -14,6 +14,8 @@ internal sealed class RaceFrontEndState
 
     public bool IsFullscreen { get; set; } = false;
 
+    public bool EnableVSync { get; set; } = true;
+
     public bool EnablePostEffects { get; set; } = true;
 
     public bool EnableShadows { get; set; } = true;

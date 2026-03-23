@@ -9,11 +9,13 @@ namespace RacingGameCasaEngine.Screens;
 
 internal sealed class OptionsScreen : RaceFrontEndScreenBase
 {
+    private readonly RacingGameCasaEngineGame _game;
     private readonly RaceFrontEndState _state;
     private readonly Action _back;
     private MGTextBox? _playerName;
     private MGButton[] _resolutionButtons = [];
     private MGCheckBox? _fullscreen;
+    private MGCheckBox? _vSync;
     private MGCheckBox? _postFx;
     private MGCheckBox? _shadows;
     private MGCheckBox? _highDetail;
@@ -29,9 +31,10 @@ internal sealed class OptionsScreen : RaceFrontEndScreenBase
 
     private static readonly string[] ResolutionLabels = ["1280x720", "1920x1080", "2560x1440", "3840x2160", "Auto"];
 
-    public OptionsScreen(Texture2D? backgroundTexture, Texture2D? buttonsTexture, RaceFrontEndState state, Action back)
+    public OptionsScreen(RacingGameCasaEngineGame game, Texture2D? backgroundTexture, Texture2D? buttonsTexture, RaceFrontEndState state, Action back)
         : base(backgroundTexture, buttonsTexture)
     {
+        _game = game;
         _state = state;
         _back = back;
     }
@@ -84,6 +87,7 @@ internal sealed class OptionsScreen : RaceFrontEndScreenBase
         content.TryAddChild(resolutionRow);
 
         _fullscreen = CreateToggleRow(window, content, "Fullscreen", value => _state.IsFullscreen = value);
+        _vSync = CreateToggleRow(window, content, "Vertical Sync", value => _state.EnableVSync = value);
         _postFx = CreateToggleRow(window, content, "Post Screen Effects", value => _state.EnablePostEffects = value);
         _shadows = CreateToggleRow(window, content, "Shadows", value => _state.EnableShadows = value);
         _highDetail = CreateToggleRow(window, content, "High Detail", value => _state.EnableHighDetail = value);
@@ -123,9 +127,7 @@ internal sealed class OptionsScreen : RaceFrontEndScreenBase
 
     private void ApplyAndClose()
     {
-        _state.SoundVolume = Math.Clamp(_state.SoundVolume, 0, 100);
-        _state.MusicVolume = Math.Clamp(_state.MusicVolume, 0, 100);
-        _state.ControllerSensitivity = Math.Clamp(_state.ControllerSensitivity, 0, 100);
+        _game.ApplyFrontEndOptions(_state);
         _back();
     }
 
@@ -138,6 +140,7 @@ internal sealed class OptionsScreen : RaceFrontEndScreenBase
         }
 
         if (_fullscreen != null) _fullscreen.IsChecked = _state.IsFullscreen;
+        if (_vSync != null) _vSync.IsChecked = _state.EnableVSync;
         if (_postFx != null) _postFx.IsChecked = _state.EnablePostEffects;
         if (_shadows != null) _shadows.IsChecked = _state.EnableShadows;
         if (_highDetail != null) _highDetail.IsChecked = _state.EnableHighDetail;

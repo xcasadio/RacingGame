@@ -10,6 +10,9 @@ using RacingGameCasaEngine.Bootstrap;
 
 public static class Program
 {
+    private const string ApplicationName = "RacingGameCasaEngine";
+    private const string DisplaySettingsFileName = "display-settings.json";
+
     [STAThread]
     private static void Main()
     {
@@ -26,13 +29,42 @@ public static class Program
 
         var runtimeContext = GameSettings.CreateRuntimeContext();
         runtimeContext.UIViewRuntimeFactory = new MguiViewRuntimeFactory();
+        runtimeContext.ProjectSettings.ProjectName = ApplicationName;
+        string displaySettingsPath = GetDisplaySettingsPath(runtimeContext.ProjectSettings.ProjectName);
+
+        DisplaySettings persistedDisplaySettings = DisplaySettingsPersistence.Load(
+            displaySettingsPath,
+            new DisplaySettings(
+                runtimeContext.ProjectSettings.DebugWidth,
+                runtimeContext.ProjectSettings.DebugHeight,
+                runtimeContext.ProjectSettings.DebugIsFullScreen,
+                runtimeContext.ProjectSettings.VSyncEnabled));
+
+        runtimeContext.ProjectSettings.DebugWidth = persistedDisplaySettings.Width;
+        runtimeContext.ProjectSettings.DebugHeight = persistedDisplaySettings.Height;
+        runtimeContext.ProjectSettings.DebugIsFullScreen = persistedDisplaySettings.IsFullScreen;
+        runtimeContext.ProjectSettings.VSyncEnabled = persistedDisplaySettings.IsVSyncEnabled;
 
         var launchOptions = new RaceLaunchOptions
         {
             ValidateFrontEndNavigation = args.Contains("--smoke-frontend", StringComparer.OrdinalIgnoreCase),
         };
 
-        using var game = new RacingGameCasaEngineGame(runtimeContext, launchOptions);
+        using var game = new RacingGameCasaEngineGame(runtimeContext, displaySettingsPath, launchOptions);
         game.Run();
+    }
+
+    private static string GetDisplaySettingsPath(string projectName)
+    {
+        string effectiveProjectName = string.IsNullOrWhiteSpace(projectName)
+            || string.Equals(projectName, "Project name undefined", StringComparison.Ordinal)
+            ? ApplicationName
+            : projectName;
+
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "CasaEngine",
+            effectiveProjectName,
+            DisplaySettingsFileName);
     }
 }

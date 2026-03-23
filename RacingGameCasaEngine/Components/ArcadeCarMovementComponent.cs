@@ -88,7 +88,7 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         if (Math.Abs(_speedUnitsPerSecond) > 0.05f && Math.Abs(steering) > 0f)
         {
             float steeringScale = Math.Clamp(_speedUnitsPerSecond / MaxForwardSpeedUnitsPerSecond, -0.75f, 1f);
-            float turnAmount = steering * TurnRateRadiansPerSecond * steeringScale * elapsedTime;
+            float turnAmount = steering * controller.SteeringSensitivityScale * TurnRateRadiansPerSecond * steeringScale * elapsedTime;
             Quaternion rotation = Quaternion.CreateFromAxisAngle(Vector3.Up, turnAmount);
             pawn.RootComponent.LocalOrientation = Quaternion.Normalize(rotation * pawn.RootComponent.LocalOrientation);
         }

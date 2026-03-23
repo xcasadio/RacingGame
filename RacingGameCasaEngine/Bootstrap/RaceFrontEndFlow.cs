@@ -23,6 +23,7 @@ internal sealed class RaceFrontEndFlow
     public RaceFrontEndFlow(RacingGameCasaEngineGame game)
     {
         _game = game;
+        _game.SyncOptionsState(_state);
     }
 
     internal RaceFrontEndState State => _state;
@@ -52,7 +53,7 @@ internal sealed class RaceFrontEndFlow
         screenManager.RegisterFactory(MainMenuStateName, () => new MainMenuScreen(_game.MenuBackgroundTexture, _game.MenuButtonsTexture, OpenCarSelection, OpenHighscores, OpenOptions, OpenHelp, RequestExit));
         screenManager.RegisterFactory(CarSelectionStateName, () => new CarSelectionScreen(_game.MenuBackgroundTexture, _game.MenuButtonsTexture, _state, OpenTrackSelection, OpenMainMenu));
         screenManager.RegisterFactory(TrackSelectionStateName, () => new TrackSelectionScreen(_game.MenuBackgroundTexture, _game.MenuButtonsTexture, _state, StartRace, OpenCarSelection));
-        screenManager.RegisterFactory(OptionsStateName, () => new OptionsScreen(_game.MenuBackgroundTexture, _game.MenuButtonsTexture, _state, OpenMainMenu));
+        screenManager.RegisterFactory(OptionsStateName, () => new OptionsScreen(_game, _game.MenuBackgroundTexture, _game.MenuButtonsTexture, _state, OpenMainMenu));
         screenManager.RegisterFactory(HelpStateName, () => new HelpScreen(_game.MenuBackgroundTexture, _game.MenuButtonsTexture, OpenMainMenu));
         screenManager.RegisterFactory(HighscoresStateName, () => new HighscoresScreen(_game.MenuBackgroundTexture, _game.MenuButtonsTexture, OpenMainMenu));
         screenManager.RegisterFactory(RaceHudStateName, () => new RaceHudScreen(_game, _state, ReturnToFrontEnd));
