@@ -11,7 +11,8 @@ internal sealed class FrontEndNavigationSmokeValidator
         VisitHighscores,
         ReturnFromHighscores,
         VisitOptions,
-        ReturnFromOptions,
+        ApplyOptions,
+        VerifyOptionsApplied,
         VisitHelp,
         ReturnFromHelp,
         OpenCarSelection,
@@ -28,6 +29,8 @@ internal sealed class FrontEndNavigationSmokeValidator
     private TimeSpan _startedAt;
     private TimeSpan _lastTransitionAt;
     private bool _started;
+    private int _expectedWidth;
+    private int _expectedHeight;
 
     public FrontEndNavigationSmokeValidator(RacingGameCasaEngineGame game, RaceFrontEndFlow flow)
     {
@@ -84,12 +87,28 @@ internal sealed class FrontEndNavigationSmokeValidator
 
             case ValidationStep.VisitOptions when currentState == RaceFrontEndFlow.MainMenuStateName:
                 _flow.OpenOptionsForAutomation();
-                Advance(ValidationStep.ReturnFromOptions, totalTime, "MainMenu -> Options");
+                Advance(ValidationStep.ApplyOptions, totalTime, "MainMenu -> Options");
                 break;
 
-            case ValidationStep.ReturnFromOptions when currentState == RaceFrontEndFlow.OptionsStateName:
-                _flow.OpenMainMenuForAutomation();
-                Advance(ValidationStep.VisitHelp, totalTime, "Options -> MainMenu");
+            case ValidationStep.ApplyOptions when currentState == RaceFrontEndFlow.OptionsStateName:
+                int nextResolutionIndex = _flow.State.SelectedResolutionIndex == 0 ? 1 : 0;
+                (_expectedWidth, _expectedHeight) = nextResolutionIndex == 0 ? (1280, 720) : (1920, 1080);
+                _flow.ApplyOptionsAndReturnToMainMenuForAutomation(state =>
+                {
+                    state.SelectedResolutionIndex = nextResolutionIndex;
+                });
+                Advance(ValidationStep.VerifyOptionsApplied, totalTime, "Options -> MainMenu (apply resolution)");
+                break;
+
+            case ValidationStep.VerifyOptionsApplied when currentState == RaceFrontEndFlow.MainMenuStateName:
+                var displaySettings = _game.GetDisplaySettings();
+                if (displaySettings.Width != _expectedWidth || displaySettings.Height != _expectedHeight)
+                {
+                    Fail($"Smoke validation expected resolution {_expectedWidth}x{_expectedHeight} but found {displaySettings.Width}x{displaySettings.Height} after returning from options.");
+                    return;
+                }
+
+                Advance(ValidationStep.VisitHelp, totalTime, "Verified applied resolution on MainMenu");
                 break;
 
             case ValidationStep.VisitHelp when currentState == RaceFrontEndFlow.MainMenuStateName:

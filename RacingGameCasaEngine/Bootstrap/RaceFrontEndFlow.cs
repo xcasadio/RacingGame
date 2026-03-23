@@ -114,6 +114,13 @@ internal sealed class RaceFrontEndFlow
 
     internal void OpenOptionsForAutomation() => OpenOptions();
 
+    internal void ApplyOptionsAndReturnToMainMenuForAutomation(Action<RaceFrontEndState> configureState)
+    {
+        configureState(_state);
+        _game.ApplyFrontEndOptions(_state);
+        OpenMainMenu();
+    }
+
     internal void OpenHelpForAutomation() => OpenHelp();
 
     internal void OpenHighscoresForAutomation() => OpenHighscores();

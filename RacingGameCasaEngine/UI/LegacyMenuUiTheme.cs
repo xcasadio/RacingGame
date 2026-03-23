@@ -130,6 +130,21 @@ internal static class LegacyMenuUiTheme
         return button;
     }
 
+    public static MGButton CreateResponsiveMenuTextButton(UIRoot root, MGWindow window, string text, Action action, int minWidth = 150)
+    {
+        float scale = Math.Clamp(root.Metrics.Scale, 1.0f, 1.75f);
+        int verticalPadding = (int)MathF.Round(10f * scale);
+        int horizontalPadding = (int)MathF.Round(20f * scale);
+        int minHeight = (int)MathF.Round(48f * scale);
+        int minScaledWidth = Math.Max(minWidth, (int)MathF.Round(minWidth * scale));
+
+        var button = CreateMenuTextButton(window, text, action, minScaledWidth);
+        button.Padding = new Thickness(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding + 1);
+        button.MinHeight = minHeight;
+        button.PreferredHeight = minHeight;
+        return button;
+    }
+
     public static void ApplyMenuTextButtonState(MGButton button, bool isActive)
     {
         button.BorderBrush = new MGUniformBorderBrush(isActive ? new Color(255, 176, 42) : new Color(96, 96, 96));

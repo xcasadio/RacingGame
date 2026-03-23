@@ -45,8 +45,16 @@ internal sealed class OptionsScreen : RaceFrontEndScreenBase
 
     protected override void BuildScreen(UIRoot root)
     {
+        float scale = Math.Clamp(root.Metrics.Scale, 1.0f, 1.75f);
+        int bandTop = root.Metrics.SafeArea.Y + 24;
+        int bandHeight = Math.Max(500, root.Metrics.SafeArea.Height - 48);
+        int scrollWidth = Math.Max(1120, root.Metrics.SafeArea.Width - 160);
+        int footerHeight = (int)MathF.Round(64f * scale);
+        int headerHeight = (int)MathF.Round(82f * scale);
+        int scrollHeight = Math.Max(280, bandHeight - headerHeight - footerHeight);
+
         var window = CreateForegroundWindow(root);
-        var band = LegacyMenuUiTheme.CreateMenuBand(window, 118, 500, new MonoGame.Extended.Thickness(32, 20, 32, 20));
+        var band = LegacyMenuUiTheme.CreateMenuBand(window, bandTop, bandHeight, new MonoGame.Extended.Thickness(32, 20, 32, 20));
         var layout = LegacyMenuUiTheme.CreateVerticalStack(window, spacing: 12);
         layout.HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center;
         layout.VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center;
@@ -54,8 +62,8 @@ internal sealed class OptionsScreen : RaceFrontEndScreenBase
 
         var scrollViewer = new MGScrollViewer(window)
         {
-            PreferredWidth = 1120,
-            PreferredHeight = 360,
+            PreferredWidth = scrollWidth,
+            PreferredHeight = scrollHeight,
             AllowClickDragScrolling = false,
             HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center,
             VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center,
@@ -100,7 +108,7 @@ internal sealed class OptionsScreen : RaceFrontEndScreenBase
         scrollViewer.SetContent(content);
         layout.TryAddChild(scrollViewer);
 
-        _backButton = LegacyMenuUiTheme.CreateMenuTextButton(window, "Back", ApplyAndClose);
+        _backButton = LegacyMenuUiTheme.CreateResponsiveMenuTextButton(root, window, "Back", ApplyAndClose);
         layout.TryAddChild(_backButton);
 
         band.SetContent(layout);

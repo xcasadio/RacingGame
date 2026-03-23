@@ -47,7 +47,7 @@ internal sealed class HelpScreen : RaceFrontEndScreenBase
         scrollViewer.SetContent(content);
         layout.TryAddChild(scrollViewer);
 
-        _backButton = LegacyMenuUiTheme.CreateMenuTextButton(window, "Back", _back);
+        _backButton = LegacyMenuUiTheme.CreateResponsiveMenuTextButton(root, window, "Back", _back);
         layout.TryAddChild(_backButton);
 
         band.SetContent(layout);
