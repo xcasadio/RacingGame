@@ -38,6 +38,7 @@ public static class RaceWorldFactory
     {
         TrackDefinition track = RaceFrontEndCatalog.Tracks[state.SelectedTrackIndex];
         CarDefinition car = RaceFrontEndCatalog.Cars[state.SelectedCarIndex];
+        RaceTrackScene trackScene = LegacyTrackSceneFactory.Create(track.Name);
 
         var world = new World
         {
@@ -46,12 +47,17 @@ public static class RaceWorldFactory
 
         world.AddEntity(CreateCameraEntity(enableChaseCamera: true));
         world.AddEntity(CreateRaceRootEntity());
-        world.AddEntity(CreateNamedEntity($"TrackRoot.{track.Name}"));
-        world.AddEntity(CreateNamedEntity("SceneryRoot"));
-        world.AddEntity(CreateCheckpointEntity("Checkpoint.01", new Vector3(0f, 0f, 0f)));
-        world.AddEntity(CreateCheckpointEntity("Checkpoint.02", new Vector3(10f, 0f, 14f)));
-        world.AddEntity(CreateCheckpointEntity("Checkpoint.03", new Vector3(-6f, 0f, 26f)));
-        world.AddEntity(CreatePlayerStartEntity());
+        foreach (Entity entity in trackScene.Entities)
+        {
+            world.AddEntity(entity);
+        }
+
+        for (int index = 0; index < trackScene.CheckpointPositions.Count; index++)
+        {
+            world.AddEntity(CreateCheckpointEntity($"Checkpoint.{index + 1:00}", trackScene.CheckpointPositions[index]));
+        }
+
+        world.AddEntity(CreatePlayerStartEntity(trackScene.PlayerStartPosition));
         world.AddEntity(CreatePlayerCarEntity(car, track));
 
         return world;
@@ -78,13 +84,18 @@ public static class RaceWorldFactory
 
     private static Entity CreatePlayerStartEntity()
     {
+        return CreatePlayerStartEntity(new Vector3(0f, 0f, -4f));
+    }
+
+    private static Entity CreatePlayerStartEntity(Vector3 position)
+    {
         var entity = new Entity
         {
             Name = PlayerStartEntityName,
             RootComponent = new PlayerStartComponent(),
         };
 
-        entity.RootComponent!.LocalPosition = new Vector3(0f, 0f, -4f);
+        entity.RootComponent!.LocalPosition = position;
         return entity;
     }
 

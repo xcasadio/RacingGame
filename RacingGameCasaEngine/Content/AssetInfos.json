@@ -11,6 +11,24 @@
       "name": "MenuButtons",
       "file_name": "Textures/buttons.png",
       "asset_type": "png"
+    },
+    {
+      "id": "21fa9381-a49a-4eb7-9ca6-bd20fbc1f71f",
+      "name": "TrackBeginnerData",
+      "file_name": "Tracks/TrackBeginner.Track",
+      "asset_type": "track"
+    },
+    {
+      "id": "5d6f3d9f-078c-40ea-b1f0-1d297bef7a6f",
+      "name": "TrackAdvancedData",
+      "file_name": "Tracks/TrackAdvanced.Track",
+      "asset_type": "track"
+    },
+    {
+      "id": "d1b7f43c-ec0f-41aa-a8f9-6ec51a387570",
+      "name": "TrackExpertData",
+      "file_name": "Tracks/TrackExpert.Track",
+      "asset_type": "track"
     }
   ]
 }
