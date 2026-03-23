@@ -12,6 +12,7 @@ public static class Program
 {
     private const string ApplicationName = "RacingGameCasaEngine";
     private const string DisplaySettingsFileName = "display-settings.json";
+    private const string FrontEndOptionsFileName = "front-end-options.json";
 
     [STAThread]
     private static void Main()
@@ -30,7 +31,9 @@ public static class Program
         var runtimeContext = GameSettings.CreateRuntimeContext();
         runtimeContext.UIViewRuntimeFactory = new MguiViewRuntimeFactory();
         runtimeContext.ProjectSettings.ProjectName = ApplicationName;
-        string displaySettingsPath = GetDisplaySettingsPath(runtimeContext.ProjectSettings.ProjectName);
+        string userSettingsDirectory = GetUserSettingsDirectory(runtimeContext.ProjectSettings.ProjectName);
+        string displaySettingsPath = Path.Combine(userSettingsDirectory, DisplaySettingsFileName);
+        string frontEndOptionsPath = Path.Combine(userSettingsDirectory, FrontEndOptionsFileName);
 
         DisplaySettings persistedDisplaySettings = DisplaySettingsPersistence.Load(
             displaySettingsPath,
@@ -50,11 +53,11 @@ public static class Program
             ValidateFrontEndNavigation = args.Contains("--smoke-frontend", StringComparer.OrdinalIgnoreCase),
         };
 
-        using var game = new RacingGameCasaEngineGame(runtimeContext, displaySettingsPath, launchOptions);
+        using var game = new RacingGameCasaEngineGame(runtimeContext, displaySettingsPath, frontEndOptionsPath, launchOptions);
         game.Run();
     }
 
-    private static string GetDisplaySettingsPath(string projectName)
+    private static string GetUserSettingsDirectory(string projectName)
     {
         string effectiveProjectName = string.IsNullOrWhiteSpace(projectName)
             || string.Equals(projectName, "Project name undefined", StringComparison.Ordinal)
@@ -64,7 +67,6 @@ public static class Program
         return Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "CasaEngine",
-            effectiveProjectName,
-            DisplaySettingsFileName);
+            effectiveProjectName);
     }
 }

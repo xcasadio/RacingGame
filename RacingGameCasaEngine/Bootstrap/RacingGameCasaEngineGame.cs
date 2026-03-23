@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
+using RacingGameCasaEngine.Persistence;
 using RacingGameCasaEngine.Worlds;
 
 namespace RacingGameCasaEngine.Bootstrap;
@@ -24,12 +25,14 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     private readonly RuntimeRaceWorldBinder _raceWorldBinder;
     private readonly FrontEndNavigationSmokeValidator? _navigationSmokeValidator;
     private readonly string _displaySettingsFileName;
+    private readonly string _frontEndOptionsFileName;
 
-    internal RacingGameCasaEngineGame(EngineRuntimeContext runtimeContext, string displaySettingsFileName, RaceLaunchOptions? launchOptions = null)
+    internal RacingGameCasaEngineGame(EngineRuntimeContext runtimeContext, string displaySettingsFileName, string frontEndOptionsFileName, RaceLaunchOptions? launchOptions = null)
         : base(runtimeContext: runtimeContext)
     {
         launchOptions ??= new RaceLaunchOptions();
         _displaySettingsFileName = displaySettingsFileName;
+        _frontEndOptionsFileName = frontEndOptionsFileName;
 
         ExecutionPolicy = new GameplayExecutionPolicy
         {
@@ -45,6 +48,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         };
 
         _frontEndFlow = new RaceFrontEndFlow(this);
+    FrontEndOptionsPersistence.Load(_frontEndOptionsFileName, _frontEndFlow.State);
         _raceWorldBinder = new RuntimeRaceWorldBinder(this);
         RaceSession = new RuntimeRaceSession();
 
@@ -90,6 +94,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
 
         ApplyDisplaySettings(new DisplaySettings(width, height, state.IsFullscreen, state.EnableVSync));
         SaveDisplaySettings(_displaySettingsFileName);
+        FrontEndOptionsPersistence.Save(_frontEndOptionsFileName, state);
 
         SoundEffect.MasterVolume = state.SoundVolume / 100f;
         MediaPlayer.Volume = state.MusicVolume / 100f;
