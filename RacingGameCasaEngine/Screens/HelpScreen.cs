@@ -61,6 +61,8 @@ internal sealed class HelpScreen : RaceFrontEndScreenBase
 
     public override void Update(Microsoft.Xna.Framework.GameTime gameTime)
     {
+        UpdateMenuDecoration(gameTime.TotalGameTime.TotalSeconds);
+
         if (_backButton != null)
         {
             LegacyMenuUiTheme.ApplyMenuTextButtonState(_backButton, _backButton.VisualState.IsFocused || _backButton.IsHovered);

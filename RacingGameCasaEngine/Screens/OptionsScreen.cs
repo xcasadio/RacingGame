@@ -111,6 +111,8 @@ internal sealed class OptionsScreen : RaceFrontEndScreenBase
 
     public override void Update(Microsoft.Xna.Framework.GameTime gameTime)
     {
+        UpdateMenuDecoration(gameTime.TotalGameTime.TotalSeconds);
+
         if (_playerName != null && _state.PlayerName != _playerName.Text)
         {
             _state.PlayerName = _playerName.Text;

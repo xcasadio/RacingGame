@@ -86,6 +86,8 @@ internal sealed class HighscoresScreen : RaceFrontEndScreenBase
 
     public override void Update(Microsoft.Xna.Framework.GameTime gameTime)
     {
+        UpdateMenuDecoration(gameTime.TotalGameTime.TotalSeconds);
+
         for (int i = 0; i < _levelButtons.Count; i++)
         {
             bool isActive = string.Equals(GetLevelNames()[i], _selectedLevel, StringComparison.OrdinalIgnoreCase)

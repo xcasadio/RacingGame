@@ -109,6 +109,7 @@ internal sealed class TrackSelectionScreen : RaceFrontEndScreenBase
 
     public override void Update(GameTime gameTime)
     {
+        UpdateMenuDecoration(gameTime.TotalGameTime.TotalSeconds);
         RefreshSelection();
         if (_selectButton != null) LegacyMenuUiTheme.ApplySpriteButtonState(_selectButton);
         if (_backButton != null) LegacyMenuUiTheme.ApplySpriteButtonState(_backButton);

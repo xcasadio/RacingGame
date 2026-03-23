@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Color = Microsoft.Xna.Framework.Color;
 using HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment;
 using Orientation = MGUI.Core.UI.Orientation;
+using Rectangle = Microsoft.Xna.Framework.Rectangle;
 using Thickness = MonoGame.Extended.Thickness;
 using VerticalAlignment = MGUI.Core.UI.VerticalAlignment;
 
@@ -53,6 +54,18 @@ internal static class RaceUiTheme
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
+        });
+        return window;
+    }
+
+    public static MGWindow CreateBackgroundWindow(UIRoot root, Microsoft.Xna.Framework.Graphics.Texture2D texture, Rectangle sourceRect, float opacity, Stretch stretch = Stretch.Fill)
+    {
+        var window = CreateFullscreenWindow(root, allowsClickThrough: true);
+        window.SetContent(new MGImage(window, texture, sourceRect, Color.White, stretch)
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            Opacity = opacity,
         });
         return window;
     }

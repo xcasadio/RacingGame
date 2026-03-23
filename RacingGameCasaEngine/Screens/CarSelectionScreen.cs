@@ -153,6 +153,7 @@ internal sealed class CarSelectionScreen : RaceFrontEndScreenBase
 
     public override void Update(GameTime gameTime)
     {
+        UpdateMenuDecoration(gameTime.TotalGameTime.TotalSeconds);
         RefreshSelection();
         if (_previousButton != null)
         {

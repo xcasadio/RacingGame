@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment;
 using Orientation = MGUI.Core.UI.Orientation;
+using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 using Thickness = MonoGame.Extended.Thickness;
 using VerticalAlignment = MGUI.Core.UI.VerticalAlignment;
@@ -34,7 +35,12 @@ internal static class LegacyMenuUiTheme
         return window;
     }
 
-    public static MGWindow CreateLogoWindow(UIRoot root, Texture2D menuButtonsTexture)
+    public static MGWindow CreateMenuBackgroundWindow(UIRoot root, Texture2D backgroundTexture)
+    {
+        return RaceUiTheme.CreateBackgroundWindow(root, backgroundTexture, LegacyMenuUiAtlas.MenuBackground, 0.85f, Stretch.Fill);
+    }
+
+    public static MGWindow CreateLogoWindow(UIRoot root, Texture2D backgroundTexture, out MGImage logoImage)
     {
         var window = RaceUiTheme.CreateFullscreenWindow(root, allowsClickThrough: true);
         var overlay = new MGOverlayPanel(window)
@@ -43,7 +49,8 @@ internal static class LegacyMenuUiTheme
             VerticalAlignment = VerticalAlignment.Stretch,
         };
 
-        overlay.TryAddChild(CreateLogo(window, menuButtonsTexture));
+        logoImage = CreateLogo(window, backgroundTexture);
+        overlay.TryAddChild(logoImage);
         window.SetContent(overlay);
         return window;
     }
@@ -269,15 +276,41 @@ internal static class LegacyMenuUiTheme
         label.Opacity = isActive ? 1f : 0.72f;
     }
 
-    private static MGElement CreateLogo(MGWindow window, Texture2D menuButtonsTexture)
+    public static Rectangle CalculateLegacyMenuRectangle(Point viewportSize, int relX, int relY, int relWidth, int relHeight)
     {
-        return new MGImage(window, menuButtonsTexture, LegacyMenuUiAtlas.RacingGameLogo, null, Stretch.Uniform)
+        float widthFactor = viewportSize.X / 1024.0f;
+        float heightFactor = viewportSize.Y / 640.0f;
+        return new Rectangle(
+            (int)Math.Round(relX * widthFactor),
+            (int)Math.Round(relY * heightFactor),
+            (int)Math.Round(relWidth * widthFactor),
+            (int)Math.Round(relHeight * heightFactor));
+    }
+
+    public static Rectangle CalculateLegacyMenuBounceRectangle(Point viewportSize, int relX, int relY, int relWidth, int relHeight, float bounceEffect)
+    {
+        float widthFactor = viewportSize.X / 1024.0f;
+        float heightFactor = viewportSize.Y / 640.0f;
+        float middleX = (relX + relWidth / 2f) * widthFactor;
+        float middleY = (relY + relHeight / 2f) * heightFactor;
+        float scaledWidth = relWidth * widthFactor * bounceEffect;
+        float scaledHeight = relHeight * heightFactor * bounceEffect;
+        return new Rectangle(
+            (int)Math.Round(middleX - scaledWidth / 2f),
+            (int)Math.Round(middleY - scaledHeight / 2f),
+            (int)Math.Round(scaledWidth),
+            (int)Math.Round(scaledHeight));
+    }
+
+    private static MGImage CreateLogo(MGWindow window, Texture2D backgroundTexture)
+    {
+        return new MGImage(window, backgroundTexture, LegacyMenuUiAtlas.RacingGameLogo, null, Stretch.Fill)
         {
-            PreferredWidth = 760,
-            PreferredHeight = 278,
-            HorizontalAlignment = HorizontalAlignment.Right,
+            PreferredWidth = 601,
+            PreferredHeight = 218,
+            HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment = VerticalAlignment.Top,
-            Margin = new Thickness(0, 24, 48, 0),
+            Margin = new Thickness(362, 36, 0, 0),
         };
     }
 

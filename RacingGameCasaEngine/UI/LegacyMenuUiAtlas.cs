@@ -4,6 +4,7 @@ namespace RacingGameCasaEngine.UI;
 
 internal static class LegacyMenuUiAtlas
 {
+    public static readonly Rectangle MenuBackground = new(0, 0, 1024, 640);
     public static readonly Rectangle RacingGameLogo = new(0, 649, 1024, 374);
     public static readonly Rectangle MenuButtonPlay = new(0, 0, 212, 212);
     public static readonly Rectangle MenuButtonHighscores = new(212, 0, 212, 212);

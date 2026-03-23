@@ -93,6 +93,8 @@ internal sealed class MainMenuScreen : RaceFrontEndScreenBase
 
     public override void Update(GameTime gameTime)
     {
+        UpdateMenuDecoration(gameTime.TotalGameTime.TotalSeconds);
+
         for (int i = 0; i < _buttons.Length; i++)
         {
             bool isActive = _buttons[i].VisualState.IsFocused || _buttons[i].IsHovered;
