@@ -15,9 +15,15 @@ internal static class FrontEndOptionsPersistence
         }
 
         JObject rootElement = JObject.Parse(File.ReadAllText(fileName));
+        state.PlayerName = rootElement["PlayerName"]?.Value<string>() ?? state.PlayerName;
+        state.EnablePostEffects = rootElement["EnablePostEffects"]?.Value<bool>() ?? state.EnablePostEffects;
+        state.EnableShadows = rootElement["EnableShadows"]?.Value<bool>() ?? state.EnableShadows;
+        state.EnableHighDetail = rootElement["EnableHighDetail"]?.Value<bool>() ?? state.EnableHighDetail;
         state.ShowFps = rootElement["ShowFps"]?.Value<bool>() ?? state.ShowFps;
+        state.EnableVibration = rootElement["EnableVibration"]?.Value<bool>() ?? state.EnableVibration;
         state.SoundVolume = ClampPercentage(rootElement["SoundVolume"]?.Value<int>() ?? state.SoundVolume);
         state.MusicVolume = ClampPercentage(rootElement["MusicVolume"]?.Value<int>() ?? state.MusicVolume);
+        state.ControllerSensitivity = ClampPercentage(rootElement["ControllerSensitivity"]?.Value<int>() ?? state.ControllerSensitivity);
     }
 
     internal static void Save(string fileName, RaceFrontEndState state)
@@ -30,9 +36,15 @@ internal static class FrontEndOptionsPersistence
 
         var rootElement = new JObject
         {
+            ["PlayerName"] = state.PlayerName,
+            ["EnablePostEffects"] = state.EnablePostEffects,
+            ["EnableShadows"] = state.EnableShadows,
+            ["EnableHighDetail"] = state.EnableHighDetail,
             ["ShowFps"] = state.ShowFps,
+            ["EnableVibration"] = state.EnableVibration,
             ["SoundVolume"] = ClampPercentage(state.SoundVolume),
             ["MusicVolume"] = ClampPercentage(state.MusicVolume),
+            ["ControllerSensitivity"] = ClampPercentage(state.ControllerSensitivity),
         };
 
         File.WriteAllText(fileName, rootElement.ToString());
