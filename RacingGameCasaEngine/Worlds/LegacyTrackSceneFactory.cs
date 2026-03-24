@@ -326,9 +326,9 @@ internal static class LegacyTrackSceneFactory
 
     private static Matrix ConvertLegacyTransform(Matrix legacyTransform, Vector3 origin)
     {
-        Vector3 right = ConvertLegacyDirection(new Vector3(legacyTransform.M11, legacyTransform.M12, legacyTransform.M13));
-        Vector3 up = ConvertLegacyDirection(new Vector3(legacyTransform.M21, legacyTransform.M22, legacyTransform.M23));
-        Vector3 backward = ConvertLegacyDirection(new Vector3(legacyTransform.M31, legacyTransform.M32, legacyTransform.M33));
+        Vector3 right = ConvertLegacyBasisVector(new Vector3(legacyTransform.M11, legacyTransform.M12, legacyTransform.M13));
+        Vector3 up = ConvertLegacyBasisVector(new Vector3(legacyTransform.M21, legacyTransform.M22, legacyTransform.M23));
+        Vector3 backward = ConvertLegacyBasisVector(new Vector3(legacyTransform.M31, legacyTransform.M32, legacyTransform.M33));
         Vector3 translation = ConvertLegacyPoint(new Vector3(legacyTransform.M41, legacyTransform.M42, legacyTransform.M43)) - origin;
 
         return new Matrix(
@@ -343,16 +343,14 @@ internal static class LegacyTrackSceneFactory
         return new Vector3(point.X, point.Z, point.Y) * WorldScale;
     }
 
-    private static Vector3 ConvertLegacyDirection(Vector3 direction)
+    private static Vector3 ConvertLegacyBasisVector(Vector3 basisVector)
     {
-        if (direction.LengthSquared() < 0.000001f)
+        if (basisVector.LengthSquared() < 0.000001f)
         {
-            return direction;
+            return basisVector;
         }
 
-        Vector3 converted = new(direction.X, direction.Z, direction.Y);
-        converted.Normalize();
-        return converted;
+        return new Vector3(basisVector.X, basisVector.Z, basisVector.Y) * WorldScale;
     }
 
     private static void ApplyFallbackMaterials(StaticModel model, string modelName)
