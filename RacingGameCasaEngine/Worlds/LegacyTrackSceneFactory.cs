@@ -19,11 +19,7 @@ internal static class LegacyTrackSceneFactory
 {
     private const float WorldScale = 1.0f;
     private const float GroundMargin = 18f;
-    private static readonly Matrix LegacyToRuntimeBasis = new(
-        1f, 0f, 0f, 0f,
-        0f, 0f, 1f, 0f,
-        0f, 1f, 0f, 0f,
-        0f, 0f, 0f, 1f);
+    private static readonly Quaternion LegacyXModelCorrection = Quaternion.CreateFromAxisAngle(Vector3.Right, MathHelper.Pi / 2.0f);
     private const int NumberOfIterationsPer100Meters = 40;
     private const float CurveFactor = 0.25f;
     private const float UpFactorCorrector = 0.6f;
@@ -225,11 +221,28 @@ internal static class LegacyTrackSceneFactory
 
         StaticModelImportResult importResult = StaticModelImporter.ImportWithMetadata(fileName);
         StaticModel model = importResult.Model;
+        ApplyLegacyModelRootCorrection(model);
         ApplyImportedMaterials(model, importResult.Materials, modelName, assetContentManager);
         ApplyFallbackMaterials(model, modelName);
         ModelCache[modelName] = model;
         ModelSizeCache[modelName] = ComputeLegacyModelSize(model);
         return model;
+    }
+
+    private static void ApplyLegacyModelRootCorrection(StaticModel model)
+    {
+        if (model.RootNode == null)
+        {
+            return;
+        }
+
+        var correctedRoot = new StaticModelNode
+        {
+            Name = $"{model.Name}.LegacyRootCorrection",
+            Rotation = LegacyXModelCorrection,
+        };
+        correctedRoot.Children.Add(model.RootNode);
+        model.RootNode = correctedRoot;
     }
 
     private static Entity CreateRoadEntity(string trackName, IReadOnlyList<LegacyTrackPoint> roadPoints, Vector3 origin, AssetContentManager assetContentManager)
@@ -785,7 +798,10 @@ internal static class LegacyTrackSceneFactory
 
     private static Matrix ConvertLegacyTransform(Matrix legacyTransform, Vector3 origin)
     {
-        Matrix runtimeTransform = LegacyToRuntimeBasis * legacyTransform * LegacyToRuntimeBasis;
+        Matrix runtimeTransform = Matrix.Identity;
+        runtimeTransform.Right = ConvertLegacyVector(legacyTransform.Right);
+        runtimeTransform.Up = ConvertLegacyVector(legacyTransform.Up);
+        runtimeTransform.Forward = ConvertLegacyVector(legacyTransform.Forward);
         runtimeTransform.Translation = ConvertLegacyPoint(legacyTransform.Translation) - origin;
         return runtimeTransform;
     }
@@ -897,12 +913,12 @@ internal static class LegacyTrackSceneFactory
 
     private static Vector3 ConvertLegacyPoint(Vector3 point)
     {
-        return new Vector3(point.X, point.Z, point.Y) * WorldScale;
+        return new Vector3(point.X, point.Z, -point.Y) * WorldScale;
     }
 
     private static Vector3 ConvertLegacyVector(Vector3 vector)
     {
-        return new Vector3(vector.X, vector.Z, vector.Y) * WorldScale;
+        return new Vector3(vector.X, vector.Z, -vector.Y) * WorldScale;
     }
 
     private static Vector3 ConvertLegacyDirection(Vector3 direction)
@@ -1233,7 +1249,7 @@ internal static class LegacyTrackSceneFactory
             EmissiveColor = new Vector3(0.015f, 0.015f, 0.015f),
             SpecularColor = new Vector3(0.14f),
             SpecularPower = 18f,
-            RasterizerState = RasterizerState.CullClockwise,
+            RasterizerState = RasterizerState.CullCounterClockwise,
             SamplerState = SamplerState.AnisotropicWrap,
         };
     }
