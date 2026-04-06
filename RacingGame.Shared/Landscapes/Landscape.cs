@@ -1,7 +1,6 @@
 using RacingGame.Graphics;
 using RacingGame.Tracks;
 using RacingGame.GameLogic;
-using RacingGame.GameScreens;
 namespace RacingGame.Landscapes;
 
 /// <summary>
@@ -241,18 +240,18 @@ public class Landscape : IDisposable
             track.Reload("Track" + level.ToString(), this);
         }
 
+        RefreshLevelRuntimeState();
+    }
+    #endregion
+
+    void RefreshLevelRuntimeState()
+    {
         replayManager.ResetForTrack(level, track);
-
         brakeTrackManager.Reset();
-
-        // Set car at start pos
         SetCarToStartPosition();
-
-        // Begin game with red start light
         trackObjectManager.ResetStartLight();
         terrainRenderer.UpdateCityPlane(trackObjectManager.FirstBigBuilding);
     }
-    #endregion
     #endregion
 
     #region Dispose
@@ -273,9 +272,9 @@ public class Landscape : IDisposable
     {
         if (disposing)
         {
+            track.Dispose();
             trackObjectManager.Dispose();
             terrainRenderer.Dispose();
-            track.Dispose();
         }
     }
     #endregion

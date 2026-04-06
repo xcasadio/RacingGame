@@ -101,7 +101,7 @@ Reduire `Landscape` a un role de facade et d'orchestrateur, tout en gardant un c
 - Ajouter une methode d'initialisation du city plane a partir des objets fournis par `TrackObjectManager` apres `ReloadLevel`.
 - Realise : `TerrainRenderer` porte maintenant la lecture des hauteurs, le maillage, les buffers, le city plane et les requetes de hauteur; `Landscape` ne fait plus que relayer `GetMapHeight` et orchestrer le rendu global.
 
-### ⏳ Etape 6 - Reduire `Landscape` au role d'orchestrateur
+### ✅ Etape 6 - Reduire `Landscape` au role d'orchestrateur
 
 - Conserver dans `Landscape` :
   - `level`,
@@ -113,6 +113,7 @@ Reduire `Landscape` a un role de facade et d'orchestrateur, tout en gardant un c
   - les delegations vers les managers,
   - `Dispose` avec un ordre de liberation explicite.
 - A la fin de cette etape, `Landscape` doit surtout cabler les composants et non porter leur logique metier.
+- Realise : `Landscape` orchestre maintenant `TerrainRenderer`, `TrackObjectManager`, `ReplayManager` et `BrakeTrackManager`; `ReloadLevel` ne fait plus que recharger le track puis rafraichir l'etat runtime delegue.
 
 ### 🧪 Etape 7 - Validation minimale
 
