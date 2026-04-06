@@ -1293,21 +1293,42 @@ internal static class LegacyTrackSceneFactory
         Texture2D? diffuseTexture = LoadTexture(importedMaterial.DiffuseTextureFilePath, assetContentManager);
         Texture2D? normalTexture = LoadTexture(importedMaterial.NormalTextureFilePath, assetContentManager);
         bool alphaCutout = ShouldUseAlphaCutout(modelName, importedMaterial);
+        Vector3 emissiveColor = ComputeImportedMaterialEmissiveColor(modelName, importedMaterial);
 
         return new LitDiffuseMaterial
         {
             Name = $"{modelName}.{importedMaterial.DisplayName}",
             BasColor = diffuseTexture,
             NormalMap = normalTexture,
-            DiffuseColor = diffuseTexture != null ? Color.White : importedMaterial.DiffuseColor,
-            EmissiveColor = importedMaterial.EmissiveColor,
+            DiffuseColor = importedMaterial.DiffuseColor,
+            EmissiveColor = emissiveColor,
             SpecularColor = importedMaterial.SpecularColor,
             SpecularPower = Math.Clamp(importedMaterial.SpecularPower, 2f, 48f),
-            SamplerState = SamplerState.AnisotropicClamp,
+            SamplerState = SamplerState.AnisotropicWrap,
             Queue = alphaCutout ? RenderQueue.AlphaTest : RenderQueue.Opaque,
             AlphaCutoff = alphaCutout ? 0.35f : 0.5f,
             RasterizerState = alphaCutout ? RasterizerState.CullNone : null,
         };
+    }
+
+    private static Vector3 ComputeImportedMaterialEmissiveColor(string modelName, StaticModelImportedMaterial importedMaterial)
+    {
+        Vector3 emissiveColor = importedMaterial.AmbientColor + importedMaterial.EmissiveColor;
+        if (UsesLegacyBrightAmbient(modelName))
+        {
+            const float signAmbient = 128f / 255f;
+            Vector3 boostedAmbient = new(signAmbient, signAmbient, signAmbient);
+            emissiveColor = Vector3.Max(emissiveColor, boostedAmbient);
+        }
+
+        return Vector3.Clamp(emissiveColor, Vector3.Zero, Vector3.One);
+    }
+
+    private static bool UsesLegacyBrightAmbient(string modelName)
+    {
+        return modelName.StartsWith("Sign", StringComparison.OrdinalIgnoreCase)
+            || modelName.StartsWith("Banner", StringComparison.OrdinalIgnoreCase)
+            || modelName.StartsWith("Windmill", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool ShouldUseAlphaCutout(string modelName, StaticModelImportedMaterial importedMaterial)
