@@ -21,7 +21,7 @@ public sealed class DebugCarVisualComponent : EntityComponent
 
     public override void Update(float elapsedTime)
     {
-        if (Owner?.RootComponent == null || Owner.World?.Game == null)
+        if (Owner?.RootComponent == null || Owner.World?.Game == null || !Owner.IsVisible)
         {
             return;
         }

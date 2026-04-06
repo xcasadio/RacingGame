@@ -15,10 +15,30 @@ public static class RaceWorldFactory
     internal const string CameraEntityName = "BootstrapCamera";
     internal const string PlayerStartEntityName = "PlayerStart";
     internal const string PlayerCarEntityName = "PlayerCar";
+    internal const string CheckpointEntityNamePrefix = "Checkpoint.";
+    internal const string TrackRoadEntityNamePrefix = "Track.Road.";
+    internal const string TrackGroundEntityNamePrefix = "Track.Ground.";
+    internal const string TrackSceneryEntityNamePrefix = "Track.Scenery.";
 
     internal static bool IsRaceWorld(World world)
     {
         return world.Name?.StartsWith(RaceWorldNamePrefix, StringComparison.Ordinal) == true;
+    }
+
+    internal static bool IsRaceRenderableEntity(Entity entity)
+    {
+        string? entityName = entity.Name;
+        return entityName?.StartsWith(TrackRoadEntityNamePrefix, StringComparison.Ordinal) == true
+            || entityName?.StartsWith(TrackGroundEntityNamePrefix, StringComparison.Ordinal) == true
+            || entityName?.StartsWith(TrackSceneryEntityNamePrefix, StringComparison.Ordinal) == true
+            || entityName?.StartsWith(CheckpointEntityNamePrefix, StringComparison.Ordinal) == true
+            || entityName == PlayerStartEntityName
+            || entityName == PlayerCarEntityName;
+    }
+
+    internal static bool IsVisibleInCircuitOnlyView(Entity entity)
+    {
+        return entity.Name?.StartsWith(TrackRoadEntityNamePrefix, StringComparison.Ordinal) == true;
     }
 
     internal static World CreateFrontEndWorld()
@@ -34,11 +54,11 @@ public static class RaceWorldFactory
         return world;
     }
 
-    internal static World CreateRaceWorld(RaceFrontEndState state)
+    internal static World CreateRaceWorld(RacingGameCasaEngineGame game, RaceFrontEndState state)
     {
         TrackDefinition track = RaceFrontEndCatalog.Tracks[state.SelectedTrackIndex];
         CarDefinition car = RaceFrontEndCatalog.Cars[state.SelectedCarIndex];
-        RaceTrackScene trackScene = LegacyTrackSceneFactory.Create(track.Name);
+        RaceTrackScene trackScene = LegacyTrackSceneFactory.Create(track.Name, game.AssetContentManager);
 
         var world = new World
         {
@@ -47,7 +67,13 @@ public static class RaceWorldFactory
 
         world.AddEntity(CreateCameraEntity(enableChaseCamera: true));
         world.AddEntity(CreateRaceRootEntity());
-        foreach (Entity entity in trackScene.Entities)
+
+        foreach (Entity entity in trackScene.TrackEntities)
+        {
+            world.AddEntity(entity);
+        }
+
+        foreach (Entity entity in trackScene.SceneryEntities)
         {
             world.AddEntity(entity);
         }
@@ -57,7 +83,7 @@ public static class RaceWorldFactory
             world.AddEntity(CreateCheckpointEntity($"Checkpoint.{index + 1:00}", trackScene.CheckpointPositions[index]));
         }
 
-        world.AddEntity(CreatePlayerStartEntity(trackScene.PlayerStartPosition));
+        world.AddEntity(CreatePlayerStartEntity(trackScene.PlayerStartPose));
         world.AddEntity(CreatePlayerCarEntity(car, track));
 
         return world;
@@ -77,6 +103,7 @@ public static class RaceWorldFactory
         if (enableChaseCamera)
         {
             cameraEntity.AddComponent(new ChaseCameraRigComponent());
+            cameraEntity.AddComponent(new DebugFreeCameraComponent());
         }
 
         return cameraEntity;
@@ -85,6 +112,13 @@ public static class RaceWorldFactory
     private static Entity CreatePlayerStartEntity()
     {
         return CreatePlayerStartEntity(new Vector3(0f, 0f, -4f));
+    }
+
+    private static Entity CreatePlayerStartEntity(RaceTrackStartPose startPose)
+    {
+        Entity entity = CreatePlayerStartEntity(startPose.Position);
+        entity.RootComponent!.LocalOrientation = startPose.Orientation;
+        return entity;
     }
 
     private static Entity CreatePlayerStartEntity(Vector3 position)
@@ -116,6 +150,7 @@ public static class RaceWorldFactory
 
         entity.AddComponent(new RaceFlowCoordinatorComponent());
         entity.AddComponent(new RaceCourseDebugComponent());
+        entity.AddComponent(new RaceModelBoundsDebugComponent());
         return entity;
     }
 

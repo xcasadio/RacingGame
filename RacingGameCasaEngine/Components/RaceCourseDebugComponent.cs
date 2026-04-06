@@ -26,7 +26,9 @@ public sealed class RaceCourseDebugComponent : EntityComponent
         }
 
         List<Vector3> coursePoints = Owner.World.Entities
-            .Where(static entity => entity.Name == RaceWorldFactory.PlayerStartEntityName || entity.Name.StartsWith("Checkpoint.", StringComparison.Ordinal))
+            .Where(static entity => entity.IsVisible
+                && (entity.Name == RaceWorldFactory.PlayerStartEntityName
+                    || entity.Name.StartsWith(RaceWorldFactory.CheckpointEntityNamePrefix, StringComparison.Ordinal)))
             .OrderBy(static entity => entity.Name, StringComparer.Ordinal)
             .Select(static entity => entity.RootComponent?.Position ?? Vector3.Zero)
             .ToList();

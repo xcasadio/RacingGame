@@ -1,13 +1,20 @@
 using System;
+using System.IO;
+using CasaEngine.Core.Log;
 using CasaEngine.Framework.Assets;
+using CasaEngine.Framework.Entities;
 using CasaEngine.Framework.Game;
+using CasaEngine.Framework.Game.Components;
 using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using RacingGameCasaEngine.Persistence;
 using RacingGameCasaEngine.Worlds;
+using DirLight = CasaEngine.Framework.Rendering.DirectionalLight;
+using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace RacingGameCasaEngine.Bootstrap;
 
@@ -24,6 +31,8 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     private readonly RaceFrontEndFlow _frontEndFlow;
     private readonly RuntimeRaceWorldBinder _raceWorldBinder;
     private readonly FrontEndNavigationSmokeValidator? _navigationSmokeValidator;
+    private readonly TrackMigrationCaptureValidator? _trackMigrationCaptureValidator;
+    private readonly TrackRuntimeSceneExportValidator? _trackRuntimeSceneExportValidator;
     private readonly string _displaySettingsFileName;
     private readonly string _frontEndOptionsFileName;
 
@@ -48,13 +57,23 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         };
 
         _frontEndFlow = new RaceFrontEndFlow(this);
-    FrontEndOptionsPersistence.Load(_frontEndOptionsFileName, _frontEndFlow.State);
+        FrontEndOptionsPersistence.Load(_frontEndOptionsFileName, _frontEndFlow.State);
         _raceWorldBinder = new RuntimeRaceWorldBinder(this);
         RaceSession = new RuntimeRaceSession();
 
         if (launchOptions.ValidateFrontEndNavigation)
         {
             _navigationSmokeValidator = new FrontEndNavigationSmokeValidator(this, _frontEndFlow);
+        }
+
+        if (launchOptions.CaptureTrackAudit)
+        {
+            _trackMigrationCaptureValidator = new TrackMigrationCaptureValidator(this, _frontEndFlow);
+        }
+
+        if (launchOptions.ExportTrackRuntimeScene)
+        {
+            _trackRuntimeSceneExportValidator = new TrackRuntimeSceneExportValidator(this, _frontEndFlow, launchOptions.RuntimeSceneExportFilePath);
         }
 
         GameManager.WorldLoaded += OnWorldLoaded;
@@ -143,7 +162,192 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     {
         _raceWorldBinder.BindCurrentWorld(_frontEndFlow.State);
         ApplyFrontEndOptions(_frontEndFlow.State);
+        ConfigureCurrentWorldLighting();
+        ApplyDebugMouseCursorState();
+        ApplyRaceWorldVisibilityState();
         _frontEndFlow.InitializeForCurrentWorld();
+    }
+
+    protected override void Update(GameTime gameTime)
+    {
+        base.Update(gameTime);
+        HandleRuntimeDebugHotkeys();
+    }
+
+    private void ConfigureCurrentWorldLighting()
+    {
+        StaticMeshRendererComponent? renderer = this.GetGameComponent<StaticMeshRendererComponent>();
+        if (renderer == null)
+        {
+            return;
+        }
+
+        if (GameManager.CurrentWorld is { } world && RaceWorldFactory.IsRaceWorld(world))
+        {
+            renderer.DefaultLighting.ActiveDirectionalLightCount = 3;
+            renderer.DefaultLighting.AmbientColor = new Vector3(0.16f, 0.17f, 0.19f);
+            renderer.DefaultLighting.DirectionalLights[0] = new DirLight(
+                new Vector3(-0.42f, -0.86f, -0.29f),
+                new Vector3(1.00f, 0.94f, 0.83f),
+                new Vector3(0.95f, 0.90f, 0.84f),
+                1.10f);
+            renderer.DefaultLighting.DirectionalLights[1] = new DirLight(
+                new Vector3(0.58f, -0.28f, 0.76f),
+                new Vector3(0.30f, 0.36f, 0.46f),
+                Vector3.Zero,
+                0.85f);
+            renderer.DefaultLighting.DirectionalLights[2] = new DirLight(
+                new Vector3(0.18f, -0.35f, -0.92f),
+                new Vector3(0.20f, 0.19f, 0.18f),
+                new Vector3(0.18f, 0.18f, 0.18f),
+                0.60f);
+            return;
+        }
+
+        renderer.DefaultLighting.ActiveDirectionalLightCount = 3;
+        renderer.DefaultLighting.AmbientColor = new Vector3(0.05f, 0.05f, 0.05f);
+        renderer.DefaultLighting.DirectionalLights[0] = new DirLight(
+            new Vector3(-0.5265408f, -0.5735765f, -0.6275069f),
+            new Vector3(0.92f, 0.92f, 0.92f),
+            new Vector3(0.92f, 0.92f, 0.92f));
+        renderer.DefaultLighting.DirectionalLights[1] = new DirLight(
+            new Vector3(0.7198464f, 0.3420201f, 0.6040227f),
+            new Vector3(0.71f, 0.71f, 0.71f),
+            Vector3.Zero);
+        renderer.DefaultLighting.DirectionalLights[2] = new DirLight(
+            new Vector3(0.4545195f, -0.7660444f, 0.4545195f),
+            new Vector3(0.36f, 0.36f, 0.36f),
+            new Vector3(0.36f, 0.36f, 0.36f));
+    }
+
+    private void HandleRuntimeDebugHotkeys()
+    {
+        if (InputComponent == null)
+        {
+            return;
+        }
+
+        if (InputComponent.KeyboardManager.IsKeyJustPressed(XnaKeys.F1)
+            && GameManager.CurrentWorld is { } raceWorldForDebugCamera
+            && RaceWorldFactory.IsRaceWorld(raceWorldForDebugCamera)
+            && RaceSession.IsActive)
+        {
+            bool debugCameraEnabled = RaceSession.ToggleDebugCamera();
+            ApplyDebugMouseCursorState();
+            Logs.WriteInfo(debugCameraEnabled ? "Debug camera enabled" : "Debug camera disabled");
+        }
+
+        if (InputComponent.KeyboardManager.IsKeyJustPressed(XnaKeys.F2))
+        {
+            CaptureScreenshot();
+        }
+
+        if (InputComponent.KeyboardManager.IsKeyJustPressed(XnaKeys.F3)
+            && GameManager.CurrentWorld is { } raceWorldForCircuitOnlyView
+            && RaceWorldFactory.IsRaceWorld(raceWorldForCircuitOnlyView)
+            && RaceSession.IsActive)
+        {
+            bool circuitOnlyViewEnabled = RaceSession.ToggleCircuitOnlyView();
+            ApplyRaceWorldVisibilityState();
+            Logs.WriteInfo(circuitOnlyViewEnabled ? "Circuit-only view enabled" : "Circuit-only view disabled");
+        }
+    }
+
+    private void ApplyDebugMouseCursorState()
+    {
+        bool debugCameraActive = GameManager.CurrentWorld is { } world
+            && RaceWorldFactory.IsRaceWorld(world)
+            && RaceSession.IsDebugCameraEnabled;
+        IsMouseVisible = !debugCameraActive && RuntimeContext.ProjectSettings.IsMouseVisible;
+    }
+
+    internal void SetDebugCameraEnabled(bool enabled)
+    {
+        RaceSession.SetDebugCameraEnabled(enabled);
+        ApplyDebugMouseCursorState();
+    }
+
+    internal void SetCircuitOnlyViewEnabled(bool enabled)
+    {
+        RaceSession.SetCircuitOnlyViewEnabled(enabled);
+        ApplyRaceWorldVisibilityState();
+    }
+
+    internal void ApplyRaceWorldVisibilityState()
+    {
+        if (GameManager.CurrentWorld is not { } world || !RaceWorldFactory.IsRaceWorld(world))
+        {
+            return;
+        }
+
+        bool circuitOnlyViewEnabled = RaceSession.IsCircuitOnlyViewEnabled;
+        foreach (Entity entity in world.Entities)
+        {
+            if (!RaceWorldFactory.IsRaceRenderableEntity(entity))
+            {
+                continue;
+            }
+
+            entity.IsVisible = !circuitOnlyViewEnabled || RaceWorldFactory.IsVisibleInCircuitOnlyView(entity);
+        }
+    }
+
+    private void CaptureScreenshot()
+    {
+        CaptureScreenshotWithStem(null);
+    }
+
+    internal string CaptureScreenshotWithStem(string? fileStem)
+    {
+        try
+        {
+            string screenshotDirectory = Path.Combine(GetUserDataDirectory(), "Screenshots");
+            Directory.CreateDirectory(screenshotDirectory);
+
+            int width = GraphicsDevice.PresentationParameters.BackBufferWidth;
+            int height = GraphicsDevice.PresentationParameters.BackBufferHeight;
+            byte[] backBuffer = new byte[width * height * 4];
+            GraphicsDevice.GetBackBufferData(backBuffer);
+
+            string effectiveStem = string.IsNullOrWhiteSpace(fileStem)
+                ? "screenshot"
+                : fileStem;
+            string filePath = Path.Combine(
+                screenshotDirectory,
+                $"{effectiveStem}-{DateTime.Now:yyyyMMdd-HHmmssfff}.png");
+
+            using var screenshot = new Texture2D(
+                GraphicsDevice,
+                width,
+                height,
+                false,
+                GraphicsDevice.PresentationParameters.BackBufferFormat);
+            screenshot.SetData(backBuffer);
+
+            using FileStream stream = File.Create(filePath);
+            screenshot.SaveAsPng(stream, width, height);
+            Logs.WriteInfo($"Screenshot saved: {filePath}");
+            return filePath;
+        }
+        catch (Exception ex)
+        {
+            Logs.WriteException(ex);
+            return string.Empty;
+        }
+    }
+
+    internal string GetUserDataDirectory()
+    {
+        string projectName = RuntimeContext.ProjectSettings.ProjectName;
+        string effectiveProjectName = string.IsNullOrWhiteSpace(projectName)
+            || string.Equals(projectName, "Project name undefined", StringComparison.Ordinal)
+            ? "RacingGameCasaEngine"
+            : projectName;
+
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "CasaEngine",
+            effectiveProjectName);
     }
 
     private static int GetResolutionIndex(int width, int height)

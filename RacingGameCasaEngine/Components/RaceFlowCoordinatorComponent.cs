@@ -48,7 +48,10 @@ public sealed class RaceFlowCoordinatorComponent : EntityComponent
         HandlePauseToggle(game, session.GameMode, session.PlayerController);
 
         session.GameMode.UpdateCountdown(elapsedTime);
-        bool canDrive = session.GameMode.CountdownSecondsRemaining <= 0f && !session.GameMode.IsPaused && !session.GameMode.IsRaceFinished;
+        bool canDrive = !session.IsDebugCameraEnabled
+            && session.GameMode.CountdownSecondsRemaining <= 0f
+            && !session.GameMode.IsPaused
+            && !session.GameMode.IsRaceFinished;
         session.PlayerController.IsInputEnable = canDrive;
         session.PlayerPawn.InputEnabled = canDrive;
 

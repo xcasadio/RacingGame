@@ -22,6 +22,10 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
     private MGTextBlock? _speed;
     private MGTextBlock? _matchState;
     private MGTextBlock? _telemetry;
+    private MGTextBlock? _performance;
+    private float _fpsAccumulatedSeconds;
+    private int _fpsSampleCount;
+    private float _displayedFps;
 
     public RaceHudScreen(RacingGameCasaEngineGame game, RaceFrontEndState state, Action returnToMenu)
         : base(backgroundTexture: null)
@@ -52,10 +56,12 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         _speed = RaceUiTheme.CreateBody(_window, string.Empty);
         _matchState = RaceUiTheme.CreateBody(_window, string.Empty);
         _telemetry = RaceUiTheme.CreateBody(_window, string.Empty);
+        _performance = RaceUiTheme.CreateBody(_window, string.Empty);
         content.TryAddChild(_header);
         content.TryAddChild(_speed);
         content.TryAddChild(_matchState);
         content.TryAddChild(_telemetry);
+        content.TryAddChild(_performance);
         content.TryAddChild(RaceUiTheme.CreateSecondaryButton(_window, "Back to main menu", _returnToMenu));
 
         panel.SetContent(content);
@@ -65,6 +71,7 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
 
     public override void Update(GameTime gameTime)
     {
+        UpdateDisplayedFps((float)gameTime.ElapsedGameTime.TotalSeconds);
         RefreshLabels();
     }
 
@@ -77,6 +84,7 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
             _speed!.Text = $"Driver: {_state.PlayerName} | Speed: {session.PlayerPawn.CurrentSpeedMph:000} mph";
             _matchState!.Text = BuildStatusText(session.GameMode);
             _telemetry!.Text = $"Lap: {Math.Min(session.GameMode.CompletedLaps + 1, session.GameMode.TotalLaps)}/{session.GameMode.TotalLaps} | Next checkpoint: {session.GameMode.NextCheckpointIndex + 1}/{Math.Max(1, session.GameMode.TotalCheckpoints)} | Position: {FormatVector(session.PlayerPawn.RootComponent?.Position ?? Vector3.Zero)}";
+            _performance!.Text = $"FPS: {_displayedFps:0.0} | Debug camera: {(session.IsDebugCameraEnabled ? "On" : "Off")}";
             return;
         }
 
@@ -84,6 +92,27 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         _speed!.Text = $"Driver: {_state.PlayerName} | Car: {RaceFrontEndCatalog.Cars[_state.SelectedCarIndex].Name}";
         _matchState!.Text = "Waiting for race session";
         _telemetry!.Text = $"Track: {RaceFrontEndCatalog.Tracks[_state.SelectedTrackIndex].Name}";
+        _performance!.Text = $"FPS: {_displayedFps:0.0}";
+    }
+
+    private void UpdateDisplayedFps(float elapsedSeconds)
+    {
+        if (elapsedSeconds <= 0.0f)
+        {
+            return;
+        }
+
+        _fpsAccumulatedSeconds += elapsedSeconds;
+        _fpsSampleCount++;
+
+        if (_fpsAccumulatedSeconds < 0.5f)
+        {
+            return;
+        }
+
+        _displayedFps = _fpsSampleCount / _fpsAccumulatedSeconds;
+        _fpsAccumulatedSeconds = 0.0f;
+        _fpsSampleCount = 0;
     }
 
     private static string FormatVector(Vector3 position)

@@ -15,6 +15,10 @@ internal sealed class RuntimeRaceSession
 
     public string CarName { get; private set; } = string.Empty;
 
+    public bool IsDebugCameraEnabled { get; private set; }
+
+    public bool IsCircuitOnlyViewEnabled { get; private set; }
+
     public bool IsActive => GameMode != null && PlayerController != null && PlayerPawn != null;
 
     public void Bind(RaceGameMode gameMode, RacingPlayerController playerController, RacingCarPawn playerPawn)
@@ -24,6 +28,30 @@ internal sealed class RuntimeRaceSession
         PlayerPawn = playerPawn;
         TrackName = gameMode.SelectedTrackName;
         CarName = gameMode.SelectedCarName;
+        IsDebugCameraEnabled = false;
+        IsCircuitOnlyViewEnabled = false;
+    }
+
+    public bool ToggleDebugCamera()
+    {
+        IsDebugCameraEnabled = !IsDebugCameraEnabled;
+        return IsDebugCameraEnabled;
+    }
+
+    public void SetDebugCameraEnabled(bool enabled)
+    {
+        IsDebugCameraEnabled = enabled;
+    }
+
+    public bool ToggleCircuitOnlyView()
+    {
+        IsCircuitOnlyViewEnabled = !IsCircuitOnlyViewEnabled;
+        return IsCircuitOnlyViewEnabled;
+    }
+
+    public void SetCircuitOnlyViewEnabled(bool enabled)
+    {
+        IsCircuitOnlyViewEnabled = enabled;
     }
 
     public void Clear()
@@ -33,5 +61,7 @@ internal sealed class RuntimeRaceSession
         PlayerPawn = null;
         TrackName = string.Empty;
         CarName = string.Empty;
+        IsDebugCameraEnabled = false;
+        IsCircuitOnlyViewEnabled = false;
     }
 }

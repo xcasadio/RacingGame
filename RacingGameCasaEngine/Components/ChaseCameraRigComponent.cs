@@ -8,6 +8,7 @@ public sealed class ChaseCameraRigComponent : EntityComponent
 {
     private Vector3 _smoothedPosition;
     private bool _hasInitializedPosition;
+    private bool _wasDebugCameraEnabled;
 
     public float FollowDistance { get; set; } = 8.5f;
 
@@ -38,6 +39,19 @@ public sealed class ChaseCameraRigComponent : EntityComponent
         if (Owner.World?.Game is not RacingGameCasaEngineGame game)
         {
             return;
+        }
+
+        bool debugCameraEnabled = game.RaceSession.IsDebugCameraEnabled;
+        if (debugCameraEnabled)
+        {
+            _wasDebugCameraEnabled = true;
+            return;
+        }
+
+        if (_wasDebugCameraEnabled)
+        {
+            _hasInitializedPosition = false;
+            _wasDebugCameraEnabled = false;
         }
 
         var pawn = game.RaceSession.PlayerPawn;

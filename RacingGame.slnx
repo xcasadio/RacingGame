@@ -1,8 +1,8 @@
 <Solution>
   <Folder Name="/MGUI/">
-    <Project Path="MGUI/MGUI.Core/MGUI.Core.csproj" />
-    <Project Path="MGUI/MGUI.FontStashSharp/MGUI.FontStashSharp.csproj" />
-    <Project Path="MGUI/MGUI.Shared/MGUI.Shared.csproj" />
+    <Project Path="CasaEngine/MGUI/MGUI.Core/MGUI.Core.csproj" />
+    <Project Path="CasaEngine/MGUI/MGUI.FontStashSharp/MGUI.FontStashSharp.csproj" />
+    <Project Path="CasaEngine/MGUI/MGUI.Shared/MGUI.Shared.csproj" />
   </Folder>
   <Project Path="CasaEngine/CasaEngine/CasaEngine.csproj" />
   <Project Path="RacingGame.PipelineExtension/RacingGame.PipelineExtension.csproj" />

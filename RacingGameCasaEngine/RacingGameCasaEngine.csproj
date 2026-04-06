@@ -21,8 +21,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CasaEngine\CasaEngine\CasaEngine.csproj" />
-    <ProjectReference Include="..\MGUI\MGUI.Core\MGUI.Core.csproj" />
-    <ProjectReference Include="..\MGUI\MGUI.Shared\MGUI.Shared.csproj" />
+    <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Core\MGUI.Core.csproj" />
+    <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Shared\MGUI.Shared.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Content\AssetInfos.json">
@@ -31,13 +31,13 @@
     <None Include="..\CasaEngine\CasaEngine\Content\Fonts\tahoma.ttf" Link="Content\Fonts\tahoma.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\RacingGame\Content\Textures\buttons.png" Link="Content\Textures\buttons.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\RacingGame\Content\Textures\background.png" Link="Content\Textures\background.png">
+    <None Include="..\RacingGame\Content\Textures\*.*" Link="Content\Textures\%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\RacingGame\Content\*.Track" Link="Content\Tracks\%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\RacingGame\Content\LandscapeHeights.data" Link="Content\LandscapeHeights.data">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\RacingGame\Content\*.CombiModel" Link="Content\Models\%(Filename)%(Extension)">
