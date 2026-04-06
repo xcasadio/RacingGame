@@ -2,7 +2,6 @@ using RacingGame.Graphics;
 using RacingGame.Helpers;
 using RacingGame.Shaders;
 using RacingGame.Tracks;
-using Model = RacingGame.Graphics.Model;
 using RacingGame.GameLogic;
 using RacingGame.GameScreens;
 using RacingGame.Sounds;
@@ -26,512 +25,21 @@ public class Landscape : IDisposable
         MapZScale = 300.0f;
     #endregion
 
-    #region Objects to render on this landscape
-    /// <summary>
-    /// Landscape object
-    /// </summary>
-    public class LandscapeObject
-    {
-        /// <summary>
-        /// Model
-        /// </summary>
-        Model model;
-        /// <summary>
-        /// Matrix
-        /// </summary>
-        Matrix matrix;
-        /// <summary>
-        /// Is banner, sign or building?
-        /// Shadows are only generated for these objects, not received.
-        /// </summary>
-        bool isBanner = false;
-
-        /// <summary>
-        /// Change model
-        /// </summary>
-        /// <param name="setNewModel">Set new model</param>
-        public void ChangeModel(Model setNewModel)
-        {
-            model = setNewModel;
-        }
-
-        /// <summary>
-        /// Is big building
-        /// </summary>
-        /// <returns>Bool</returns>
-        public bool IsBigBuilding
-        {
-            get
-            {
-                return model.Name.ToLower().Contains("hotel") ||
-                       model.Name.ToLower().Contains("building");
-            }
-        }
-
-        /// <summary>
-        /// Is banner
-        /// </summary>
-        public bool IsBanner
-        {
-            get
-            {
-                return isBanner;
-            }
-        }
-
-        /// <summary>
-        /// Position
-        /// </summary>
-        /// <returns>Vector 3</returns>
-        public Vector3 Position
-        {
-            get
-            {
-                return matrix.Translation;
-            }
-        }
-
-        /// <summary>
-        /// Size
-        /// </summary>
-        /// <returns>Float</returns>
-        public float Size
-        {
-            get
-            {
-                return model.Size;
-            }
-        }
-
-        /// <summary>
-        /// Create landscape object
-        /// </summary>
-        /// <param name="setModel">Set model</param>
-        /// <param name="setMatrix">Set matrix</param>
-        public LandscapeObject(Model setModel, Matrix setMatrix)
-        {
-            if (setModel == null)
-            {
-                throw new ArgumentNullException("setModel");
-            }
-
-            model = setModel;
-            matrix = setMatrix;
-
-            // Also include signs no reason to receive shadows for them!
-            // Faster and looks better!
-            isBanner = model.Name.ToLower().Contains("banner")
-                       || model.Name.ToLower().Contains("sign");
-        }
-
-        /// <summary>
-        /// Render
-        /// </summary>
-        public void Render()
-        {
-            model.Render(matrix);
-        }
-
-        /// <summary>
-        /// Generate shadows
-        /// </summary>
-        public void GenerateShadows()
-        {
-            model.GenerateShadow(matrix);
-        }
-
-        /// <summary>
-        /// Use shadows
-        /// </summary>
-        public void UseShadows()
-        {
-            model.UseShadow(matrix);
-        }
-    }
-
-    /// <summary>
-    /// List of landscape objects.
-    /// </summary>
-    List<LandscapeObject> landscapeObjects = new List<LandscapeObject>();
-
-    /// <summary>
-    /// Extra list for objects that are near the track, all the objects
-    /// in this list are also in the landscapeObjects list. Usually this
-    /// list is a lot smaller and it is used for the shadow mapping
-    /// generation in GenerateShadow and UseShadow methods below.
-    /// </summary>
-    List<LandscapeObject> nearTrackObjects = new List<LandscapeObject>();
-
-    /// <summary>
-    /// Remember start light object because we will exchange it
-    /// as the time goes down.
-    /// </summary>
-    LandscapeObject startLightObject = null;
-
-    /// <summary>
-    /// Replace start light object, 0=red, 1=yellow, 2=green.
-    /// </summary>
-    /// <param name="number">Number</param>
-    public void ReplaceStartLightObject(int number)
-    {
-        // Make sure we only use 0-2
-        if (number < 0 || number >= 3)
-        {
-            number = 0;
-        }
-
-        if (startLightObject != null)
-        {
-            if (number == 2)
-            {
-                Sound.Play(Sound.Sounds.Bleep);
-            }
-            else
-            {
-                Sound.Play(Sound.Sounds.Beep);
-            }
-
-            startLightObject.ChangeModel(landscapeModels[number]);
-        }
-    }
-
-    /// <summary>
-    /// Kill all loaded objects
-    /// </summary>
-    public void KillAllLoadedObjects()
-    {
-        landscapeObjects.Clear();
-        nearTrackObjects.Clear();
-        startLightObject = null;
-    }
-
-    /// <summary>
-    /// All landscape models are preloaded and then used in AddObjectToRender.
-    /// </summary>
-    Model[] landscapeModels = new Model[]
-    {
-        new Model("StartLight"),
-        new Model("StartLight2"),
-        new Model("StartLight3"),
-        new Model("Blockade"),
-        new Model("Blockade2"),
-        new Model("Hydrant"),
-        new Model("Kaktus"),
-        new Model("Kaktus2"),
-        new Model("KaktusBenny"),
-        new Model("KaktusSeg"),
-        new Model("AlphaDeadTree"),
-        new Model("AlphaPalm"),
-        new Model("AlphaPalm2"),
-        new Model("AlphaPalm3"),
-        new Model("AlphaPalmSmall"),
-        new Model("Laterne"),
-        new Model("Laterne2Sides"),
-        new Model("Trashcan"),
-        new Model("Roadsign"),
-        new Model("Roadsign2"),
-        new Model("Goal"),
-        new Model("Building"),
-        new Model("Building2"),
-        new Model("Building3"),
-        new Model("Building4"),
-        new Model("Building5"),
-        new Model("OilPump"),
-        new Model("OilTanks"),
-        new Model("RoadColumnSegment"),
-        new Model("Windmill"),
-        new Model("Ruin"),
-        new Model("RuinHouse"),
-        new Model("SandCastle"),
-        new Model("Banner"),
-        new Model("Banner2"),
-        new Model("Banner3"),
-        new Model("Banner4"),
-        new Model("Banner5"),
-        new Model("Banner6"),
-        new Model("Sign"),
-        new Model("Sign2"),
-        new Model("SignWarning"),
-        new Model("SignCurveLeft"),
-        new Model("SignCurveRight"),
-        new Model("SharpRock"),
-        new Model("SharpRock2"),
-        new Model("Stone4"),
-        new Model("Stone5"),
-        new Model("AlphaTrain"),
-        new Model("GuardRailHolder"),
-        new Model("Hotel01"),
-        new Model("Hotel02"),
-        new Model("Casino01"),
-    };
-
-    /// <summary>
-    /// Combos, which are used in the level file and for the automatic
-    /// object generation below. Very useful. Each combo contains between
-    /// 5 and 15 landscape model objects.
-    /// </summary>
-    TrackCombiModels[] combos = new TrackCombiModels[]
-    {
-        new TrackCombiModels("CombiPalms"),
-        new TrackCombiModels("CombiPalms2"),
-        new TrackCombiModels("CombiRuins"),
-        new TrackCombiModels("CombiRuins2"),
-        new TrackCombiModels("CombiStones"),
-        new TrackCombiModels("CombiStones2"),
-        new TrackCombiModels("CombiOilTanks"),
-        new TrackCombiModels("CombiSandCastle"),
-        new TrackCombiModels("CombiBuildings"),
-        new TrackCombiModels("CombiHotels"),
-    };
-
-    /// <summary>
-    /// Names for autogenerating stuff near the road to fill the level up.
-    /// First 6 entries are used with more propability (fit better).
-    /// </summary>
-    internal string[] autoGenerationNames = new string[]
-    {
-        "CombiPalms",
-        "CombiPalms2",
-        "CombiRuins",
-        "CombiRuins2",
-        "CombiStones",
-        "CombiStones2",
-        //causes to much trouble and overlappings: "CombiOilTanks",
-        "Kaktus",
-        "Kaktus2",
-        "KaktusBenny",
-        "KaktusSeg",
-        "AlphaDeadTree",
-        "AlphaPalm",
-        "AlphaPalm2",
-        "AlphaPalm3",
-        "AlphaPalmSmall",
-        "Laterne2Sides",
-        "Trashcan",
-        "OilPump",
-        "OilTanks",
-        "RoadColumnSegment",
-        "Windmill",
-        "Ruin",
-        "RuinHouse",
-        "Sign",
-        "Sign2",
-        "SharpRock",
-        "SharpRock2",
-        "Stone4",
-        "Stone5",
-        "Casino01",
-    };
-
-    /// <summary>
-    /// Add object to render
-    /// </summary>
-    /// <param name="modelName">Model name</param>
-    /// <param name="renderMatrix">Render matrix</param>
-    /// <param name="isNearTrack">Is near track</param>
-    public void AddObjectToRender(string modelName, Matrix renderMatrix,
-        bool isNearTrackForShadowGeneration)
-    {
-        // Fix wrong model names
-        if (modelName == "OilWell")
-        {
-            modelName = "OilPump";
-        }
-        else if (modelName == "PalmSmall")
-        {
-            modelName = "AlphaPalmSmall";
-        }
-        else if (modelName == "AlphaPalm4")
-        {
-            modelName = "AlphaPalmSmall";
-        }
-        else if (modelName == "Palm")
-        {
-            modelName = "AlphaPalm";
-        }
-        else if (modelName == "Casino")
-        {
-            modelName = "Casino01";
-        }
-        else if (modelName == "Combi")
-        {
-            modelName = "CombiPalms";
-        }
-
-        // Always include windmills and buildings for shadow generation
-        if (modelName.ToLower() == "windmill" ||
-            modelName.ToLower().Contains("hotel") ||
-            modelName.ToLower().Contains("building") ||
-            modelName.ToLower().Contains("casino01"))
-        {
-            isNearTrackForShadowGeneration = true;
-        }
-
-        // Search for combos
-        for (int num = 0; num < combos.Length; num++)
-        {
-            TrackCombiModels combi = combos[num];
-            //slower: if (StringHelper.Compare(combi.Name, modelName))
-            if (combi.Name == modelName)
-            {
-                // Add all combi objects (calls this method for each model)
-                combi.AddAllModels(this, renderMatrix);
-                // Thats it.
-                return;
-            }
-        }
-
-        Model foundModel = null;
-        // Search model by name!
-        for (int num = 0; num < landscapeModels.Length; num++)
-        {
-            Model model = landscapeModels[num];
-            //slower: if (StringHelper.Compare(model.Name, modelName))
-            if (model.Name == modelName)
-            {
-                foundModel = model;
-                break;
-            }
-        }
-
-        // Only add if we found the model
-        if (foundModel != null)
-        {
-            // Fix z position to be always ABOVE the landscape
-            Vector3 modelPos = renderMatrix.Translation;
-
-            // Get landscape height here
-            float landscapeHeight = GetMapHeight(modelPos.X, modelPos.Y);
-            // And make sure we are always above it!
-            if (modelPos.Z < landscapeHeight)
-            {
-                modelPos.Z = landscapeHeight;
-                // Fix render matrix
-                renderMatrix.Translation = modelPos;
-            }
-
-            // Check if another object is nearby, then skip this one!
-            // Don't skip signs or banners!
-            if (modelName.StartsWith("Banner") == false &&
-                modelName.StartsWith("Sign") == false &&
-                modelName.StartsWith("StartLight") == false)
-            {
-                for (int num = 0; num < landscapeObjects.Count; num++)
-                {
-                    if (Vector3.DistanceSquared(
-                            landscapeObjects[num].Position, modelPos) <
-                        foundModel.Size * foundModel.Size / 4)
-                    {
-                        // Don't add
-                        return;
-                    }
-                }
-            }
-
-            LandscapeObject newObject =
-                new LandscapeObject(foundModel,
-                    // Scale all objects up a little (else world is not filled enough)
-                    Matrix.CreateScale(1.2f) *
-                    renderMatrix);
-
-            // Add
-            landscapeObjects.Add(newObject);
-
-            // Add again to the nearTrackObjects list if near the track
-            if (isNearTrackForShadowGeneration)
-            {
-                nearTrackObjects.Add(newObject);
-            }
-
-            if (modelName.StartsWith("StartLight"))
-            {
-                startLightObject = newObject;
-            }
-        }
-#if DEBUG
-        else if (modelName.Contains("Track") == false)
-            // Add warning in log file
-        {
-            Log.Write("Landscape model "+modelName+" is not supported and "+
-                      "can't be added for rendering!");
-        }
-#endif
-    }
-
-    /// <summary>
-    /// Add object to render
-    /// </summary>
-    /// <param name="modelName">Model name</param>
-    /// <param name="rotation">Rotation</param>
-    /// <param name="trackPos">Track position</param>
-    /// <param name="trackRight">Track right</param>
-    /// <param name="distance">Distance</param>
-    public void AddObjectToRender(string modelName,
-        float rotation, Vector3 trackPos, Vector3 trackRight,
-        float distance)
-    {
-        // Find out size
-        float objSize = 1;
-
-        // Search for combos
-        for (int num = 0; num < combos.Length; num++)
-        {
-            TrackCombiModels combi = combos[num];
-            //slower: if (StringHelper.Compare(combi.Name, modelName))
-            if (combi.Name == modelName)
-            {
-                objSize = combi.Size;
-                break;
-            }
-        }
-
-        // Search model by name!
-        for (int num = 0; num < landscapeModels.Length; num++)
-        {
-            Model model = landscapeModels[num];
-            //slower: if (StringHelper.Compare(model.Name, modelName))
-            if (model.Name == modelName)
-            {
-                objSize = model.Size;
-                break;
-            }
-        }
-
-        // Make sure it is away from the road.
-        if (distance > 0 &&
-            distance - 10 < objSize)
-        {
-            distance += objSize;
-        }
-
-        if (distance < 0 &&
-            distance + 10 > -objSize)
-        {
-            distance -= objSize;
-        }
-
-        AddObjectToRender(modelName,
-            Matrix.CreateRotationZ(rotation) *
-            Matrix.CreateTranslation(
-                trackPos + trackRight * distance + new Vector3(0, 0, -100)), false);
-    }
-
-    /// <summary>
-    /// Add object to render
-    /// </summary>
-    /// <param name="modelName">Model name</param>
-    /// <param name="renderPos">Render position</param>
-    public void AddObjectToRender(string modelName, Vector3 renderPos)
-    {
-        AddObjectToRender(modelName, Matrix.CreateTranslation(renderPos), false);
-    }
-    #endregion
-
     #region Variables
     /// <summary>
     /// Currently loaded level
     /// </summary>
     RacingGameManager.Level level = RacingGameManager.Level.Beginner;
+
+    readonly TrackObjectManager trackObjectManager;
+
+    internal string[] autoGenerationNames
+    {
+        get
+        {
+            return trackObjectManager.AutoGenerationNames;
+        }
+    }
 
     /// <summary>
     /// Vertices
@@ -574,6 +82,62 @@ public class Landscape : IDisposable
         {
             return cityMat;
         }
+    }
+
+    /// <summary>
+    /// Replace start light object, 0=red, 1=yellow, 2=green.
+    /// </summary>
+    /// <param name="number">Number</param>
+    public void ReplaceStartLightObject(int number)
+    {
+        trackObjectManager.ReplaceStartLightObject(number);
+    }
+
+    /// <summary>
+    /// Kill all loaded objects.
+    /// </summary>
+    public void KillAllLoadedObjects()
+    {
+        trackObjectManager.KillAllLoadedObjects();
+    }
+
+    /// <summary>
+    /// Add object to render.
+    /// </summary>
+    /// <param name="modelName">Model name</param>
+    /// <param name="renderMatrix">Render matrix</param>
+    /// <param name="isNearTrackForShadowGeneration">Is near track for shadow generation</param>
+    public void AddObjectToRender(string modelName, Matrix renderMatrix,
+        bool isNearTrackForShadowGeneration)
+    {
+        trackObjectManager.AddObjectToRender(
+            modelName, renderMatrix, isNearTrackForShadowGeneration);
+    }
+
+    /// <summary>
+    /// Add object to render.
+    /// </summary>
+    /// <param name="modelName">Model name</param>
+    /// <param name="rotation">Rotation</param>
+    /// <param name="trackPos">Track position</param>
+    /// <param name="trackRight">Track right</param>
+    /// <param name="distance">Distance</param>
+    public void AddObjectToRender(string modelName,
+        float rotation, Vector3 trackPos, Vector3 trackRight,
+        float distance)
+    {
+        trackObjectManager.AddObjectToRender(
+            modelName, rotation, trackPos, trackRight, distance);
+    }
+
+    /// <summary>
+    /// Add object to render.
+    /// </summary>
+    /// <param name="modelName">Model name</param>
+    /// <param name="renderPos">Render position</param>
+    public void AddObjectToRender(string modelName, Vector3 renderPos)
+    {
+        trackObjectManager.AddObjectToRender(modelName, renderPos);
     }
 
     /// <summary>
@@ -878,6 +442,7 @@ public class Landscape : IDisposable
         }
 
         mapHeights = new float[GridWidth, GridHeight];
+    trackObjectManager = new TrackObjectManager(GetMapHeight);
         #endregion
 
         #region Build tangent vertices
@@ -1038,15 +603,14 @@ public class Landscape : IDisposable
 
         #region Add city planes
         // Just set one giant plane for the whole city!
-        foreach (LandscapeObject obj in landscapeObjects)
-            if (obj.IsBigBuilding)
-            {
-                cityPlane = new PlaneRenderer(
-                    obj.Position,
-                    new Plane(new Vector3(0, 0, 1), 0.1f),
-                    cityMat, Math.Min(obj.Position.X, obj.Position.Y));
-                break;
-            }
+        LandscapeObject cityObject = trackObjectManager.FirstBigBuilding;
+        if (cityObject != null)
+        {
+            cityPlane = new PlaneRenderer(
+                cityObject.Position,
+                new Plane(new Vector3(0, 0, 1), 0.1f),
+                cityMat, Math.Min(cityObject.Position.X, cityObject.Position.Y));
+        }
         #endregion
     }
 
@@ -1082,7 +646,7 @@ public class Landscape : IDisposable
         SetCarToStartPosition();
 
         // Begin game with red start light
-        startLightObject.ChangeModel(landscapeModels[0]);
+        trackObjectManager.ResetStartLight();
     }
     #endregion
 
@@ -1129,11 +693,7 @@ public class Landscape : IDisposable
     {
         if (disposing)
         {
-            for (int num = 0; num < landscapeModels.Length; num++)
-            {
-                landscapeModels[num].Dispose();
-            }
-
+            trackObjectManager.Dispose();
             mat.Dispose();
             cityMat.Dispose();
             vertexBuffer.Dispose();
@@ -1176,11 +736,7 @@ public class Landscape : IDisposable
         // Render track
         track.Render();
 
-        // Render all landscape objects
-        for (int num = 0; num < landscapeObjects.Count; num++)
-        {
-            landscapeObjects[num].Render();
-        }
+        trackObjectManager.Render();
 
         // Render all brake tracks
         RenderBrakeTracks();
@@ -1210,11 +766,7 @@ public class Landscape : IDisposable
         // Just generate shadows for the road.
         track.GenerateShadow();
 
-        // Render shadow all landscape objects that near our road
-        for (int num = 0; num < nearTrackObjects.Count; num++)
-        {
-            nearTrackObjects[num].GenerateShadows();
-        }
+        trackObjectManager.GenerateShadows();
     }
 
     /// <summary>
@@ -1233,17 +785,7 @@ public class Landscape : IDisposable
         // sometimes objects may have lookthrough-shadows or windmills
         // are usually a problem. This fixes this or makes it at least less
         // noticable.
-        if (BaseGame.HighDetail)
-        {
-            for (int num = 0; num < nearTrackObjects.Count; num++)
-                // Don't receive shadows on signs, looks weird.
-            {
-                if (nearTrackObjects[num].IsBanner == false)
-                {
-                    nearTrackObjects[num].UseShadows();
-                }
-            }
-        }
+        trackObjectManager.UseShadows();
 
         // And the track receives shadow too
         track.UseShadow();

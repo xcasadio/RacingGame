@@ -134,10 +134,24 @@ public class TrackCombiModels
     /// <param name="parentMatrix">Parent matrix</param>
     public void AddAllModels(Landscape landscape, Matrix parentMatrix)
     {
+        AddAllModels(
+            delegate (string modelName, Matrix matrix)
+            {
+                landscape.AddObjectToRender(modelName, matrix, false);
+            },
+            parentMatrix);
+    }
+
+    /// <summary>
+    /// Add all models.
+    /// </summary>
+    /// <param name="addModel">Add model callback</param>
+    /// <param name="parentMatrix">Parent matrix</param>
+    public void AddAllModels(Action<string, Matrix> addModel, Matrix parentMatrix)
+    {
         // Just add all models in our combi
         foreach (CombiObject obj in objects)
-            landscape.AddObjectToRender(obj.modelName,
-                obj.matrix * parentMatrix, false);
+            addModel(obj.modelName, obj.matrix * parentMatrix);
     }
     #endregion
 }

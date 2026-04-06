@@ -67,7 +67,7 @@ Reduire `Landscape` a un role de facade et d'orchestrateur, tout en gardant un c
 - Garder `Landscape` comme point d'entree unique pendant toute la migration.
 - Realise : points d'extension `TrackObjectManager`, `ReplayManager`, `BrakeTrackManager`, `TerrainRenderer` et `LandscapeObject` ajoutes comme base compilable avant extraction.
 
-### ⏳ Etape 2 - Extraire `TrackObjectManager`
+### ✅ Etape 2 - Extraire `TrackObjectManager`
 
 - Deplacer `LandscapeObject`, `landscapeModels`, `combos`, `autoGenerationNames`.
 - Deplacer `AddObjectToRender`, `KillAllLoadedObjects`, `ReplaceStartLightObject`.
@@ -76,6 +76,7 @@ Reduire `Landscape` a un role de facade et d'orchestrateur, tout en gardant un c
   - la sous-liste des objets proches de la piste pour les ombres,
   - l'acces au premier gros batiment pour initialiser le city plane.
 - Garder le comportement de correction des noms de modeles et les sons du feu de depart.
+- Realise : `LandscapeObject` et la gestion des objets/ombres/feu de depart vivent maintenant dans `TrackObjectManager`, avec delegation conservee dans `Landscape` et compatibilite maintenue pour `landscape.autoGenerationNames`.
 
 ### ⏳ Etape 3 - Extraire `ReplayManager`
 
