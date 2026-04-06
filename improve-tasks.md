@@ -2,7 +2,7 @@
 
 **Légende** : ✅ Implémenté | 📋 Tâche future (voir [future-tasks.md](future-tasks.md))
 
-**Résumé** : 25 tâches ✅ implémentées (12 bugs, 5 robustesse, 5 performance, 2 qualité, 1 architecture) • 18 tâches 📋 déférées
+**Résumé** : 26 tâches ✅ implémentées (12 bugs, 5 robustesse, 5 performance, 2 qualité, 2 architecture) • 17 tâches 📋 déférées
 
 ---
 
@@ -92,10 +92,10 @@
 - **Description** : Tout le code audio (musique, effets, gestion du son moteur) est dans une seule classe statique. Mélange responsabilités de gestion des fichiers et de playback.
 - **Amélioration** : Séparer en `MusicManager`, `SfxManager`, `EngineSound`, etc.
 
-### 📋 ARCH-005 : Classe Landscape trop large
-- **Fichier** : `RacingGame.Shared/Landscapes/Landscape.cs` (~1425 lignes)
-- **Description** : Gère le terrain, les objets, les traces de frein, les replays, les checkpoints, la physique de positionnement, le rendu 3D, les ombres...
-- **Amélioration** : Extraire en sous-classes : `TerrainRenderer`, `TrackObjectManager`, `BrakeTrackManager`, `ReplayManager`.
+### ✅ ARCH-005 : Classe Landscape trop large
+- **Fichiers** : `RacingGame.Shared/Landscapes/Landscape.cs`, `TerrainRenderer.cs`, `TrackObjectManager.cs`, `ReplayManager.cs`, `BrakeTrackManager.cs`, `LandscapeObject.cs`
+- **Description** : `Landscape` gérait le terrain, les objets, les traces de frein, les replays, les checkpoints, la physique de positionnement, le rendu 3D et les ombres dans une seule classe.
+- **Amélioration** : `Landscape` a été réduit à l'orchestration. Le terrain a été extrait dans `TerrainRenderer`, les objets dans `TrackObjectManager`, les replays dans `ReplayManager` et les traces de frein dans `BrakeTrackManager`.
 
 ---
 

@@ -28,14 +28,9 @@ Elles constituent une feuille de route pour améliorer progressivement la qualit
 ### ✅ ARCH-004 : Décomposer la classe Sound monolithique
 - **Statut** : Implémenté — `Sound.cs` décomposé en `MusicManager`, `SfxManager` et `EngineSound`. Façade `Sound` statique conservée pour compatibilité.
 
-### 📋 ARCH-005 : Décomposer la classe Landscape (~1425 lignes)
-- **Priorité** : Moyenne
-- **Description** : `Landscape.cs` gère le terrain, les objets, les traces de frein, les replays, les checkpoints, la physique et le rendu.
-- **Plan** :
-  1. `TerrainRenderer` : rendu du terrain et textures
-  2. `TrackObjectManager` : placement/rendu des objets de bord de route
-  3. `BrakeTrackManager` : gestion des traces de pneus
-  4. `CheckpointSystem` : gestion des checkpoints et des tours
+### ✅ ARCH-005 : Décomposer la classe Landscape (~1425 lignes)
+- **Statut** : Implémenté — `Landscape` a été réduit à une façade d'orchestration. Les responsabilités ont été extraites vers `TerrainRenderer`, `TrackObjectManager`, `ReplayManager`, `BrakeTrackManager` et `LandscapeObject`.
+- **Validation** : `dotnet build RacingGame.Shared/RacingGame.Shared.csproj` OK, `dotnet build RacingGame/RacingGame.csproj` OK, smoke test de démarrage sans erreur immédiate. Validation visuelle interactive restante.
 
 ---
 

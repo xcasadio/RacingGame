@@ -134,6 +134,7 @@ Reduire `Landscape` a un role de facade et d'orchestrateur, tout en gardant un c
 - `CarPhysics` depend de plusieurs proprietes de `Landscape` dans la boucle de jeu ; il faut privilegier une facade stable avant de retoucher les appelants.
 - `cityPlane` depend de la presence d'objets de type batiment ; l'ordre d'initialisation doit rester coherent.
 - `Dispose` doit liberer buffers, materiaux, track et modeles dans un ordre stable.
+- Revue finale : aucun echec de compilation ni crash immediat n'a ete detecte apres extraction. Le risque residuel principal reste l'absence de validation visuelle automatisee du rendu, des ombres et d'une course complete.
 
 ## Definition of done
 
