@@ -32,6 +32,7 @@ public class Landscape : IDisposable
 
     readonly TrackObjectManager trackObjectManager;
     readonly ReplayManager replayManager = new ReplayManager();
+    readonly BrakeTrackManager brakeTrackManager = new BrakeTrackManager();
 
     internal string[] autoGenerationNames
     {
@@ -197,15 +198,6 @@ public class Landscape : IDisposable
         }
     }
 
-    /// <summary>
-    /// Remember a list of brack tracks, which will be generated if we brake.
-    /// </summary>
-    List<TangentVertex> brakeTracksVertices = new List<TangentVertex>();
-
-    /// <summary>
-    /// Little helper to avoid creating a new array each frame for rendering
-    /// </summary>
-    TangentVertex[] brakeTracksVerticesArray = null;
     #endregion
 
     #region Properties
@@ -577,9 +569,7 @@ public class Landscape : IDisposable
 
         replayManager.ResetForTrack(level, track);
 
-        // Kill brake tracks
-        brakeTracksVertices.Clear();
-        brakeTracksVerticesArray = null;
+        brakeTrackManager.Reset();
 
         // Set car at start pos
         SetCarToStartPosition();
@@ -780,20 +770,6 @@ public class Landscape : IDisposable
 
     #region Add and render brake tracks
     /// <summary>
-    /// Helper to skip track generation if it is near the last generated pos.
-    /// </summary>
-    Vector3 lastAddedTrackPos = new Vector3(-1000, -1000, -1000);
-    /// <summary>
-    /// Render a maximum of 140 brake tracks.
-    /// </summary>
-    const int MaxBrakeTrackVertices = 6 * 140;
-
-    /// <summary>
-    /// The amount to raise the break tracks decal off the road surface
-    /// </summary>
-    const float RaiseBreakTracksAmount = 0.2f;
-
-    /// <summary>
     /// Add brake track
     /// </summary>
     /// <param name="position">Position</param>
@@ -801,68 +777,7 @@ public class Landscape : IDisposable
     /// <param name="right">Right vector</param>
     public void AddBrakeTrack(CarPhysics car)
     {
-        Vector3 position = car.CarPosition + car.CarDirection * 1.25f;
-
-        // Just skip if we setting to a similar location again.
-        // This check is much faster and accurate for tracks on top of each
-        // other than the foreach loop below, which is only useful to
-        // put multiple tracks correctly behind each other!
-        if (Vector3.DistanceSquared(position, lastAddedTrackPos) < 0.024f ||
-            // Limit number of tracks to keep rendering fast.
-            brakeTracksVertices.Count > MaxBrakeTrackVertices)
-        {
-            return;
-        }
-
-        lastAddedTrackPos = position;
-
-        const float width = 2.4f; // car is 2.6m width, we use 2.4m for tires
-        const float length = 4.5f; // Length of break tracks
-        float maxDist =
-            (float)Math.Sqrt(width * width + length * length) / 2 - 0.35f;
-
-        // Check if there is any track already set here or nearby?
-        for (int num = 0; num < brakeTracksVertices.Count; num++)
-        {
-            if (Vector3.DistanceSquared(brakeTracksVertices[num].pos, position) <
-                maxDist * maxDist)
-                // Then skip this brake track, don't put that much stuff on
-                // top of each other.
-            {
-                return;
-            }
-        }
-
-        // Move position a little bit up (above the road)
-        position += Vector3.Normalize(car.CarUpVector) * RaiseBreakTracksAmount;
-
-        // Just add 6 new vertices to render (2 triangles)
-        TangentVertex[] newVertices = new TangentVertex[]
-        {
-            // First triangle
-            new TangentVertex(
-                position -car.CarRight*width/2 -car.CarDirection*length/2, 0, 0,
-                car.CarUpVector, car.CarRight),
-            new TangentVertex(
-                position -car.CarRight*width/2 +car.CarDirection*length/2, 0, 5,
-                car.CarUpVector, car.CarRight),
-            new TangentVertex(
-                position +car.CarRight*width/2 +car.CarDirection*length/2, 1, 5,
-                car.CarUpVector, car.CarRight),
-            // Second triangle
-            new TangentVertex(
-                position -car.CarRight*width/2 -car.CarDirection*length/2, 0, 0,
-                car.CarUpVector, car.CarRight),
-            new TangentVertex(
-                position +car.CarRight*width/2 +car.CarDirection*length/2, 1, 5,
-                car.CarUpVector, car.CarRight),
-            new TangentVertex(
-                position +car.CarRight*width/2 -car.CarDirection*length/2, 1, 0,
-                car.CarUpVector, car.CarRight),
-        };
-
-        brakeTracksVertices.AddRange(newVertices);
-        brakeTracksVerticesArray = brakeTracksVertices.ToArray();
+        brakeTrackManager.AddBrakeTrack(car);
     }
 
     /// <summary>
@@ -870,24 +785,7 @@ public class Landscape : IDisposable
     /// </summary>
     public void RenderBrakeTracks()
     {
-        // Nothing to render?
-        if (brakeTracksVerticesArray == null)
-        {
-            return;
-        }
-
-        BaseGame.SetAlphaBlendingEnabled(true);
-        BaseGame.WorldMatrix = Matrix.Identity;
-        ShaderEffect.lighting.Render(
-            RacingGameManager.BrakeTrackMaterial,
-            "Diffuse20",
-            delegate
-            {
-                // Draw the vertices
-                BaseGame.Device.DrawUserPrimitives(
-                    PrimitiveType.TriangleList,
-                    brakeTracksVerticesArray, 0, brakeTracksVerticesArray.Length / 3);
-            });
+        brakeTrackManager.Render();
     }
     #endregion
 }

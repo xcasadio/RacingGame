@@ -86,11 +86,12 @@ Reduire `Landscape` a un role de facade et d'orchestrateur, tout en gardant un c
 - Verifier que la sauvegarde asynchrone du replay reste strictement equivalente.
 - Realise : la gestion des replays et du changement de tour est deplacee dans `ReplayManager`, sans modifier les consommateurs de `Landscape.BestReplay`, `Landscape.NewReplay` ni `Landscape.CompareCheckpointTime`.
 
-### ⏳ Etape 4 - Extraire `BrakeTrackManager`
+### ✅ Etape 4 - Extraire `BrakeTrackManager`
 
 - Deplacer `brakeTracksVertices`, `brakeTracksVerticesArray`, `lastAddedTrackPos` et les constantes associees.
 - Deplacer `AddBrakeTrack` et `RenderBrakeTracks`.
 - Conserver le cache tableau actuel pour eviter toute regression dans le rendu.
+- Realise : la generation et le rendu des traces sont maintenant portes par `BrakeTrackManager`, avec delegation simple conservee dans `Landscape`.
 
 ### ⏳ Etape 5 - Extraire `TerrainRenderer`
 
