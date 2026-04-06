@@ -1,10 +1,7 @@
 using RacingGame.Graphics;
-using RacingGame.Helpers;
-using RacingGame.Shaders;
 using RacingGame.Tracks;
 using RacingGame.GameLogic;
 using RacingGame.GameScreens;
-using RacingGame.Sounds;
 namespace RacingGame.Landscapes;
 
 /// <summary>
@@ -12,24 +9,13 @@ namespace RacingGame.Landscapes;
 /// </summary>
 public class Landscape : IDisposable
 {
-    #region Constants
-    /// <summary>
-    /// Grid width and height
-    /// </summary>
-    const int GridWidth = 257,
-        GridHeight = 257;
-
-    const float MapWidthFactor = 10,
-        MapHeightFactor = 10,
-        MapZScale = 300.0f;
-    #endregion
-
     #region Variables
     /// <summary>
     /// Currently loaded level
     /// </summary>
     RacingGameManager.Level level = RacingGameManager.Level.Beginner;
 
+    readonly TerrainRenderer terrainRenderer;
     readonly TrackObjectManager trackObjectManager;
     readonly ReplayManager replayManager = new ReplayManager();
     readonly BrakeTrackManager brakeTrackManager = new BrakeTrackManager();
@@ -43,37 +29,6 @@ public class Landscape : IDisposable
     }
 
     /// <summary>
-    /// Vertices
-    /// </summary>
-    TangentVertex[] vertices = new TangentVertex[GridWidth * GridHeight];
-    /// <summary>
-    /// Matrix
-    /// </summary>
-    Material mat = new Material(
-        //new Color(62, 62, 62), // ambient
-        //new Color(240, 240, 240), // diffuse
-        //new Color(24, 24, 24), // specular
-        new Color(88, 88, 88), // ambient (bright day)
-        new Color(234, 234, 234), // diffuse (also bright)
-        new Color(33, 33, 33), // specular (unused anyway)
-        "Landscape",
-        "LandscapeNormal",
-        "",
-        "LandscapeDetail");
-
-    /// <summary>
-    /// City material for displaying an extra material whereever the ground
-    /// is flat. This makes the ground look much better at such locations,
-    /// especially where the city is at.
-    /// </summary>
-    Material cityMat = new Material(
-        new Color(32, 32, 32),
-        new Color(200, 200, 200),
-        new Color(128, 128, 128),
-        "CityGround",
-        "CityGroundNormal", "", "");
-
-    /// <summary>
     /// City material
     /// </summary>
     /// <returns>Material</returns>
@@ -81,7 +36,7 @@ public class Landscape : IDisposable
     {
         get
         {
-            return cityMat;
+            return terrainRenderer.CityMaterial;
         }
     }
 
@@ -140,27 +95,6 @@ public class Landscape : IDisposable
     {
         trackObjectManager.AddObjectToRender(modelName, renderPos);
     }
-
-    /// <summary>
-    /// City planes we render additionally to the landscape.
-    /// Each city plane is just 2 triangles and the cityMat material, very
-    /// fast and easy stuff.
-    /// </summary>
-    PlaneRenderer cityPlane = null;
-
-    /// <summary>
-    /// Vertex buffer for our landscape
-    /// </summary>
-    VertexBuffer vertexBuffer;
-    /// <summary>
-    /// Index buffer for our landscape
-    /// </summary>
-    IndexBuffer indexBuffer;
-
-    /// <summary>
-    /// Map heights
-    /// </summary>
-    float[,] mapHeights = null;
 
     /// <summary>
     /// Track for our landscape, can be TrackBeginner, TrackAdvanced and
@@ -258,43 +192,7 @@ public class Landscape : IDisposable
     /// <returns>Float</returns>
     public float GetMapHeight(int x, int y)
     {
-        if (x < 0)
-        {
-            x = 0;
-        }
-
-        if (y < 0)
-        {
-            y = 0;
-        }
-
-        if (x >= GridWidth)
-        {
-            x = GridWidth - 1;
-        }
-
-        if (y >= GridHeight)
-        {
-            y = GridHeight - 1;
-        }
-
-        return mapHeights[x, y];
-    }
-
-    /// <summary>
-    /// This functions keeps sure we keep in 0-max range,
-    /// simple modulate (%) will do this only correctly for positiv values!
-    /// </summary>
-    private static int ModulateValueInRange(float val, int max)
-    {
-        if (val < 0.0f)
-        {
-            return (max - 1) - ((int)(-val) % max);
-        }
-        else
-        {
-            return (int)val % max;
-        }
+        return terrainRenderer.GetMapHeight(x, y);
     }
 
     /// <summary>
@@ -305,54 +203,7 @@ public class Landscape : IDisposable
     /// <returns>Float</returns>
     public float GetMapHeight(float x, float y)
     {
-        // Rescale to our current dimensions
-        x /= MapWidthFactor;
-        y /= MapHeightFactor;
-
-        // Interpolate the current position
-        int
-            // size-1 is because we need +1 for interpolating
-            ix = ModulateValueInRange(x, GridWidth - 1),
-            iy = ModulateValueInRange(y, GridHeight - 1);
-
-        // Get the position ON the current tile (0.0-1.0)!!!
-        float
-            fX = x - ((float)((int)x)),
-            fY = y - ((float)((int)y));
-
-        int ix2 = (ix + 1) % (GridWidth - 1);
-        int iy2 = (iy + 1) % (GridHeight - 1);
-
-        if (fX + fY < 1) // opt. version
-        {
-            // we are on triangle 1 !!
-            //     ------- (f_tile_width-mx)/f_tile_width
-            //  0__v___1
-            //  |     /
-            //  |    /
-            //  |---/--- (f_tile_height-my)/f_tile_height
-            //  |  /
-            //  | /
-            //  3/
-            return
-                mapHeights[ix, iy] + // 0
-                fX * (mapHeights[ix2, iy] - mapHeights[ix, iy]) + // 1
-                fY * (mapHeights[ix, iy2] - mapHeights[ix, iy]); // 3
-        }
-        // we are on triangle 1 !!
-        // calc height (as above, but a bit more difficult for triangle 1)
-        //        1
-        //       /|
-        //      / |
-        //     /  |  my/f_tile_height (fX)
-        //    /   |
-        //   /    |
-        //  3_____2
-        //     ^---  mx/f_tile_width  (fY)
-        return
-            mapHeights[ix2, iy2] + // 2
-            (1.0f - fY) * (mapHeights[ix2, iy] - mapHeights[ix2, iy2]) +    // 1
-            (1.0f - fX) * (mapHeights[ix, iy2] - mapHeights[ix2, iy2]); // 3
+        return terrainRenderer.GetMapHeight(x, y);
     }
     #endregion
 
@@ -365,186 +216,9 @@ public class Landscape : IDisposable
     /// <param name="setLevel">Level we want to load</param>
     internal Landscape(RacingGameManager.Level setLevel)
     {
-        byte[] heights = new byte[GridWidth * GridHeight];
-        #region Load map height data
-        using (Stream file = TitleContainer.OpenStream(
-                   "Content\\LandscapeHeights.data"))
-        {
-
-            file.Read(heights, 0, GridWidth * GridHeight);
-        }
-
-        mapHeights = new float[GridWidth, GridHeight];
-    trackObjectManager = new TrackObjectManager(GetMapHeight);
-        #endregion
-
-        #region Build tangent vertices
-        // Build our tangent vertices
-        for (int x = 0; x < GridWidth; x++)
-        {
-            for (int y = 0; y < GridHeight; y++)
-            {
-                // Step 1: Calculate position
-                int index = x + y * GridWidth;
-                Vector3 pos = CalcLandscapePos(x, y, heights);//texData);
-                mapHeights[x, y] = pos.Z;
-                vertices[index].pos = pos;
-
-                //if (x == 0)
-                //    Log.Write("vertices " + y + ": " + pos);
-
-                // Step 2: Calculate all edge vectors (for normals and tangents)
-                // This involves quite complicated optimizations and mathematics,
-                // hard to explain with just a comment. Read my book :D
-                Vector3 edge1 = pos - CalcLandscapePos(x, y + 1, heights);
-                Vector3 edge2 = pos - CalcLandscapePos(x + 1, y, heights);
-                Vector3 edge3 = pos - CalcLandscapePos(x - 1, y + 1, heights);
-                Vector3 edge4 = pos - CalcLandscapePos(x + 1, y + 1, heights);
-                Vector3 edge5 = pos - CalcLandscapePos(x - 1, y - 1, heights);
-
-                // Step 3: Calculate normal based on the edges (interpolate
-                // from 3 cross products we build from our edges).
-                vertices[index].normal = Vector3.Normalize(
-                    Vector3.Cross(edge2, edge1) +
-                    Vector3.Cross(edge4, edge3) +
-                    Vector3.Cross(edge3, edge5));
-
-                // Step 4: Set tangent data, just use edge1
-                vertices[index].tangent = Vector3.Normalize(edge1);
-
-                // Step 5: Set texture coordinates, use full 0.0f to 1.0f range!
-                vertices[index].uv = new Vector2(
-                    //x / (float)(GridWidth - 1),
-                    //y / (float)(GridHeight - 1));
-                    y / (float)(GridHeight - 1),
-                    x / (float)(GridWidth - 1));
-            }
-        }
-
-        #endregion
-
-        #region Smooth normals
-        // Smooth all normals, first copy them over, then smooth everything
-        Vector3[,] normalsForSmoothing = new Vector3[GridWidth, GridHeight];
-        for (int x = 0; x < GridWidth; x++)
-        {
-            for (int y = 0; y < GridHeight; y++)
-            {
-                int index = x + y * GridWidth;
-                normalsForSmoothing[x, y] = vertices[index].normal;
-            }
-        }
-
-        // Time to smooth to normals we just saved
-        for (int x = 1; x < GridWidth - 1; x++)
-        {
-            for (int y = 1; y < GridHeight - 1; y++)
-            {
-                int index = x + y * GridWidth;
-
-                // Smooth 3x3 normals, but still use old normal to 40% (5 of 13)
-                Vector3 normal = vertices[index].normal * 4;
-                for (int xAdd = -1; xAdd <= 1; xAdd++)
-                {
-                    for (int yAdd = -1; yAdd <= 1; yAdd++)
-                    {
-                        normal += normalsForSmoothing[x + xAdd, y + yAdd];
-                    }
-                }
-
-                vertices[index].normal = Vector3.Normalize(normal);
-
-                // Also recalculate tangent to let it stay 90 degrees on the normal
-                Vector3 helperVector = Vector3.Cross(
-                    vertices[index].normal,
-                    vertices[index].tangent);
-                vertices[index].tangent = Vector3.Cross(
-                    helperVector,
-                    vertices[index].normal);
-            }
-        }
-
-        #endregion
-
-        #region Set vertex buffer
-        // Set vertex buffer
-        // fix
-        //vertexBuffer = new VertexBuffer(
-        //    BaseGame.Device,
-        //    typeof(TangentVertex),
-        //    vertices.Length,
-        //    ResourceUsage.WriteOnly,
-        //    ResourceManagementMode.Automatic);
-        //vertexBuffer.SetData(vertices);
-        vertexBuffer = new VertexBuffer(
-            BaseGame.Device,
-            typeof(TangentVertex),
-            vertices.Length, 
-            BufferUsage.WriteOnly);
-        vertexBuffer.SetData(vertices);
-        #endregion
-
-        #region Calc index buffer
-        // Calc index buffer (Note: have to use uint, ushort is not sufficiant
-        // in our case because we have MANY vertices ^^)
-        uint[] indices = new uint[(GridWidth - 1) * (GridHeight - 1) * 6];
-        int currentIndex = 0;
-        for (int x = 0; x < GridWidth - 1; x++)
-        {
-            for (int y = 0; y < GridHeight - 1; y++)
-            {
-                // Set landscape data (Note: Right handed)
-                indices[currentIndex + 0] = (uint)(x * GridHeight + y);
-                indices[currentIndex + 2] =
-                    (uint)((x + 1) * GridHeight + (y + 1));
-                indices[currentIndex + 1] = (uint)((x + 1) * GridHeight + y);
-                indices[currentIndex + 3] =
-                    (uint)((x + 1) * GridHeight + (y + 1));
-                indices[currentIndex + 5] = (uint)(x * GridHeight + y);
-                indices[currentIndex + 4] = (uint)(x * GridHeight + (y + 1));
-
-                // Add indices
-                currentIndex += 6;
-            }
-        }
-
-        #endregion
-
-        #region Set index buffer
-        // fix
-        //indexBuffer = new IndexBuffer(
-        //    BaseGame.Device,
-        //    typeof(uint),
-        //    (GridWidth - 1) * (GridHeight - 1) * 6,
-        //    ResourceUsage.WriteOnly,
-        //    ResourceManagementMode.Automatic);
-
-        indexBuffer = new IndexBuffer(
-            BaseGame.Device,
-            typeof(uint),
-            (GridWidth - 1) * (GridHeight - 1) * 6,
-            BufferUsage.WriteOnly);
-
-        indexBuffer.SetData(indices);
-        #endregion
-
-        #region Load track (and replay inside ReloadLevel method)
-        // Load track based on the level selection and set car pos with
-        // help of the ReloadLevel method.
+        terrainRenderer = new TerrainRenderer();
+        trackObjectManager = new TrackObjectManager(GetMapHeight);
         ReloadLevel(setLevel);
-        #endregion
-
-        #region Add city planes
-        // Just set one giant plane for the whole city!
-        LandscapeObject cityObject = trackObjectManager.FirstBigBuilding;
-        if (cityObject != null)
-        {
-            cityPlane = new PlaneRenderer(
-                cityObject.Position,
-                new Plane(new Vector3(0, 0, 1), 0.1f),
-                cityMat, Math.Min(cityObject.Position.X, cityObject.Position.Y));
-        }
-        #endregion
     }
 
     #region Reload level
@@ -576,30 +250,7 @@ public class Landscape : IDisposable
 
         // Begin game with red start light
         trackObjectManager.ResetStartLight();
-    }
-    #endregion
-
-    #region Calc landscape position
-    /// <summary>
-    /// Calc landscape position
-    /// </summary>
-    /// <param name="x">X</param>
-    /// <param name="y">Y</param>
-    /// <returns>Vector 3</returns>
-    private static Vector3 CalcLandscapePos(int x, int y, byte[] heights)
-    {
-        // Make sure we stay on the valid map data
-        int mapX = x < 0 ? 0 : x >= GridWidth ? GridWidth - 1 : x;
-        int mapY = y < 0 ? 0 : y >= GridHeight ? GridHeight - 1 : y;
-
-        // Get height
-        float heightPercent = heights[mapX + mapY * GridWidth] / 255.0f;
-
-        // Build landscape position vector
-        return new Vector3(
-            x * MapWidthFactor,
-            y * MapHeightFactor,
-            heightPercent * MapZScale);
+        terrainRenderer.UpdateCityPlane(trackObjectManager.FirstBigBuilding);
     }
     #endregion
     #endregion
@@ -623,10 +274,7 @@ public class Landscape : IDisposable
         if (disposing)
         {
             trackObjectManager.Dispose();
-            mat.Dispose();
-            cityMat.Dispose();
-            vertexBuffer.Dispose();
-            indexBuffer.Dispose();
+            terrainRenderer.Dispose();
             track.Dispose();
         }
     }
@@ -650,17 +298,7 @@ public class Landscape : IDisposable
     /// </summary>
     public void Render()
     {
-        // Make sure z buffer is on
-        BaseGame.Device.DepthStencilState = DepthStencilState.Default;
-
-        BaseGame.WorldMatrix = Matrix.Identity;
-
-        // Render landscape (pretty easy with all the data we got here)
-        ShaderEffect.landscapeNormalMapping.Render(
-            mat, "DiffuseWithDetail20",
-            new BaseGame.RenderHandler(RenderLandscapeVertices));
-
-        cityPlane.Render();
+        terrainRenderer.Render();
 
         // Render track
         track.Render();
@@ -671,17 +309,6 @@ public class Landscape : IDisposable
         RenderBrakeTracks();
     }
 
-    #region RenderLandscapeVertices
-    /// <summary>
-    /// Render landscape vertices
-    /// </summary>
-    private void RenderLandscapeVertices()
-    {
-        BaseGame.Device.SetVertexBuffer(vertexBuffer);
-        BaseGame.Device.Indices = indexBuffer;
-        BaseGame.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, (GridWidth - 1) * (GridHeight - 1) * 2);
-    }
-    #endregion
     #endregion
 
     #region Generate and use shadow for the landscape
@@ -703,11 +330,7 @@ public class Landscape : IDisposable
     /// </summary>
     public void UseShadow()
     {
-        // Receive shadow on the landscape, just render it out.
-        ShaderEffect.shadowMapping.UpdateCalcShadowWorldMatrix(Matrix.Identity);
-
-        // Render shadows for palms and other objects near the road.
-        RenderLandscapeVertices();
+        terrainRenderer.RenderShadowReceiver();
 
         // Also receive shadows for all landscape objects that near our road.
         // This is not really required (still looks good without it), but

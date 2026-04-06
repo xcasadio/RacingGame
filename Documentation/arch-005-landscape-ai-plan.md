@@ -93,12 +93,13 @@ Reduire `Landscape` a un role de facade et d'orchestrateur, tout en gardant un c
 - Conserver le cache tableau actuel pour eviter toute regression dans le rendu.
 - Realise : la generation et le rendu des traces sont maintenant portes par `BrakeTrackManager`, avec delegation simple conservee dans `Landscape`.
 
-### ⏳ Etape 5 - Extraire `TerrainRenderer`
+### ✅ Etape 5 - Extraire `TerrainRenderer`
 
 - Deplacer le chargement de `LandscapeHeights.data` et la generation du maillage.
 - Deplacer `mapHeights`, `vertices`, `vertexBuffer`, `indexBuffer`, `mat`, `cityMat`, `cityPlane`.
 - Deplacer `GetMapHeight`, `CalcLandscapePos`, `RenderLandscapeVertices` et la logique de rendu du terrain.
 - Ajouter une methode d'initialisation du city plane a partir des objets fournis par `TrackObjectManager` apres `ReloadLevel`.
+- Realise : `TerrainRenderer` porte maintenant la lecture des hauteurs, le maillage, les buffers, le city plane et les requetes de hauteur; `Landscape` ne fait plus que relayer `GetMapHeight` et orchestrer le rendu global.
 
 ### ⏳ Etape 6 - Reduire `Landscape` au role d'orchestrateur
 
