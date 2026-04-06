@@ -125,6 +125,8 @@ Reduire `Landscape` a un role de facade et d'orchestrateur, tout en gardant un c
   - completion d'un tour,
   - apparition des traces de frein,
   - rendu d'ombres sans regression evidente.
+- Realise : `dotnet build RacingGame.Shared/RacingGame.Shared.csproj` OK, `dotnet build RacingGame/RacingGame.csproj` OK, et smoke test `dotnet run --project RacingGame/RacingGame.csproj` sans erreur immediate ni crash console.
+- Reste a faire manuellement : validation visuelle du menu 3D, d'une course complete, des traces de frein et du rendu des ombres en execution interactive.
 
 ### ⚠️ Etape 8 - Risques a surveiller
 
