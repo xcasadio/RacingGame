@@ -78,12 +78,13 @@ Reduire `Landscape` a un role de facade et d'orchestrateur, tout en gardant un c
 - Garder le comportement de correction des noms de modeles et les sons du feu de depart.
 - Realise : `LandscapeObject` et la gestion des objets/ombres/feu de depart vivent maintenant dans `TrackObjectManager`, avec delegation conservee dans `Landscape` et compatibilite maintenue pour `landscape.autoGenerationNames`.
 
-### ⏳ Etape 3 - Extraire `ReplayManager`
+### ✅ Etape 3 - Extraire `ReplayManager`
 
 - Deplacer `bestReplay`, `newReplay`, `SaveReplay`, `StartNewLap`, `CompareCheckpointTime`.
 - Introduire une methode `ResetForTrack(Level level, Track track)`.
 - Laisser `Landscape` exposer `BestReplay`, `NewReplay` et `CompareCheckpointTime` en delegation pour limiter les changements externes.
 - Verifier que la sauvegarde asynchrone du replay reste strictement equivalente.
+- Realise : la gestion des replays et du changement de tour est deplacee dans `ReplayManager`, sans modifier les consommateurs de `Landscape.BestReplay`, `Landscape.NewReplay` ni `Landscape.CompareCheckpointTime`.
 
 ### ⏳ Etape 4 - Extraire `BrakeTrackManager`
 

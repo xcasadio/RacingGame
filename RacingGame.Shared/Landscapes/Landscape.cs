@@ -5,7 +5,6 @@ using RacingGame.Tracks;
 using RacingGame.GameLogic;
 using RacingGame.GameScreens;
 using RacingGame.Sounds;
-using System.Threading;
 namespace RacingGame.Landscapes;
 
 /// <summary>
@@ -32,6 +31,7 @@ public class Landscape : IDisposable
     RacingGameManager.Level level = RacingGameManager.Level.Beginner;
 
     readonly TrackObjectManager trackObjectManager;
+    readonly ReplayManager replayManager = new ReplayManager();
 
     internal string[] autoGenerationNames
     {
@@ -168,34 +168,13 @@ public class Landscape : IDisposable
     Track track = null;
 
     /// <summary>
-    /// Best replay for the best lap time showing the player driving.
-    /// And a new replay which is recorded in case we archive a better
-    /// time this time when we drive :)
-    /// </summary>
-    Replay bestReplay = null,
-        newReplay = null;
-
-    /// <summary>
     /// Compare checkpoint time to the bestReplay times.
     /// </summary>
     /// <param name="checkpointNum">Checkpoint num</param>
     /// <returns>Time in milliseconds we improved</returns>
     public int CompareCheckpointTime(int checkpointNum)
     {
-        // Invalid data?
-        if (bestReplay == null ||
-            checkpointNum >= bestReplay.CheckpointTimes.Count)
-            // Then we can't return anything
-        {
-            return 0;
-        }
-
-        // Else just return difference
-        float differenceMs =
-            RacingGameManager.Player.GameTimeMilliseconds -
-            bestReplay.CheckpointTimes[checkpointNum] * 1000.0f;
-
-        return (int)differenceMs;
+        return replayManager.CompareCheckpointTime(checkpointNum);
     }
 
     /// <summary>
@@ -204,45 +183,7 @@ public class Landscape : IDisposable
     /// </summary>
     public void StartNewLap()
     {
-        float thisLapTime =
-            RacingGameManager.Player.GameTimeMilliseconds / 1000.0f;
-
-        // Upload new highscore (as we currently are in game,
-        // no bonus or anything will be added, this score is low!)
-        Highscores.SubmitHighscore((int)level,
-            (int)RacingGameManager.Player.GameTimeMilliseconds);
-
-        RacingGameManager.Player.AddLapTime(thisLapTime);
-
-        if (thisLapTime < bestReplay.LapTime)
-        {
-            // Add final checkpoint
-            RacingGameManager.Landscape.NewReplay.CheckpointTimes.Add(
-                thisLapTime);
-
-            // Record lap time
-            newReplay.LapTime = thisLapTime;
-
-            // Save this replay to load it everytime in the future
-            // Do this on a worker thread to prevent the game from skipping frames
-            ThreadPool.QueueUserWorkItem(new WaitCallback(SaveReplay),
-                (Replay)newReplay.Clone());
-
-            // Set it as the current best replay
-            bestReplay = newReplay;
-        }
-
-        // And start a new replay for this round
-        newReplay = new Replay((int)level, true, track);
-    }
-
-    /// <summary>
-    /// Callback used for saving a replay from a worker thread
-    /// </summary>
-    /// <param name="replay">Replay to be saved</param>
-    private void SaveReplay(object replay)
-    {
-        ((Replay)replay).Save();
+        replayManager.StartNewLap();
     }
 
     /// <summary>
@@ -252,7 +193,7 @@ public class Landscape : IDisposable
     {
         get
         {
-            return newReplay;
+            return replayManager.NewReplay;
         }
     }
 
@@ -310,7 +251,7 @@ public class Landscape : IDisposable
     {
         get
         {
-            return bestReplay;
+            return replayManager.BestReplay;
         }
     }
     #endregion
@@ -634,9 +575,7 @@ public class Landscape : IDisposable
             track.Reload("Track" + level.ToString(), this);
         }
 
-        // Load replay for this track to show best player
-        bestReplay = new Replay((int)level, false, track);
-        newReplay = new Replay((int)level, true, track);
+        replayManager.ResetForTrack(level, track);
 
         // Kill brake tracks
         brakeTracksVertices.Clear();
