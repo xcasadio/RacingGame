@@ -64,7 +64,7 @@ public sealed class RaceModelBoundsDebugComponent : EntityComponent
         return entity.IsVisible && entity.GetComponent<StaticModelComponent>() != null;
     }
 
-    private static void DrawBoundingBox(CasaEngine.Framework.Game.Components.Line3dRendererComponent lineRenderer, BoundingBox boundingBox, XnaColor color)
+    private static void DrawBoundingBox(Line3dRendererComponent lineRenderer, BoundingBox boundingBox, XnaColor color)
     {
         Vector3 min = boundingBox.Min;
         Vector3 max = boundingBox.Max;

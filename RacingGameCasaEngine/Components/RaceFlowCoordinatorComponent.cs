@@ -64,7 +64,7 @@ public sealed class RaceFlowCoordinatorComponent : EntityComponent
         UpdateCheckpointProgress(session.GameMode, session.PlayerPawn.RootComponent.Position);
     }
 
-    private void InitializeCheckpoints(CasaEngine.Framework.World.World world, RaceGameMode gameMode)
+    private void InitializeCheckpoints(World world, RaceGameMode gameMode)
     {
         _checkpointPositions.Clear();
 

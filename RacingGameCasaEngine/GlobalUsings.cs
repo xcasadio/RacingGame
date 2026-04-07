@@ -1,0 +1,15 @@
+global using CasaEngine.Core.Logging;
+global using CasaEngine.Engine.Environment;
+global using CasaEngine.Engine.Primitives.ThreeD;
+global using CasaEngine.Framework.Application;
+global using CasaEngine.Framework.Application.Components;
+global using CasaEngine.Framework.Application.Components.DebugTools;
+global using CasaEngine.Framework.Application.Components.Physics;
+global using CasaEngine.Framework.Gameplay;
+global using CasaEngine.Framework.Materials.Runtime;
+global using CasaEngine.Framework.Rendering;
+global using CasaEngine.Framework.Rendering.Models;
+global using CasaEngine.Framework.Scene.Entities;
+global using CasaEngine.Framework.Scene.Entities.Components;
+global using CasaEngine.Framework.Scene.World;
+global using CasaEngine.Framework.UI;
