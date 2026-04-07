@@ -76,9 +76,11 @@ internal static class LegacyImportProfileVerifier
             failures.Add("AlphaPalm.X should stay opaque without the RacingGame profile.");
         }
 
-        if (!profileMaterial.AlphaCutoutHint || profileMaterial.SurfaceIntent != LegacyMaterialSurfaceIntent.AlphaCutoutLit)
+        if (!profileMaterial.AlphaCutoutHint
+            || !profileMaterial.UsesReflection
+            || profileMaterial.SurfaceIntent != LegacyMaterialSurfaceIntent.ReflectiveLit)
         {
-            failures.Add("AlphaPalm.X should become alpha-cutout with the RacingGame profile.");
+            failures.Add("AlphaPalm.X should enable alpha-cutout while preserving reflective legacy metadata with the RacingGame profile.");
         }
     }
 

@@ -1294,9 +1294,7 @@ internal static partial class LegacyTrackSceneFactory
         Texture2D? diffuseTexture = LoadTexture(importedMaterial.DiffuseTextureFilePath, assetContentManager);
         Texture2D? normalTexture = LoadTexture(importedMaterial.NormalTextureFilePath, assetContentManager);
         TextureCube? reflectionCube = LoadTextureCube(importedMaterial.ReflectionTextureFilePath, assetContentManager);
-        bool alphaCutout = importedMaterial.AlphaCutoutHint;
-        Vector3 ambientColor = ComputeImportedMaterialAmbientColor(importedMaterial);
-        Vector3 emissiveColor = ComputeImportedMaterialEmissiveColor(importedMaterial);
+        LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
 
         return new LitDiffuseMaterial
         {
@@ -1305,33 +1303,15 @@ internal static partial class LegacyTrackSceneFactory
             NormalMap = normalTexture,
             ReflectionCube = reflectionCube,
             DiffuseColor = importedMaterial.DiffuseColor,
-            AmbientColor = ambientColor,
-            EmissiveColor = emissiveColor,
+            AmbientColor = presentation.AmbientColor,
+            EmissiveColor = presentation.EmissiveColor,
             SpecularColor = importedMaterial.SpecularColor,
             SpecularPower = Math.Clamp(importedMaterial.SpecularPower, 2f, 48f),
             SamplerState = SamplerState.AnisotropicWrap,
-            Queue = alphaCutout ? RenderQueue.AlphaTest : RenderQueue.Opaque,
-            AlphaCutoff = alphaCutout ? 0.35f : 0.5f,
-            RasterizerState = alphaCutout ? RasterizerState.CullNone : null,
+            Queue = presentation.Queue,
+            AlphaCutoff = presentation.AlphaCutoff,
+            RasterizerState = presentation.DisableBackfaceCulling ? RasterizerState.CullNone : null,
         };
-    }
-
-    private static Vector3 ComputeImportedMaterialAmbientColor(StaticModelImportedMaterial importedMaterial)
-    {
-        Vector3 ambientColor = importedMaterial.AmbientColor;
-        if (importedMaterial.BrightAmbientHint)
-        {
-            const float signAmbient = 128f / 255f;
-            Vector3 boostedAmbient = new(signAmbient, signAmbient, signAmbient);
-            ambientColor = Vector3.Max(ambientColor, boostedAmbient);
-        }
-
-        return Vector3.Clamp(ambientColor, Vector3.Zero, Vector3.One);
-    }
-
-    private static Vector3 ComputeImportedMaterialEmissiveColor(StaticModelImportedMaterial importedMaterial)
-    {
-        return Vector3.Clamp(importedMaterial.EmissiveColor, Vector3.Zero, Vector3.One);
     }
 
     private static Texture2D? LoadProjectTexture(AssetContentManager assetContentManager, params string[] fileNames)
