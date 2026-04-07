@@ -19,10 +19,16 @@ internal sealed class TrackMigrationCaptureValidator
         CaptureChaseRoadOnly,
         PrepareRoadOnlyStart,
         CaptureRoadOnlyStart,
+        PrepareStartFull,
+        CaptureStartFull,
         PrepareSector20,
         CaptureSector20,
         PrepareSector50,
         CaptureSector50,
+        PrepareSector80,
+        CaptureSector80,
+        PrepareTerrainOverview,
+        CaptureTerrainOverview,
         ReturnToFrontEnd,
         Completed,
         Failed,
@@ -59,7 +65,7 @@ internal sealed class TrackMigrationCaptureValidator
             return;
         }
 
-        if (totalTime - _startedAt > TimeSpan.FromSeconds(45))
+        if (totalTime - _startedAt > TimeSpan.FromSeconds(60))
         {
             Fail("Track migration capture audit timed out.");
             return;
@@ -121,7 +127,17 @@ internal sealed class TrackMigrationCaptureValidator
 
             case CaptureStep.CaptureRoadOnlyStart:
                 CaptureCurrentView("road-only-start");
-                Advance(CaptureStep.PrepareSector20, totalTime, "Captured road-only start view");
+                Advance(CaptureStep.PrepareStartFull, totalTime, "Captured road-only start view");
+                break;
+
+            case CaptureStep.PrepareStartFull:
+                PrepareStartView(roadOnly: false);
+                Advance(CaptureStep.CaptureStartFull, totalTime, "Prepared full start view");
+                break;
+
+            case CaptureStep.CaptureStartFull:
+                CaptureCurrentView("start-full");
+                Advance(CaptureStep.PrepareSector20, totalTime, "Captured full start view");
                 break;
 
             case CaptureStep.PrepareSector20:
@@ -153,7 +169,39 @@ internal sealed class TrackMigrationCaptureValidator
 
             case CaptureStep.CaptureSector50:
                 CaptureCurrentView("sector-50");
-                Advance(CaptureStep.ReturnToFrontEnd, totalTime, "Captured second sector view");
+                Advance(CaptureStep.PrepareSector80, totalTime, "Captured second sector view");
+                break;
+
+            case CaptureStep.PrepareSector80:
+                if (PrepareCheckpointView(checkpointIndex: 2, roadOnly: false))
+                {
+                    Advance(CaptureStep.CaptureSector80, totalTime, "Prepared third sector view");
+                }
+                else
+                {
+                    Advance(CaptureStep.PrepareTerrainOverview, totalTime, "Skipping third sector view because the race world is no longer active");
+                }
+                break;
+
+            case CaptureStep.CaptureSector80:
+                CaptureCurrentView("sector-80");
+                Advance(CaptureStep.PrepareTerrainOverview, totalTime, "Captured third sector view");
+                break;
+
+            case CaptureStep.PrepareTerrainOverview:
+                if (PrepareTerrainOverview())
+                {
+                    Advance(CaptureStep.CaptureTerrainOverview, totalTime, "Prepared terrain overview");
+                }
+                else
+                {
+                    Advance(CaptureStep.ReturnToFrontEnd, totalTime, "Skipping terrain overview because the race world is no longer active");
+                }
+                break;
+
+            case CaptureStep.CaptureTerrainOverview:
+                CaptureCurrentView("terrain-overview");
+                Advance(CaptureStep.ReturnToFrontEnd, totalTime, "Captured terrain overview");
                 break;
 
             case CaptureStep.ReturnToFrontEnd:
@@ -248,6 +296,40 @@ internal sealed class TrackMigrationCaptureValidator
 
         Vector3 position = currentPosition - direction * 18.0f + Vector3.Up * 12.0f + Vector3.Right * 4.0f;
         Vector3 target = currentPosition + direction * 6.0f;
+        camera.SetPositionAndTarget(position, target);
+        return true;
+    }
+
+    private bool PrepareTerrainOverview()
+    {
+        if (!TryGetRaceCamera(out CameraLookAtComponent? camera, out World? world))
+        {
+            return false;
+        }
+
+        List<Entity> trackEntities = world.Entities
+            .Where(entity => entity.Name?.StartsWith("Track.", StringComparison.Ordinal) == true)
+            .ToList();
+        if (trackEntities.Count == 0)
+        {
+            return false;
+        }
+
+        BoundingBox bounds = trackEntities[0].GetBoundingBox();
+        for (int index = 1; index < trackEntities.Count; index++)
+        {
+            BoundingBox entityBounds = trackEntities[index].GetBoundingBox();
+            bounds = BoundingBox.CreateMerged(bounds, entityBounds);
+        }
+
+        _game.SetCircuitOnlyViewEnabled(false);
+
+        Vector3 center = (bounds.Min + bounds.Max) * 0.5f;
+        Vector3 size = bounds.Max - bounds.Min;
+        float horizontalSpan = Math.Max(size.X, size.Z);
+        float distance = Math.Max(horizontalSpan * 0.55f, 90f);
+        Vector3 position = center + new Vector3(-distance * 0.6f, Math.Max(size.Y, 40f) + 70f, -distance * 0.6f);
+        Vector3 target = center + Vector3.Up * Math.Max(8f, size.Y * 0.1f);
         camera.SetPositionAndTarget(position, target);
         return true;
     }
