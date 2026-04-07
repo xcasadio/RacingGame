@@ -53,6 +53,11 @@ The UI stack in `RacingGame.Shared` is now split between legacy scene rendering 
 
 For new screens, keep gameplay or scene rendering inside the `GameScreen` implementation and place interactive UI composition in a corresponding MGUI view.
 
+## Legacy Import Profile
+
+`RacingGameCasaEngine` now keeps legacy material compatibility split between neutral CasaEngine hooks and a project-owned optional profile.
+See [docs/legacy-import-profile.md](docs/legacy-import-profile.md) for the bootstrap point, isolation guarantees, and bounded verification command.
+
 ## Screenshot
 ![image 1](/github/XNA_Racing-Game_01_small.jpg)
 ![image 1](/github/XNA_Racing-Game_02_small.jpg)
