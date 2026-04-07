@@ -9,6 +9,11 @@ internal sealed class RacingGameLegacyMaterialImportProfile : ILegacyMaterialImp
         var interpretation = NeutralLegacyMaterialImportProfile.Instance.Interpret(context);
         LegacyMaterialImportHint hints = interpretation.Hints;
 
+        if (UsesLegacyAlphaCutout(context.SourceAssetName, context.ImportedMaterial.DiffuseTextureFilePath))
+        {
+            hints |= LegacyMaterialImportHint.AlphaCutout;
+        }
+
         if (UsesLegacyBrightAmbient(context.SourceAssetName))
         {
             hints |= LegacyMaterialImportHint.BrightAmbient;
@@ -24,6 +29,25 @@ internal sealed class RacingGameLegacyMaterialImportProfile : ILegacyMaterialImp
             : interpretation.SurfaceIntent;
 
         return new LegacyMaterialImportInterpretation(surfaceIntent, hints);
+    }
+
+    private static bool UsesLegacyAlphaCutout(string sourceAssetName, string? diffuseTextureFilePath)
+    {
+        if (sourceAssetName.StartsWith("Alpha", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(diffuseTextureFilePath))
+        {
+            return false;
+        }
+
+        string textureName = Path.GetFileNameWithoutExtension(diffuseTextureFilePath);
+        return textureName.Contains("Palm", StringComparison.OrdinalIgnoreCase)
+            || textureName.Contains("Leave", StringComparison.OrdinalIgnoreCase)
+            || textureName.Contains("Ast", StringComparison.OrdinalIgnoreCase)
+            || textureName.Contains("plants", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool UsesLegacyBrightAmbient(string sourceAssetName)
