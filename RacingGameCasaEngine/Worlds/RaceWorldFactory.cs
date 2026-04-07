@@ -19,6 +19,10 @@ public static class RaceWorldFactory
     internal const string TrackRoadEntityNamePrefix = "Track.Road.";
     internal const string TrackGroundEntityNamePrefix = "Track.Ground.";
     internal const string TrackSceneryEntityNamePrefix = "Track.Scenery.";
+    internal const string TrackGuardRailEntityNamePrefix = "Track.GuardRail.";
+    internal const string TrackGuardRailHolderEntityNamePrefix = "Track.GuardRailHolder.";
+    internal const string TrackColumnsEntityNamePrefix = "Track.Columns.";
+    internal const string TrackColumnSegmentEntityNamePrefix = "Track.ColumnSegment.";
 
     internal static bool IsRaceWorld(World world)
     {
@@ -31,6 +35,10 @@ public static class RaceWorldFactory
         return entityName?.StartsWith(TrackRoadEntityNamePrefix, StringComparison.Ordinal) == true
             || entityName?.StartsWith(TrackGroundEntityNamePrefix, StringComparison.Ordinal) == true
             || entityName?.StartsWith(TrackSceneryEntityNamePrefix, StringComparison.Ordinal) == true
+            || entityName?.StartsWith(TrackGuardRailEntityNamePrefix, StringComparison.Ordinal) == true
+            || entityName?.StartsWith(TrackGuardRailHolderEntityNamePrefix, StringComparison.Ordinal) == true
+            || entityName?.StartsWith(TrackColumnsEntityNamePrefix, StringComparison.Ordinal) == true
+            || entityName?.StartsWith(TrackColumnSegmentEntityNamePrefix, StringComparison.Ordinal) == true
             || entityName?.StartsWith(CheckpointEntityNamePrefix, StringComparison.Ordinal) == true
             || entityName == PlayerStartEntityName
             || entityName == PlayerCarEntityName;

@@ -127,6 +127,26 @@ internal static class TrackRuntimeSceneExporter
             return "track-road";
         }
 
+        if (entityName?.StartsWith(RaceWorldFactory.TrackGuardRailEntityNamePrefix, StringComparison.Ordinal) == true)
+        {
+            return "track-guardrail";
+        }
+
+        if (entityName?.StartsWith(RaceWorldFactory.TrackGuardRailHolderEntityNamePrefix, StringComparison.Ordinal) == true)
+        {
+            return "track-guardrail-holder";
+        }
+
+        if (entityName?.StartsWith(RaceWorldFactory.TrackColumnsEntityNamePrefix, StringComparison.Ordinal) == true)
+        {
+            return "track-columns";
+        }
+
+        if (entityName?.StartsWith(RaceWorldFactory.TrackColumnSegmentEntityNamePrefix, StringComparison.Ordinal) == true)
+        {
+            return "track-column-segment";
+        }
+
         if (entityName?.StartsWith(RaceWorldFactory.TrackSceneryEntityNamePrefix, StringComparison.Ordinal) == true)
         {
             return "track-scenery";

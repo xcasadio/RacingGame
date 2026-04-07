@@ -15,7 +15,7 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace RacingGameCasaEngine.Worlds;
 
-internal static class LegacyTrackSceneFactory
+internal static partial class LegacyTrackSceneFactory
 {
     private const float WorldScale = 1.0f;
     private const float GroundMargin = 18f;
@@ -98,6 +98,7 @@ internal static class LegacyTrackSceneFactory
             CreateGroundEntity(trackName, roadPoints, assetContentManager),
             CreateRoadEntity(trackName, roadSplinePoints, origin, assetContentManager),
         };
+        trackEntities.AddRange(LegacyTrackGuardRailBuilder.CreateEntities(trackName, roadSplinePoints, origin, terrainSampler, assetContentManager));
 
         var sceneryEntities = new List<Entity>();
 
