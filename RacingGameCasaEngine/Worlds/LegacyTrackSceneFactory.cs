@@ -212,14 +212,15 @@ internal static partial class LegacyTrackSceneFactory
             return null;
         }
 
-        if (!StaticModelImporter.IsFileSupported(fileName))
+        var importer = new StaticModelImporter();
+        if (!importer.IsFileSupported(fileName))
         {
             Logs.WriteWarning($"Legacy track model '{modelName}' uses an unsupported format for runtime import.");
             ModelCache[modelName] = null;
             return null;
         }
 
-        StaticModelImportResult importResult = StaticModelImporter.ImportWithMetadata(fileName);
+        StaticModelImportResult importResult = importer.ImportWithMetadata(fileName, RacingGameImportProfiles.LegacyMaterialProfile);
         StaticModel model = importResult.Model;
         ApplyLegacyModelRootCorrection(model);
         ApplyImportedMaterials(model, importResult.Materials, modelName, assetContentManager);
