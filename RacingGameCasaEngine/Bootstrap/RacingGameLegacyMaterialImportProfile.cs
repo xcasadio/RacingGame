@@ -9,6 +9,11 @@ internal sealed class RacingGameLegacyMaterialImportProfile : ILegacyMaterialImp
         var interpretation = NeutralLegacyMaterialImportProfile.Instance.Interpret(context);
         LegacyMaterialImportHint hints = interpretation.Hints;
 
+        if (UsesLegacyBrightAmbient(context.SourceAssetName))
+        {
+            hints |= LegacyMaterialImportHint.BrightAmbient;
+        }
+
         if (UsesReflectionTechnique(context.ImportedMaterial.EffectFilePath, context.ImportedMaterial.LegacyTechniqueIndex))
         {
             hints |= LegacyMaterialImportHint.Reflection;
@@ -20,6 +25,11 @@ internal sealed class RacingGameLegacyMaterialImportProfile : ILegacyMaterialImp
 
         return new LegacyMaterialImportInterpretation(surfaceIntent, hints);
     }
+
+    private static bool UsesLegacyBrightAmbient(string sourceAssetName)
+        => sourceAssetName.StartsWith("Sign", StringComparison.OrdinalIgnoreCase)
+            || sourceAssetName.StartsWith("Banner", StringComparison.OrdinalIgnoreCase)
+            || sourceAssetName.StartsWith("Windmill", StringComparison.OrdinalIgnoreCase);
 
     private static bool UsesReflectionTechnique(string? effectFilePath, int techniqueIndex)
     {
