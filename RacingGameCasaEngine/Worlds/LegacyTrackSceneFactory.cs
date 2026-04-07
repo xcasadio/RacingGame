@@ -56,6 +56,7 @@ internal static partial class LegacyTrackSceneFactory
     private static readonly Dictionary<string, StaticModel?> ModelCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, float> ModelSizeCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, Texture2D?> TextureCache = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<string, TextureCube?> TextureCubeCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, LegacyTerrainHeightSampler> TerrainCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, string> ModelAliases = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -1291,15 +1292,19 @@ internal static partial class LegacyTrackSceneFactory
     {
         Texture2D? diffuseTexture = LoadTexture(importedMaterial.DiffuseTextureFilePath, assetContentManager);
         Texture2D? normalTexture = LoadTexture(importedMaterial.NormalTextureFilePath, assetContentManager);
-        bool alphaCutout = ShouldUseAlphaCutout(modelName, importedMaterial);
-        Vector3 emissiveColor = ComputeImportedMaterialEmissiveColor(modelName, importedMaterial);
+        TextureCube? reflectionCube = LoadTextureCube(importedMaterial.ReflectionTextureFilePath, assetContentManager);
+        bool alphaCutout = importedMaterial.AlphaCutoutHint;
+        Vector3 ambientColor = ComputeImportedMaterialAmbientColor(importedMaterial);
+        Vector3 emissiveColor = ComputeImportedMaterialEmissiveColor(importedMaterial);
 
         return new LitDiffuseMaterial
         {
             Name = $"{modelName}.{importedMaterial.DisplayName}",
             BasColor = diffuseTexture,
             NormalMap = normalTexture,
+            ReflectionCube = reflectionCube,
             DiffuseColor = importedMaterial.DiffuseColor,
+            AmbientColor = ambientColor,
             EmissiveColor = emissiveColor,
             SpecularColor = importedMaterial.SpecularColor,
             SpecularPower = Math.Clamp(importedMaterial.SpecularPower, 2f, 48f),
@@ -1310,44 +1315,22 @@ internal static partial class LegacyTrackSceneFactory
         };
     }
 
-    private static Vector3 ComputeImportedMaterialEmissiveColor(string modelName, StaticModelImportedMaterial importedMaterial)
+    private static Vector3 ComputeImportedMaterialAmbientColor(StaticModelImportedMaterial importedMaterial)
     {
-        Vector3 emissiveColor = importedMaterial.AmbientColor + importedMaterial.EmissiveColor;
-        if (UsesLegacyBrightAmbient(modelName))
+        Vector3 ambientColor = importedMaterial.AmbientColor;
+        if (importedMaterial.BrightAmbientHint)
         {
             const float signAmbient = 128f / 255f;
             Vector3 boostedAmbient = new(signAmbient, signAmbient, signAmbient);
-            emissiveColor = Vector3.Max(emissiveColor, boostedAmbient);
+            ambientColor = Vector3.Max(ambientColor, boostedAmbient);
         }
 
-        return Vector3.Clamp(emissiveColor, Vector3.Zero, Vector3.One);
+        return Vector3.Clamp(ambientColor, Vector3.Zero, Vector3.One);
     }
 
-    private static bool UsesLegacyBrightAmbient(string modelName)
+    private static Vector3 ComputeImportedMaterialEmissiveColor(StaticModelImportedMaterial importedMaterial)
     {
-        return modelName.StartsWith("Sign", StringComparison.OrdinalIgnoreCase)
-            || modelName.StartsWith("Banner", StringComparison.OrdinalIgnoreCase)
-            || modelName.StartsWith("Windmill", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool ShouldUseAlphaCutout(string modelName, StaticModelImportedMaterial importedMaterial)
-    {
-        if (modelName.StartsWith("Alpha", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        string? diffusePath = importedMaterial.DiffuseTextureFilePath;
-        if (string.IsNullOrWhiteSpace(diffusePath))
-        {
-            return false;
-        }
-
-        string textureName = Path.GetFileNameWithoutExtension(diffusePath);
-        return textureName.Contains("Palm", StringComparison.OrdinalIgnoreCase)
-            || textureName.Contains("Leave", StringComparison.OrdinalIgnoreCase)
-            || textureName.Contains("Ast", StringComparison.OrdinalIgnoreCase)
-            || textureName.Contains("plants", StringComparison.OrdinalIgnoreCase);
+        return Vector3.Clamp(importedMaterial.EmissiveColor, Vector3.Zero, Vector3.One);
     }
 
     private static Texture2D? LoadProjectTexture(AssetContentManager assetContentManager, params string[] fileNames)
@@ -1394,6 +1377,39 @@ internal static partial class LegacyTrackSceneFactory
         {
             Logs.WriteException(ex);
             TextureCache[normalizedPath] = null;
+            return null;
+        }
+    }
+
+    private static TextureCube? LoadTextureCube(string? texturePath, AssetContentManager assetContentManager)
+    {
+        if (string.IsNullOrWhiteSpace(texturePath))
+        {
+            return null;
+        }
+
+        string normalizedPath = Path.GetFullPath(texturePath);
+        if (TextureCubeCache.TryGetValue(normalizedPath, out TextureCube? cachedTexture))
+        {
+            return cachedTexture;
+        }
+
+        if (!File.Exists(normalizedPath) || !TextureCubeLoader.IsTextureCubeFile(normalizedPath))
+        {
+            TextureCubeCache[normalizedPath] = null;
+            return null;
+        }
+
+        try
+        {
+            var texture = TextureCubeLoader.LoadTextureCube(normalizedPath, assetContentManager.GraphicsDevice);
+            TextureCubeCache[normalizedPath] = texture;
+            return texture;
+        }
+        catch (Exception ex)
+        {
+            Logs.WriteException(ex);
+            TextureCubeCache[normalizedPath] = null;
             return null;
         }
     }
