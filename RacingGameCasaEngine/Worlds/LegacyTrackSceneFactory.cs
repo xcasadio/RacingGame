@@ -93,11 +93,9 @@ internal static partial class LegacyTrackSceneFactory
             SampleLoopPoint(roadPoints, 0.80f),
         ];
 
-        var trackEntities = new List<Entity>
-        {
-            CreateGroundEntity(trackName, roadPoints, assetContentManager),
-            CreateRoadEntity(trackName, roadSplinePoints, origin, assetContentManager),
-        };
+        var trackEntities = new List<Entity>();
+        trackEntities.AddRange(LegacyTerrainMeshBuilder.CreateEntities(trackName, origin, assetContentManager));
+        trackEntities.Add(CreateRoadEntity(trackName, roadSplinePoints, origin, assetContentManager));
         trackEntities.AddRange(LegacyTrackGuardRailBuilder.CreateEntities(trackName, roadSplinePoints, origin, terrainSampler, assetContentManager));
 
         var sceneryEntities = new List<Entity>();
