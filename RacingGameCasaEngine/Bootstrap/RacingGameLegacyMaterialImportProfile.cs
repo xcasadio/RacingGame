@@ -26,7 +26,9 @@ internal sealed class RacingGameLegacyMaterialImportProfile : ILegacyMaterialImp
 
         LegacyMaterialSurfaceIntent surfaceIntent = (hints & LegacyMaterialImportHint.Reflection) != 0
             ? LegacyMaterialSurfaceIntent.ReflectiveLit
-            : interpretation.SurfaceIntent;
+            : (hints & LegacyMaterialImportHint.AlphaCutout) != 0
+                ? LegacyMaterialSurfaceIntent.AlphaCutoutLit
+                : LegacyMaterialSurfaceIntent.OpaqueLit;
 
         return new LegacyMaterialImportInterpretation(surfaceIntent, hints);
     }

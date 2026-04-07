@@ -22,7 +22,8 @@ public static class Program
         bool validateFrontEndNavigation = args.Contains("--smoke-frontend", StringComparer.OrdinalIgnoreCase);
         bool captureTrackAudit = args.Contains("--capture-track-audit", StringComparer.OrdinalIgnoreCase);
         bool exportTrackRuntimeScene = args.Contains("--export-track-runtime-scene", StringComparer.OrdinalIgnoreCase);
-        EnsureSingleAutomationMode(validateFrontEndNavigation, captureTrackAudit, exportTrackRuntimeScene);
+        bool verifyLegacyImportProfile = args.Contains("--verify-legacy-import-profile", StringComparer.OrdinalIgnoreCase);
+        EnsureSingleAutomationMode(validateFrontEndNavigation, captureTrackAudit, exportTrackRuntimeScene, verifyLegacyImportProfile);
 
         Logs.AddLogger(new DebugLogger());
         string logFileName = Path.Combine(AppContext.BaseDirectory, $"racinggame-casaengine-{Environment.ProcessId}.log");
@@ -31,6 +32,13 @@ public static class Program
 
         string projectPath = Path.Combine(AppContext.BaseDirectory, "Content");
         EngineEnvironment.ProjectPath = projectPath;
+
+        if (verifyLegacyImportProfile)
+        {
+            Environment.ExitCode = LegacyImportProfileVerifier.Run(projectPath);
+            return;
+        }
+
         AssetCatalog.Load(Path.Combine(projectPath, "AssetInfos.json"));
 
         var runtimeContext = GameSettings.CreateRuntimeContext();
@@ -69,7 +77,11 @@ public static class Program
         game.Run();
     }
 
-    private static void EnsureSingleAutomationMode(bool validateFrontEndNavigation, bool captureTrackAudit, bool exportTrackRuntimeScene)
+    private static void EnsureSingleAutomationMode(
+        bool validateFrontEndNavigation,
+        bool captureTrackAudit,
+        bool exportTrackRuntimeScene,
+        bool verifyLegacyImportProfile)
     {
         int enabledModes = 0;
         if (validateFrontEndNavigation)
@@ -83,6 +95,11 @@ public static class Program
         }
 
         if (exportTrackRuntimeScene)
+        {
+            enabledModes++;
+        }
+
+        if (verifyLegacyImportProfile)
         {
             enabledModes++;
         }
