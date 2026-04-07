@@ -1291,10 +1291,15 @@ internal static partial class LegacyTrackSceneFactory
 
     private static LitDiffuseMaterial CreateImportedRuntimeMaterial(string modelName, StaticModelImportedMaterial importedMaterial, AssetContentManager assetContentManager)
     {
+        RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning(modelName, importedMaterial);
         Texture2D? diffuseTexture = LoadTexture(importedMaterial.DiffuseTextureFilePath, assetContentManager);
         Texture2D? normalTexture = LoadTexture(importedMaterial.NormalTextureFilePath, assetContentManager);
-        TextureCube? reflectionCube = LoadTextureCube(importedMaterial.ReflectionTextureFilePath, assetContentManager);
+        TextureCube? reflectionCube = tuning.EnableReflection
+            ? LoadTextureCube(importedMaterial.ReflectionTextureFilePath, assetContentManager)
+            : null;
         LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
+        Vector3 specularColor = tuning.ApplySpecularColor(importedMaterial.SpecularColor);
+        float specularPower = Math.Clamp(tuning.ApplySpecularPower(importedMaterial.SpecularPower), 2f, 48f);
 
         return new LitDiffuseMaterial
         {
@@ -1305,8 +1310,8 @@ internal static partial class LegacyTrackSceneFactory
             DiffuseColor = importedMaterial.DiffuseColor,
             AmbientColor = presentation.AmbientColor,
             EmissiveColor = presentation.EmissiveColor,
-            SpecularColor = importedMaterial.SpecularColor,
-            SpecularPower = Math.Clamp(importedMaterial.SpecularPower, 2f, 48f),
+            SpecularColor = specularColor,
+            SpecularPower = specularPower,
             SamplerState = SamplerState.AnisotropicWrap,
             Queue = presentation.Queue,
             AlphaCutoff = presentation.AlphaCutoff,

@@ -19,7 +19,7 @@ internal sealed class RacingGameLegacyMaterialImportProfile : ILegacyMaterialImp
             hints |= LegacyMaterialImportHint.BrightAmbient;
         }
 
-        if (UsesReflectionTechnique(context.ImportedMaterial.EffectFilePath, context.ImportedMaterial.LegacyTechniqueIndex))
+        if (RacingGameLegacyMaterialTuning.ShouldEnableReflection(context.SourceAssetName, context.ImportedMaterial))
         {
             hints |= LegacyMaterialImportHint.Reflection;
         }
@@ -56,20 +56,4 @@ internal sealed class RacingGameLegacyMaterialImportProfile : ILegacyMaterialImp
         => sourceAssetName.StartsWith("Sign", StringComparison.OrdinalIgnoreCase)
             || sourceAssetName.StartsWith("Banner", StringComparison.OrdinalIgnoreCase)
             || sourceAssetName.StartsWith("Windmill", StringComparison.OrdinalIgnoreCase);
-
-    private static bool UsesReflectionTechnique(string? effectFilePath, int techniqueIndex)
-    {
-        string effectFileName = Path.GetFileName(effectFilePath ?? string.Empty);
-        if (effectFileName.Equals("ReflectionSimpleGlass.fx", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        if (!effectFileName.Equals("NormalMapping.fx", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        return techniqueIndex is 7 or 8 or 9 or 10 or 11;
-    }
 }
