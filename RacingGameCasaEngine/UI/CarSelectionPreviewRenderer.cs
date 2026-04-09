@@ -299,7 +299,7 @@ internal sealed class CarSelectionPreviewRenderer
     {
         Vector3 boundsCenter = (bounds.Min + bounds.Max) * 0.5f;
         float scale = LegacyCarVisualFactory.ComputeUniformScale(bounds);
-        float liftY = (bounds.Max.Y - bounds.Min.Y) * 0.5f * scale;
+        float liftY = LegacyCarVisualFactory.ComputeGroundLiftY(bounds, scale);
 
         return Matrix.CreateTranslation(-boundsCenter)
             * Matrix.CreateScale(scale)

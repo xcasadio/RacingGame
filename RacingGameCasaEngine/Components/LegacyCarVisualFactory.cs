@@ -123,6 +123,18 @@ internal static class LegacyCarVisualFactory
         return Math.Clamp(scale, 0.01f, 10f);
     }
 
+    internal static float ComputeGroundLiftY(BoundingBox bounds, float scale)
+    {
+        return (bounds.Max.Y - bounds.Min.Y) * 0.5f * scale;
+    }
+
+    internal static Vector3 ComputeGroundedModelOffset(BoundingBox bounds, float scale, float parentLiftY)
+    {
+        Vector3 boundsCenter = (bounds.Min + bounds.Max) * 0.5f;
+        float groundedOffsetY = -boundsCenter.Y * scale + ComputeGroundLiftY(bounds, scale) - parentLiftY;
+        return new Vector3(-boundsCenter.X * scale, groundedOffsetY, -boundsCenter.Z * scale);
+    }
+
     private static void ApplyImportedMaterials(
         StaticModel model,
         IReadOnlyList<StaticModelImportedMaterial> importedMaterials,

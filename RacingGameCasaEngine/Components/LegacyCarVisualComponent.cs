@@ -64,12 +64,12 @@ public sealed class LegacyCarVisualComponent : EntityComponent
 
         BoundingBox bounds = LegacyCarVisualFactory.GetCarBounds(assetContentManager);
         float scale = LegacyCarVisualFactory.ComputeUniformScale(bounds);
-        Vector3 boundsCenter = (bounds.Min + bounds.Max) * 0.5f;
+        float visualPivotLiftY = pawn.VisualPivotComponent?.LocalPosition.Y ?? 0f;
 
         visualComponent.StaticModel = model;
         visualComponent.LocalScale = new Vector3(scale);
         visualComponent.LocalOrientation = LegacyCarVisualFactory.LegacyCarFacingCorrection;
-        visualComponent.LocalPosition = -boundsCenter * scale;
+        visualComponent.LocalPosition = LegacyCarVisualFactory.ComputeGroundedModelOffset(bounds, scale, visualPivotLiftY);
         visualComponent.InitializeWithWorld(pawn.World);
 
         _isVisualReady = true;
