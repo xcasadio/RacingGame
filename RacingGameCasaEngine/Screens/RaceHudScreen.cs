@@ -6,6 +6,7 @@ using MGUI.Shared.Helpers;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.UI;
+using FormsClipboard = System.Windows.Forms.Clipboard;
 using HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment;
 using Thickness = MonoGame.Extended.Thickness;
 using VerticalAlignment = MGUI.Core.UI.VerticalAlignment;
@@ -23,9 +24,12 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
     private MGTextBlock? _matchState;
     private MGTextBlock? _telemetry;
     private MGTextBlock? _performance;
+    private MGTextBlock? _movementDebug;
+    private MGTextBlock? _copyLogsStatus;
     private float _fpsAccumulatedSeconds;
     private int _fpsSampleCount;
     private float _displayedFps;
+    private string _copyLogsStatusText = "Reproduce the bug, then click Copy logs.";
 
     public RaceHudScreen(RacingGameCasaEngineGame game, RaceFrontEndState state, Action returnToMenu)
         : base(backgroundTexture: null)
@@ -57,12 +61,22 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         _matchState = RaceUiTheme.CreateBody(_window, string.Empty);
         _telemetry = RaceUiTheme.CreateBody(_window, string.Empty);
         _performance = RaceUiTheme.CreateBody(_window, string.Empty);
+        _movementDebug = RaceUiTheme.CreateBody(_window, string.Empty);
+        _movementDebug.TextAlignment = HorizontalAlignment.Left;
+        _copyLogsStatus = RaceUiTheme.CreateBody(_window, _copyLogsStatusText);
+        _copyLogsStatus.TextAlignment = HorizontalAlignment.Left;
         content.TryAddChild(_header);
         content.TryAddChild(_speed);
         content.TryAddChild(_matchState);
         content.TryAddChild(_telemetry);
         content.TryAddChild(_performance);
-        content.TryAddChild(RaceUiTheme.CreateSecondaryButton(_window, "Back to main menu", _returnToMenu));
+        content.TryAddChild(_movementDebug);
+
+        var actions = RaceUiTheme.CreateHorizontalStack(_window, spacing: 12);
+        actions.TryAddChild(RaceUiTheme.CreateSecondaryButton(_window, "Copy logs", CopyMovementLogs));
+        actions.TryAddChild(RaceUiTheme.CreateSecondaryButton(_window, "Back to main menu", _returnToMenu));
+        content.TryAddChild(actions);
+        content.TryAddChild(_copyLogsStatus);
 
         panel.SetContent(content);
         _window.SetContent(panel);
@@ -85,6 +99,8 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
             _matchState!.Text = BuildStatusText(session.GameMode);
             _telemetry!.Text = $"Lap: {Math.Min(session.GameMode.CompletedLaps + 1, session.GameMode.TotalLaps)}/{session.GameMode.TotalLaps} | Next checkpoint: {session.GameMode.NextCheckpointIndex + 1}/{Math.Max(1, session.GameMode.TotalCheckpoints)} | Position: {FormatVector(session.PlayerPawn.RootComponent?.Position ?? Vector3.Zero)}";
             _performance!.Text = $"FPS: {_displayedFps:0.0} | Debug camera: {(session.IsDebugCameraEnabled ? "On" : "Off")}";
+            _movementDebug!.Text = BuildMovementDebugSummary(session);
+            _copyLogsStatus!.Text = _copyLogsStatusText;
             return;
         }
 
@@ -93,6 +109,8 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         _matchState!.Text = "Waiting for race session";
         _telemetry!.Text = $"Track: {RaceFrontEndCatalog.Tracks[_state.SelectedTrackIndex].Name}";
         _performance!.Text = $"FPS: {_displayedFps:0.0}";
+        _movementDebug!.Text = BuildMovementDebugSummary(session);
+        _copyLogsStatus!.Text = _copyLogsStatusText;
     }
 
     private void UpdateDisplayedFps(float elapsedSeconds)
@@ -138,5 +156,31 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         }
 
         return $"Match State: {gameMode.MatchState} | Time: {gameMode.RaceTimeSeconds:0.00}s";
+    }
+
+    private void CopyMovementLogs()
+    {
+        try
+        {
+            FormsClipboard.SetText(_game.RaceSession.BuildMovementDebugReport());
+            _copyLogsStatusText = $"Logs copied at {DateTime.Now:HH:mm:ss} ({_game.RaceSession.MovementDebugEntryCount} entries).";
+        }
+        catch (Exception ex)
+        {
+            _copyLogsStatusText = $"Copy failed: {ex.Message}";
+        }
+
+        RefreshLabels();
+    }
+
+    private static string BuildMovementDebugSummary(RuntimeRaceSession session)
+    {
+        string latestEntry = session.LatestMovementDebugEntry;
+        if (latestEntry.Length > 220)
+        {
+            latestEntry = latestEntry[^220..];
+        }
+
+        return $"Movement logs: {session.MovementDebugEntryCount} entries | Latest: {latestEntry}";
     }
 }

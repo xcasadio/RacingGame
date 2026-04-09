@@ -74,7 +74,7 @@ public static class RaceWorldFactory
         };
 
         world.AddEntity(CreateCameraEntity(enableChaseCamera: true));
-        world.AddEntity(CreateRaceRootEntity());
+        world.AddEntity(CreateRaceRootEntity(trackScene.PhysicsProfile));
 
         foreach (Entity entity in trackScene.TrackEntities)
         {
@@ -149,13 +149,14 @@ public static class RaceWorldFactory
         };
     }
 
-    private static Entity CreateRaceRootEntity()
+    private static Entity CreateRaceRootEntity(RaceTrackPhysicsProfile physicsProfile)
     {
         var entity = new Entity
         {
             Name = "RaceRoot",
         };
 
+        entity.AddComponent(new RaceTrackPhysicsComponent(physicsProfile));
         entity.AddComponent(new RaceFlowCoordinatorComponent());
         entity.AddComponent(new RaceCourseDebugComponent());
         entity.AddComponent(new RaceModelBoundsDebugComponent());

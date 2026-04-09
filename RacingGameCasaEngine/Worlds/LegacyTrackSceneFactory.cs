@@ -80,6 +80,7 @@ internal static partial class LegacyTrackSceneFactory
         Vector3 origin = ComputeOrigin(layout.TrackPoints);
         var placementState = new LegacySceneryPlacementState(origin, terrainSampler);
         List<Vector3> roadPoints = roadSplinePoints.Select(point => ConvertLegacyPoint(point.Position) - origin).ToList();
+        RaceTrackPhysicsProfile physicsProfile = CreateTrackPhysicsProfile(roadSplinePoints, origin);
 
         if (roadPoints.Count < 3)
         {
@@ -109,7 +110,7 @@ internal static partial class LegacyTrackSceneFactory
 
         AddHelperDrivenSceneryEntities(trackName, sceneryEntities, roadSplinePoints, layout.RoadHelpers, placementState, ref sceneryIndex, assetContentManager);
 
-        return new RaceTrackScene(trackEntities, sceneryEntities, playerStartPose, checkpoints);
+        return new RaceTrackScene(trackEntities, sceneryEntities, playerStartPose, checkpoints, physicsProfile);
     }
 
     private static LegacyTrackLayout LoadTrackLayout(string assetName)
@@ -354,6 +355,59 @@ internal static partial class LegacyTrackSceneFactory
             Quaternion.CreateFromRotationMatrix(rotation),
             runtimeForward,
             runtimeUp);
+    }
+
+    private static RaceTrackPhysicsProfile CreateTrackPhysicsProfile(IReadOnlyList<LegacyTrackPoint> roadPoints, Vector3 origin)
+    {
+        var points = new RaceTrackPhysicsPoint[roadPoints.Count];
+
+        for (int index = 0; index < roadPoints.Count; index++)
+        {
+            LegacyTrackPoint point = roadPoints[index];
+            Vector3 center = ConvertLegacyPoint(point.Position) - origin;
+            Vector3 forward = ConvertLegacyDirection(point.Direction);
+            Vector3 up = ConvertLegacyDirection(point.Up);
+            Vector3 right = ConvertLegacyDirection(point.Right);
+
+            if (right.LengthSquared() < 0.0001f)
+            {
+                right = Vector3.Cross(up, forward);
+            }
+
+            if (right.LengthSquared() < 0.0001f)
+            {
+                right = Vector3.Right;
+            }
+            else
+            {
+                right.Normalize();
+            }
+
+            up = Vector3.Cross(right, forward);
+            if (up.LengthSquared() < 0.0001f)
+            {
+                up = Vector3.Up;
+            }
+            else
+            {
+                up.Normalize();
+            }
+
+            forward = Vector3.Cross(up, right);
+            if (forward.LengthSquared() < 0.0001f)
+            {
+                forward = Vector3.Forward;
+            }
+            else
+            {
+                forward.Normalize();
+            }
+
+            float halfWidth = Math.Max(LegacyMinRoadWidth, point.RoadWidth) * LegacyRoadWidthScale * 0.5f;
+            points[index] = new RaceTrackPhysicsPoint(center, forward, up, right, halfWidth);
+        }
+
+        return new RaceTrackPhysicsProfile(points);
     }
 
     private static Entity CreateGroundEntity(string trackName, IReadOnlyList<Vector3> roadPoints, AssetContentManager assetContentManager)
@@ -1602,7 +1656,8 @@ internal sealed record RaceTrackScene(
     IReadOnlyList<Entity> TrackEntities,
     IReadOnlyList<Entity> SceneryEntities,
     RaceTrackStartPose PlayerStartPose,
-    IReadOnlyList<Vector3> CheckpointPositions);
+    IReadOnlyList<Vector3> CheckpointPositions,
+    RaceTrackPhysicsProfile PhysicsProfile);
 
 internal sealed record RaceTrackStartPose(
     Vector3 Position,
