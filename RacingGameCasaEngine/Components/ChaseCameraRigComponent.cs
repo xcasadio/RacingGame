@@ -60,14 +60,15 @@ public sealed class ChaseCameraRigComponent : EntityComponent
             return;
         }
 
-        Vector3 anchor = pawn.RootComponent.Position;
-        Vector3 forward = pawn.RootComponent.Forward;
+        Vector3 anchor = pawn.GetChaseCameraFocusPosition();
+        Vector3 forward = pawn.GetVisualForward();
         if (forward.LengthSquared() < 0.001f)
         {
             forward = Vector3.Forward;
         }
 
-        Vector3 desiredPosition = anchor - Vector3.Normalize(forward) * FollowDistance + Vector3.Up * FollowHeight;
+        forward = Vector3.Normalize(forward);
+        Vector3 desiredPosition = anchor - forward * FollowDistance + Vector3.Up * FollowHeight;
         if (!_hasInitializedPosition)
         {
             _smoothedPosition = desiredPosition;
@@ -79,7 +80,7 @@ public sealed class ChaseCameraRigComponent : EntityComponent
             _smoothedPosition = Vector3.Lerp(_smoothedPosition, desiredPosition, blend);
         }
 
-        Vector3 lookTarget = anchor + Vector3.Normalize(forward) * LookAheadDistance + Vector3.Up * 0.8f;
+        Vector3 lookTarget = anchor + forward * LookAheadDistance;
         camera.SetPositionAndTarget(_smoothedPosition, lookTarget);
     }
 }

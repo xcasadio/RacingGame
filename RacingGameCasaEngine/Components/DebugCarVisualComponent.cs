@@ -1,5 +1,6 @@
 using CasaEngine.Framework.Entities.Components;
 using Microsoft.Xna.Framework;
+using RacingGameCasaEngine.Entities;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace RacingGameCasaEngine.Components;
@@ -8,7 +9,7 @@ public sealed class DebugCarVisualComponent : EntityComponent
 {
     public Color BodyColor { get; set; } = Color.Orange;
 
-    public Vector3 HalfExtents { get; set; } = new(0.7f, 0.35f, 1.4f);
+    public Vector3 HalfExtents { get; set; } = new(1.3f, 0.9f, 2.8f);
 
     public override EntityComponent Clone()
     {
@@ -21,12 +22,17 @@ public sealed class DebugCarVisualComponent : EntityComponent
 
     public override void Update(float elapsedTime)
     {
-        if (Owner?.RootComponent == null || Owner.World?.Game == null || !Owner.IsVisible)
+        if (Owner is not RacingCarPawn pawn || Owner.World?.Game == null || !Owner.IsVisible)
         {
             return;
         }
 
-        Matrix transform = Owner.RootComponent.WorldMatrixNoScale;
+        if (pawn.CarVisualComponent?.StaticModel != null)
+        {
+            return;
+        }
+
+        Matrix transform = pawn.GetBodyWorldMatrixNoScale();
         Span<Vector3> corners = stackalloc Vector3[8]
         {
             new(-HalfExtents.X, -HalfExtents.Y, -HalfExtents.Z),
@@ -57,8 +63,8 @@ public sealed class DebugCarVisualComponent : EntityComponent
         DrawEdge(corners[2], corners[6]);
         DrawEdge(corners[3], corners[7]);
 
-        Vector3 noseStart = Owner.RootComponent.Position;
-        Vector3 noseEnd = noseStart + Owner.RootComponent.Forward * 2.2f;
+        Vector3 noseStart = pawn.GetBodyWorldPosition();
+        Vector3 noseEnd = noseStart + pawn.GetVisualForward() * 2.2f;
         Owner.World.Game.Line3dRendererComponent.AddLine(noseStart, noseEnd, Color.Yellow);
     }
 

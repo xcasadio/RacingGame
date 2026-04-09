@@ -92,7 +92,7 @@ public static class RaceWorldFactory
         }
 
         world.AddEntity(CreatePlayerStartEntity(trackScene.PlayerStartPose));
-        world.AddEntity(CreatePlayerCarEntity(car, track));
+        world.AddEntity(CreatePlayerCarEntity(state, car, track));
 
         return world;
     }
@@ -174,13 +174,15 @@ public static class RaceWorldFactory
         return entity;
     }
 
-    private static RacingCarPawn CreatePlayerCarEntity(CarDefinition car, TrackDefinition track)
+    private static RacingCarPawn CreatePlayerCarEntity(RaceFrontEndState state, CarDefinition car, TrackDefinition track)
     {
         var pawn = new RacingCarPawn
         {
             Name = PlayerCarEntityName,
             CarLabel = car.Name,
             TrackLabel = track.Name,
+            SelectedCarIndex = state.SelectedCarIndex,
+            SelectedCarColorIndex = state.SelectedCarColorIndex,
         };
 
         return pawn;

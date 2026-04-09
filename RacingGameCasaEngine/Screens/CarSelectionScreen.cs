@@ -15,6 +15,7 @@ namespace RacingGameCasaEngine.Screens;
 
 internal sealed class CarSelectionScreen : RaceFrontEndScreenBase
 {
+    private readonly RacingGameCasaEngineGame _game;
     private readonly RaceFrontEndState _state;
     private readonly Action _confirm;
     private readonly Action _back;
@@ -26,10 +27,13 @@ internal sealed class CarSelectionScreen : RaceFrontEndScreenBase
     private readonly List<MGTextBlock> _statLabels = [];
     private readonly List<MGProgressBar> _statBars = [];
     private readonly List<MGButton> _colorButtons = [];
+    private CarSelectionPreviewRenderer? _carPreviewRenderer;
+    private MGImage? _carPreviewImage;
 
-    public CarSelectionScreen(Texture2D? backgroundTexture, Texture2D? buttonsTexture, RaceFrontEndState state, Action confirm, Action back)
+    public CarSelectionScreen(RacingGameCasaEngineGame game, Texture2D? backgroundTexture, Texture2D? buttonsTexture, RaceFrontEndState state, Action confirm, Action back)
         : base(backgroundTexture, buttonsTexture)
     {
+        _game = game;
         _state = state;
         _confirm = confirm;
         _back = back;
@@ -67,14 +71,50 @@ internal sealed class CarSelectionScreen : RaceFrontEndScreenBase
         bandContent.TryAddChild(_previousButton, new Thickness(0, 0, 0, 84));
         bandContent.TryAddChild(_nextButton, new Thickness(0, 0, 0, 84));
 
+        _carPreviewRenderer = new CarSelectionPreviewRenderer(_game);
+
+        var mainRow = LegacyMenuUiTheme.CreateHorizontalStack(window, spacing: 38);
+        mainRow.HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center;
+        mainRow.VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center;
+
+        var previewPanel = LegacyMenuUiTheme.CreateVerticalStack(window, spacing: 10);
+        previewPanel.HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center;
+        previewPanel.VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center;
+        previewPanel.PreferredWidth = 340;
+
+        var previewLabel = LegacyMenuUiTheme.CreateBodyText(window, "Preview", LegacyMenuUiTheme.AccentColor);
+        previewLabel.HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center;
+        previewLabel.TextAlignment = MGUI.Core.UI.HorizontalAlignment.Center;
+        previewLabel.WrapText = false;
+        previewPanel.TryAddChild(previewLabel);
+
+        var previewFrame = new MGBorder(window, new Thickness(2), new MGUniformBorderBrush(new Color(255, 255, 255, 70)))
+        {
+            CornerRadius = new MGCornerRadius(18),
+            BackgroundBrush = new VisualStateFillBrush(new Color(0, 0, 0, 24).AsFillBrush()),
+            Padding = new Thickness(0),
+            PreferredWidth = 340,
+            PreferredHeight = 220,
+            HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center,
+            VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center,
+        };
+        _carPreviewImage = new MGImage(window, _carPreviewRenderer.TextureData, null, Stretch.Uniform)
+        {
+            PreferredWidth = 336,
+            PreferredHeight = 216,
+            HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center,
+            VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center,
+        };
+        previewFrame.SetContent(_carPreviewImage);
+        previewPanel.TryAddChild(previewFrame);
+
         var statsPanel = LegacyMenuUiTheme.CreateVerticalStack(window, spacing: 8);
         statsPanel.HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Stretch;
         statsPanel.VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center;
         statsPanel.PreferredWidth = 300;
-        statsPanel.ResponsiveAnchor = ResponsiveAnchor.MiddleRight;
 
         _summary = LegacyMenuUiTheme.CreateBodyText(window, string.Empty, LegacyMenuUiTheme.AccentColor);
-        _summary.WrapText = false;
+        _summary.WrapText = true;
         statsPanel.TryAddChild(_summary);
         for (int i = 0; i < 4; i++)
         {
@@ -100,7 +140,10 @@ internal sealed class CarSelectionScreen : RaceFrontEndScreenBase
             item.TryAddChild(progress);
             statsPanel.TryAddChild(item);
         }
-        bandContent.TryAddChild(statsPanel, new Thickness(0, 0, 0, 84));
+
+        mainRow.TryAddChild(previewPanel);
+        mainRow.TryAddChild(statsPanel);
+        bandContent.TryAddChild(mainRow, new Thickness(58, 20, 58, 108));
 
         var colorPanel = LegacyMenuUiTheme.CreateVerticalStack(window, spacing: 8);
         colorPanel.HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center;
@@ -154,6 +197,7 @@ internal sealed class CarSelectionScreen : RaceFrontEndScreenBase
     public override void Update(GameTime gameTime)
     {
         UpdateMenuDecoration(gameTime.TotalGameTime.TotalSeconds);
+        _carPreviewRenderer?.Update(gameTime, _state.SelectedCarIndex, _state.SelectedCarColorIndex);
         RefreshSelection();
         if (_previousButton != null)
         {
@@ -188,7 +232,7 @@ internal sealed class CarSelectionScreen : RaceFrontEndScreenBase
         var car = RaceFrontEndCatalog.Cars[_state.SelectedCarIndex];
         if (_summary != null)
         {
-            _summary.Text = car.Name;
+            _summary.Text = $"{car.Name}\n{car.Summary}";
         }
 
         for (int i = 0; i < _statLabels.Count; i++)
