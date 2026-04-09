@@ -1294,9 +1294,15 @@ internal static partial class LegacyTrackSceneFactory
         RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning(modelName, importedMaterial);
         Texture2D? diffuseTexture = LoadTexture(importedMaterial.DiffuseTextureFilePath, assetContentManager);
         Texture2D? normalTexture = LoadTexture(importedMaterial.NormalTextureFilePath, assetContentManager);
-        TextureCube? reflectionCube = tuning.EnableReflection
-            ? LoadTextureCube(importedMaterial.ReflectionTextureFilePath, assetContentManager)
-            : null;
+        bool useSceneReflectionCube = tuning.EnableReflection
+            && RaceSkySystem.ShouldUseSceneReflectionCube(importedMaterial.ReflectionTextureFilePath);
+        TextureCube? reflectionCube = null;
+        if (tuning.EnableReflection && !useSceneReflectionCube)
+        {
+            reflectionCube = LoadTextureCube(importedMaterial.ReflectionTextureFilePath, assetContentManager);
+            useSceneReflectionCube = reflectionCube == null;
+        }
+
         LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
         Vector3 specularColor = tuning.ApplySpecularColor(importedMaterial.SpecularColor);
         float specularPower = Math.Clamp(tuning.ApplySpecularPower(importedMaterial.SpecularPower), 2f, 48f);
@@ -1307,6 +1313,7 @@ internal static partial class LegacyTrackSceneFactory
             BasColor = diffuseTexture,
             NormalMap = normalTexture,
             ReflectionCube = reflectionCube,
+            UseSceneReflectionCube = useSceneReflectionCube,
             DiffuseColor = importedMaterial.DiffuseColor,
             AmbientColor = presentation.AmbientColor,
             EmissiveColor = presentation.EmissiveColor,

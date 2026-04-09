@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using CasaEngine.Core.Log;
 using CasaEngine.Framework.Assets;
+using CasaEngine.Framework.Assets.Loaders;
 using CasaEngine.Framework.Entities;
 using CasaEngine.Framework.Game;
 using CasaEngine.Framework.Game.Components;
@@ -13,6 +14,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using RacingGameCasaEngine.Persistence;
 using RacingGameCasaEngine.Worlds;
+using Color = Microsoft.Xna.Framework.Color;
 using DirLight = CasaEngine.Framework.Rendering.DirectionalLight;
 using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
 
@@ -35,6 +37,10 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     private readonly TrackRuntimeSceneExportValidator? _trackRuntimeSceneExportValidator;
     private readonly string _displaySettingsFileName;
     private readonly string _frontEndOptionsFileName;
+    private IViewRenderPipeline? _raceSkyViewPipeline;
+    private TextureCube? _raceSkyFallbackReflectionCube;
+    private TextureCube? _raceSkySharedCube;
+    private bool _raceSkySharedCubeLoadAttempted;
 
     internal RacingGameCasaEngineGame(EngineRuntimeContext runtimeContext, string displaySettingsFileName, string frontEndOptionsFileName, RaceLaunchOptions? launchOptions = null)
         : base(runtimeContext: runtimeContext)
@@ -163,6 +169,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         _raceWorldBinder.BindCurrentWorld(_frontEndFlow.State);
         ApplyFrontEndOptions(_frontEndFlow.State);
         ConfigureCurrentWorldLighting();
+        ConfigureCurrentWorldSky();
         ApplyDebugMouseCursorState();
         ApplyRaceWorldVisibilityState();
         _frontEndFlow.InitializeForCurrentWorld();
@@ -218,6 +225,84 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
             new Vector3(0.4545195f, -0.7660444f, 0.4545195f),
             new Vector3(0.36f, 0.36f, 0.36f),
             new Vector3(0.36f, 0.36f, 0.36f));
+    }
+
+    private void ConfigureCurrentWorldSky()
+    {
+        bool isRaceWorld = GameManager.CurrentWorld is { } world && RaceWorldFactory.IsRaceWorld(world);
+        StaticMeshRendererComponent? renderer = this.GetGameComponent<StaticMeshRendererComponent>();
+        if (renderer != null)
+        {
+            renderer.DefaultLighting.ReflectionCube = isRaceWorld
+                ? GetOrCreateRaceSkyReflectionCube()
+                : null;
+        }
+
+        IViewRenderPipeline? pipeline = isRaceWorld ? GetOrCreateRaceSkyViewPipeline() : null;
+        Color clearColor = isRaceWorld ? RaceSkySystem.Settings.HorizonColor : Color.CornflowerBlue;
+
+        foreach (RenderView view in GameManager.ViewManager.Views)
+        {
+            if (GameManager.CurrentWorld != null && !ReferenceEquals(view.World, GameManager.CurrentWorld))
+            {
+                continue;
+            }
+
+            view.Pipeline = pipeline;
+            view.ClearColor = clearColor;
+            view.Invalidate();
+        }
+    }
+
+    private IViewRenderPipeline GetOrCreateRaceSkyViewPipeline()
+    {
+        if (_raceSkyViewPipeline != null)
+        {
+            return _raceSkyViewPipeline;
+        }
+
+        if (TryGetOrCreateRaceSkySharedCube() is { } legacySkyCube)
+        {
+            Effect effect = Content.Load<Effect>("Shaders\\LegacySkyCube").Clone();
+            _raceSkyViewPipeline = new LegacySkyCubeViewPipeline(effect, legacySkyCube, RaceSkySystem.LegacySkyCubeTintColor);
+            return _raceSkyViewPipeline;
+        }
+
+        _raceSkyViewPipeline = new SkyBackgroundViewPipeline(RaceSkySystem.Settings);
+        return _raceSkyViewPipeline;
+    }
+
+    private TextureCube GetOrCreateRaceSkyReflectionCube()
+        => TryGetOrCreateRaceSkySharedCube()
+            ?? (_raceSkyFallbackReflectionCube ??= ProceduralSkyCubeFactory.CreateReflectionCube(GraphicsDevice, RaceSkySystem.Settings));
+
+    private TextureCube? TryGetOrCreateRaceSkySharedCube()
+    {
+        if (_raceSkySharedCubeLoadAttempted)
+        {
+            return _raceSkySharedCube;
+        }
+
+        _raceSkySharedCubeLoadAttempted = true;
+
+        string skyCubePath = RaceSkySystem.ResolveLegacySharedSkyCubePath(Content.RootDirectory);
+        if (!File.Exists(skyCubePath))
+        {
+            Logs.WriteWarning($"Race sky cubemap '{skyCubePath}' was not found. Falling back to the procedural race sky.");
+            return null;
+        }
+
+        try
+        {
+            _raceSkySharedCube = TextureCubeLoader.LoadTextureCube(skyCubePath, GraphicsDevice);
+            return _raceSkySharedCube;
+        }
+        catch (Exception ex)
+        {
+            Logs.WriteException(ex);
+            Logs.WriteWarning($"Race sky cubemap '{skyCubePath}' could not be loaded. Falling back to the procedural race sky.");
+            return null;
+        }
     }
 
     private void HandleRuntimeDebugHotkeys()
