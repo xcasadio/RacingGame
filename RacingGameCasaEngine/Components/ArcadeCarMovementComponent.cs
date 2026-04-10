@@ -1,5 +1,6 @@
 using CasaEngine.Framework.Entities.Components;
 using CasaEngine.Framework.GameFramework;
+using CasaEngine.Framework.Gameplay;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.Entities;
@@ -14,6 +15,8 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
     private const float DebugSampleIntervalSeconds = 0.15f;
     private const float DebugInitialSamplingWindowSeconds = 6.0f;
     private const float DebugTeleportDistanceThreshold = 1.25f;
+    private const float GamePadStickDeadZone = 0.12f;
+    private const float GamePadTriggerDeadZone = 0.08f;
 
     private float _speedUnitsPerSecond;
     private RaceTrackPhysicsComponent? _trackPhysicsComponent;
@@ -83,8 +86,8 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         }
 
         RuntimeRaceSession? session = (pawn.World?.Game as RacingGameCasaEngineGame)?.RaceSession;
-        float throttle = GetThrottle(input);
-        float steering = GetSteering(input);
+        float throttle = GetThrottle(input, controller);
+        float steering = GetSteering(input, controller);
         _debugElapsedSeconds += elapsedTime;
         MaybeLogInputChange(session, pawn, controller, throttle, steering);
 
@@ -180,11 +183,11 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
     {
         if (throttle > 0f)
         {
-            _speedUnitsPerSecond += ForwardAcceleration * elapsedTime;
+            _speedUnitsPerSecond += ForwardAcceleration * Math.Clamp(throttle, 0f, 1f) * elapsedTime;
         }
         else if (throttle < 0f)
         {
-            _speedUnitsPerSecond -= ReverseAcceleration * elapsedTime;
+            _speedUnitsPerSecond += ReverseAcceleration * Math.Clamp(throttle, -1f, 0f) * elapsedTime;
         }
         else
         {
@@ -416,30 +419,100 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         return Quaternion.CreateFromRotationMatrix(orientation);
     }
 
-    private static float GetThrottle(CasaEngine.Framework.Input.InputComponent input)
+    private static float GetThrottle(CasaEngine.Framework.Input.InputComponent input, RacingPlayerController controller)
     {
         bool accelerate = input.KeyboardManager.IsKeyPressed(XnaKeys.W) || input.KeyboardManager.IsKeyPressed(XnaKeys.Up);
         bool brake = input.KeyboardManager.IsKeyPressed(XnaKeys.S) || input.KeyboardManager.IsKeyPressed(XnaKeys.Down);
 
-        if (accelerate == brake)
+        float keyboardThrottle = 0f;
+        if (accelerate != brake)
         {
-            return 0f;
+            keyboardThrottle = accelerate ? 1f : -1f;
         }
 
-        return accelerate ? 1f : -1f;
+        CasaEngine.Engine.Input.GamePad playerGamePad = GetPlayerGamePad(input, controller);
+        if (!playerGamePad.IsConnected)
+        {
+            return keyboardThrottle;
+        }
+
+        float accelerateValue = Math.Max(
+            ApplyAnalogDeadZone(playerGamePad.RightTrigger, GamePadTriggerDeadZone),
+            playerGamePad.APressed || playerGamePad.DPadUpPressed ? 1f : 0f);
+        float brakeValue = Math.Max(
+            ApplyAnalogDeadZone(playerGamePad.LeftTrigger, GamePadTriggerDeadZone),
+            playerGamePad.BPressed || playerGamePad.DPadDownPressed ? 1f : 0f);
+        float gamePadThrottle = Math.Clamp(accelerateValue - brakeValue, -1f, 1f);
+
+        if (Math.Abs(keyboardThrottle) >= Math.Abs(gamePadThrottle))
+        {
+            return keyboardThrottle;
+        }
+
+        return gamePadThrottle;
     }
 
-    private static float GetSteering(CasaEngine.Framework.Input.InputComponent input)
+    private static float GetSteering(CasaEngine.Framework.Input.InputComponent input, RacingPlayerController controller)
     {
         bool left = input.KeyboardManager.IsKeyPressed(XnaKeys.A) || input.KeyboardManager.IsKeyPressed(XnaKeys.Left);
         bool right = input.KeyboardManager.IsKeyPressed(XnaKeys.D) || input.KeyboardManager.IsKeyPressed(XnaKeys.Right);
 
-        if (left == right)
+        float keyboardSteering = 0f;
+        if (left != right)
+        {
+            keyboardSteering = left ? 1f : -1f;
+        }
+
+        CasaEngine.Engine.Input.GamePad playerGamePad = GetPlayerGamePad(input, controller);
+        if (!playerGamePad.IsConnected)
+        {
+            return keyboardSteering;
+        }
+
+        float analogSteering = ApplySignedDeadZone(-playerGamePad.LeftStickX, GamePadStickDeadZone);
+        float dpadSteering = 0f;
+        if (playerGamePad.DPadLeftPressed != playerGamePad.DPadRightPressed)
+        {
+            dpadSteering = playerGamePad.DPadLeftPressed ? 1f : -1f;
+        }
+
+        float gamePadSteering = Math.Clamp(analogSteering + dpadSteering, -1f, 1f);
+        if (Math.Abs(keyboardSteering) >= Math.Abs(gamePadSteering))
+        {
+            return keyboardSteering;
+        }
+
+        return gamePadSteering;
+    }
+
+    private static CasaEngine.Engine.Input.GamePad GetPlayerGamePad(CasaEngine.Framework.Input.InputComponent input, RacingPlayerController controller)
+    {
+        PlayerIndex playerIndex = controller.Player is LocalPlayer localPlayer
+            ? localPlayer.ControllerId
+            : PlayerIndex.One;
+        return input.GamePadManager.GetGamePad(playerIndex);
+    }
+
+    private static float ApplyAnalogDeadZone(float value, float deadZone)
+    {
+        if (value <= deadZone)
         {
             return 0f;
         }
 
-        return left ? 1f : -1f;
+        return Math.Clamp((value - deadZone) / (1f - deadZone), 0f, 1f);
+    }
+
+    private static float ApplySignedDeadZone(float value, float deadZone)
+    {
+        float absoluteValue = Math.Abs(value);
+        if (absoluteValue <= deadZone)
+        {
+            return 0f;
+        }
+
+        float normalized = (absoluteValue - deadZone) / (1f - deadZone);
+        return Math.Clamp(MathF.Sign(value) * normalized, -1f, 1f);
     }
 
     private void MaybeLogInputChange(RuntimeRaceSession? session, RacingCarPawn pawn, RacingPlayerController controller, float throttle, float steering)

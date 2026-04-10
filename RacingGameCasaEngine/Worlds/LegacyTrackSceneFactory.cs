@@ -34,6 +34,10 @@ internal static partial class LegacyTrackSceneFactory
     private const float PalmAndLaternGap = 20.0f;
     private const float CheckpointGap = 500.0f;
     private const float SignGap = 24.0f;
+    private const float CheckpointTriggerWidthPadding = 1.5f;
+    private const float CheckpointTriggerMinHalfWidth = 5.5f;
+    private const float CheckpointTriggerHalfHeight = 4.0f;
+    private const float CheckpointTriggerHalfDepth = 2.75f;
     private static readonly Vector3[] LoopingPoints =
     [
         new Vector3(0f, 0f, 0f),
@@ -79,20 +83,19 @@ internal static partial class LegacyTrackSceneFactory
         List<LegacyTrackPoint> roadSplinePoints = BuildRoadSplinePoints(layout, terrainSampler);
         Vector3 origin = ComputeOrigin(layout.TrackPoints);
         var placementState = new LegacySceneryPlacementState(origin, terrainSampler);
-        List<Vector3> roadPoints = roadSplinePoints.Select(point => ConvertLegacyPoint(point.Position) - origin).ToList();
         RaceTrackPhysicsProfile physicsProfile = CreateTrackPhysicsProfile(roadSplinePoints, origin);
 
-        if (roadPoints.Count < 3)
+        if (roadSplinePoints.Count < 3)
         {
             throw new InvalidOperationException($"Track '{trackName}' does not contain enough points to build a road.");
         }
 
         RaceTrackStartPose playerStartPose = CreatePlayerStartPose(roadSplinePoints[0], origin);
-        List<Vector3> checkpoints =
+        List<RaceCheckpointTriggerDefinition> checkpointTriggers =
         [
-            SampleLoopPoint(roadPoints, 0.20f),
-            SampleLoopPoint(roadPoints, 0.50f),
-            SampleLoopPoint(roadPoints, 0.80f),
+            CreateCheckpointTriggerDefinition(roadSplinePoints, 0.20f, origin),
+            CreateCheckpointTriggerDefinition(roadSplinePoints, 0.50f, origin),
+            CreateCheckpointTriggerDefinition(roadSplinePoints, 0.80f, origin),
         ];
 
         var trackEntities = new List<Entity>();
@@ -110,7 +113,7 @@ internal static partial class LegacyTrackSceneFactory
 
         AddHelperDrivenSceneryEntities(trackName, sceneryEntities, roadSplinePoints, layout.RoadHelpers, placementState, ref sceneryIndex, assetContentManager);
 
-        return new RaceTrackScene(trackEntities, sceneryEntities, playerStartPose, checkpoints, physicsProfile);
+        return new RaceTrackScene(trackEntities, sceneryEntities, playerStartPose, checkpointTriggers, physicsProfile);
     }
 
     private static LegacyTrackLayout LoadTrackLayout(string assetName)
@@ -357,54 +360,31 @@ internal static partial class LegacyTrackSceneFactory
             runtimeUp);
     }
 
+    private static RaceCheckpointTriggerDefinition CreateCheckpointTriggerDefinition(IReadOnlyList<LegacyTrackPoint> roadPoints, float progress, Vector3 origin)
+    {
+        RaceTrackPhysicsPoint physicsPoint = CreateRuntimePhysicsPoint(SampleLoopPoint(roadPoints, progress), origin);
+
+        Matrix rotation = Matrix.Identity;
+        rotation.Right = physicsPoint.Right;
+        rotation.Up = physicsPoint.Up;
+        rotation.Forward = physicsPoint.Forward;
+
+        float halfWidth = Math.Max(CheckpointTriggerMinHalfWidth, physicsPoint.HalfWidth + CheckpointTriggerWidthPadding);
+        return new RaceCheckpointTriggerDefinition(
+            physicsPoint.Center,
+            Quaternion.CreateFromRotationMatrix(rotation),
+            halfWidth,
+            CheckpointTriggerHalfHeight,
+            CheckpointTriggerHalfDepth);
+    }
+
     private static RaceTrackPhysicsProfile CreateTrackPhysicsProfile(IReadOnlyList<LegacyTrackPoint> roadPoints, Vector3 origin)
     {
         var points = new RaceTrackPhysicsPoint[roadPoints.Count];
 
         for (int index = 0; index < roadPoints.Count; index++)
         {
-            LegacyTrackPoint point = roadPoints[index];
-            Vector3 center = ConvertLegacyPoint(point.Position) - origin;
-            Vector3 forward = ConvertLegacyDirection(point.Direction);
-            Vector3 up = ConvertLegacyDirection(point.Up);
-            Vector3 right = ConvertLegacyDirection(point.Right);
-
-            if (right.LengthSquared() < 0.0001f)
-            {
-                right = Vector3.Cross(up, forward);
-            }
-
-            if (right.LengthSquared() < 0.0001f)
-            {
-                right = Vector3.Right;
-            }
-            else
-            {
-                right.Normalize();
-            }
-
-            up = Vector3.Cross(right, forward);
-            if (up.LengthSquared() < 0.0001f)
-            {
-                up = Vector3.Up;
-            }
-            else
-            {
-                up.Normalize();
-            }
-
-            forward = Vector3.Cross(up, right);
-            if (forward.LengthSquared() < 0.0001f)
-            {
-                forward = Vector3.Forward;
-            }
-            else
-            {
-                forward.Normalize();
-            }
-
-            float halfWidth = Math.Max(LegacyMinRoadWidth, point.RoadWidth) * LegacyRoadWidthScale * 0.5f;
-            points[index] = new RaceTrackPhysicsPoint(center, forward, up, right, halfWidth);
+            points[index] = CreateRuntimePhysicsPoint(roadPoints[index], origin);
         }
 
         return new RaceTrackPhysicsProfile(points);
@@ -851,6 +831,12 @@ internal static partial class LegacyTrackSceneFactory
         return roadPoints[Math.Clamp(index, 0, roadPoints.Count - 1)];
     }
 
+    private static LegacyTrackPoint SampleLoopPoint(IReadOnlyList<LegacyTrackPoint> roadPoints, float progress)
+    {
+        int index = (int)MathF.Round(progress * (roadPoints.Count - 1)) % roadPoints.Count;
+        return roadPoints[Math.Clamp(index, 0, roadPoints.Count - 1)];
+    }
+
     private static Matrix ConvertLegacyTransform(Matrix legacyTransform, Vector3 origin)
     {
         Matrix runtimeTransform = Matrix.Identity;
@@ -986,6 +972,51 @@ internal static partial class LegacyTrackSceneFactory
 
         runtimeDirection.Normalize();
         return runtimeDirection;
+    }
+
+    private static RaceTrackPhysicsPoint CreateRuntimePhysicsPoint(LegacyTrackPoint point, Vector3 origin)
+    {
+        Vector3 center = ConvertLegacyPoint(point.Position) - origin;
+        Vector3 forward = ConvertLegacyDirection(point.Direction);
+        Vector3 up = ConvertLegacyDirection(point.Up);
+        Vector3 right = ConvertLegacyDirection(point.Right);
+
+        if (right.LengthSquared() < 0.0001f)
+        {
+            right = Vector3.Cross(up, forward);
+        }
+
+        if (right.LengthSquared() < 0.0001f)
+        {
+            right = Vector3.Right;
+        }
+        else
+        {
+            right.Normalize();
+        }
+
+        up = Vector3.Cross(right, forward);
+        if (up.LengthSquared() < 0.0001f)
+        {
+            up = Vector3.Up;
+        }
+        else
+        {
+            up.Normalize();
+        }
+
+        forward = Vector3.Cross(up, right);
+        if (forward.LengthSquared() < 0.0001f)
+        {
+            forward = Vector3.Forward;
+        }
+        else
+        {
+            forward.Normalize();
+        }
+
+        float halfWidth = Math.Max(LegacyMinRoadWidth, point.RoadWidth) * LegacyRoadWidthScale * 0.5f;
+        return new RaceTrackPhysicsPoint(center, forward, up, right, halfWidth);
     }
 
     private static List<LegacyTrackPoint> BuildRoadSplinePoints(LegacyTrackLayout layout, LegacyTerrainHeightSampler terrainSampler)
@@ -1656,8 +1687,15 @@ internal sealed record RaceTrackScene(
     IReadOnlyList<Entity> TrackEntities,
     IReadOnlyList<Entity> SceneryEntities,
     RaceTrackStartPose PlayerStartPose,
-    IReadOnlyList<Vector3> CheckpointPositions,
+    IReadOnlyList<RaceCheckpointTriggerDefinition> CheckpointTriggers,
     RaceTrackPhysicsProfile PhysicsProfile);
+
+internal sealed record RaceCheckpointTriggerDefinition(
+    Vector3 Position,
+    Quaternion Orientation,
+    float HalfWidth,
+    float HalfHeight,
+    float HalfDepth);
 
 internal sealed record RaceTrackStartPose(
     Vector3 Position,

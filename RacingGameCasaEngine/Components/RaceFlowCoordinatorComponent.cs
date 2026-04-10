@@ -11,19 +11,15 @@ namespace RacingGameCasaEngine.Components;
 
 public sealed class RaceFlowCoordinatorComponent : EntityComponent
 {
-    private readonly List<Vector3> _checkpointPositions = [];
+    private readonly List<RaceCheckpointTriggerComponent> _checkpointTriggers = [];
     private bool _isInitialized;
     private bool _pauseLatch;
-    private double _lastCheckpointDistance = double.MaxValue;
-
-    public float CheckpointRadius { get; set; } = 3.6f;
+    private bool _hasPreviousPlayerPosition;
+    private Vector3 _previousPlayerPosition;
 
     public override EntityComponent Clone()
     {
-        return new RaceFlowCoordinatorComponent
-        {
-            CheckpointRadius = CheckpointRadius,
-        };
+        return new RaceFlowCoordinatorComponent();
     }
 
     public override void Update(float elapsedTime)
@@ -57,28 +53,41 @@ public sealed class RaceFlowCoordinatorComponent : EntityComponent
 
         if (!canDrive)
         {
+            _hasPreviousPlayerPosition = false;
             return;
         }
 
         session.GameMode.UpdateRaceClock(elapsedTime);
-        UpdateCheckpointProgress(session.GameMode, session.PlayerPawn.RootComponent.Position);
+
+        Vector3 playerPosition = session.PlayerPawn.RootComponent.Position;
+        if (!_hasPreviousPlayerPosition)
+        {
+            _previousPlayerPosition = playerPosition;
+            _hasPreviousPlayerPosition = true;
+            return;
+        }
+
+        UpdateCheckpointProgress(session.GameMode, _previousPlayerPosition, playerPosition);
+        _previousPlayerPosition = playerPosition;
     }
 
     private void InitializeCheckpoints(World world, RaceGameMode gameMode)
     {
-        _checkpointPositions.Clear();
+        _checkpointTriggers.Clear();
+        _hasPreviousPlayerPosition = false;
 
         foreach (Entity entity in world.Entities
                      .Where(static entity => entity.Name.StartsWith("Checkpoint.", StringComparison.Ordinal))
                      .OrderBy(static entity => entity.Name, StringComparer.Ordinal))
         {
-            if (entity.RootComponent != null)
+            RaceCheckpointTriggerComponent? checkpointTrigger = entity.GetComponent<RaceCheckpointTriggerComponent>();
+            if (checkpointTrigger != null)
             {
-                _checkpointPositions.Add(entity.RootComponent.Position);
+                _checkpointTriggers.Add(checkpointTrigger);
             }
         }
 
-        gameMode.ConfigureCheckpointCount(_checkpointPositions.Count);
+        gameMode.ConfigureCheckpointCount(_checkpointTriggers.Count);
     }
 
     private void HandlePauseToggle(RacingGameCasaEngineGame game, RaceGameMode gameMode, RacingPlayerController playerController)
@@ -93,23 +102,17 @@ public sealed class RaceFlowCoordinatorComponent : EntityComponent
         _pauseLatch = pressed;
     }
 
-    private void UpdateCheckpointProgress(RaceGameMode gameMode, Vector3 playerPosition)
+    private void UpdateCheckpointProgress(RaceGameMode gameMode, Vector3 previousPlayerPosition, Vector3 playerPosition)
     {
-        if (_checkpointPositions.Count == 0)
+        if (_checkpointTriggers.Count == 0)
         {
             return;
         }
 
-        Vector3 checkpointPosition = _checkpointPositions[gameMode.NextCheckpointIndex];
-        double checkpointDistance = Vector3.Distance(playerPosition, checkpointPosition);
-
-        if (checkpointDistance <= CheckpointRadius && _lastCheckpointDistance > CheckpointRadius)
+        RaceCheckpointTriggerComponent checkpointTrigger = _checkpointTriggers[gameMode.NextCheckpointIndex];
+        if (checkpointTrigger.IsTriggered(previousPlayerPosition, playerPosition))
         {
             gameMode.RegisterCheckpointPass();
-            _lastCheckpointDistance = double.MaxValue;
-            return;
         }
-
-        _lastCheckpointDistance = checkpointDistance;
     }
 }

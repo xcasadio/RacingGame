@@ -86,9 +86,9 @@ public static class RaceWorldFactory
             world.AddEntity(entity);
         }
 
-        for (int index = 0; index < trackScene.CheckpointPositions.Count; index++)
+        for (int index = 0; index < trackScene.CheckpointTriggers.Count; index++)
         {
-            world.AddEntity(CreateCheckpointEntity($"Checkpoint.{index + 1:00}", trackScene.CheckpointPositions[index]));
+            world.AddEntity(CreateCheckpointEntity($"Checkpoint.{index + 1:00}", trackScene.CheckpointTriggers[index]));
         }
 
         world.AddEntity(CreatePlayerStartEntity(trackScene.PlayerStartPose));
@@ -162,15 +162,21 @@ public static class RaceWorldFactory
         return entity;
     }
 
-    private static Entity CreateCheckpointEntity(string name, Vector3 position)
+    private static Entity CreateCheckpointEntity(string name, RaceCheckpointTriggerDefinition checkpointTrigger)
     {
         var entity = new Entity
         {
             Name = name,
-            RootComponent = new PlayerStartComponent(),
+            RootComponent = new RaceCheckpointTriggerComponent
+            {
+                HalfWidth = checkpointTrigger.HalfWidth,
+                HalfHeight = checkpointTrigger.HalfHeight,
+                HalfDepth = checkpointTrigger.HalfDepth,
+            },
         };
 
-        entity.RootComponent!.LocalPosition = position;
+        entity.RootComponent!.LocalPosition = checkpointTrigger.Position;
+        entity.RootComponent.LocalOrientation = checkpointTrigger.Orientation;
         return entity;
     }
 
