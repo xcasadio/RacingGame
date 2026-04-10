@@ -39,8 +39,9 @@ internal static class RaceFrontEndCatalog
         new("Race Controls", ["Accelerate with Up, W, GamePad A, the right trigger, or D-pad up.", "Brake or reverse with Down, S, GamePad B, the left trigger, or D-pad down."]),
         new("Steering", ["Steer with Left and Right, A and D, the left stick, or the D-pad.", "Controller sensitivity from Options scales the analog steering response." ]),
         new("Camera", ["Use Page Up and Page Down, or GamePad X and Y, to change chase distance during a race.", "The chase camera now widens with speed and switches to an orbit view when the race is finished."]),
+        new("Race Flow", ["Pause with Escape or GamePad Start once the countdown is over.", "Finish the race to open the result panel, then return to the main menu."]),
         new("Menus", ["This front-end uses UIRoot, ScreenStack, and GameScreenManager.", "No legacy RacingGame.Shared renderer is needed here."]),
-        new("Session Flow", ["Splash -> Menu -> Car -> Track -> HUD is now the target path.", "Race world loading will replace the placeholder HUD next."]),
+        new("Session Flow", ["Splash -> Menu -> Car -> Track -> HUD is now fully wired.", "The in-game HUD keeps the original MGUI layout, while pause still runs through the same screen stack."]),
     ];
 
     public static IReadOnlyDictionary<string, IReadOnlyList<HighscoreEntry>> Highscores { get; } =

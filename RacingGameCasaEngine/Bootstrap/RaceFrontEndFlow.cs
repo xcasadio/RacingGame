@@ -1,4 +1,5 @@
 using CasaEngine.Framework.GUI;
+using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Screens;
 using RacingGameCasaEngine.Worlds;
 
@@ -17,6 +18,7 @@ internal sealed class RaceFrontEndFlow
 
     private readonly RacingGameCasaEngineGame _game;
     private readonly RaceFrontEndState _state = new();
+    private readonly RaceRuntimeUiCoordinator _runtimeRaceUiCoordinator;
     private bool _factoriesRegistered;
     private string? _pendingStateAfterWorldLoad;
 
@@ -24,12 +26,15 @@ internal sealed class RaceFrontEndFlow
     {
         _game = game;
         _game.SyncOptionsState(_state);
+        _runtimeRaceUiCoordinator = new RaceRuntimeUiCoordinator(_game, ReturnToFrontEnd);
     }
 
     internal RaceFrontEndState State => _state;
 
     public void InitializeForCurrentWorld()
     {
+        _runtimeRaceUiCoordinator.ResetForCurrentWorld();
+
         if (!_factoriesRegistered)
         {
             RegisterFactories();
@@ -106,6 +111,11 @@ internal sealed class RaceFrontEndFlow
         _game.Exit();
     }
 
+    internal void UpdateRuntimeRaceUi(GameTime gameTime)
+    {
+        _runtimeRaceUiCoordinator.Update(gameTime);
+    }
+
     internal void OpenMainMenuForAutomation() => OpenMainMenu();
 
     internal void OpenCarSelectionForAutomation() => OpenCarSelection();
@@ -127,5 +137,5 @@ internal sealed class RaceFrontEndFlow
 
     internal void StartRaceForAutomation() => StartRace();
 
-    internal void ReturnToFrontEndForAutomation() => ReturnToFrontEnd();
+    internal void ReturnToFrontEndForAutomation() => _runtimeRaceUiCoordinator.ReturnToFrontEndForAutomation();
 }

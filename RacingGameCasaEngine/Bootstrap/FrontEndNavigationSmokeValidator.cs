@@ -18,6 +18,9 @@ internal sealed class FrontEndNavigationSmokeValidator
         OpenCarSelection,
         OpenTrackSelection,
         StartRace,
+        PauseRace,
+        ResumeRace,
+        CompleteRace,
         ReturnToFrontEnd,
         Completed,
         Failed,
@@ -54,7 +57,7 @@ internal sealed class FrontEndNavigationSmokeValidator
             return;
         }
 
-        if (totalTime - _startedAt > TimeSpan.FromSeconds(12))
+        if (totalTime - _startedAt > TimeSpan.FromSeconds(20))
         {
             Fail("Smoke validation timed out before completing the front-end sequence.");
             return;
@@ -133,12 +136,33 @@ internal sealed class FrontEndNavigationSmokeValidator
 
             case ValidationStep.StartRace when currentState == RaceFrontEndFlow.TrackSelectionStateName:
                 _flow.StartRaceForAutomation();
-                Advance(ValidationStep.ReturnToFrontEnd, totalTime, "TrackSelection -> RaceHud");
+                Advance(ValidationStep.PauseRace, totalTime, "TrackSelection -> RaceHud");
+                break;
+
+            case ValidationStep.PauseRace when currentState == RaceFrontEndFlow.RaceHudStateName
+                && currentWorldName != null
+                && RaceWorldFactory.IsRaceWorld(_game.GameManager.CurrentWorld!)
+                && _game.RaceSession.GameMode is { CountdownSecondsRemaining: <= 0f, IsPaused: false } gameModeToPause:
+                gameModeToPause.TogglePause();
+                Advance(ValidationStep.ResumeRace, totalTime, "RaceHud -> Paused");
+                break;
+
+            case ValidationStep.ResumeRace when currentState == RaceFrontEndFlow.RaceHudStateName
+                && _game.RaceSession.GameMode is { IsPaused: true } gameModeToResume:
+                gameModeToResume.TogglePause();
+                Advance(ValidationStep.CompleteRace, totalTime, "Paused -> RaceHud");
+                break;
+
+            case ValidationStep.CompleteRace when currentState == RaceFrontEndFlow.RaceHudStateName
+                && _game.RaceSession.GameMode is { IsPaused: false, IsRaceFinished: false } gameModeToComplete:
+                gameModeToComplete.CompleteRaceForAutomation();
+                Advance(ValidationStep.ReturnToFrontEnd, totalTime, "RaceHud -> GameOver");
                 break;
 
             case ValidationStep.ReturnToFrontEnd when currentState == RaceFrontEndFlow.RaceHudStateName
                 && currentWorldName != null
-                && RaceWorldFactory.IsRaceWorld(_game.GameManager.CurrentWorld!):
+                && RaceWorldFactory.IsRaceWorld(_game.GameManager.CurrentWorld!)
+                && _game.RaceSession.GameMode?.IsRaceFinished == true:
                 _flow.ReturnToFrontEndForAutomation();
                 Advance(ValidationStep.Completed, totalTime, "RaceHud -> MainMenu");
                 break;

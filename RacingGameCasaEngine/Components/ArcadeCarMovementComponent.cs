@@ -31,6 +31,8 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
     private bool? _lastFallbackState;
     private bool _lastOutsideRoadBounds;
     private bool _lastTouchedBarrier;
+    private float _tachometerAcceleration;
+    private int _lastReportedGear = 1;
 
     public float ForwardAcceleration { get; set; } = 20f;
 
@@ -91,6 +93,7 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         _debugElapsedSeconds += elapsedTime;
         MaybeLogInputChange(session, pawn, controller, throttle, steering);
 
+        float previousSpeedUnitsPerSecond = _speedUnitsPerSecond;
         UpdateSpeed(throttle, elapsedTime);
 
         RaceTrackPhysicsComponent? trackPhysics = ResolveTrackPhysics(pawn.World, session);
@@ -104,7 +107,7 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
                     ? "track physics component unavailable"
                     : "surface sampling failed for current position");
             UpdateFallbackMovement(pawn, controller, steering, elapsedTime);
-            UpdateTelemetry(pawn, steering);
+            UpdateTelemetry(pawn, steering, previousSpeedUnitsPerSecond, elapsedTime);
             MaybeLogFallbackSample(session, pawn, throttle, steering);
             return;
         }
@@ -173,7 +176,7 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         _movementForward = ProjectDirectionOntoSurface(nextMovementForward, nextSurface.Up, nextSurface.Forward);
         pawn.RootComponent.LocalOrientation = CreateSurfaceOrientation(_movementForward, nextSurface.Up);
 
-        UpdateTelemetry(pawn, steering);
+        UpdateTelemetry(pawn, steering, previousSpeedUnitsPerSecond, elapsedTime);
         LogBoundsState(session, trackPhysics, nextSurface, barrierContact.OutsideRoadBounds, barrierContact.TouchedBarrier, barrierContact.AllowedCenterHalfWidth);
         MaybeLogLargeDisplacement(session, startPosition, desiredPosition, resolvedPosition, nextSurface);
         MaybeLogMovementSample(session, pawn, throttle, steering, desiredPosition, resolvedPosition, nextSurface, barrierContact.TouchedBarrier, barrierContact.OutsideRoadBounds);
@@ -268,11 +271,36 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         return _trackPhysicsComponent;
     }
 
-    private void UpdateTelemetry(RacingCarPawn pawn, float steering)
+    private void UpdateTelemetry(RacingCarPawn pawn, float steering, float previousSpeedUnitsPerSecond, float elapsedTime)
     {
         float normalizedSpeed = Math.Clamp(Math.Abs(_speedUnitsPerSecond) / MaxForwardSpeedUnitsPerSecond, 0f, 1f);
         pawn.CurrentSpeedMph = normalizedSpeed * pawn.TargetTopSpeedMph;
         pawn.SteeringInput = steering;
+
+        int gear = Math.Clamp(1 + (int)(5 * normalizedSpeed), 1, 5);
+        if (gear != _lastReportedGear)
+        {
+            _tachometerAcceleration = 0f;
+            _lastReportedGear = gear;
+        }
+        else if (elapsedTime > 0f)
+        {
+            float speedDelta = _speedUnitsPerSecond - previousSpeedUnitsPerSecond;
+            float accelerationReference = speedDelta >= 0f
+                ? ForwardAcceleration
+                : Math.Max(IdleDeceleration, ReverseAcceleration);
+
+            if (accelerationReference > 0.0001f)
+            {
+                float normalizedAcceleration = speedDelta / (accelerationReference * elapsedTime);
+                float smoothingFactor = Math.Clamp(elapsedTime * 10f, 0f, 1f);
+                _tachometerAcceleration += (normalizedAcceleration - _tachometerAcceleration) * smoothingFactor;
+                _tachometerAcceleration = Math.Clamp(_tachometerAcceleration, -0.25f, 1f);
+            }
+        }
+
+        pawn.CurrentGear = gear;
+        pawn.TachometerAcceleration = _tachometerAcceleration;
     }
 
     private static float ApplyShoulderDeceleration(float speed, float shoulderDeceleration, float elapsedTime)

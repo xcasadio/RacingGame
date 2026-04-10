@@ -41,6 +41,10 @@ public sealed class RacingCarPawn : Pawn
 
     public float SteeringInput { get; set; }
 
+    public float TachometerAcceleration { get; set; }
+
+    public int CurrentGear { get; set; } = 1;
+
     public SceneComponent? PhysicalRootComponent => RootComponent;
 
     public RacingCarAnchorComponent? VisualPivotComponent => FindAnchorComponent(VisualPivotAnchorId);

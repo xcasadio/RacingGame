@@ -13,7 +13,6 @@ public sealed class RaceFlowCoordinatorComponent : EntityComponent
 {
     private readonly List<RaceCheckpointTriggerComponent> _checkpointTriggers = [];
     private bool _isInitialized;
-    private bool _pauseLatch;
     private bool _hasPreviousPlayerPosition;
     private Vector3 _previousPlayerPosition;
 
@@ -92,14 +91,20 @@ public sealed class RaceFlowCoordinatorComponent : EntityComponent
 
     private void HandlePauseToggle(RacingGameCasaEngineGame game, RaceGameMode gameMode, RacingPlayerController playerController)
     {
-        bool pressed = game.InputComponent.KeyboardManager.IsKeyPressed(XnaKeys.Escape);
-        if (pressed && !_pauseLatch)
+        bool pressed = game.InputComponent.KeyboardManager.IsKeyJustPressed(XnaKeys.Escape);
+        if (!pressed && playerController.Player is LocalPlayer localPlayer)
         {
-            gameMode.TogglePause();
-            playerController.IsInputEnable = !gameMode.IsPaused;
+            CasaEngine.Engine.Input.GamePad playerGamePad = game.InputComponent.GamePadManager.GetGamePad(localPlayer.ControllerId);
+            pressed = playerGamePad.IsConnected && (playerGamePad.StartJustPressed || playerGamePad.BackJustPressed);
         }
 
-        _pauseLatch = pressed;
+        if (!pressed)
+        {
+            return;
+        }
+
+        gameMode.TogglePause();
+        playerController.IsInputEnable = !gameMode.IsPaused;
     }
 
     private void UpdateCheckpointProgress(RaceGameMode gameMode, Vector3 previousPlayerPosition, Vector3 playerPosition)

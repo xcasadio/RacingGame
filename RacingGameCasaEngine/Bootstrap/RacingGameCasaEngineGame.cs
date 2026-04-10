@@ -89,6 +89,8 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
 
     public Texture2D? MenuButtonsTexture { get; private set; }
 
+    public Texture2D? RaceHudTexture { get; private set; }
+
     internal RuntimeRaceSession RaceSession { get; }
 
     internal void SyncOptionsState(RaceFrontEndState state)
@@ -162,6 +164,31 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         {
             MenuButtonsTexture = AssetContentManager.Load<Texture2D>(buttonsAsset.Id);
         }
+
+        string contentRoot = string.IsNullOrWhiteSpace(ContentPath)
+            ? Path.Combine(AppContext.BaseDirectory, "Content")
+            : ContentPath;
+        if (!Path.IsPathRooted(contentRoot))
+        {
+            contentRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, contentRoot));
+        }
+
+        string raceHudTexturePath = Path.Combine(contentRoot, "Textures", "ingame.png");
+        if (!File.Exists(raceHudTexturePath))
+        {
+            Logs.WriteWarning($"Race HUD texture '{raceHudTexturePath}' was not found.");
+            return;
+        }
+
+        try
+        {
+            RaceHudTexture ??= Texture2D.FromFile(GraphicsDevice, raceHudTexturePath);
+        }
+        catch (Exception ex)
+        {
+            Logs.WriteException(ex);
+            Logs.WriteWarning($"Race HUD texture '{raceHudTexturePath}' could not be loaded.");
+        }
     }
 
     private void OnWorldLoaded(object? sender, EventArgs e)
@@ -179,6 +206,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     {
         base.Update(gameTime);
         HandleRuntimeDebugHotkeys();
+        _frontEndFlow.UpdateRuntimeRaceUi(gameTime);
     }
 
     private void ConfigureCurrentWorldLighting()

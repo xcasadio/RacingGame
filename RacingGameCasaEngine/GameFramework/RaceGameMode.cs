@@ -6,6 +6,8 @@ namespace RacingGameCasaEngine.GameFramework;
 
 public sealed class RaceGameMode : GameMode
 {
+	private readonly List<float> _completedLapTimesSeconds = [];
+
 	public string PlayerName { get; private set; } = "Player One";
 
 	public string SelectedCarName { get; private set; } = "Prototype Car";
@@ -24,7 +26,17 @@ public sealed class RaceGameMode : GameMode
 
 	public float CountdownSecondsRemaining { get; private set; } = 3.0f;
 
+	public float StartBannerSecondsRemaining { get; private set; }
+
 	public float RaceTimeSeconds { get; private set; }
+
+	public float CurrentLapTimeSeconds { get; private set; }
+
+	public float? LastLapTimeSeconds { get; private set; }
+
+	public float? BestLapTimeSeconds { get; private set; }
+
+	public IReadOnlyList<float> CompletedLapTimesSeconds => _completedLapTimesSeconds;
 
 	public bool IsRaceFinished { get; private set; }
 
@@ -39,7 +51,12 @@ public sealed class RaceGameMode : GameMode
 		CompletedLaps = 0;
 		NextCheckpointIndex = 0;
 		CountdownSecondsRemaining = 3.0f;
+		StartBannerSecondsRemaining = 0.0f;
 		RaceTimeSeconds = 0.0f;
+		CurrentLapTimeSeconds = 0.0f;
+		LastLapTimeSeconds = null;
+		BestLapTimeSeconds = null;
+		_completedLapTimesSeconds.Clear();
 		IsRaceFinished = false;
 		IsPaused = false;
 	}
@@ -58,12 +75,22 @@ public sealed class RaceGameMode : GameMode
 
 	public void UpdateCountdown(float elapsedTime)
 	{
+		if (StartBannerSecondsRemaining > 0f)
+		{
+			StartBannerSecondsRemaining = Math.Max(0f, StartBannerSecondsRemaining - elapsedTime);
+		}
+
 		if (IsRaceFinished || CountdownSecondsRemaining <= 0f)
 		{
 			return;
 		}
 
+		float previousCountdown = CountdownSecondsRemaining;
 		CountdownSecondsRemaining = Math.Max(0f, CountdownSecondsRemaining - elapsedTime);
+		if (previousCountdown > 0f && CountdownSecondsRemaining <= 0f)
+		{
+			StartBannerSecondsRemaining = 0.85f;
+		}
 	}
 
 	public void UpdateRaceClock(float elapsedTime)
@@ -74,6 +101,7 @@ public sealed class RaceGameMode : GameMode
 		}
 
 		RaceTimeSeconds += elapsedTime;
+		CurrentLapTimeSeconds += elapsedTime;
 	}
 
 	public void TogglePause()
@@ -100,11 +128,44 @@ public sealed class RaceGameMode : GameMode
 		}
 
 		NextCheckpointIndex = 0;
+		CommitLapTime(CurrentLapTimeSeconds);
 		CompletedLaps++;
 		if (CompletedLaps >= TotalLaps)
 		{
 			IsRaceFinished = true;
 			EndMatch();
+			return;
+		}
+
+		CurrentLapTimeSeconds = 0f;
+	}
+
+	internal void CompleteRaceForAutomation()
+	{
+		if (IsRaceFinished)
+		{
+			return;
+		}
+
+		CommitLapTime(CurrentLapTimeSeconds);
+		CompletedLaps = TotalLaps;
+		NextCheckpointIndex = 0;
+		IsRaceFinished = true;
+		EndMatch();
+	}
+
+	private void CommitLapTime(float lapTimeSeconds)
+	{
+		if (lapTimeSeconds <= 0f)
+		{
+			return;
+		}
+
+		LastLapTimeSeconds = lapTimeSeconds;
+		_completedLapTimesSeconds.Add(lapTimeSeconds);
+		if (!BestLapTimeSeconds.HasValue || lapTimeSeconds < BestLapTimeSeconds.Value)
+		{
+			BestLapTimeSeconds = lapTimeSeconds;
 		}
 	}
 

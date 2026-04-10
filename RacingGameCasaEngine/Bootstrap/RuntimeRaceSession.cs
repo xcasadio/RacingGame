@@ -1,4 +1,5 @@
 using System.Text;
+using System.Globalization;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Entities;
 using RacingGameCasaEngine.GameFramework;
@@ -20,6 +21,16 @@ internal sealed class RuntimeRaceSession
 
     public string CarName { get; private set; } = string.Empty;
 
+    public string TrackSummary { get; private set; } = string.Empty;
+
+    public string TrackSurface { get; private set; } = string.Empty;
+
+    public string ReferenceBestLapTimeText { get; private set; } = "--:--.--";
+
+    public IReadOnlyList<string> ReferenceLapTimes { get; private set; } = Array.Empty<string>();
+
+    public IReadOnlyList<int> ReferenceLapTimesMilliseconds { get; private set; } = Array.Empty<int>();
+
     public bool IsDebugCameraEnabled { get; private set; }
 
     public bool IsCircuitOnlyViewEnabled { get; private set; }
@@ -39,6 +50,7 @@ internal sealed class RuntimeRaceSession
         PlayerPawn = playerPawn;
         TrackName = gameMode.SelectedTrackName;
         CarName = gameMode.SelectedCarName;
+        RefreshTrackMetadata(TrackName);
         IsDebugCameraEnabled = false;
         IsCircuitOnlyViewEnabled = false;
 
@@ -81,6 +93,11 @@ internal sealed class RuntimeRaceSession
         PlayerPawn = null;
         TrackName = string.Empty;
         CarName = string.Empty;
+        TrackSummary = string.Empty;
+        TrackSurface = string.Empty;
+        ReferenceBestLapTimeText = "--:--.--";
+        ReferenceLapTimes = Array.Empty<string>();
+        ReferenceLapTimesMilliseconds = Array.Empty<int>();
         IsDebugCameraEnabled = false;
         IsCircuitOnlyViewEnabled = false;
     }
@@ -138,6 +155,70 @@ internal sealed class RuntimeRaceSession
     private void ResetMovementDebugEntries()
     {
         _movementDebugEntries.Clear();
+    }
+
+    private void RefreshTrackMetadata(string trackName)
+    {
+        TrackSummary = string.Empty;
+        TrackSurface = string.Empty;
+        ReferenceBestLapTimeText = "--:--.--";
+        ReferenceLapTimes = Array.Empty<string>();
+        ReferenceLapTimesMilliseconds = Array.Empty<int>();
+
+        foreach (TrackDefinition track in RaceFrontEndCatalog.Tracks)
+        {
+            if (!string.Equals(track.Name, trackName, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            TrackSummary = track.Summary;
+            TrackSurface = track.Surface;
+            break;
+        }
+
+        if (!RaceFrontEndCatalog.Highscores.TryGetValue(trackName, out IReadOnlyList<HighscoreEntry>? entries)
+            || entries.Count == 0)
+        {
+            return;
+        }
+
+        string[] lapTimes = new string[entries.Count];
+        int[] lapTimesMilliseconds = new int[entries.Count];
+        for (int i = 0; i < entries.Count; i++)
+        {
+            lapTimes[i] = entries[i].Time;
+            lapTimesMilliseconds[i] = ParseLapTimeMilliseconds(entries[i].Time);
+        }
+
+        ReferenceBestLapTimeText = lapTimes[0];
+        ReferenceLapTimes = lapTimes;
+        ReferenceLapTimesMilliseconds = lapTimesMilliseconds;
+    }
+
+    private static int ParseLapTimeMilliseconds(string timeText)
+    {
+        if (string.IsNullOrWhiteSpace(timeText))
+        {
+            return 0;
+        }
+
+        string[] minuteAndSeconds = timeText.Split(':', StringSplitOptions.TrimEntries);
+        if (minuteAndSeconds.Length != 2
+            || !int.TryParse(minuteAndSeconds[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int minutes))
+        {
+            return 0;
+        }
+
+        string[] secondsAndCentiseconds = minuteAndSeconds[1].Split('.', StringSplitOptions.TrimEntries);
+        if (secondsAndCentiseconds.Length != 2
+            || !int.TryParse(secondsAndCentiseconds[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int seconds)
+            || !int.TryParse(secondsAndCentiseconds[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int centiseconds))
+        {
+            return 0;
+        }
+
+        return Math.Max(0, (((minutes * 60) + seconds) * 1000) + (centiseconds * 10));
     }
 
     private static string FormatVector(Vector3 vector)
