@@ -159,7 +159,6 @@ public static class RaceWorldFactory
         entity.AddComponent(new RaceTrackPhysicsComponent(physicsProfile));
         entity.AddComponent(new RaceFlowCoordinatorComponent());
         entity.AddComponent(new RaceCourseDebugComponent());
-        entity.AddComponent(new RaceModelBoundsDebugComponent());
         return entity;
     }
 

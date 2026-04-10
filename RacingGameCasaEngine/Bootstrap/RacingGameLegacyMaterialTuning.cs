@@ -90,17 +90,7 @@ internal static class RacingGameLegacyMaterialTuning
             return true;
         }
 
-        if (!effectFileName.Equals("NormalMapping.fx", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        if (!IsCarSurface(sourceAssetName, importedMaterial))
-        {
-            return false;
-        }
-
-        return importedMaterial.LegacyTechniqueIndex is 8 or 9 or 10;
+        return false;
     }
 
     public static RacingGameLegacyMaterialRuntimeTuning EvaluateRuntimeTuning(

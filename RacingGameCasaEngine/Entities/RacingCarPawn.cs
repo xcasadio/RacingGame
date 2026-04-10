@@ -21,6 +21,12 @@ public sealed class RacingCarPawn : Pawn
 
     public const string CarBodyVisualComponentName = "BodyVisual";
 
+    public const float CollisionLength = 5.6f;
+
+    public const float CollisionWidth = 2.6f;
+
+    public const float CollisionHeight = 1.8f;
+
     public string CarLabel { get; set; } = "Prototype Car";
 
     public string TrackLabel { get; set; } = "Prototype Track";

@@ -150,30 +150,30 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         }
 
         _segmentHint = nextSurface.SegmentIndex;
-        float allowedHalfWidth = nextSurface.HalfWidth + trackPhysics.ShoulderWidth;
-        float clampedLateralOffset = Math.Clamp(nextSurface.LateralOffset, -allowedHalfWidth, allowedHalfWidth);
-        bool touchedBarrier = Math.Abs(nextSurface.LateralOffset) > allowedHalfWidth;
-        bool outsideRoadBounds = Math.Abs(nextSurface.LateralOffset) > nextSurface.HalfWidth;
 
-        if (touchedBarrier)
+        Vector3 nextMovementForward = ProjectDirectionOntoSurface(_movementForward, nextSurface.Up, nextSurface.Forward);
+        TrackBarrierContact barrierContact = ResolveBarrierContact(trackPhysics, nextSurface, nextMovementForward);
+
+        if (barrierContact.TouchedBarrier)
         {
-            _speedUnitsPerSecond *= trackPhysics.EdgeSpeedRetainFactor;
+            _speedUnitsPerSecond = ApplyBarrierSpeedPenalty(_speedUnitsPerSecond, trackPhysics, barrierContact.ImpactStrength, elapsedTime);
+            nextMovementForward = ProjectDirectionAlongBarrier(nextMovementForward, barrierContact.BarrierNormal, nextSurface.Up, nextSurface.Forward);
         }
-        else if (outsideRoadBounds)
+        else if (barrierContact.OutsideRoadBounds)
         {
             _speedUnitsPerSecond = ApplyShoulderDeceleration(_speedUnitsPerSecond, trackPhysics.ShoulderDeceleration, elapsedTime);
         }
 
-        Vector3 resolvedPosition = nextSurface.Center + nextSurface.Right * clampedLateralOffset;
+        Vector3 resolvedPosition = nextSurface.Center + nextSurface.Right * barrierContact.ResolvedLateralOffset;
         pawn.RootComponent.LocalPosition = resolvedPosition;
 
-        _movementForward = ProjectDirectionOntoSurface(_movementForward, nextSurface.Up, nextSurface.Forward);
+        _movementForward = ProjectDirectionOntoSurface(nextMovementForward, nextSurface.Up, nextSurface.Forward);
         pawn.RootComponent.LocalOrientation = CreateSurfaceOrientation(_movementForward, nextSurface.Up);
 
         UpdateTelemetry(pawn, steering);
-        LogBoundsState(session, trackPhysics, nextSurface, outsideRoadBounds, touchedBarrier);
+        LogBoundsState(session, trackPhysics, nextSurface, barrierContact.OutsideRoadBounds, barrierContact.TouchedBarrier, barrierContact.AllowedCenterHalfWidth);
         MaybeLogLargeDisplacement(session, startPosition, desiredPosition, resolvedPosition, nextSurface);
-        MaybeLogMovementSample(session, pawn, throttle, steering, desiredPosition, resolvedPosition, nextSurface, touchedBarrier, outsideRoadBounds);
+        MaybeLogMovementSample(session, pawn, throttle, steering, desiredPosition, resolvedPosition, nextSurface, barrierContact.TouchedBarrier, barrierContact.OutsideRoadBounds);
     }
 
     private void UpdateSpeed(float throttle, float elapsedTime)
@@ -259,7 +259,7 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
                 "track",
                 _trackPhysicsComponent == null
                     ? "race track physics component not found"
-                    : $"race track physics component resolved shoulderWidth={_trackPhysicsComponent.ShoulderWidth:0.000} edgeRetain={_trackPhysicsComponent.EdgeSpeedRetainFactor:0.000}");
+                    : $"race track physics component resolved shoulderWidth={_trackPhysicsComponent.ShoulderWidth:0.000} guardRailInset={_trackPhysicsComponent.GuardRailInset:0.000} barrierRetain={_trackPhysicsComponent.BarrierGlancingSpeedRetainFactor:0.000}/{_trackPhysicsComponent.EdgeSpeedRetainFactor:0.000}");
         }
 
         return _trackPhysicsComponent;
@@ -281,6 +281,78 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         }
 
         return speed > 0f ? speed - deceleration : speed + deceleration;
+    }
+
+    private static float ApplyBarrierSpeedPenalty(float speed, RaceTrackPhysicsComponent trackPhysics, float impactStrength, float elapsedTime)
+    {
+        float retainFactor = MathHelper.Lerp(
+            trackPhysics.BarrierGlancingSpeedRetainFactor,
+            trackPhysics.EdgeSpeedRetainFactor,
+            impactStrength);
+
+        retainFactor = Math.Clamp(retainFactor, 0f, 1f);
+        float frameRateAdjustedRetainFactor = MathF.Pow(retainFactor, Math.Clamp(elapsedTime * 60f, 0f, 8f));
+        return speed * frameRateAdjustedRetainFactor;
+    }
+
+    private static TrackBarrierContact ResolveBarrierContact(RaceTrackPhysicsComponent trackPhysics, RaceTrackSurfaceSample surface, Vector3 movementForward)
+    {
+        Vector3 carForward = ProjectDirectionOntoSurface(movementForward, surface.Up, surface.Forward);
+        Vector3 carRight = Vector3.Cross(surface.Up, carForward);
+        carRight = NormalizeOrFallback(carRight, surface.Right);
+
+        float halfCarWidth = RacingCarPawn.CollisionWidth * 0.5f;
+        float halfCarLength = RacingCarPawn.CollisionLength * 0.5f;
+        float lateralExtent =
+            Math.Abs(Vector3.Dot(carRight, surface.Right)) * halfCarWidth +
+            Math.Abs(Vector3.Dot(carForward, surface.Right)) * halfCarLength;
+
+        float roadCenterHalfWidth = Math.Max(0f, surface.HalfWidth - lateralExtent);
+        float guardRailHalfWidth = Math.Max(0f, surface.HalfWidth - trackPhysics.GuardRailInset);
+        float barrierCenterHalfWidth = Math.Max(0f, guardRailHalfWidth - lateralExtent);
+        bool touchedBarrier = Math.Abs(surface.LateralOffset) > barrierCenterHalfWidth;
+        bool outsideRoadBounds = Math.Abs(surface.LateralOffset) > roadCenterHalfWidth;
+
+        float resolvedCenterHalfWidth = touchedBarrier
+            ? Math.Max(0f, barrierCenterHalfWidth - trackPhysics.BarrierContactMargin)
+            : barrierCenterHalfWidth;
+
+        float resolvedLateralOffset = Math.Clamp(surface.LateralOffset, -resolvedCenterHalfWidth, resolvedCenterHalfWidth);
+        Vector3 barrierNormal = Vector3.Zero;
+        float impactStrength = 0f;
+
+        if (touchedBarrier)
+        {
+            barrierNormal = surface.LateralOffset >= 0f ? -surface.Right : surface.Right;
+            barrierNormal = NormalizeOrFallback(barrierNormal, surface.Right);
+            impactStrength = Math.Clamp(Math.Abs(Vector3.Dot(carForward, barrierNormal)), 0f, 1f);
+        }
+
+        return new TrackBarrierContact(
+            resolvedLateralOffset,
+            barrierCenterHalfWidth,
+            roadCenterHalfWidth,
+            lateralExtent,
+            touchedBarrier,
+            outsideRoadBounds,
+            barrierNormal,
+            impactStrength);
+    }
+
+    private static Vector3 ProjectDirectionAlongBarrier(Vector3 direction, Vector3 barrierNormal, Vector3 surfaceUp, Vector3 fallbackDirection)
+    {
+        if (barrierNormal.LengthSquared() < 0.0001f)
+        {
+            return ProjectDirectionOntoSurface(direction, surfaceUp, fallbackDirection);
+        }
+
+        float penetrationSpeed = Vector3.Dot(direction, barrierNormal);
+        if (penetrationSpeed > 0f)
+        {
+            direction -= barrierNormal * penetrationSpeed;
+        }
+
+        return ProjectDirectionOntoSurface(direction, surfaceUp, fallbackDirection);
     }
 
     private static Vector3 RotateDirectionAroundAxis(Vector3 direction, Vector3 axis, float angle, Vector3 fallbackDirection)
@@ -309,6 +381,22 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
 
         projected.Normalize();
         return projected;
+    }
+
+    private static Vector3 NormalizeOrFallback(Vector3 value, Vector3 fallback)
+    {
+        if (value.LengthSquared() < 0.0001f)
+        {
+            value = fallback;
+        }
+
+        if (value.LengthSquared() < 0.0001f)
+        {
+            return Vector3.Right;
+        }
+
+        value.Normalize();
+        return value;
     }
 
     private static Quaternion CreateSurfaceOrientation(Vector3 forward, Vector3 surfaceUp)
@@ -386,14 +474,14 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         session?.AppendMovementDebug(fallbackEnabled ? "fallback" : "surface", reason);
     }
 
-    private void LogBoundsState(RuntimeRaceSession? session, RaceTrackPhysicsComponent trackPhysics, RaceTrackSurfaceSample surface, bool outsideRoadBounds, bool touchedBarrier)
+    private void LogBoundsState(RuntimeRaceSession? session, RaceTrackPhysicsComponent trackPhysics, RaceTrackSurfaceSample surface, bool outsideRoadBounds, bool touchedBarrier, float allowedCenterHalfWidth)
     {
         if (session != null && touchedBarrier != _lastTouchedBarrier)
         {
             session.AppendMovementDebug(
                 "barrier",
                 touchedBarrier
-                    ? $"hit barrier seg={surface.SegmentIndex} lateral={surface.LateralOffset:0.000} allowed={surface.HalfWidth + trackPhysics.ShoulderWidth:0.000}"
+                    ? $"hit barrier seg={surface.SegmentIndex} lateral={surface.LateralOffset:0.000} centerLimit={allowedCenterHalfWidth:0.000} guardRailInset={trackPhysics.GuardRailInset:0.000}"
                     : $"left barrier seg={surface.SegmentIndex} lateral={surface.LateralOffset:0.000}");
         }
 
@@ -485,5 +573,32 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         }
 
         return speed > 0f ? speed - delta : speed + delta;
+    }
+
+    private readonly struct TrackBarrierContact(
+        float resolvedLateralOffset,
+        float allowedCenterHalfWidth,
+        float roadCenterHalfWidth,
+        float lateralExtent,
+        bool touchedBarrier,
+        bool outsideRoadBounds,
+        Vector3 barrierNormal,
+        float impactStrength)
+    {
+        public float ResolvedLateralOffset { get; } = resolvedLateralOffset;
+
+        public float AllowedCenterHalfWidth { get; } = allowedCenterHalfWidth;
+
+        public float RoadCenterHalfWidth { get; } = roadCenterHalfWidth;
+
+        public float LateralExtent { get; } = lateralExtent;
+
+        public bool TouchedBarrier { get; } = touchedBarrier;
+
+        public bool OutsideRoadBounds { get; } = outsideRoadBounds;
+
+        public Vector3 BarrierNormal { get; } = barrierNormal;
+
+        public float ImpactStrength { get; } = impactStrength;
     }
 }

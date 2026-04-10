@@ -171,15 +171,23 @@ internal static class LegacyImportProfileVerifier
         string filePath = Path.Combine(projectContentPath, "Models", "Car.x");
         var profileResult = importer.ImportWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
+        StaticModelImportedMaterial glassMaterial = FindMaterialByEffectFile(profileResult.Materials, "ReflectionSimpleGlass.fx");
         StaticModelImportedMaterial chromeMaterial = FindMaterialByDisplayName(profileResult.Materials, "chrome");
         StaticModelImportedMaterial paintMaterial = FindMaterialByDisplayName(profileResult.Materials, "lack");
         StaticModelImportedMaterial tireMaterial = FindMaterialByDisplayName(profileResult.Materials, "gummi");
+        RacingGameLegacyMaterialRuntimeTuning glassTuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Car", glassMaterial);
+        RacingGameLegacyMaterialRuntimeTuning paintTuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Car", paintMaterial);
         RacingGameLegacyMaterialRuntimeTuning chromeTuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Car", chromeMaterial);
         RacingGameLegacyMaterialRuntimeTuning tireTuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Car", tireMaterial);
 
-        if (!chromeMaterial.UsesReflection || !paintMaterial.UsesReflection || !chromeTuning.EnableReflection)
+        if (!glassMaterial.UsesReflection || !glassTuning.EnableReflection)
         {
-            failures.Add("Car.x chrome and paint should remain reflective after material retuning.");
+            failures.Add("Car.x glass should remain reflective after material retuning.");
+        }
+
+        if (paintTuning.EnableReflection || chromeTuning.EnableReflection)
+        {
+            failures.Add("Car.x paint and chrome should stay non-reflective at runtime after material retuning.");
         }
 
         if (tireMaterial.UsesReflection || tireTuning.EnableReflection)
@@ -224,5 +232,16 @@ internal static class LegacyImportProfileVerifier
 
         return material
             ?? throw new InvalidOperationException($"Unable to find material named '{displayName}'.");
+    }
+
+    private static StaticModelImportedMaterial FindMaterialByEffectFile(
+        IReadOnlyList<StaticModelImportedMaterial> materials,
+        string effectFileName)
+    {
+        StaticModelImportedMaterial? material = materials.FirstOrDefault(
+            candidate => string.Equals(Path.GetFileName(candidate.EffectFilePath), effectFileName, StringComparison.OrdinalIgnoreCase));
+
+        return material
+            ?? throw new InvalidOperationException($"Unable to find material using effect '{effectFileName}'.");
     }
 }

@@ -9,6 +9,7 @@ using CasaEngine.Framework.Rendering.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RacingGameCasaEngine.Bootstrap;
+using RacingGameCasaEngine.Entities;
 using StbImageSharp;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -17,9 +18,9 @@ namespace RacingGameCasaEngine.Components;
 internal static class LegacyCarVisualFactory
 {
     private const string LegacyCarModelName = "Car";
-    private const float LegacyCarCollisionLength = 5.6f;
-    private const float LegacyCarCollisionWidth = 2.6f;
-    private const float LegacyCarCollisionHeight = 1.8f;
+    private const float LegacyCarCollisionLength = RacingCarPawn.CollisionLength;
+    private const float LegacyCarCollisionWidth = RacingCarPawn.CollisionWidth;
+    private const float LegacyCarCollisionHeight = RacingCarPawn.CollisionHeight;
     private const float LegacyCarReflectionMultiplyBase = 0.85f;
     private const float LegacyCarReflectionMultiplyFactor = 0.75f;
     private const string CarNormalTextureFileName = "RacerCarNormal.tga";

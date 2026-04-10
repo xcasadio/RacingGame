@@ -229,13 +229,16 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
 
     private void ConfigureCurrentWorldSky()
     {
-        bool isRaceWorld = GameManager.CurrentWorld is { } world && RaceWorldFactory.IsRaceWorld(world);
-        StaticMeshRendererComponent? renderer = this.GetGameComponent<StaticMeshRendererComponent>();
-        if (renderer != null)
+        World? currentWorld = GameManager.CurrentWorld;
+        bool isRaceWorld = currentWorld is { } world && RaceWorldFactory.IsRaceWorld(world);
+
+        if (currentWorld != null)
         {
-            renderer.DefaultLighting.ReflectionCube = isRaceWorld
+            currentWorld.EnvironmentSettings.SpecularEnvironmentCubemapAssetId = Guid.Empty;
+            currentWorld.EnvironmentSettings.SpecularEnvironmentCubemap = isRaceWorld
                 ? GetOrCreateRaceSkyReflectionCube()
                 : null;
+            currentWorld.EnvironmentSettings.MarkDirty();
         }
 
         IViewRenderPipeline? pipeline = isRaceWorld ? GetOrCreateRaceSkyViewPipeline() : null;

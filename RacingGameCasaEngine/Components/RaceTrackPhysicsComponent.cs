@@ -15,6 +15,9 @@ internal sealed class RaceTrackPhysicsComponent : EntityComponent
     {
         TrackPhysicsProfile = other.TrackPhysicsProfile;
         ShoulderWidth = other.ShoulderWidth;
+        GuardRailInset = other.GuardRailInset;
+        BarrierContactMargin = other.BarrierContactMargin;
+        BarrierGlancingSpeedRetainFactor = other.BarrierGlancingSpeedRetainFactor;
         EdgeSpeedRetainFactor = other.EdgeSpeedRetainFactor;
         ShoulderDeceleration = other.ShoulderDeceleration;
     }
@@ -23,7 +26,13 @@ internal sealed class RaceTrackPhysicsComponent : EntityComponent
 
     public float ShoulderWidth { get; set; } = 2.5f;
 
-    public float EdgeSpeedRetainFactor { get; set; } = 0.58f;
+    public float GuardRailInset { get; set; } = 0.25f;
+
+    public float BarrierContactMargin { get; set; } = 0.05f;
+
+    public float BarrierGlancingSpeedRetainFactor { get; set; } = 0.96f;
+
+    public float EdgeSpeedRetainFactor { get; set; } = 0.93f;
 
     public float ShoulderDeceleration { get; set; } = 12f;
 
