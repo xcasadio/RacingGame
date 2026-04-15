@@ -72,6 +72,34 @@ internal static class VehicleTransmissionLogic
             state.IsShifting);
     }
 
+    public static VehicleTransmissionFrame SampleCurrentGear(
+        VehicleTransmissionRuntimeState state,
+        VehicleTransmissionDefinition definition,
+        float drivenWheelAngularSpeedRadiansPerSecond,
+        float throttle)
+    {
+        int currentGear = Math.Clamp(state.CurrentGear, 1, definition.ForwardGearCount);
+        float normalizedThrottle = Math.Clamp(throttle, 0f, 1f);
+        float currentRpm = ComputeForwardEngineRpm(definition, currentGear, drivenWheelAngularSpeedRadiansPerSecond);
+        float normalizedRpm = NormalizeRpm(definition, currentRpm);
+        float driveForceScale = EvaluateGearForceScale(definition, currentGear)
+            * EvaluateTorqueCurve(normalizedRpm)
+            * MathHelper.Lerp(0.72f, 1f, normalizedThrottle)
+            * EvaluateShiftTorqueScale(state.ShiftTimerSeconds, definition.ShiftDurationSeconds);
+
+        state.EngineRpm = currentRpm;
+        state.NormalizedRpm = normalizedRpm;
+
+        return new VehicleTransmissionFrame(
+            currentGear,
+            currentRpm,
+            normalizedRpm,
+            driveForceScale,
+            EvaluateShiftTorqueScale(state.ShiftTimerSeconds, definition.ShiftDurationSeconds),
+            GearChanged: false,
+            state.IsShifting);
+    }
+
     public static float ComputeForwardEngineRpm(
         VehicleTransmissionDefinition definition,
         int gear,

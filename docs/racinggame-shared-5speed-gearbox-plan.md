@@ -40,8 +40,8 @@ Introduire une vraie boite automatique a `5` rapports partagee entre `Arcade` et
 
 - `✅ T1` Creer le plan markdown dedie au chantier boite `5` rapports et geler les regles d'execution de l'agent
 - `✅ T2` Introduire le contrat partage de transmission : configuration `5` rapports, etat runtime, calcul de regime, logique de changement auto et coupure de couple
-- `🚧 T3` Brancher la transmission partagee dans `ArcadeVehicleDynamicsSolver` pour remplacer l'acceleration a rapport synthetique
-- `⏳ T4` Brancher la meme transmission dans `SimulationVehicleDynamicsSolver` pour remplacer les rapports derives de la vitesse seule
+- `✅ T3` Brancher la transmission partagee dans `ArcadeVehicleDynamicsSolver` pour remplacer l'acceleration a rapport synthetique
+- `🚧 T4` Brancher la meme transmission dans `SimulationVehicleDynamicsSolver` pour remplacer les rapports derives de la vitesse seule
 - `⏳ T5` Valider le chantier, mettre a jour ce plan avec le statut final et consigner les commandes de verification executees
 
 ## Resultat attendu

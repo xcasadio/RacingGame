@@ -49,6 +49,7 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         _movementBasisInitialized = context.Chassis.HasValidSurface;
         _tachometerAcceleration = 0f;
         _lastReportedGear = 1;
+        VehicleTransmissionLogic.Reset(context.TransmissionState, context.TransmissionDefinition);
         ResetDebugLoggingState();
     }
 
@@ -64,7 +65,7 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         MaybeLogInputChange(session, context, throttle, steering);
 
         float previousSpeedUnitsPerSecond = _speedUnitsPerSecond;
-        UpdateSpeed(throttle, elapsedTime);
+        UpdateSpeed(context, throttle, elapsedTime);
 
         RaceTrackPhysicsComponent? trackPhysics = context.TrackPhysics;
         if (trackPhysics == null
@@ -166,11 +167,22 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
             : 1f;
     }
 
-    private void UpdateSpeed(float throttle, float elapsedTime)
+    private void UpdateSpeed(VehicleDynamicsExecutionContext context, float throttle, float elapsedTime)
     {
-        if (throttle > 0f)
+        float forwardThrottle = throttle > 0f && _speedUnitsPerSecond > -0.25f
+            ? Math.Clamp(throttle, 0f, 1f)
+            : 0f;
+        float drivenWheelAngularSpeedBefore = GetDrivenWheelAngularSpeed(context, _speedUnitsPerSecond);
+        VehicleTransmissionFrame transmissionFrame = VehicleTransmissionLogic.UpdateAutomaticForward(
+            context.TransmissionState,
+            context.TransmissionDefinition,
+            drivenWheelAngularSpeedBefore,
+            forwardThrottle,
+            elapsedTime);
+
+        if (forwardThrottle > 0f)
         {
-            _speedUnitsPerSecond += ForwardAcceleration * Math.Clamp(throttle, 0f, 1f) * elapsedTime;
+            _speedUnitsPerSecond += ForwardAcceleration * transmissionFrame.DriveForceScale * forwardThrottle * elapsedTime;
         }
         else if (throttle < 0f)
         {
@@ -182,6 +194,33 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         }
 
         _speedUnitsPerSecond = Math.Clamp(_speedUnitsPerSecond, -MaxReverseSpeedUnitsPerSecond, MaxForwardSpeedUnitsPerSecond);
+
+        float drivenWheelAngularSpeedAfter = GetDrivenWheelAngularSpeed(context, _speedUnitsPerSecond);
+        VehicleTransmissionLogic.SampleCurrentGear(
+            context.TransmissionState,
+            context.TransmissionDefinition,
+            drivenWheelAngularSpeedAfter,
+            forwardThrottle);
+    }
+
+    private static float GetDrivenWheelAngularSpeed(VehicleDynamicsExecutionContext context, float speedUnitsPerSecond)
+    {
+        float weightedRadius = 0f;
+        float totalDriveRatio = 0f;
+        for (int index = 0; index < context.WheelDefinitions.Length; index++)
+        {
+            VehicleWheelDefinition definition = context.WheelDefinitions[index];
+            if (definition.DriveForceRatio <= 0.0001f)
+            {
+                continue;
+            }
+
+            weightedRadius += definition.Radius * definition.DriveForceRatio;
+            totalDriveRatio += definition.DriveForceRatio;
+        }
+
+        float averageDrivenWheelRadius = totalDriveRatio > 0.0001f ? weightedRadius / totalDriveRatio : 0.43f;
+        return averageDrivenWheelRadius > 0.0001f ? speedUnitsPerSecond / averageDrivenWheelRadius : 0f;
     }
 
     private void UpdateFallbackMovement(VehicleDynamicsExecutionContext context, float steering, float elapsedTime)
@@ -264,31 +303,35 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         context.Telemetry.CurrentSpeedMph = normalizedSpeed * context.Pawn.TargetTopSpeedMph;
         context.Telemetry.SteeringInput = steering;
         context.Telemetry.NormalizedSpeed = normalizedSpeed;
-        context.Telemetry.EngineRpm = MathHelper.Lerp(950f, 7200f, normalizedSpeed);
+        context.Telemetry.EngineRpm = context.TransmissionState.EngineRpm;
         context.Telemetry.MovementForward = _movementForward;
         context.Telemetry.SurfaceUp = context.Chassis.SurfaceUp;
         context.Telemetry.IsFallbackActive = fallbackActive;
 
-        int gear = Math.Clamp(1 + (int)(5 * normalizedSpeed), 1, 5);
+        int gear = context.TransmissionState.CurrentGear;
         if (gear != _lastReportedGear)
         {
             _tachometerAcceleration = 0f;
             _lastReportedGear = gear;
         }
-        else if (elapsedTime > 0f)
+
+        if (elapsedTime > 0f)
         {
             float speedDelta = _speedUnitsPerSecond - previousSpeedUnitsPerSecond;
             float accelerationReference = speedDelta >= 0f
                 ? ForwardAcceleration
                 : Math.Max(IdleDeceleration, ReverseAcceleration);
+            float normalizedAcceleration = 0f;
 
             if (accelerationReference > 0.0001f)
             {
-                float normalizedAcceleration = speedDelta / (accelerationReference * elapsedTime);
-                float smoothingFactor = Math.Clamp(elapsedTime * 10f, 0f, 1f);
-                _tachometerAcceleration += (normalizedAcceleration - _tachometerAcceleration) * smoothingFactor;
-                _tachometerAcceleration = Math.Clamp(_tachometerAcceleration, -0.25f, 1f);
+                normalizedAcceleration = Math.Clamp(speedDelta / (accelerationReference * elapsedTime), -0.25f, 1f);
             }
+
+            float targetTachometer = Math.Clamp((context.TransmissionState.NormalizedRpm * 0.82f) + (Math.Max(0f, normalizedAcceleration) * 0.18f), 0f, 1f);
+            float smoothingFactor = Math.Clamp(elapsedTime * 10f, 0f, 1f);
+            _tachometerAcceleration += (targetTachometer - _tachometerAcceleration) * smoothingFactor;
+            _tachometerAcceleration = Math.Clamp(_tachometerAcceleration, -0.25f, 1f);
         }
 
         context.Telemetry.CurrentGear = gear;
