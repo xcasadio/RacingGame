@@ -48,6 +48,88 @@ internal sealed class VehicleTelemetrySnapshot
     public bool IsFallbackActive { get; set; }
 }
 
+internal sealed class VehicleTransmissionDefinition
+{
+    public VehicleTransmissionDefinition(
+        IReadOnlyList<float> forwardGearRatios,
+        float reverseGearRatio,
+        float finalDriveRatio,
+        float idleRpm,
+        float upshiftRpm,
+        float downshiftRpm,
+        float redlineRpm,
+        float shiftDurationSeconds)
+    {
+        if (forwardGearRatios.Count == 0)
+        {
+            throw new ArgumentException("At least one forward gear ratio is required.", nameof(forwardGearRatios));
+        }
+
+        ForwardGearRatios = forwardGearRatios;
+        ReverseGearRatio = reverseGearRatio;
+        FinalDriveRatio = finalDriveRatio;
+        IdleRpm = idleRpm;
+        UpshiftRpm = upshiftRpm;
+        DownshiftRpm = downshiftRpm;
+        RedlineRpm = redlineRpm;
+        ShiftDurationSeconds = shiftDurationSeconds;
+    }
+
+    public IReadOnlyList<float> ForwardGearRatios { get; }
+
+    public float ReverseGearRatio { get; }
+
+    public float FinalDriveRatio { get; }
+
+    public float IdleRpm { get; }
+
+    public float UpshiftRpm { get; }
+
+    public float DownshiftRpm { get; }
+
+    public float RedlineRpm { get; }
+
+    public float ShiftDurationSeconds { get; }
+
+    public int ForwardGearCount => ForwardGearRatios.Count;
+
+    public float FirstGearRatio => ForwardGearRatios[0];
+
+    public float TopGearRatio => ForwardGearRatios[ForwardGearRatios.Count - 1];
+
+    public float GetForwardGearRatio(int gear)
+    {
+        if (gear < 1 || gear > ForwardGearRatios.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(gear));
+        }
+
+        return ForwardGearRatios[gear - 1];
+    }
+}
+
+internal sealed class VehicleTransmissionRuntimeState
+{
+    public int CurrentGear { get; set; } = 1;
+
+    public float EngineRpm { get; set; } = 950f;
+
+    public float ShiftTimerSeconds { get; set; }
+
+    public float NormalizedRpm { get; set; }
+
+    public bool IsShifting => ShiftTimerSeconds > 0.0001f;
+}
+
+internal readonly record struct VehicleTransmissionFrame(
+    int Gear,
+    float EngineRpm,
+    float NormalizedRpm,
+    float DriveForceScale,
+    float ShiftTorqueScale,
+    bool GearChanged,
+    bool IsShifting);
+
 internal sealed class VehicleChassisRuntimeState
 {
     public Vector3 Position { get; set; }
@@ -171,6 +253,8 @@ internal sealed class VehicleDynamicsExecutionContext
         RaceTrackPhysicsComponent? trackPhysics,
         RuntimeRaceSession? session,
         VehicleTelemetrySnapshot telemetry,
+        VehicleTransmissionDefinition transmissionDefinition,
+        VehicleTransmissionRuntimeState transmissionState,
         VehicleChassisRuntimeState chassis,
         VehicleWheelDefinition[] wheelDefinitions,
         VehicleWheelRuntimeState[] wheelStates)
@@ -181,6 +265,8 @@ internal sealed class VehicleDynamicsExecutionContext
         TrackPhysics = trackPhysics;
         Session = session;
         Telemetry = telemetry;
+        TransmissionDefinition = transmissionDefinition;
+        TransmissionState = transmissionState;
         Chassis = chassis;
         WheelDefinitions = wheelDefinitions;
         WheelStates = wheelStates;
@@ -197,6 +283,10 @@ internal sealed class VehicleDynamicsExecutionContext
     public RuntimeRaceSession? Session { get; }
 
     public VehicleTelemetrySnapshot Telemetry { get; }
+
+    public VehicleTransmissionDefinition TransmissionDefinition { get; }
+
+    public VehicleTransmissionRuntimeState TransmissionState { get; }
 
     public VehicleChassisRuntimeState Chassis { get; }
 

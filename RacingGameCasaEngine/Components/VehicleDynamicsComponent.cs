@@ -8,6 +8,8 @@ namespace RacingGameCasaEngine.Components;
 
 public sealed class VehicleDynamicsComponent : EntityComponent
 {
+    private readonly VehicleTransmissionDefinition _transmissionDefinition = VehicleTransmissionLogic.CreateDefaultFiveSpeedDefinition();
+    private readonly VehicleTransmissionRuntimeState _transmissionState = new();
     private readonly VehicleWheelDefinition[] _wheelDefinitions;
     private readonly VehicleWheelRuntimeState[] _wheelStates;
     private readonly VehicleTelemetrySnapshot _telemetry = new();
@@ -36,6 +38,10 @@ public sealed class VehicleDynamicsComponent : EntityComponent
     internal VehicleDrivingMode ActiveDrivingMode => _activeDrivingMode;
 
     internal VehicleTelemetrySnapshot Telemetry => _telemetry;
+
+    internal VehicleTransmissionDefinition TransmissionDefinition => _transmissionDefinition;
+
+    internal VehicleTransmissionRuntimeState TransmissionState => _transmissionState;
 
     internal VehicleChassisRuntimeState ChassisState => _chassisState;
 
@@ -109,6 +115,8 @@ public sealed class VehicleDynamicsComponent : EntityComponent
             trackPhysics,
             session,
             _telemetry,
+            _transmissionDefinition,
+            _transmissionState,
             _chassisState,
             _wheelDefinitions,
             _wheelStates);
@@ -147,10 +155,12 @@ public sealed class VehicleDynamicsComponent : EntityComponent
         _telemetry.TachometerAcceleration = 0f;
         _telemetry.CurrentGear = 1;
         _telemetry.NormalizedSpeed = 0f;
-        _telemetry.EngineRpm = 1000f;
+        _telemetry.EngineRpm = _transmissionDefinition.IdleRpm;
         _telemetry.MovementForward = _chassisState.MovementForward;
         _telemetry.SurfaceUp = _chassisState.SurfaceUp;
         _telemetry.IsFallbackActive = false;
+
+        VehicleTransmissionLogic.Reset(_transmissionState, _transmissionDefinition);
 
         for (int index = 0; index < _wheelDefinitions.Length; index++)
         {
