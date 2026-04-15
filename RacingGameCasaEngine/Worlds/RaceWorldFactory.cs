@@ -189,6 +189,7 @@ public static class RaceWorldFactory
             TrackLabel = track.Name,
             SelectedCarIndex = state.SelectedCarIndex,
             SelectedCarColorIndex = state.SelectedCarColorIndex,
+            DrivingMode = state.SelectedDrivingMode,
         };
 
         return pawn;

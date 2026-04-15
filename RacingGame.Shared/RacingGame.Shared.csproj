@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Core\MGUI.Core.csproj" />
     <ProjectReference Include="..\CasaEngine\MGUI\MGUI.FontStashSharp\MGUI.FontStashSharp.csproj" />
+    <ProjectReference Include="..\CasaEngine\MGUI\MGUI.MonoGame.LegacyRenderer\MGUI.MonoGame.LegacyRenderer.csproj" />
     <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Shared\MGUI.Shared.csproj" />
   </ItemGroup>
   <ItemGroup>

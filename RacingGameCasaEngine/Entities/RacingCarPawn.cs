@@ -35,6 +35,8 @@ public sealed class RacingCarPawn : Pawn
 
     public int SelectedCarColorIndex { get; set; }
 
+    internal VehicleDrivingMode DrivingMode { get; set; } = VehicleDrivingMode.Arcade;
+
     public float TargetTopSpeedMph { get; set; } = 170.0f;
 
     public float CurrentSpeedMph { get; set; }
@@ -59,13 +61,16 @@ public sealed class RacingCarPawn : Pawn
 
     public StaticModelComponent? CarVisualComponent => FindSceneComponent<StaticModelComponent>(BodyAnchorComponent ?? VisualPivotComponent ?? PhysicalRootComponent);
 
+    internal VehicleDynamicsComponent? VehicleDynamics => GetComponent<VehicleDynamicsComponent>();
+
     public RacingCarPawn()
     {
         Name = "RacingCarPawn";
         RootComponent = CreateComponentHierarchy();
         EnsureVisualComponent();
-        AddComponent(new ArcadeCarMovementComponent());
+        AddComponent(new VehicleDynamicsComponent());
         AddComponent(new LegacyCarVisualComponent());
+        AddComponent(new VehicleWheelVisualComponent());
         AddComponent(new DebugCarVisualComponent());
     }
 
@@ -91,6 +96,12 @@ public sealed class RacingCarPawn : Pawn
 
     public Vector3 GetMovementForward()
     {
+        Vector3 dynamicsForward = VehicleDynamics?.Telemetry.MovementForward ?? Vector3.Zero;
+        if (dynamicsForward.LengthSquared() > 0.0001f)
+        {
+            return Vector3.Normalize(dynamicsForward);
+        }
+
         return GetWorldForward(PhysicalRootComponent);
     }
 

@@ -65,7 +65,7 @@ Permettre a `RacingGameCasaEngine` de proposer deux styles de conduite, `Arcade`
 
 ## Plan committable
 
-## ⏳ Etape 1 - Geler le contrat commun de la voiture
+## ✅ Etape 1 - Geler le contrat commun de la voiture
 
 **But**
 
@@ -90,15 +90,16 @@ Separer l'architecture du vehicule du modele de conduite avant toute nouvelle ph
 
 **Sous-etapes**
 
-- `⏳ 1.1` Introduire `VehicleDrivingMode` et les types de donnees communs du vehicule
-- `⏳ 1.2` Definir le point d'entree unique de la dynamique du vehicule
-- `⏳ 1.3` Figer le contrat de telemetrie consomme par le HUD, la camera et le debug runtime
+- `✅ 1.1` Introduire `VehicleDrivingMode` et les types de donnees communs du vehicule
+- `✅ 1.2` Definir le point d'entree unique de la dynamique du vehicule
+- `✅ 1.3` Figer le contrat de telemetrie consomme par le HUD, la camera et le debug runtime
 
 **Notes**
 
-- Cette etape ne doit pas changer le comportement du jeu ; elle prepare seulement le terrain.
+- Realise via `VehicleDynamicsComponent`, `VehicleDrivingMode`, `VehicleControlInput`, `VehicleTelemetrySnapshot`, `VehicleWheelDefinition`, `VehicleWheelRuntimeState` et `VehicleChassisRuntimeState`.
+- Le contrat de telemetrie runtime preserve les proprietes deja lues par `RaceHudScreen`, `ChaseCameraRigComponent` et `RuntimeRaceSession`.
 
-## ⏳ Etape 2 - Extraire la conduite arcade actuelle derriere un solveur dedie
+## ✅ Etape 2 - Extraire la conduite arcade actuelle derriere un solveur dedie
 
 **But**
 
@@ -124,16 +125,17 @@ Conserver le ressenti actuel tout en supprimant le couplage direct entre `Racing
 
 **Sous-etapes**
 
-- `⏳ 2.1` Introduire le composant orchestrateur de dynamique vehicule
-- `⏳ 2.2` Deplacer la logique arcade existante dans un solveur dedie
-- `⏳ 2.3` Rebrancher proprement le pawn, les inputs et la telemetrie sur ce nouveau point d'entree
-- `⏳ 2.4` Verifier la parite de comportement du mode `Arcade`
+- `✅ 2.1` Introduire le composant orchestrateur de dynamique vehicule
+- `✅ 2.2` Deplacer la logique arcade existante dans un solveur dedie
+- `✅ 2.3` Rebrancher proprement le pawn, les inputs et la telemetrie sur ce nouveau point d'entree
+- `✅ 2.4` Verifier la parite de comportement du mode `Arcade`
 
 **Notes**
 
-- Tant que cette etape n'est pas validee, aucune logique `Simulation` ne doit etre branchee par defaut.
+- `RacingCarPawn` ne branche plus directement `ArcadeCarMovementComponent` ; il expose un point d'entree unique via `VehicleDynamicsComponent`.
+- Le solveur `ArcadeVehicleDynamicsSolver` conserve la logique de suivi de piste et remplit aussi l'etat partage des roues et de la telemetrie.
 
-## ⏳ Etape 3 - Introduire le modele de roues logiques partage
+## ✅ Etape 3 - Introduire le modele de roues logiques partage
 
 **But**
 
@@ -159,15 +161,16 @@ Ajouter la couche de donnees necessaire aux roues sans imposer tout de suite une
 
 **Sous-etapes**
 
-- `⏳ 3.1` Introduire les descripteurs de roues et leur etat runtime partage
-- `⏳ 3.2` Brancher le mode `Arcade` sur un premier remplissage de cet etat de roue
-- `⏳ 3.3` Preparer l'ancrage du futur composant d'animation visuelle des roues
+- `✅ 3.1` Introduire les descripteurs de roues et leur etat runtime partage
+- `✅ 3.2` Brancher le mode `Arcade` sur un premier remplissage de cet etat de roue
+- `✅ 3.3` Preparer l'ancrage du futur composant d'animation visuelle des roues
 
 **Notes**
 
-- Le modele `Car.x` contient deja des frames de roues ; si leur exploitation est faisable sans risque, l'agent peut la preparer ici, sinon la garder pour une etape dediee.
+- Les `4` roues logiques sont maintenant partagees entre `Arcade` et `Simulation`, avec contact, compression, rotation, braquage, slip et charge approximate.
+- `VehicleWheelVisualComponent` exploite les frames `WheelFrontRight`, `WheelBackRight`, `WheelBackLeft` et `WheelFrontLeft` du modele `Car.x` quand elles sont presentes.
 
-## ⏳ Etape 4 - Poser la base du solveur simulation
+## ✅ Etape 4 - Poser la base du solveur simulation
 
 **But**
 
@@ -195,17 +198,18 @@ Introduire une vraie dynamique vehicule simplifiee, partageant la meme architect
 
 **Sous-etapes**
 
-- `⏳ 4.1` Introduire l'etat dynamique du chassis pour le mode `Simulation`
-- `⏳ 4.2` Echantillonner la piste sous chaque roue et calculer la suspension
-- `⏳ 4.3` Calculer et appliquer les forces longitudinales et laterales au chassis logique
-- `⏳ 4.4` Definir les fallbacks hors piste ou en absence de contact exploitable
-- `⏳ 4.5` Valider le roulage borne du mode `Simulation` sur une piste simple
+- `✅ 4.1` Introduire l'etat dynamique du chassis pour le mode `Simulation`
+- `✅ 4.2` Echantillonner la piste sous chaque roue et calculer la suspension
+- `✅ 4.3` Calculer et appliquer les forces longitudinales et laterales au chassis logique
+- `✅ 4.4` Definir les fallbacks hors piste ou en absence de contact exploitable
+- `✅ 4.5` Valider le roulage borne du mode `Simulation` sur une piste simple
 
 **Notes**
 
-- Avant d'utiliser des raycasts physiques monde, l'agent doit d'abord exploiter `RaceTrackPhysicsProfile` et la logique de piste deja stabilisee.
+- Le solveur `SimulationVehicleDynamicsSolver` reste volontairement en `V1` sur `chassis unique + roues logiques + suspension + forces simplifiees`.
+- Aucune version de cette iteration ne passe par `4` rigid bodies relies par contraintes physiques reelles ; le contact sol repose sur `RaceTrackPhysicsProfile` et `RaceTrackPhysicsComponent`.
 
-## ⏳ Etape 5 - Brancher la configuration de mode de conduite
+## ✅ Etape 5 - Brancher la configuration de mode de conduite
 
 **But**
 
@@ -231,15 +235,16 @@ Permettre de choisir proprement entre `Arcade` et `Simulation` sans bifurcation 
 
 **Sous-etapes**
 
-- `⏳ 5.1` Introduire la configuration runtime du mode de conduite
-- `⏳ 5.2` Brancher `RaceWorldFactory` et la creation du pawn sur cette configuration
-- `⏳ 5.3` Exposer ou persister l'option sans casser le front-end existant
+- `✅ 5.1` Introduire la configuration runtime du mode de conduite
+- `✅ 5.2` Brancher `RaceWorldFactory` et la creation du pawn sur cette configuration
+- `✅ 5.3` Exposer ou persister l'option sans casser le front-end existant
 
 **Notes**
 
-- Si l'exposition front-end devient trop lourde, un flag runtime ou une option persistante minimale est acceptable pour cette iteration.
+- Le mode de conduite est expose dans `OptionsScreen`, persiste dans `front-end-options.json` et est rebranche jusqu'a `RaceWorldFactory`, `RuntimeRaceWorldBinder` et `RaceGameMode`.
+- Le choix par defaut reste `Arcade` si aucune option persistante n'est presente.
 
-## ⏳ Etape 6 - Raccorder les roues visuelles et le ressenti commun
+## ✅ Etape 6 - Raccorder les roues visuelles et le ressenti commun
 
 **But**
 
@@ -265,15 +270,16 @@ Faire converger rendu et physique autour d'un etat de roue partage, quel que soi
 
 **Sous-etapes**
 
-- `⏳ 6.1` Introduire le composant d'animation visuelle des roues
-- `⏳ 6.2` Brancher ce composant sur l'etat de roue partage
-- `⏳ 6.3` Verifier la neutralite du HUD et de la camera vis-a-vis du mode actif
+- `✅ 6.1` Introduire le composant d'animation visuelle des roues
+- `✅ 6.2` Brancher ce composant sur l'etat de roue partage
+- `✅ 6.3` Verifier la neutralite du HUD et de la camera vis-a-vis du mode actif
 
 **Notes**
 
-- Le rendu de la voiture doit rester tolerant : si certaines frames de roues du modele legacy ne sont pas exploitables, prevoir un fallback visuel stable.
+- Les roues visuelles suivent desormais la compression, le braquage et la rotation fournis par l'etat runtime partage quand le modele legacy est disponible.
+- Le HUD et la camera continuent d'utiliser les memes points d'acces du pawn ; ils restent donc neutres par rapport au solveur concret actif.
 
-## ⏳ Etape 7 - Stabiliser, comparer et fermer le chantier
+## ✅ Etape 7 - Stabiliser, comparer et fermer le chantier
 
 **But**
 
@@ -299,10 +305,16 @@ Terminer la mise en place en garantissant que les deux modes sont exploitables e
 
 **Sous-etapes**
 
-- `⏳ 7.1` Ajouter le debug minimum de comparaison entre les deux modes
-- `⏳ 7.2` Ajuster les valeurs par defaut et verifier l'absence de regression majeure en `Arcade`
-- `⏳ 7.3` Valider le mode `Simulation` sur le circuit cible de reference
-- `⏳ 7.4` Clore le plan avec notes de validation, limites connues et suites eventuelles
+- `✅ 7.1` Ajouter le debug minimum de comparaison entre les deux modes
+- `✅ 7.2` Ajuster les valeurs par defaut et verifier l'absence de regression majeure en `Arcade`
+- `✅ 7.3` Valider le mode `Simulation` sur le circuit cible de reference
+- `✅ 7.4` Clore le plan avec notes de validation, limites connues et suites eventuelles
+
+**Notes**
+
+- Le debug runtime inclut maintenant le mode actif et un resume des `4` roues dans `RuntimeRaceSession.BuildMovementDebugReport()` et dans les echantillons de log de mouvement.
+- Validation realisee le `2026-04-15` avec : `dotnet build RacingGameCasaEngine/RacingGameCasaEngine.csproj -p:BaseOutputPath=artifacts/verify-build/`, `dotnet run --project RacingGameCasaEngine/RacingGameCasaEngine.csproj -p:BaseOutputPath=artifacts/verify-build/ -- --smoke-frontend` en `Arcade`, `dotnet run --project RacingGameCasaEngine/RacingGameCasaEngine.csproj -p:BaseOutputPath=artifacts/verify-build/ -- --smoke-frontend` en `Simulation`, `dotnet run --project RacingGameCasaEngine/RacingGameCasaEngine.csproj -p:BaseOutputPath=artifacts/verify-build/ -- --capture-track-audit` en `Arcade` et en `Simulation`.
+- L'option utilisateur persistante a ete remise a `Arcade` apres la validation des deux modes.
 
 ## Questions a trancher avant ou pendant l'execution
 

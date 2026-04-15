@@ -1,3 +1,5 @@
+using RacingGameCasaEngine.Components;
+
 namespace RacingGameCasaEngine.Bootstrap;
 
 internal sealed class RaceFrontEndState
@@ -11,6 +13,8 @@ internal sealed class RaceFrontEndState
     public int SelectedResolutionIndex { get; set; } = 1;
 
     public int SelectedCarColorIndex { get; set; }
+
+    public VehicleDrivingMode SelectedDrivingMode { get; set; } = VehicleDrivingMode.Arcade;
 
     public bool IsFullscreen { get; set; } = false;
 

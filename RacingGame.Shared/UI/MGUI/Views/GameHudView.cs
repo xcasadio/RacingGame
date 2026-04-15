@@ -43,7 +43,7 @@ internal sealed class GameHudView : IMguiScreenView
     {
         _screen = screen;
         Window = MguiUiTheme.CreateRootWindow(host, true);
-        _fontFamily = Window.Desktop.FontManager.DefaultFontFamily;
+        _fontFamily = Window.Desktop.DefaultFontFamily;
 
         var root = new MGOverlayPanel(Window)
         {
@@ -147,8 +147,8 @@ internal sealed class GameHudView : IMguiScreenView
     private void DrawLapsPanel(object sender, MGElement.MGElementDrawEventArgs e)
     {
         Rectangle bounds = TranslateBounds(_lapsPanel.LayoutBounds, e.DA.Offset);
-        DrawTransaction dt = e.DA.DT;
-        dt.DrawTextureTo(BaseGame.UI.Ingame.XnaTexture, UIRenderer.LapsGfxRect, bounds, Color.White * e.DA.Opacity);
+        dynamic dt = e.DA.DT;
+        dt.DrawTextureTo(UiImageResources.AsImage(BaseGame.UI.Ingame.XnaTexture), UIRenderer.LapsGfxRect, bounds, Color.White * e.DA.Opacity);
 
         float scaleX = bounds.Width / (float)UIRenderer.LapsGfxRect.Width;
         float scaleY = bounds.Height / (float)UIRenderer.LapsGfxRect.Height;
@@ -164,8 +164,8 @@ internal sealed class GameHudView : IMguiScreenView
     private void DrawTimesPanel(object sender, MGElement.MGElementDrawEventArgs e)
     {
         Rectangle bounds = TranslateBounds(_timesPanel.LayoutBounds, e.DA.Offset);
-        DrawTransaction dt = e.DA.DT;
-        dt.DrawTextureTo(BaseGame.UI.Ingame.XnaTexture, UIRenderer.CurrentAndBestGfxRect, bounds, Color.White * e.DA.Opacity);
+        dynamic dt = e.DA.DT;
+        dt.DrawTextureTo(UiImageResources.AsImage(BaseGame.UI.Ingame.XnaTexture), UIRenderer.CurrentAndBestGfxRect, bounds, Color.White * e.DA.Opacity);
 
         float scaleX = bounds.Width / (float)UIRenderer.CurrentAndBestGfxRect.Width;
         float scaleY = bounds.Height / (float)UIRenderer.CurrentAndBestGfxRect.Height;
@@ -177,13 +177,13 @@ internal sealed class GameHudView : IMguiScreenView
     private void DrawTopTimesPanel(object sender, MGElement.MGElementDrawEventArgs e)
     {
         Rectangle bounds = TranslateBounds(_topTimesPanel.LayoutBounds, e.DA.Offset);
-        DrawTransaction dt = e.DA.DT;
+        dynamic dt = e.DA.DT;
 
         float scaleX = bounds.Width / (float)UIRenderer.TrackNameGfxRect.Width;
         float scaleY = scaleX;
 
         Rectangle trackBounds = new(bounds.X, bounds.Y, bounds.Width, Scale(UIRenderer.TrackNameGfxRect.Height, scaleY));
-        dt.DrawTextureTo(BaseGame.UI.Ingame.XnaTexture, UIRenderer.TrackNameGfxRect, trackBounds, Color.White * e.DA.Opacity);
+        dt.DrawTextureTo(UiImageResources.AsImage(BaseGame.UI.Ingame.XnaTexture), UIRenderer.TrackNameGfxRect, trackBounds, Color.White * e.DA.Opacity);
 
         Vector2 trackSize = dt.MeasureText(_fontFamily, CustomFontStyles.Bold, _screen.TrackName, Scale(26, scaleY));
         DrawShadowedText(dt, _screen.TrackName,
@@ -201,7 +201,7 @@ internal sealed class GameHudView : IMguiScreenView
         for (int i = 0; i < 5; i++)
         {
             Rectangle rowBounds = new(bounds.X, trackBounds.Bottom + gap + i * (rowHeight + gap), bounds.Width, rowHeight);
-            dt.DrawTextureTo(BaseGame.UI.Ingame.XnaTexture, UIRenderer.Best5GfxRect, rowBounds, Color.White * e.DA.Opacity);
+            dt.DrawTextureTo(UiImageResources.AsImage(BaseGame.UI.Ingame.XnaTexture), UIRenderer.Best5GfxRect, rowBounds, Color.White * e.DA.Opacity);
 
             DrawShadowedText(dt, $"{i + 1}.", rowBounds.X + Scale(20, scaleX), rowBounds.Y + Scale(11, scaleY), Color.White, 30, CustomFontStyles.Bold, e.DA.Opacity, scaleY);
 
@@ -222,8 +222,8 @@ internal sealed class GameHudView : IMguiScreenView
             _tachometer.LayoutBounds.Y + (int)e.DA.Offset.Y,
             _tachometer.LayoutBounds.Width,
             _tachometer.LayoutBounds.Height);
-        DrawTransaction drawTransaction = e.DA.DT;
-        drawTransaction.DrawTextureTo(BaseGame.UI.Ingame.XnaTexture, UIRenderer.TachoGfxRect, bounds, Color.White * e.DA.Opacity);
+        dynamic drawTransaction = e.DA.DT;
+        drawTransaction.DrawTextureTo(UiImageResources.AsImage(BaseGame.UI.Ingame.XnaTexture), UIRenderer.TachoGfxRect, bounds, Color.White * e.DA.Opacity);
 
         float scaleX = bounds.Width / (float)UIRenderer.TachoGfxRect.Width;
         float scaleY = bounds.Height / (float)UIRenderer.TachoGfxRect.Height;
@@ -241,14 +241,14 @@ internal sealed class GameHudView : IMguiScreenView
             UIRenderer.TachoArrowGfxRect.Width / 2f,
             UIRenderer.TachoArrowGfxRect.Height - 13f);
         drawTransaction.DrawTextureTo(
-            BaseGame.UI.Ingame.XnaTexture,
+            UiImageResources.AsImage(BaseGame.UI.Ingame.XnaTexture),
             UIRenderer.TachoArrowGfxRect,
             arrowBounds,
             Color.White * e.DA.Opacity,
             rotationOrigin,
             rotation,
             0,
-            SpriteEffects.None);
+            UIDrawFlip.None);
 
         Rectangle mphBounds = new(
             bounds.X + Scale(UIRenderer.TachoMphGfxRect.X, scaleX),
@@ -265,7 +265,7 @@ internal sealed class GameHudView : IMguiScreenView
         DrawBigNumber(drawTransaction, gearBounds, _screen.HudGearDisplay, e.DA.Opacity);
     }
 
-    private void DrawShadowedText(DrawTransaction drawTransaction, string text, int x, int y, Color color, int fontSizeAtDesign, CustomFontStyles style, float opacity, float scale)
+    private void DrawShadowedText(object drawTransaction, string text, int x, int y, Color color, int fontSizeAtDesign, CustomFontStyles style, float opacity, float scale)
     {
         if (string.IsNullOrEmpty(text))
         {
@@ -274,10 +274,11 @@ internal sealed class GameHudView : IMguiScreenView
 
         int fontSize = (int)Math.Round(fontSizeAtDesign * scale);
         fontSize = Math.Max(10, fontSize);
-        drawTransaction.DrawShadowedText(_fontFamily, style, text, new Vector2(x, y), color * opacity, Color.Black * 0.75f * opacity, fontSize);
+        dynamic transaction = drawTransaction;
+        transaction.DrawShadowedText(_fontFamily, style, text, new Vector2(x, y), color * opacity, Color.Black * 0.75f * opacity, fontSize);
     }
 
-    private static void DrawBigNumber(DrawTransaction drawTransaction, Rectangle targetBounds, int number, float opacity, float horizontalAlignment = 0.5f)
+    private static void DrawBigNumber(object drawTransaction, Rectangle targetBounds, int number, float opacity, float horizontalAlignment = 0.5f)
     {
         string text = Math.Max(0, number).ToString();
         float scale = targetBounds.Height / (float)BigNumberRects[0].Height;
@@ -290,13 +291,14 @@ internal sealed class GameHudView : IMguiScreenView
         }
 
         int x = targetBounds.X + Math.Max(0, (int)Math.Round((targetBounds.Width - totalWidth) * horizontalAlignment));
+        dynamic transaction = drawTransaction;
         foreach (char c in text)
         {
             Rectangle source = BigNumberRects[c - '0'];
             int width = (int)Math.Round(source.Width * scale);
             int height = (int)Math.Round(source.Height * scale);
             Rectangle destination = new(x, targetBounds.Y + Math.Max(0, (targetBounds.Height - height) / 2), width, height);
-            drawTransaction.DrawTextureTo(BaseGame.UI.Ingame.XnaTexture, source, destination, Color.White * opacity);
+            transaction.DrawTextureTo(UiImageResources.AsImage(BaseGame.UI.Ingame.XnaTexture), source, destination, Color.White * opacity);
             x += width;
         }
     }

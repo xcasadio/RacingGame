@@ -2,6 +2,7 @@ using CasaEngine.Framework.GUI;
 using MGUI.Core.UI;
 using MGUI.Core.UI.Containers;
 using RacingGameCasaEngine.Bootstrap;
+using RacingGameCasaEngine.Components;
 using RacingGameCasaEngine.UI;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -14,6 +15,7 @@ internal sealed class OptionsScreen : RaceFrontEndScreenBase
     private readonly Action _back;
     private MGTextBox? _playerName;
     private MGButton[] _resolutionButtons = [];
+    private MGButton[] _drivingModeButtons = [];
     private MGCheckBox? _fullscreen;
     private MGCheckBox? _vSync;
     private MGCheckBox? _postFx;
@@ -30,6 +32,8 @@ internal sealed class OptionsScreen : RaceFrontEndScreenBase
     private MGButton? _backButton;
 
     private static readonly string[] ResolutionLabels = ["1280x720", "1920x1080", "2560x1440", "3840x2160", "Auto"];
+    private static readonly VehicleDrivingMode[] DrivingModes = [VehicleDrivingMode.Arcade, VehicleDrivingMode.Simulation];
+    private static readonly string[] DrivingModeLabels = ["Arcade", "Simulation"];
 
     public OptionsScreen(RacingGameCasaEngineGame game, Texture2D? backgroundTexture, Texture2D? buttonsTexture, RaceFrontEndState state, Action back)
         : base(backgroundTexture, buttonsTexture)
@@ -94,6 +98,18 @@ internal sealed class OptionsScreen : RaceFrontEndScreenBase
         resolutionRow.TryAddChild(resolutionButtonsPanel);
         content.TryAddChild(resolutionRow);
 
+        var drivingModeRow = CreateFormRow(window, "Driving Mode");
+        var drivingModeButtonsPanel = LegacyMenuUiTheme.CreateHorizontalStack(window, spacing: 8);
+        _drivingModeButtons = new MGButton[DrivingModes.Length];
+        for (int i = 0; i < DrivingModes.Length; i++)
+        {
+            VehicleDrivingMode capturedMode = DrivingModes[i];
+            _drivingModeButtons[i] = LegacyMenuUiTheme.CreateBandButton(window, DrivingModeLabels[i], () => _state.SelectedDrivingMode = capturedMode);
+            drivingModeButtonsPanel.TryAddChild(_drivingModeButtons[i]);
+        }
+        drivingModeRow.TryAddChild(drivingModeButtonsPanel);
+        content.TryAddChild(drivingModeRow);
+
         _fullscreen = CreateToggleRow(window, content, "Fullscreen", value => _state.IsFullscreen = value);
         _vSync = CreateToggleRow(window, content, "Vertical Sync", value => _state.EnableVSync = value);
         _postFx = CreateToggleRow(window, content, "Post Screen Effects", value => _state.EnablePostEffects = value);
@@ -145,6 +161,12 @@ internal sealed class OptionsScreen : RaceFrontEndScreenBase
         {
             bool isActive = _state.SelectedResolutionIndex == i || _resolutionButtons[i].VisualState.IsFocused || _resolutionButtons[i].IsHovered;
             LegacyMenuUiTheme.ApplyBandButtonState(_resolutionButtons[i], isActive);
+        }
+
+        for (int i = 0; i < _drivingModeButtons.Length; i++)
+        {
+            bool isActive = _state.SelectedDrivingMode == DrivingModes[i] || _drivingModeButtons[i].VisualState.IsFocused || _drivingModeButtons[i].IsHovered;
+            LegacyMenuUiTheme.ApplyBandButtonState(_drivingModeButtons[i], isActive);
         }
 
         if (_fullscreen != null) _fullscreen.IsChecked = _state.IsFullscreen;

@@ -2,6 +2,8 @@
   <Folder Name="/MGUI/">
     <Project Path="CasaEngine/MGUI/MGUI.Core/MGUI.Core.csproj" />
     <Project Path="CasaEngine/MGUI/MGUI.FontStashSharp/MGUI.FontStashSharp.csproj" />
+    <Project Path="CasaEngine/MGUI/MGUI.MonoGame.Integration/MGUI.MonoGame.Integration.csproj" />
+    <Project Path="CasaEngine/MGUI/MGUI.Rendering.Abstractions/MGUI.Rendering.Abstractions.csproj" />
     <Project Path="CasaEngine/MGUI/MGUI.Shared/MGUI.Shared.csproj" />
   </Folder>
   <Project Path="CasaEngine/CasaEngine/CasaEngine.csproj" />

@@ -158,7 +158,7 @@ internal sealed class TrackSelectionScreen : RaceFrontEndScreenBase
             VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center,
         };
 
-        frame.SetContent(new MGImage(window, texture, sourceRect, null, Stretch.Uniform)
+        frame.SetContent(new MGImage(window, UiImageResources.AsImage(texture), sourceRect, null, Stretch.Uniform)
         {
             PreferredWidth = 168,
             PreferredHeight = 280,

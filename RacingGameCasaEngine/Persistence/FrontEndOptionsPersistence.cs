@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using RacingGameCasaEngine.Bootstrap;
+using RacingGameCasaEngine.Components;
 
 namespace RacingGameCasaEngine.Persistence;
 
@@ -24,6 +25,13 @@ internal static class FrontEndOptionsPersistence
         state.SoundVolume = ClampPercentage(rootElement["SoundVolume"]?.Value<int>() ?? state.SoundVolume);
         state.MusicVolume = ClampPercentage(rootElement["MusicVolume"]?.Value<int>() ?? state.MusicVolume);
         state.ControllerSensitivity = ClampPercentage(rootElement["ControllerSensitivity"]?.Value<int>() ?? state.ControllerSensitivity);
+
+        string? selectedDrivingMode = rootElement["SelectedDrivingMode"]?.Value<string>();
+        if (Enum.TryParse(selectedDrivingMode, ignoreCase: true, out VehicleDrivingMode drivingMode)
+            && Enum.IsDefined(drivingMode))
+        {
+            state.SelectedDrivingMode = drivingMode;
+        }
     }
 
     internal static void Save(string fileName, RaceFrontEndState state)
@@ -45,6 +53,7 @@ internal static class FrontEndOptionsPersistence
             ["SoundVolume"] = ClampPercentage(state.SoundVolume),
             ["MusicVolume"] = ClampPercentage(state.MusicVolume),
             ["ControllerSensitivity"] = ClampPercentage(state.ControllerSensitivity),
+            ["SelectedDrivingMode"] = state.SelectedDrivingMode.ToString(),
         };
 
         File.WriteAllText(fileName, rootElement.ToString());

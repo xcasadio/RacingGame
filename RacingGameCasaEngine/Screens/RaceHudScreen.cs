@@ -77,7 +77,7 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
     {
         MGWindow window = CreateForegroundWindow(root);
         window.AllowsClickThrough = true;
-        _fontFamily = window.Desktop.FontManager.DefaultFontFamily;
+        _fontFamily = window.Desktop.DefaultFontFamily;
 
         var overlay = new MGOverlayPanel(window)
         {
@@ -216,8 +216,8 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         }
 
         Rectangle bounds = TranslateBounds(_lapsPanel.LayoutBounds, e.DA.Offset);
-        DrawTransaction drawTransaction = e.DA.DT;
-        drawTransaction.DrawTextureTo(hudTexture, LapsGfxRect, bounds, Color.White * e.DA.Opacity);
+        dynamic drawTransaction = e.DA.DT;
+        drawTransaction.DrawTextureTo(UiImageResources.AsImage(hudTexture), LapsGfxRect, bounds, Color.White * e.DA.Opacity);
 
         float scaleX = bounds.Width / (float)LapsGfxRect.Width;
         float scaleY = bounds.Height / (float)LapsGfxRect.Height;
@@ -238,8 +238,8 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         }
 
         Rectangle bounds = TranslateBounds(_timesPanel.LayoutBounds, e.DA.Offset);
-        DrawTransaction drawTransaction = e.DA.DT;
-        drawTransaction.DrawTextureTo(hudTexture, CurrentAndBestGfxRect, bounds, Color.White * e.DA.Opacity);
+        dynamic drawTransaction = e.DA.DT;
+        drawTransaction.DrawTextureTo(UiImageResources.AsImage(hudTexture), CurrentAndBestGfxRect, bounds, Color.White * e.DA.Opacity);
 
         float scaleX = bounds.Width / (float)CurrentAndBestGfxRect.Width;
         float scaleY = bounds.Height / (float)CurrentAndBestGfxRect.Height;
@@ -256,13 +256,13 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         }
 
         Rectangle bounds = TranslateBounds(_topTimesPanel.LayoutBounds, e.DA.Offset);
-        DrawTransaction drawTransaction = e.DA.DT;
+        dynamic drawTransaction = e.DA.DT;
 
         float scaleX = bounds.Width / (float)TrackNameGfxRect.Width;
         float scaleY = scaleX;
 
         Rectangle trackBounds = new(bounds.X, bounds.Y, bounds.Width, Scale(TrackNameGfxRect.Height, scaleY));
-        drawTransaction.DrawTextureTo(hudTexture, TrackNameGfxRect, trackBounds, Color.White * e.DA.Opacity);
+        drawTransaction.DrawTextureTo(UiImageResources.AsImage(hudTexture), TrackNameGfxRect, trackBounds, Color.White * e.DA.Opacity);
 
         string trackName = GetTrackName();
         Vector2 trackSize = drawTransaction.MeasureText(_fontFamily, CustomFontStyles.Bold, trackName, Scale(26, scaleY));
@@ -284,7 +284,7 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         for (int i = 0; i < 5; i++)
         {
             Rectangle rowBounds = new(bounds.X, trackBounds.Bottom + gap + (i * (rowHeight + gap)), bounds.Width, rowHeight);
-            drawTransaction.DrawTextureTo(hudTexture, Best5GfxRect, rowBounds, Color.White * e.DA.Opacity);
+            drawTransaction.DrawTextureTo(UiImageResources.AsImage(hudTexture), Best5GfxRect, rowBounds, Color.White * e.DA.Opacity);
             DrawShadowedText(drawTransaction, $"{i + 1}.", rowBounds.X + Scale(20, scaleX), rowBounds.Y + Scale(11, scaleY), Color.White, 30, CustomFontStyles.Bold, e.DA.Opacity, scaleY);
 
             string timeText = i < topTimes.Count && topTimes[i] > 0
@@ -302,8 +302,8 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         }
 
         Rectangle bounds = TranslateBounds(_tachometer.LayoutBounds, e.DA.Offset);
-        DrawTransaction drawTransaction = e.DA.DT;
-        drawTransaction.DrawTextureTo(hudTexture, TachoGfxRect, bounds, Color.White * e.DA.Opacity);
+        dynamic drawTransaction = e.DA.DT;
+        drawTransaction.DrawTextureTo(UiImageResources.AsImage(hudTexture), TachoGfxRect, bounds, Color.White * e.DA.Opacity);
 
         float scaleX = bounds.Width / (float)TachoGfxRect.Width;
         float scaleY = bounds.Height / (float)TachoGfxRect.Height;
@@ -319,7 +319,7 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
 
         Vector2 rotationOrigin = new(TachoArrowGfxRect.Width / 2f, TachoArrowGfxRect.Height - 13f);
         drawTransaction.DrawTextureTo(
-            hudTexture,
+            UiImageResources.AsImage(hudTexture),
             TachoArrowGfxRect,
             arrowBounds,
             Color.White * e.DA.Opacity,
@@ -500,7 +500,7 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         return lines;
     }
 
-    private void DrawShadowedText(DrawTransaction drawTransaction, string text, int x, int y, Color color, int fontSizeAtDesign, CustomFontStyles style, float opacity, float scale)
+    private void DrawShadowedText(object drawTransaction, string text, int x, int y, Color color, int fontSizeAtDesign, CustomFontStyles style, float opacity, float scale)
     {
         if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(_fontFamily))
         {
@@ -508,10 +508,11 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         }
 
         int fontSize = Math.Max(10, (int)Math.Round(fontSizeAtDesign * scale));
-        drawTransaction.DrawShadowedText(_fontFamily, style, text, new Vector2(x, y), color * opacity, Color.Black * 0.75f * opacity, fontSize);
+        dynamic transaction = drawTransaction;
+        transaction.DrawShadowedText(_fontFamily, style, text, new Vector2(x, y), color * opacity, Color.Black * 0.75f * opacity, fontSize);
     }
 
-    private static void DrawBigNumber(DrawTransaction drawTransaction, Texture2D hudTexture, Rectangle targetBounds, int number, float opacity, float horizontalAlignment = 0.5f)
+    private static void DrawBigNumber(object drawTransaction, Texture2D hudTexture, Rectangle targetBounds, int number, float opacity, float horizontalAlignment = 0.5f)
     {
         string text = Math.Max(0, number).ToString();
         float scale = targetBounds.Height / (float)BigNumberRects[0].Height;
@@ -524,13 +525,14 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         }
 
         int x = targetBounds.X + Math.Max(0, (int)Math.Round((targetBounds.Width - totalWidth) * horizontalAlignment));
+        dynamic transaction = drawTransaction;
         foreach (char character in text)
         {
             Rectangle source = BigNumberRects[character - '0'];
             int width = (int)Math.Round(source.Width * scale);
             int height = (int)Math.Round(source.Height * scale);
             Rectangle destination = new(x, targetBounds.Y + Math.Max(0, (targetBounds.Height - height) / 2), width, height);
-            drawTransaction.DrawTextureTo(hudTexture, source, destination, Color.White * opacity);
+            transaction.DrawTextureTo(UiImageResources.AsImage(hudTexture), source, destination, Color.White * opacity);
             x += width;
         }
     }

@@ -1,6 +1,7 @@
 using System.Text;
 using System.Globalization;
 using Microsoft.Xna.Framework;
+using RacingGameCasaEngine.Components;
 using RacingGameCasaEngine.Entities;
 using RacingGameCasaEngine.GameFramework;
 
@@ -35,6 +36,8 @@ internal sealed class RuntimeRaceSession
 
     public bool IsCircuitOnlyViewEnabled { get; private set; }
 
+    public VehicleDrivingMode DrivingMode { get; private set; } = VehicleDrivingMode.Arcade;
+
     public bool IsActive => GameMode != null && PlayerController != null && PlayerPawn != null;
 
     public int MovementDebugEntryCount => _movementDebugEntries.Count;
@@ -50,12 +53,14 @@ internal sealed class RuntimeRaceSession
         PlayerPawn = playerPawn;
         TrackName = gameMode.SelectedTrackName;
         CarName = gameMode.SelectedCarName;
+        DrivingMode = gameMode.DrivingMode;
         RefreshTrackMetadata(TrackName);
         IsDebugCameraEnabled = false;
         IsCircuitOnlyViewEnabled = false;
 
         ResetMovementDebugEntries();
         AppendMovementDebug("session", $"bound track='{TrackName}' car='{CarName}'");
+        AppendMovementDebug("mode", $"drivingMode={DrivingMode}");
         if (playerPawn.RootComponent != null)
         {
             AppendMovementDebug(
@@ -100,6 +105,7 @@ internal sealed class RuntimeRaceSession
         ReferenceLapTimesMilliseconds = Array.Empty<int>();
         IsDebugCameraEnabled = false;
         IsCircuitOnlyViewEnabled = false;
+        DrivingMode = VehicleDrivingMode.Arcade;
     }
 
     public void AppendMovementDebug(string category, string message)
@@ -124,6 +130,7 @@ internal sealed class RuntimeRaceSession
         builder.AppendLine($"Generated: {DateTimeOffset.Now:O}");
         builder.AppendLine($"Track: {TrackName}");
         builder.AppendLine($"Car: {CarName}");
+        builder.AppendLine($"DrivingMode: {DrivingMode}");
         builder.AppendLine($"Active: {IsActive}");
         builder.AppendLine($"DebugCamera: {IsDebugCameraEnabled}");
         builder.AppendLine($"CircuitOnlyView: {IsCircuitOnlyViewEnabled}");
@@ -134,6 +141,10 @@ internal sealed class RuntimeRaceSession
             builder.AppendLine($"PlayerForward: {FormatVector(PlayerPawn.RootComponent.Forward)}");
             builder.AppendLine($"SpeedMph: {PlayerPawn.CurrentSpeedMph:0.0}");
             builder.AppendLine($"SteeringInput: {PlayerPawn.SteeringInput:0.000}");
+            if (PlayerPawn.VehicleDynamics is { } dynamics)
+            {
+                builder.AppendLine($"VehicleDynamics: {dynamics.BuildDebugSummary()}");
+            }
         }
 
         builder.AppendLine("Entries:");

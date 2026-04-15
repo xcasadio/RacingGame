@@ -50,7 +50,7 @@ internal static class RaceUiTheme
     public static MGWindow CreateBackgroundWindow(UIRoot root, Microsoft.Xna.Framework.Graphics.Texture2D texture)
     {
         var window = CreateFullscreenWindow(root, allowsClickThrough: true);
-        window.SetContent(new MGImage(window, texture, null, Color.White, Stretch.UniformToFill)
+        window.SetContent(new MGImage(window, UiImageResources.AsImage(texture), null, Color.White, Stretch.UniformToFill)
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
@@ -61,7 +61,7 @@ internal static class RaceUiTheme
     public static MGWindow CreateBackgroundWindow(UIRoot root, Microsoft.Xna.Framework.Graphics.Texture2D texture, Rectangle sourceRect, float opacity, Stretch stretch = Stretch.Fill)
     {
         var window = CreateFullscreenWindow(root, allowsClickThrough: true);
-        window.SetContent(new MGImage(window, texture, sourceRect, Color.White, stretch)
+        window.SetContent(new MGImage(window, UiImageResources.AsImage(texture), sourceRect, Color.White, stretch)
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,

@@ -197,7 +197,7 @@ internal static class LegacyMenuUiTheme
             VerticalAlignment = VerticalAlignment.Center,
         };
 
-        var image = new MGImage(window, texture, sourceRect, null, Stretch.Uniform)
+        var image = new MGImage(window, UiImageResources.AsImage(texture), sourceRect, null, Stretch.Uniform)
         {
             PreferredWidth = 136,
             PreferredHeight = 60,
@@ -259,7 +259,7 @@ internal static class LegacyMenuUiTheme
             Padding = new Thickness(10),
         };
 
-        center.SetContent(new MGImage(window, menuButtonsTexture, iconRect, null, Stretch.Uniform)
+        center.SetContent(new MGImage(window, UiImageResources.AsImage(menuButtonsTexture), iconRect, null, Stretch.Uniform)
         {
             PreferredWidth = 45,
             PreferredHeight = 45,
@@ -319,7 +319,7 @@ internal static class LegacyMenuUiTheme
 
     private static MGImage CreateLogo(MGWindow window, Texture2D backgroundTexture)
     {
-        return new MGImage(window, backgroundTexture, LegacyMenuUiAtlas.RacingGameLogo, null, Stretch.Fill)
+        return new MGImage(window, UiImageResources.AsImage(backgroundTexture), LegacyMenuUiAtlas.RacingGameLogo, null, Stretch.Fill)
         {
             PreferredWidth = 601,
             PreferredHeight = 218,

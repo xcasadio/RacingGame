@@ -28,7 +28,7 @@ internal sealed class MguiUiHost : IDisposable
         ScreenBridge = new MguiScreenBridge(this);
     }
 
-    public MainRenderer Renderer { get; }
+    public IUIDesktopRuntime Renderer { get; }
 
     public MGDesktop Desktop { get; }
 

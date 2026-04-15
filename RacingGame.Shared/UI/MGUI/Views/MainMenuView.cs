@@ -143,7 +143,7 @@ internal sealed class MainMenuView : IMguiScreenView
             VerticalAlignment = VerticalAlignment.Stretch,
         };
 
-        centerPlate.SetContent(new MGImage(Window, BaseGame.UI.Buttons.XnaTexture, iconRect, null, Stretch.Uniform)
+        centerPlate.SetContent(new MGImage(Window, UiImageResources.AsImage(BaseGame.UI.Buttons.XnaTexture), iconRect, null, Stretch.Uniform)
         {
             PreferredWidth = 45,
             PreferredHeight = 45,

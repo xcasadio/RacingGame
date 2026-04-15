@@ -1,5 +1,6 @@
 using CasaEngine.Framework.GameFramework;
 using RacingGameCasaEngine.Bootstrap;
+using RacingGameCasaEngine.Components;
 using System.Globalization;
 
 namespace RacingGameCasaEngine.GameFramework;
@@ -13,6 +14,8 @@ public sealed class RaceGameMode : GameMode
 	public string SelectedCarName { get; private set; } = "Prototype Car";
 
 	public string SelectedTrackName { get; private set; } = "Prototype Track";
+
+	internal VehicleDrivingMode DrivingMode { get; private set; } = VehicleDrivingMode.Arcade;
 
 	public DateTimeOffset? StartedAtUtc { get; private set; }
 
@@ -47,6 +50,7 @@ public sealed class RaceGameMode : GameMode
 		PlayerName = state.PlayerName;
 		SelectedCarName = RaceFrontEndCatalog.Cars[state.SelectedCarIndex].Name;
 		SelectedTrackName = RaceFrontEndCatalog.Tracks[state.SelectedTrackIndex].Name;
+		DrivingMode = state.SelectedDrivingMode;
 		TotalLaps = ParseLapCount(RaceFrontEndCatalog.Tracks[state.SelectedTrackIndex].Laps);
 		CompletedLaps = 0;
 		NextCheckpointIndex = 0;

@@ -31,7 +31,7 @@ internal sealed class CarSelectionPreviewRenderer
     {
         _game = game;
         _renderTarget = new RenderTarget2D(game.GraphicsDevice, PreviewWidth, PreviewHeight, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
-        _textureData = new MGTextureData(_renderTarget);
+        _textureData = new MGTextureData(UiImageResources.AsRenderTarget(_renderTarget));
         _effect = new BasicEffect(game.GraphicsDevice)
         {
             LightingEnabled = true,

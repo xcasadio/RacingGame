@@ -64,6 +64,7 @@ internal sealed class RuntimeRaceWorldBinder
         {
             ControllerId = PlayerIndex.One,
         };
+        playerPawn.DrivingMode = state.SelectedDrivingMode;
         playerController.Pawn = playerPawn;
         playerPawn.Controller = playerController;
         playerPawn.InputEnabled = false;

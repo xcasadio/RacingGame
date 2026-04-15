@@ -192,7 +192,7 @@ internal sealed class CarSelectionView : IMguiScreenView
             VerticalAlignment = VerticalAlignment.Center,
         };
 
-        var image = new MGImage(Window, BaseGame.UI.Buttons.XnaTexture, sourceRect, null, Stretch.Uniform)
+        var image = new MGImage(Window, UiImageResources.AsImage(BaseGame.UI.Buttons.XnaTexture), sourceRect, null, Stretch.Uniform)
         {
             PreferredWidth = 136,
             PreferredHeight = 60,
