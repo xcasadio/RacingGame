@@ -172,7 +172,7 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         float forwardThrottle = throttle > 0f && _speedUnitsPerSecond > -0.25f
             ? Math.Clamp(throttle, 0f, 1f)
             : 0f;
-        float drivenWheelAngularSpeedBefore = GetDrivenWheelAngularSpeed(context, _speedUnitsPerSecond);
+        float drivenWheelAngularSpeedBefore = VehicleTransmissionLogic.ComputeDrivenWheelAngularSpeed(context.WheelDefinitions, _speedUnitsPerSecond);
         VehicleTransmissionFrame transmissionFrame = VehicleTransmissionLogic.UpdateAutomaticForward(
             context.TransmissionState,
             context.TransmissionDefinition,
@@ -195,32 +195,12 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
 
         _speedUnitsPerSecond = Math.Clamp(_speedUnitsPerSecond, -MaxReverseSpeedUnitsPerSecond, MaxForwardSpeedUnitsPerSecond);
 
-        float drivenWheelAngularSpeedAfter = GetDrivenWheelAngularSpeed(context, _speedUnitsPerSecond);
+        float drivenWheelAngularSpeedAfter = VehicleTransmissionLogic.ComputeDrivenWheelAngularSpeed(context.WheelDefinitions, _speedUnitsPerSecond);
         VehicleTransmissionLogic.SampleCurrentGear(
             context.TransmissionState,
             context.TransmissionDefinition,
             drivenWheelAngularSpeedAfter,
             forwardThrottle);
-    }
-
-    private static float GetDrivenWheelAngularSpeed(VehicleDynamicsExecutionContext context, float speedUnitsPerSecond)
-    {
-        float weightedRadius = 0f;
-        float totalDriveRatio = 0f;
-        for (int index = 0; index < context.WheelDefinitions.Length; index++)
-        {
-            VehicleWheelDefinition definition = context.WheelDefinitions[index];
-            if (definition.DriveForceRatio <= 0.0001f)
-            {
-                continue;
-            }
-
-            weightedRadius += definition.Radius * definition.DriveForceRatio;
-            totalDriveRatio += definition.DriveForceRatio;
-        }
-
-        float averageDrivenWheelRadius = totalDriveRatio > 0.0001f ? weightedRadius / totalDriveRatio : 0.43f;
-        return averageDrivenWheelRadius > 0.0001f ? speedUnitsPerSecond / averageDrivenWheelRadius : 0f;
     }
 
     private void UpdateFallbackMovement(VehicleDynamicsExecutionContext context, float steering, float elapsedTime)

@@ -119,6 +119,26 @@ internal static class VehicleTransmissionLogic
         return Math.Clamp(engineRpm, definition.IdleRpm, definition.RedlineRpm * 0.72f);
     }
 
+    public static float ComputeDrivenWheelAngularSpeed(IReadOnlyList<VehicleWheelDefinition> wheelDefinitions, float speedUnitsPerSecond)
+    {
+        float weightedRadius = 0f;
+        float totalDriveRatio = 0f;
+        for (int index = 0; index < wheelDefinitions.Count; index++)
+        {
+            VehicleWheelDefinition definition = wheelDefinitions[index];
+            if (definition.DriveForceRatio <= 0.0001f)
+            {
+                continue;
+            }
+
+            weightedRadius += definition.Radius * definition.DriveForceRatio;
+            totalDriveRatio += definition.DriveForceRatio;
+        }
+
+        float averageDrivenWheelRadius = totalDriveRatio > 0.0001f ? weightedRadius / totalDriveRatio : 0.43f;
+        return averageDrivenWheelRadius > 0.0001f ? speedUnitsPerSecond / averageDrivenWheelRadius : 0f;
+    }
+
     private static int DetermineTargetGear(
         VehicleTransmissionDefinition definition,
         int currentGear,

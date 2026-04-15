@@ -57,6 +57,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
         _smoothedTachometerAcceleration = 0f;
         _lastReportedGear = 1;
         _lastFallbackState = null;
+        VehicleTransmissionLogic.Reset(context.TransmissionState, context.TransmissionDefinition);
     }
 
     public void Update(VehicleDynamicsExecutionContext context)
@@ -74,6 +75,16 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             VehicleDynamicsMath.GetForward(currentOrientation),
             VehicleDynamicsMath.GetUp(currentOrientation),
             context.Chassis.MovementForward);
+        float signedForwardSpeedBefore = Vector3.Dot(context.Chassis.LinearVelocity, context.Chassis.MovementForward);
+        float forwardThrottle = context.Input.Throttle > 0f && signedForwardSpeedBefore > -0.25f
+            ? Math.Clamp(context.Input.Throttle, 0f, 1f)
+            : 0f;
+        VehicleTransmissionFrame transmissionFrame = VehicleTransmissionLogic.UpdateAutomaticForward(
+            context.TransmissionState,
+            context.TransmissionDefinition,
+            VehicleTransmissionLogic.ComputeDrivenWheelAngularSpeed(context.WheelDefinitions, signedForwardSpeedBefore),
+            forwardThrottle,
+            context.ElapsedTime);
         Vector3 accumulatedSupportPosition = Vector3.Zero;
         Vector3 accumulatedSurfaceUp = Vector3.Zero;
         Vector3 accumulatedSurfaceForward = Vector3.Zero;
@@ -132,8 +143,8 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             Vector3 wheelVelocity = context.Chassis.LinearVelocity + Vector3.Cross(context.Chassis.AngularVelocity, wheelOffset);
             float longitudinalVelocity = Vector3.Dot(wheelVelocity, wheelForward);
             float lateralVelocity = Vector3.Dot(wheelVelocity, wheelRight);
-            float driveForce = context.Input.Throttle >= 0f
-                ? context.Input.Throttle * MaxDriveForce * definition.DriveForceRatio
+            float driveForce = forwardThrottle > 0f
+                ? forwardThrottle * MaxDriveForce * transmissionFrame.DriveForceScale * definition.DriveForceRatio
                 : context.Input.Throttle * MaxReverseDriveForce * definition.DriveForceRatio;
             float longitudinalForce = driveForce - (longitudinalVelocity * LongitudinalDamping);
 
@@ -219,6 +230,14 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             context.Chassis.LinearVelocity *= MathF.Pow(context.TrackPhysics.EdgeSpeedRetainFactor, Math.Clamp(context.ElapsedTime * 60f, 0f, 8f));
         }
 
+        VehicleTransmissionLogic.SampleCurrentGear(
+            context.TransmissionState,
+            context.TransmissionDefinition,
+            VehicleTransmissionLogic.ComputeDrivenWheelAngularSpeed(
+                context.WheelDefinitions,
+                Vector3.Dot(context.Chassis.LinearVelocity, context.Chassis.MovementForward)),
+            forwardThrottle);
+
         UpdateTelemetry(context);
         MaybeLogSample(context, groundedWheelCount, touchedGuardRail);
     }
@@ -284,6 +303,14 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
     {
         float signedForwardSpeed = Vector3.Dot(context.Chassis.LinearVelocity, context.Chassis.MovementForward);
         float normalizedSpeed = Math.Clamp(Math.Abs(signedForwardSpeed) / MaxForwardSpeedUnitsPerSecond, 0f, 1f);
+        float forwardThrottle = context.Input.Throttle > 0f && signedForwardSpeed > -0.25f
+            ? Math.Clamp(context.Input.Throttle, 0f, 1f)
+            : 0f;
+        VehicleTransmissionLogic.SampleCurrentGear(
+            context.TransmissionState,
+            context.TransmissionDefinition,
+            VehicleTransmissionLogic.ComputeDrivenWheelAngularSpeed(context.WheelDefinitions, signedForwardSpeed),
+            forwardThrottle);
         float averageSlip = 0f;
         int contactedWheels = 0;
         for (int index = 0; index < context.WheelStates.Length; index++)
@@ -302,14 +329,14 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             averageSlip /= contactedWheels;
         }
 
-        int gear = DetermineGear(normalizedSpeed);
+        int gear = context.TransmissionState.CurrentGear;
         if (gear != _lastReportedGear)
         {
             _smoothedTachometerAcceleration = 0f;
             _lastReportedGear = gear;
         }
 
-        float targetTachometer = Math.Clamp((normalizedSpeed * 0.58f) + (Math.Abs(context.Input.Throttle) * 0.34f) + (averageSlip * 0.18f), 0f, 1f);
+        float targetTachometer = Math.Clamp((context.TransmissionState.NormalizedRpm * 0.74f) + (Math.Abs(context.Input.Throttle) * 0.10f) + (averageSlip * 0.16f), 0f, 1f);
         float smoothingFactor = Math.Clamp(context.ElapsedTime * 5.5f, 0f, 1f);
         _smoothedTachometerAcceleration += (targetTachometer - _smoothedTachometerAcceleration) * smoothingFactor;
 
@@ -320,22 +347,10 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
         context.Telemetry.TachometerAcceleration = _smoothedTachometerAcceleration;
         context.Telemetry.CurrentGear = gear;
         context.Telemetry.NormalizedSpeed = normalizedSpeed;
-        context.Telemetry.EngineRpm = MathHelper.Lerp(1100f, 7800f, Math.Clamp(_smoothedTachometerAcceleration, 0f, 1f));
+        context.Telemetry.EngineRpm = context.TransmissionState.EngineRpm;
         context.Telemetry.MovementForward = context.Chassis.MovementForward;
         context.Telemetry.SurfaceUp = context.Chassis.SurfaceUp;
         context.Telemetry.IsFallbackActive = !context.Chassis.HasValidSurface;
-    }
-
-    private int DetermineGear(float normalizedSpeed)
-    {
-        return normalizedSpeed switch
-        {
-            < 0.16f => 1,
-            < 0.34f => 2,
-            < 0.56f => 3,
-            < 0.78f => 4,
-            _ => 5,
-        };
     }
 
     private int ResolveBestSegmentHint(IReadOnlyList<VehicleWheelRuntimeState> wheelStates, int fallbackSegmentHint)
