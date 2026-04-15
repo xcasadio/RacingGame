@@ -42,7 +42,7 @@ Introduire une vraie boite automatique a `5` rapports partagee entre `Arcade` et
 - `✅ T2` Introduire le contrat partage de transmission : configuration `5` rapports, etat runtime, calcul de regime, logique de changement auto et coupure de couple
 - `✅ T3` Brancher la transmission partagee dans `ArcadeVehicleDynamicsSolver` pour remplacer l'acceleration a rapport synthetique
 - `✅ T4` Brancher la meme transmission dans `SimulationVehicleDynamicsSolver` pour remplacer les rapports derives de la vitesse seule
-- `🚧 T5` Valider le chantier, mettre a jour ce plan avec le statut final et consigner les commandes de verification executees
+- `✅ T5` Valider le chantier, mettre a jour ce plan avec le statut final et consigner les commandes de verification executees
 
 ## Resultat attendu
 
@@ -50,3 +50,14 @@ Introduire une vraie boite automatique a `5` rapports partagee entre `Arcade` et
 - `CurrentGear` et `EngineRpm` ne sont plus des valeurs purement synthetiques derivees de la vitesse normalisee.
 - Un changement de rapport provoque une courte baisse de couple perceptible mais non bloquante.
 - Le comportement `Arcade` reste jouable et le mode `Simulation` garde son identite physique.
+
+## Notes de cloture
+
+- Validation finale executee le `2026-04-15`.
+- Commandes executees :
+	- `dotnet build RacingGameCasaEngine/RacingGameCasaEngine.csproj -p:BaseOutputPath=artifacts/verify-build/`
+	- `dotnet run --project RacingGameCasaEngine/RacingGameCasaEngine.csproj -p:BaseOutputPath=artifacts/verify-build/ -- --smoke-frontend`
+	- `dotnet run --project RacingGameCasaEngine/RacingGameCasaEngine.csproj -p:BaseOutputPath=artifacts/verify-build/ -- --capture-track-audit`
+- Resultat : build OK, smoke front-end OK, audit piste OK.
+- Implementation livree : definition partagee de boite `5` rapports, etat runtime partage, calcul de regime commun, passage auto des rapports, coupure de couple courte pendant les changements, integration dans `ArcadeVehicleDynamicsSolver` et `SimulationVehicleDynamicsSolver`.
+- Limite connue : la marche arriere et le freinage restent simplifies et continuent d'utiliser le flow existant, meme si le rapport et le regime avant sont maintenant coherents en conduite avant.

@@ -11,7 +11,7 @@ internal static class VehicleTransmissionLogic
         return new VehicleTransmissionDefinition(
             forwardGearRatios: [3.18f, 2.14f, 1.56f, 1.21f, 0.97f],
             reverseGearRatio: 3.04f,
-            finalDriveRatio: 3.46f,
+            finalDriveRatio: 7.6f,
             idleRpm: 950f,
             upshiftRpm: 6500f,
             downshiftRpm: 3150f,
