@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.Entities;
+using RacingGameCasaEngine.Gameplay;
 
 namespace RacingGameCasaEngine.Components;
 
@@ -252,6 +253,7 @@ internal sealed class VehicleDynamicsExecutionContext
         VehicleControlInput input,
         RaceTrackPhysicsComponent? trackPhysics,
         RuntimeRaceSession? session,
+        CarPerformanceProfile profile,
         VehicleTelemetrySnapshot telemetry,
         VehicleTransmissionDefinition transmissionDefinition,
         VehicleTransmissionRuntimeState transmissionState,
@@ -264,6 +266,7 @@ internal sealed class VehicleDynamicsExecutionContext
         Input = input;
         TrackPhysics = trackPhysics;
         Session = session;
+        Profile = profile;
         Telemetry = telemetry;
         TransmissionDefinition = transmissionDefinition;
         TransmissionState = transmissionState;
@@ -281,6 +284,8 @@ internal sealed class VehicleDynamicsExecutionContext
     public RaceTrackPhysicsComponent? TrackPhysics { get; }
 
     public RuntimeRaceSession? Session { get; }
+
+    public CarPerformanceProfile Profile { get; }
 
     public VehicleTelemetrySnapshot Telemetry { get; }
 

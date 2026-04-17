@@ -3,15 +3,16 @@ using CasaEngine.Framework.Gameplay;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.Entities;
 using RacingGameCasaEngine.GameFramework;
+using RacingGameCasaEngine.Gameplay;
 
 namespace RacingGameCasaEngine.Components;
 
 public sealed class VehicleDynamicsComponent : EntityComponent
 {
-    private readonly VehicleTransmissionDefinition _transmissionDefinition = VehicleTransmissionLogic.CreateDefaultFiveSpeedDefinition();
+    private VehicleTransmissionDefinition _transmissionDefinition;
     private readonly VehicleTransmissionRuntimeState _transmissionState = new();
-    private readonly VehicleWheelDefinition[] _wheelDefinitions;
-    private readonly VehicleWheelRuntimeState[] _wheelStates;
+    private VehicleWheelDefinition[] _wheelDefinitions;
+    private VehicleWheelRuntimeState[] _wheelStates;
     private readonly VehicleTelemetrySnapshot _telemetry = new();
     private readonly VehicleChassisRuntimeState _chassisState = new();
     private readonly IVehicleDynamicsSolver _arcadeSolver = new ArcadeVehicleDynamicsSolver();
@@ -19,23 +20,28 @@ public sealed class VehicleDynamicsComponent : EntityComponent
 
     private RaceTrackPhysicsComponent? _trackPhysicsComponent;
     private World? _trackPhysicsWorld;
+    private CarPerformanceProfile? _activeProfile;
     private VehicleDrivingMode _activeDrivingMode = VehicleDrivingMode.Arcade;
     private bool _runtimeInitialized;
 
     public VehicleDynamicsComponent()
     {
-        _wheelDefinitions = CreateDefaultWheelDefinitions();
+        _transmissionDefinition = VehicleTransmissionLogic.CreateDefaultFiveSpeedDefinition();
+        _wheelDefinitions = CreateFallbackWheelDefinitions();
         _wheelStates = CreateWheelStates(_wheelDefinitions);
     }
 
     private VehicleDynamicsComponent(VehicleDynamicsComponent other)
         : base(other)
     {
-        _wheelDefinitions = CreateDefaultWheelDefinitions();
+        _transmissionDefinition = VehicleTransmissionLogic.CreateDefaultFiveSpeedDefinition();
+        _wheelDefinitions = CreateFallbackWheelDefinitions();
         _wheelStates = CreateWheelStates(_wheelDefinitions);
     }
 
     internal VehicleDrivingMode ActiveDrivingMode => _activeDrivingMode;
+
+    internal CarPerformanceProfile? ActiveProfile => _activeProfile;
 
     internal VehicleTelemetrySnapshot Telemetry => _telemetry;
 
@@ -64,15 +70,26 @@ public sealed class VehicleDynamicsComponent : EntityComponent
 
         RuntimeRaceSession? session = (pawn.World?.Game as RacingGameCasaEngineGame)?.RaceSession;
         RaceTrackPhysicsComponent? trackPhysics = ResolveTrackPhysics(pawn.World, session);
+        bool profileChanged = BindProfile(pawn, session);
+        bool wasInitialized = _runtimeInitialized;
         EnsureRuntimeInitialized(pawn, trackPhysics);
 
         VehicleDrivingMode desiredMode = pawn.DrivingMode;
-        if (_activeDrivingMode != desiredMode)
+        bool modeChanged = _activeDrivingMode != desiredMode;
+        if (wasInitialized && (modeChanged || profileChanged))
         {
             _activeDrivingMode = desiredMode;
             ResetRuntimeFromPawn(pawn, trackPhysics);
             GetSolver(desiredMode).Reset(CreateContext(pawn, 0f, VehicleControlInput.Zero, trackPhysics, session));
-            session?.AppendMovementDebug("mode", $"vehicle driving mode switched to {_activeDrivingMode}.");
+            if (profileChanged && _activeProfile != null)
+            {
+                session?.AppendMovementDebug("profile", $"vehicle profile switched to {_activeProfile.Id}.");
+            }
+
+            if (modeChanged)
+            {
+                session?.AppendMovementDebug("mode", $"vehicle driving mode switched to {_activeDrivingMode}.");
+            }
         }
 
         if (pawn.Controller is not RacingPlayerController controller
@@ -98,7 +115,9 @@ public sealed class VehicleDynamicsComponent : EntityComponent
 
     internal string BuildDebugSummary()
     {
-        return $"mode={_activeDrivingMode} speed={_telemetry.SpeedUnitsPerSecond:0.000} rpm={_telemetry.EngineRpm:0} fallback={_telemetry.IsFallbackActive} wheels={VehicleDynamicsMath.BuildWheelDebugSummary(_wheelStates)}";
+        string profileId = _activeProfile?.Id ?? "fallback";
+        float targetTopSpeedMph = _activeProfile?.TargetTopSpeedMph ?? 0f;
+        return $"profile={profileId} mode={_activeDrivingMode} targetMph={_telemetry.CurrentSpeedMph:0.0}/{targetTopSpeedMph:0.0} speed={_telemetry.SpeedUnitsPerSecond:0.000} rpm={_telemetry.EngineRpm:0} fallback={_telemetry.IsFallbackActive} wheels={VehicleDynamicsMath.BuildWheelDebugSummary(_wheelStates)}";
     }
 
     private VehicleDynamicsExecutionContext CreateContext(
@@ -108,12 +127,14 @@ public sealed class VehicleDynamicsComponent : EntityComponent
         RaceTrackPhysicsComponent? trackPhysics,
         RuntimeRaceSession? session)
     {
+        CarPerformanceProfile profile = _activeProfile ?? ResolveProfile(pawn);
         return new VehicleDynamicsExecutionContext(
             pawn,
             elapsedTime,
             input,
             trackPhysics,
             session,
+            profile,
             _telemetry,
             _transmissionDefinition,
             _transmissionState,
@@ -137,6 +158,7 @@ public sealed class VehicleDynamicsComponent : EntityComponent
 
     private void ResetRuntimeFromPawn(RacingCarPawn pawn, RaceTrackPhysicsComponent? trackPhysics)
     {
+        CarPerformanceProfile profile = _activeProfile ?? ResolveProfile(pawn);
         SceneComponent rootComponent = pawn.RootComponent!;
         _chassisState.Position = rootComponent.LocalPosition;
         _chassisState.Orientation = rootComponent.LocalOrientation;
@@ -144,7 +166,7 @@ public sealed class VehicleDynamicsComponent : EntityComponent
         _chassisState.AngularVelocity = Vector3.Zero;
         _chassisState.MovementForward = VehicleDynamicsMath.NormalizeOrFallback(rootComponent.Forward, Vector3.Forward);
         _chassisState.SurfaceUp = VehicleDynamicsMath.NormalizeOrFallback(rootComponent.Up, Vector3.Up);
-        _chassisState.Mass = 1325f;
+        _chassisState.Mass = profile.Simulation.ChassisMass;
         _chassisState.SurfaceSegmentHint = trackPhysics == null ? -1 : 0;
         _chassisState.HasValidSurface = false;
 
@@ -159,6 +181,7 @@ public sealed class VehicleDynamicsComponent : EntityComponent
         _telemetry.MovementForward = _chassisState.MovementForward;
         _telemetry.SurfaceUp = _chassisState.SurfaceUp;
         _telemetry.IsFallbackActive = false;
+        _telemetry.CurrentSpeedMph = 0f;
 
         VehicleTransmissionLogic.Reset(_transmissionState, _transmissionDefinition);
 
@@ -185,10 +208,48 @@ public sealed class VehicleDynamicsComponent : EntityComponent
 
     private void SyncPawnCompatibility(RacingCarPawn pawn)
     {
+        if (_activeProfile != null)
+        {
+            pawn.CarProfile = _activeProfile;
+            pawn.CarLabel = _activeProfile.Name;
+            pawn.TargetTopSpeedMph = _activeProfile.TargetTopSpeedMph;
+        }
+
         pawn.CurrentSpeedMph = _telemetry.CurrentSpeedMph;
         pawn.SteeringInput = _telemetry.SteeringInput;
         pawn.TachometerAcceleration = _telemetry.TachometerAcceleration;
         pawn.CurrentGear = _telemetry.CurrentGear;
+    }
+
+    private bool BindProfile(RacingCarPawn pawn, RuntimeRaceSession? session)
+    {
+        CarPerformanceProfile profile = ResolveProfile(pawn);
+        pawn.CarProfile = profile;
+        pawn.CarLabel = profile.Name;
+        pawn.TargetTopSpeedMph = profile.TargetTopSpeedMph;
+
+        if (ReferenceEquals(_activeProfile, profile))
+        {
+            return false;
+        }
+
+        _activeProfile = profile;
+        _transmissionDefinition = profile.TransmissionDefinition;
+        _wheelDefinitions = profile.WheelDefinitions;
+        if (_wheelStates.Length != _wheelDefinitions.Length)
+        {
+            _wheelStates = CreateWheelStates(_wheelDefinitions);
+        }
+
+        session?.AppendMovementDebug(
+            "profile",
+            $"vehicle dynamics bound profile={profile.Id} targetTopSpeedMph={profile.TargetTopSpeedMph:0} massKg={profile.Simulation.ChassisMass:0}");
+        return true;
+    }
+
+    private static CarPerformanceProfile ResolveProfile(RacingCarPawn pawn)
+    {
+        return pawn.CarProfile ?? RaceFrontEndCatalog.ResolveCarProfile(pawn.SelectedCarIndex);
     }
 
     private IVehicleDynamicsSolver GetSolver(VehicleDrivingMode mode)
@@ -233,7 +294,7 @@ public sealed class VehicleDynamicsComponent : EntityComponent
         return _trackPhysicsComponent;
     }
 
-    private static VehicleWheelDefinition[] CreateDefaultWheelDefinitions()
+    private static VehicleWheelDefinition[] CreateFallbackWheelDefinitions()
     {
         const float wheelRadius = 0.43f;
         const float restLength = 0.42f;
