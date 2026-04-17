@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
+using RacingGameCasaEngine.Gameplay;
 using RacingGameCasaEngine.Worlds;
 
 namespace RacingGameCasaEngine.Components;
@@ -7,22 +8,6 @@ namespace RacingGameCasaEngine.Components;
 internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
 {
     private const float DebugSampleIntervalSeconds = 0.2f;
-    private const float MaxForwardSpeedUnitsPerSecond = 38f;
-    private const float MaxReverseSpeedUnitsPerSecond = 12f;
-    private const float MaxDriveForce = 7600f;
-    private const float MaxReverseDriveForce = 4200f;
-    private const float MaxBrakeForce = 9200f;
-    private const float RollingResistanceForce = 520f;
-    private const float LongitudinalDamping = 1900f;
-    private const float LateralGrip = 2800f;
-    private const float SuspensionSpringStrength = 28500f;
-    private const float SuspensionDamperStrength = 3600f;
-    private const float TireGripScale = 1.15f;
-    private const float LinearDrag = 0.95f;
-    private const float AngularDrag = 3.25f;
-    private const float ChassisYawInertia = 3250f;
-    private const float OrientationStabilization = 8.5f;
-    private const float RideHeightCorrection = 9.5f;
 
     private float _debugElapsedSeconds;
     private float _nextDebugSampleSeconds;
@@ -34,7 +19,8 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
 
     public void Reset(VehicleDynamicsExecutionContext context)
     {
-        context.Chassis.Mass = 1325f;
+        SimulationVehicleTuningProfile tuning = context.Profile.Simulation;
+        context.Chassis.Mass = tuning.ChassisMass;
         context.Chassis.LinearVelocity = Vector3.Zero;
         context.Chassis.AngularVelocity = Vector3.Zero;
         context.Chassis.MovementForward = VehicleDynamicsMath.NormalizeOrFallback(context.Chassis.MovementForward, Vector3.Forward);
@@ -62,6 +48,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
 
     public void Update(VehicleDynamicsExecutionContext context)
     {
+        SimulationVehicleTuningProfile tuning = context.Profile.Simulation;
         _debugElapsedSeconds += context.ElapsedTime;
 
         if (context.TrackPhysics == null)
@@ -128,7 +115,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             float previousCompression = state.SuspensionCompression;
             float compression = Math.Clamp(definition.SuspensionRestLength - clampedSuspensionLength, 0f, definition.SuspensionTravel);
             float compressionVelocity = context.ElapsedTime > 0f ? (compression - previousCompression) / context.ElapsedTime : 0f;
-            float suspensionForce = Math.Max(0f, (compression * SuspensionSpringStrength) + (compressionVelocity * SuspensionDamperStrength));
+            float suspensionForce = Math.Max(0f, (compression * tuning.SuspensionSpringStrength) + (compressionVelocity * tuning.SuspensionDamperStrength));
             float staticLoad = context.Chassis.Mass * 9.81f * definition.StaticLoadRatio;
             float wheelLoad = staticLoad + suspensionForce;
             touchedGuardRail |= Math.Abs(sample.LateralOffset) > Math.Max(0f, sample.HalfWidth - context.TrackPhysics.GuardRailInset);
@@ -144,22 +131,22 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             float longitudinalVelocity = Vector3.Dot(wheelVelocity, wheelForward);
             float lateralVelocity = Vector3.Dot(wheelVelocity, wheelRight);
             float driveForce = forwardThrottle > 0f
-                ? forwardThrottle * MaxDriveForce * transmissionFrame.DriveForceScale * definition.DriveForceRatio
-                : context.Input.Throttle * MaxReverseDriveForce * definition.DriveForceRatio;
-            float longitudinalForce = driveForce - (longitudinalVelocity * LongitudinalDamping);
+                ? forwardThrottle * tuning.MaxDriveForce * transmissionFrame.DriveForceScale * definition.DriveForceRatio
+                : context.Input.Throttle * tuning.MaxReverseDriveForce * definition.DriveForceRatio;
+            float longitudinalForce = driveForce - (longitudinalVelocity * tuning.LongitudinalDamping);
 
             if (context.Input.Throttle < 0f && Math.Abs(longitudinalVelocity) > 0.25f)
             {
-                longitudinalForce -= MathF.Sign(longitudinalVelocity) * MaxBrakeForce * definition.BrakeForceRatio;
+                longitudinalForce -= MathF.Sign(longitudinalVelocity) * tuning.MaxBrakeForce * definition.BrakeForceRatio;
             }
             else if (Math.Abs(context.Input.Throttle) < 0.01f)
             {
-                longitudinalForce -= MathF.Sign(longitudinalVelocity) * RollingResistanceForce * definition.BrakeForceRatio;
+                longitudinalForce -= MathF.Sign(longitudinalVelocity) * tuning.RollingResistanceForce * definition.BrakeForceRatio;
             }
 
-            float lateralForce = -lateralVelocity * LateralGrip;
+            float lateralForce = -lateralVelocity * tuning.LateralGrip;
             Vector2 tireForce = new(longitudinalForce, lateralForce);
-            float maxGripForce = Math.Max(900f, wheelLoad * TireGripScale);
+            float maxGripForce = Math.Max(900f, wheelLoad * tuning.TireGripScale);
             if (tireForce.LengthSquared() > maxGripForce * maxGripForce)
             {
                 tireForce.Normalize();
@@ -205,21 +192,23 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
 
         Vector3 acceleration = totalForce / context.Chassis.Mass;
         context.Chassis.LinearVelocity += acceleration * context.ElapsedTime;
-        context.Chassis.LinearVelocity -= context.Chassis.LinearVelocity * LinearDrag * context.ElapsedTime;
-        context.Chassis.LinearVelocity = VehicleDynamicsMath.ClampMagnitude(context.Chassis.LinearVelocity, MaxForwardSpeedUnitsPerSecond);
+        context.Chassis.LinearVelocity -= context.Chassis.LinearVelocity * tuning.LinearDrag * context.ElapsedTime;
+        context.Chassis.LinearVelocity = VehicleDynamicsMath.ClampMagnitude(
+            context.Chassis.LinearVelocity,
+            Math.Max(tuning.MaxForwardSpeedUnitsPerSecond, tuning.MaxReverseSpeedUnitsPerSecond));
 
-        Vector3 angularAcceleration = totalTorque / ChassisYawInertia;
+        Vector3 angularAcceleration = totalTorque / tuning.ChassisYawInertia;
         context.Chassis.AngularVelocity += angularAcceleration * context.ElapsedTime;
-        context.Chassis.AngularVelocity -= context.Chassis.AngularVelocity * AngularDrag * context.ElapsedTime;
+        context.Chassis.AngularVelocity -= context.Chassis.AngularVelocity * tuning.AngularDrag * context.ElapsedTime;
 
         context.Chassis.Position += context.Chassis.LinearVelocity * context.ElapsedTime;
-        context.Chassis.Position = Vector3.Lerp(context.Chassis.Position, averageSupportedPosition, Math.Clamp(context.ElapsedTime * RideHeightCorrection, 0f, 1f));
+        context.Chassis.Position = Vector3.Lerp(context.Chassis.Position, averageSupportedPosition, Math.Clamp(context.ElapsedTime * tuning.RideHeightCorrection, 0f, 1f));
 
         Quaternion integratedOrientation = VehicleDynamicsMath.IntegrateAngularVelocity(currentOrientation, context.Chassis.AngularVelocity, context.ElapsedTime);
         Quaternion targetOrientation = VehicleDynamicsMath.CreateSurfaceOrientation(
             VehicleDynamicsMath.ProjectDirectionOntoSurface(VehicleDynamicsMath.GetForward(integratedOrientation), averageSurfaceUp, averageSurfaceForward),
             averageSurfaceUp);
-        context.Chassis.Orientation = Quaternion.Slerp(integratedOrientation, targetOrientation, Math.Clamp(context.ElapsedTime * OrientationStabilization, 0f, 1f));
+        context.Chassis.Orientation = Quaternion.Slerp(integratedOrientation, targetOrientation, Math.Clamp(context.ElapsedTime * tuning.OrientationStabilization, 0f, 1f));
         context.Chassis.MovementForward = VehicleDynamicsMath.GetForward(context.Chassis.Orientation);
         context.Chassis.SurfaceUp = averageSurfaceUp;
         context.Chassis.SurfaceSegmentHint = ResolveBestSegmentHint(context.WheelStates, context.Chassis.SurfaceSegmentHint);
@@ -244,6 +233,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
 
     private void ApplyFallback(VehicleDynamicsExecutionContext context, string reason)
     {
+        SimulationVehicleTuningProfile tuning = context.Profile.Simulation;
         LogFallbackState(context.Session, true, reason);
 
         Vector3 forward = VehicleDynamicsMath.NormalizeOrFallback(context.Chassis.MovementForward, VehicleDynamicsMath.GetForward(context.Chassis.Orientation));
@@ -259,24 +249,24 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
 
         if (Math.Abs(context.Input.Steering) > 0.001f && context.Chassis.LinearVelocity.LengthSquared() > 0.01f)
         {
-            forward = VehicleDynamicsMath.RotateDirectionAroundAxis(forward, surfaceUp, context.Input.Steering * 0.6f * context.ElapsedTime, forward);
+            forward = VehicleDynamicsMath.RotateDirectionAroundAxis(forward, surfaceUp, context.Input.Steering * tuning.FallbackSteeringRateRadiansPerSecond * context.ElapsedTime, forward);
         }
 
         float forwardSpeed = Vector3.Dot(context.Chassis.LinearVelocity, forward);
         if (context.Input.Throttle > 0f)
         {
-            forwardSpeed += 12f * context.Input.Throttle * context.ElapsedTime;
+            forwardSpeed += tuning.FallbackForwardAcceleration * context.Input.Throttle * context.ElapsedTime;
         }
         else if (context.Input.Throttle < 0f)
         {
-            forwardSpeed += 10f * context.Input.Throttle * context.ElapsedTime;
+            forwardSpeed += tuning.FallbackReverseAcceleration * context.Input.Throttle * context.ElapsedTime;
         }
         else
         {
-            forwardSpeed = VehicleDynamicsMath.MoveToward(forwardSpeed, 0f, 14f * context.ElapsedTime);
+            forwardSpeed = VehicleDynamicsMath.MoveToward(forwardSpeed, 0f, tuning.FallbackIdleDeceleration * context.ElapsedTime);
         }
 
-        forwardSpeed = Math.Clamp(forwardSpeed, -MaxReverseSpeedUnitsPerSecond, MaxForwardSpeedUnitsPerSecond);
+        forwardSpeed = Math.Clamp(forwardSpeed, -tuning.MaxReverseSpeedUnitsPerSecond, tuning.MaxForwardSpeedUnitsPerSecond);
         context.Chassis.LinearVelocity = forward * forwardSpeed;
         context.Chassis.AngularVelocity *= 0.5f;
         context.Chassis.Position += context.Chassis.LinearVelocity * context.ElapsedTime;
@@ -301,8 +291,9 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
 
     private void UpdateTelemetry(VehicleDynamicsExecutionContext context)
     {
+        SimulationVehicleTuningProfile tuning = context.Profile.Simulation;
         float signedForwardSpeed = Vector3.Dot(context.Chassis.LinearVelocity, context.Chassis.MovementForward);
-        float normalizedSpeed = Math.Clamp(Math.Abs(signedForwardSpeed) / MaxForwardSpeedUnitsPerSecond, 0f, 1f);
+        float normalizedSpeed = Math.Clamp(Math.Abs(signedForwardSpeed) / tuning.MaxForwardSpeedUnitsPerSecond, 0f, 1f);
         float forwardThrottle = context.Input.Throttle > 0f && signedForwardSpeed > -0.25f
             ? Math.Clamp(context.Input.Throttle, 0f, 1f)
             : 0f;
