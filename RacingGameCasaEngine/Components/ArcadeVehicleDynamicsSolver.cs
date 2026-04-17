@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.Entities;
 using RacingGameCasaEngine.GameFramework;
+using RacingGameCasaEngine.Gameplay;
 using RacingGameCasaEngine.Worlds;
 
 namespace RacingGameCasaEngine.Components;
@@ -29,18 +30,6 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
 
     public VehicleDrivingMode DrivingMode => VehicleDrivingMode.Arcade;
 
-    public float ForwardAcceleration { get; set; } = 20f;
-
-    public float ReverseAcceleration { get; set; } = 14f;
-
-    public float MaxForwardSpeedUnitsPerSecond { get; set; } = 36f;
-
-    public float MaxReverseSpeedUnitsPerSecond { get; set; } = 12f;
-
-    public float TurnRateRadiansPerSecond { get; set; } = 1.7f;
-
-    public float IdleDeceleration { get; set; } = 18f;
-
     public void Reset(VehicleDynamicsExecutionContext context)
     {
         _speedUnitsPerSecond = 0f;
@@ -60,12 +49,13 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         float throttle = context.Input.Throttle;
         float steering = context.Input.Steering;
         RuntimeRaceSession? session = context.Session;
+        ArcadeVehicleTuningProfile tuning = context.Profile.Arcade;
         _debugElapsedSeconds += elapsedTime;
 
         MaybeLogInputChange(session, context, throttle, steering);
 
         float previousSpeedUnitsPerSecond = _speedUnitsPerSecond;
-        UpdateSpeed(context, throttle, elapsedTime);
+        UpdateSpeed(context, throttle, elapsedTime, tuning);
 
         RaceTrackPhysicsComponent? trackPhysics = context.TrackPhysics;
         if (trackPhysics == null
@@ -77,9 +67,9 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
                 trackPhysics == null
                     ? "track physics component unavailable"
                     : "surface sampling failed for current position");
-            UpdateFallbackMovement(context, steering, elapsedTime);
+            UpdateFallbackMovement(context, steering, elapsedTime, tuning);
             PopulateSharedWheelState(context);
-            UpdateTelemetry(context, steering, previousSpeedUnitsPerSecond, elapsedTime, fallbackActive: true);
+            UpdateTelemetry(context, steering, previousSpeedUnitsPerSecond, elapsedTime, fallbackActive: true, tuning);
             MaybeLogFallbackSample(session, context, throttle, steering);
             return;
         }
@@ -112,8 +102,8 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
 
         if (Math.Abs(_speedUnitsPerSecond) > 0.05f && Math.Abs(steering) > 0f)
         {
-            float steeringScale = Math.Clamp(_speedUnitsPerSecond / MaxForwardSpeedUnitsPerSecond, -0.75f, 1f);
-            float turnAmount = steering * GetSteeringSensitivityScale(pawn.Controller) * TurnRateRadiansPerSecond * steeringScale * elapsedTime;
+            float steeringScale = Math.Clamp(_speedUnitsPerSecond / tuning.MaxForwardSpeedUnitsPerSecond, -0.75f, 1f);
+            float turnAmount = steering * GetSteeringSensitivityScale(pawn.Controller) * tuning.TurnRateRadiansPerSecond * steeringScale * elapsedTime;
             _movementForward = VehicleDynamicsMath.RotateDirectionAroundAxis(_movementForward, currentSurface.Up, turnAmount, currentSurface.Forward);
         }
 
@@ -147,14 +137,14 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         _movementForward = VehicleDynamicsMath.ProjectDirectionOntoSurface(nextMovementForward, nextSurface.Up, nextSurface.Forward);
         context.Chassis.Orientation = VehicleDynamicsMath.CreateSurfaceOrientation(_movementForward, nextSurface.Up);
         context.Chassis.LinearVelocity = _movementForward * _speedUnitsPerSecond;
-        context.Chassis.AngularVelocity = nextSurface.Up * (steering * TurnRateRadiansPerSecond);
+        context.Chassis.AngularVelocity = nextSurface.Up * (steering * tuning.TurnRateRadiansPerSecond);
         context.Chassis.MovementForward = _movementForward;
         context.Chassis.SurfaceUp = nextSurface.Up;
         context.Chassis.SurfaceSegmentHint = nextSurface.SegmentIndex;
         context.Chassis.HasValidSurface = true;
 
         PopulateSharedWheelState(context);
-        UpdateTelemetry(context, steering, previousSpeedUnitsPerSecond, elapsedTime, fallbackActive: false);
+        UpdateTelemetry(context, steering, previousSpeedUnitsPerSecond, elapsedTime, fallbackActive: false, tuning);
         LogBoundsState(session, trackPhysics, nextSurface, barrierContact.OutsideRoadBounds, barrierContact.TouchedBarrier, barrierContact.AllowedCenterHalfWidth);
         MaybeLogLargeDisplacement(session, startPosition, desiredPosition, resolvedPosition, nextSurface);
         MaybeLogMovementSample(session, context, throttle, steering, desiredPosition, resolvedPosition, nextSurface, barrierContact.TouchedBarrier, barrierContact.OutsideRoadBounds);
@@ -167,7 +157,7 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
             : 1f;
     }
 
-    private void UpdateSpeed(VehicleDynamicsExecutionContext context, float throttle, float elapsedTime)
+    private void UpdateSpeed(VehicleDynamicsExecutionContext context, float throttle, float elapsedTime, ArcadeVehicleTuningProfile tuning)
     {
         float forwardThrottle = throttle > 0f && _speedUnitsPerSecond > -0.25f
             ? Math.Clamp(throttle, 0f, 1f)
@@ -182,18 +172,18 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
 
         if (forwardThrottle > 0f)
         {
-            _speedUnitsPerSecond += ForwardAcceleration * transmissionFrame.DriveForceScale * forwardThrottle * elapsedTime;
+            _speedUnitsPerSecond += tuning.ForwardAcceleration * transmissionFrame.DriveForceScale * forwardThrottle * elapsedTime;
         }
         else if (throttle < 0f)
         {
-            _speedUnitsPerSecond += ReverseAcceleration * Math.Clamp(throttle, -1f, 0f) * elapsedTime;
+            _speedUnitsPerSecond += tuning.ReverseAcceleration * Math.Clamp(throttle, -1f, 0f) * elapsedTime;
         }
         else
         {
-            _speedUnitsPerSecond = ApplyIdleDeceleration(_speedUnitsPerSecond, elapsedTime);
+            _speedUnitsPerSecond = ApplyIdleDeceleration(_speedUnitsPerSecond, elapsedTime, tuning.IdleDeceleration);
         }
 
-        _speedUnitsPerSecond = Math.Clamp(_speedUnitsPerSecond, -MaxReverseSpeedUnitsPerSecond, MaxForwardSpeedUnitsPerSecond);
+        _speedUnitsPerSecond = Math.Clamp(_speedUnitsPerSecond, -tuning.MaxReverseSpeedUnitsPerSecond, tuning.MaxForwardSpeedUnitsPerSecond);
 
         float drivenWheelAngularSpeedAfter = VehicleTransmissionLogic.ComputeDrivenWheelAngularSpeed(context.WheelDefinitions, _speedUnitsPerSecond);
         VehicleTransmissionLogic.SampleCurrentGear(
@@ -203,13 +193,13 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
             forwardThrottle);
     }
 
-    private void UpdateFallbackMovement(VehicleDynamicsExecutionContext context, float steering, float elapsedTime)
+    private void UpdateFallbackMovement(VehicleDynamicsExecutionContext context, float steering, float elapsedTime, ArcadeVehicleTuningProfile tuning)
     {
         Vector3 currentForward = VehicleDynamicsMath.NormalizeOrFallback(VehicleDynamicsMath.GetForward(context.Chassis.Orientation), Vector3.Forward);
         if (Math.Abs(_speedUnitsPerSecond) > 0.05f && Math.Abs(steering) > 0f)
         {
-            float steeringScale = Math.Clamp(_speedUnitsPerSecond / MaxForwardSpeedUnitsPerSecond, -0.75f, 1f);
-            float turnAmount = steering * GetSteeringSensitivityScale(context.Pawn.Controller) * TurnRateRadiansPerSecond * steeringScale * elapsedTime;
+            float steeringScale = Math.Clamp(_speedUnitsPerSecond / tuning.MaxForwardSpeedUnitsPerSecond, -0.75f, 1f);
+            float turnAmount = steering * GetSteeringSensitivityScale(context.Pawn.Controller) * tuning.TurnRateRadiansPerSecond * steeringScale * elapsedTime;
             Quaternion rotation = Quaternion.CreateFromAxisAngle(Vector3.Up, turnAmount);
             currentForward = VehicleDynamicsMath.NormalizeOrFallback(Vector3.Transform(currentForward, rotation), currentForward);
         }
@@ -275,9 +265,9 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         }
     }
 
-    private void UpdateTelemetry(VehicleDynamicsExecutionContext context, float steering, float previousSpeedUnitsPerSecond, float elapsedTime, bool fallbackActive)
+    private void UpdateTelemetry(VehicleDynamicsExecutionContext context, float steering, float previousSpeedUnitsPerSecond, float elapsedTime, bool fallbackActive, ArcadeVehicleTuningProfile tuning)
     {
-        float normalizedSpeed = Math.Clamp(Math.Abs(_speedUnitsPerSecond) / MaxForwardSpeedUnitsPerSecond, 0f, 1f);
+        float normalizedSpeed = Math.Clamp(Math.Abs(_speedUnitsPerSecond) / tuning.MaxForwardSpeedUnitsPerSecond, 0f, 1f);
         context.Telemetry.DrivingMode = VehicleDrivingMode.Arcade;
         context.Telemetry.SpeedUnitsPerSecond = _speedUnitsPerSecond;
         context.Telemetry.CurrentSpeedMph = normalizedSpeed * context.Pawn.TargetTopSpeedMph;
@@ -299,8 +289,8 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         {
             float speedDelta = _speedUnitsPerSecond - previousSpeedUnitsPerSecond;
             float accelerationReference = speedDelta >= 0f
-                ? ForwardAcceleration
-                : Math.Max(IdleDeceleration, ReverseAcceleration);
+                ? tuning.ForwardAcceleration
+                : Math.Max(tuning.IdleDeceleration, tuning.ReverseAcceleration);
             float normalizedAcceleration = 0f;
 
             if (accelerationReference > 0.0001f)
@@ -520,9 +510,9 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         return $"({vector.X:0.000}, {vector.Y:0.000}, {vector.Z:0.000})";
     }
 
-    private float ApplyIdleDeceleration(float speed, float elapsedTime)
+    private static float ApplyIdleDeceleration(float speed, float elapsedTime, float idleDeceleration)
     {
-        float delta = IdleDeceleration * elapsedTime;
+        float delta = idleDeceleration * elapsedTime;
         if (Math.Abs(speed) <= delta)
         {
             return 0f;
