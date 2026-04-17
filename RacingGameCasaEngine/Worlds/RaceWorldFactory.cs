@@ -103,6 +103,7 @@ public static class RaceWorldFactory
         {
             Name = CameraEntityName,
         };
+        cameraEntity.ApplyExplicitPolicies(EntityPolicySet.DynamicDefault);
 
         var cameraComponent = new CameraLookAtComponent();
         cameraComponent.SetPositionAndTarget(new Vector3(0f, 6f, -18f), Vector3.Zero);
@@ -136,6 +137,7 @@ public static class RaceWorldFactory
             Name = PlayerStartEntityName,
             RootComponent = new PlayerStartComponent(),
         };
+        entity.ApplyExplicitPolicies(EntityPolicySet.StaticDecoration);
 
         entity.RootComponent!.LocalPosition = position;
         return entity;
@@ -155,6 +157,11 @@ public static class RaceWorldFactory
         {
             Name = "RaceRoot",
         };
+        entity.ApplyExplicitPolicies(new EntityPolicySet(
+            Mobility.Static,
+            TickPolicy.EveryFrame,
+            SpatialPolicy.StaticIndex,
+            RenderDynamicPolicy.Static));
 
         entity.AddComponent(new RaceTrackPhysicsComponent(physicsProfile));
         entity.AddComponent(new RaceFlowCoordinatorComponent());
@@ -174,6 +181,7 @@ public static class RaceWorldFactory
                 HalfDepth = checkpointTrigger.HalfDepth,
             },
         };
+        entity.ApplyExplicitPolicies(EntityPolicySet.StaticDecoration);
 
         entity.RootComponent!.LocalPosition = checkpointTrigger.Position;
         entity.RootComponent.LocalOrientation = checkpointTrigger.Orientation;

@@ -66,6 +66,7 @@ public sealed class RacingCarPawn : Pawn
     public RacingCarPawn()
     {
         Name = "RacingCarPawn";
+        ApplyExplicitPolicies(EntityPolicySet.DynamicDefault);
         RootComponent = CreateComponentHierarchy();
         EnsureVisualComponent();
         AddComponent(new VehicleDynamicsComponent());

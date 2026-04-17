@@ -420,6 +420,7 @@ internal static partial class LegacyTrackSceneFactory
         {
             Name = name,
         };
+        entity.ApplyExplicitPolicies(EntityPolicySet.StaticDecoration);
 
         var component = new StaticModelComponent
         {
