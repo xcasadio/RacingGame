@@ -237,10 +237,14 @@ internal sealed class CarSelectionScreen : RaceFrontEndScreenBase
 
         for (int i = 0; i < _statLabels.Count; i++)
         {
-            _statLabels[i].Text = i < car.Stats.Count ? car.Stats[i] : string.Empty;
+            CarSelectionDisplayStat? stat = i < car.SelectionStats.Count
+                ? car.SelectionStats[i]
+                : null;
+
+            _statLabels[i].Text = stat?.Label ?? string.Empty;
             if (i < _statBars.Count)
             {
-                _statBars[i].Value = GetStatBarValue(_state.SelectedCarIndex, i);
+                _statBars[i].Value = stat?.FillPercent ?? 0f;
             }
         }
 
@@ -268,16 +272,5 @@ internal sealed class CarSelectionScreen : RaceFrontEndScreenBase
             contentLabel.FontSize = 30;
         }
         return button;
-    }
-
-    private static float GetStatBarValue(int carIndex, int statIndex)
-    {
-        float[][] values =
-        [
-            [68f, 54f, 72f, 61f],
-            [82f, 77f, 48f, 55f],
-            [74f, 63f, 86f, 79f],
-        ];
-        return values[Math.Clamp(carIndex, 0, values.Length - 1)][Math.Clamp(statIndex, 0, values[0].Length - 1)];
     }
 }
