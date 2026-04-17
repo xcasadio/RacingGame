@@ -61,6 +61,13 @@ internal sealed class RuntimeRaceSession
         ResetMovementDebugEntries();
         AppendMovementDebug("session", $"bound track='{TrackName}' car='{CarName}'");
         AppendMovementDebug("mode", $"drivingMode={DrivingMode}");
+        if (playerPawn.CarProfile != null)
+        {
+            AppendMovementDebug(
+                "profile",
+                $"id={playerPawn.CarProfile.Id} topSpeedMph={playerPawn.CarProfile.TargetTopSpeedMph:0} massKg={playerPawn.CarProfile.LegacyMassKilograms:0} accel={playerPawn.CarProfile.LegacyMaxAccelerationPerSecond:0.0}");
+        }
+
         if (playerPawn.RootComponent != null)
         {
             AppendMovementDebug(

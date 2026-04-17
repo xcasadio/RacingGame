@@ -2,6 +2,7 @@ using CasaEngine.Framework.Entities.Components;
 using CasaEngine.Framework.GameFramework;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Components;
+using RacingGameCasaEngine.Gameplay;
 
 namespace RacingGameCasaEngine.Entities;
 
@@ -34,6 +35,8 @@ public sealed class RacingCarPawn : Pawn
     public int SelectedCarIndex { get; set; }
 
     public int SelectedCarColorIndex { get; set; }
+
+    internal CarPerformanceProfile? CarProfile { get; set; }
 
     internal VehicleDrivingMode DrivingMode { get; set; } = VehicleDrivingMode.Arcade;
 

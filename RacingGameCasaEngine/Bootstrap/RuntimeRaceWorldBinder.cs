@@ -6,6 +6,7 @@ using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Entities;
 using RacingGameCasaEngine.GameFramework;
+using RacingGameCasaEngine.Gameplay;
 using RacingGameCasaEngine.Worlds;
 
 namespace RacingGameCasaEngine.Bootstrap;
@@ -64,6 +65,10 @@ internal sealed class RuntimeRaceWorldBinder
         {
             ControllerId = PlayerIndex.One,
         };
+        CarPerformanceProfile selectedProfile = RaceFrontEndCatalog.ResolveCarProfile(state.SelectedCarIndex);
+        playerPawn.CarProfile = selectedProfile;
+        playerPawn.TargetTopSpeedMph = selectedProfile.TargetTopSpeedMph;
+        playerPawn.CarLabel = selectedProfile.Name;
         playerPawn.DrivingMode = state.SelectedDrivingMode;
         playerController.Pawn = playerPawn;
         playerPawn.Controller = playerController;

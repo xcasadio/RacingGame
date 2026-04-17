@@ -190,6 +190,7 @@ public static class RaceWorldFactory
 
     private static RacingCarPawn CreatePlayerCarEntity(RaceFrontEndState state, CarDefinition car, TrackDefinition track)
     {
+        var profile = car.PerformanceProfile;
         var pawn = new RacingCarPawn
         {
             Name = PlayerCarEntityName,
@@ -197,7 +198,9 @@ public static class RaceWorldFactory
             TrackLabel = track.Name,
             SelectedCarIndex = state.SelectedCarIndex,
             SelectedCarColorIndex = state.SelectedCarColorIndex,
+            CarProfile = profile,
             DrivingMode = state.SelectedDrivingMode,
+            TargetTopSpeedMph = profile.TargetTopSpeedMph,
         };
 
         return pawn;
