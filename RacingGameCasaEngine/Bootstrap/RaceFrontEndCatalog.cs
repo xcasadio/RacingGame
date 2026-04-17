@@ -108,8 +108,16 @@ internal static class RaceFrontEndCatalog
                 288f,
                 1015f,
                 4.0f,
-                VehicleTransmissionLogic.CreateDefaultFiveSpeedDefinition(),
-                CreateBaselineWheelDefinitions(),
+                CreateTransmissionDefinition(
+                    [3.05f, 2.06f, 1.48f, 1.15f, 0.91f],
+                    3.00f,
+                    7.25f,
+                    950f,
+                    6550f,
+                    3050f,
+                    7800f,
+                    0.24f),
+                CreateWheelDefinitions(1.04f, -1.70f, 1.90f, 0.44f, 0.24f, 0.26f, 0.27f, 0.23f, 0.27f, 0.23f),
                 new ArcadeVehicleTuningProfile(
                     18.5f,
                     13.0f,
@@ -147,8 +155,16 @@ internal static class RaceFrontEndCatalog
                 275f,
                 1175f,
                 6.0f,
-                VehicleTransmissionLogic.CreateDefaultFiveSpeedDefinition(),
-                CreateBaselineWheelDefinitions(),
+                CreateTransmissionDefinition(
+                    [3.32f, 2.24f, 1.64f, 1.28f, 1.03f],
+                    3.08f,
+                    7.95f,
+                    950f,
+                    6400f,
+                    3300f,
+                    7700f,
+                    0.20f),
+                CreateWheelDefinitions(1.06f, -1.66f, 1.86f, 0.42f, 0.24f, 0.26f, 0.28f, 0.22f, 0.29f, 0.21f),
                 new ArcadeVehicleTuningProfile(
                     24.0f,
                     15.0f,
@@ -186,8 +202,16 @@ internal static class RaceFrontEndCatalog
                 240f,
                 875f,
                 5.0f,
-                VehicleTransmissionLogic.CreateDefaultFiveSpeedDefinition(),
-                CreateBaselineWheelDefinitions(),
+                CreateTransmissionDefinition(
+                    [3.20f, 2.18f, 1.58f, 1.19f, 0.95f],
+                    2.98f,
+                    7.45f,
+                    950f,
+                    6700f,
+                    3000f,
+                    7900f,
+                    0.18f),
+                CreateWheelDefinitions(1.02f, -1.72f, 1.82f, 0.50f, 0.23f, 0.27f, 0.26f, 0.24f, 0.25f, 0.25f),
                 new ArcadeVehicleTuningProfile(
                     21.0f,
                     14.5f,
@@ -289,23 +313,50 @@ internal static class RaceFrontEndCatalog
         return ((currentValue - minValue) / (maxValue - minValue)) * 100f;
     }
 
-    private static VehicleWheelDefinition[] CreateBaselineWheelDefinitions()
+    private static VehicleTransmissionDefinition CreateTransmissionDefinition(
+        IReadOnlyList<float> forwardGearRatios,
+        float reverseGearRatio,
+        float finalDriveRatio,
+        float idleRpm,
+        float upshiftRpm,
+        float downshiftRpm,
+        float redlineRpm,
+        float shiftDurationSeconds)
+    {
+        return new VehicleTransmissionDefinition(
+            forwardGearRatios,
+            reverseGearRatio,
+            finalDriveRatio,
+            idleRpm,
+            upshiftRpm,
+            downshiftRpm,
+            redlineRpm,
+            shiftDurationSeconds);
+    }
+
+    private static VehicleWheelDefinition[] CreateWheelDefinitions(
+        float sideOffset,
+        float frontOffset,
+        float rearOffset,
+        float frontSteering,
+        float frontDriveRatio,
+        float rearDriveRatio,
+        float frontBrakeRatio,
+        float rearBrakeRatio,
+        float frontLoadRatio,
+        float rearLoadRatio)
     {
         const float wheelRadius = 0.43f;
         const float restLength = 0.42f;
         const float travel = 0.22f;
-        const float frontSteering = 0.46f;
-        const float sideOffset = 1.05f;
-        const float frontOffset = -1.68f;
-        const float rearOffset = 1.88f;
         const float attachmentHeight = wheelRadius + restLength;
 
         return
         [
-            new VehicleWheelDefinition(VehicleWheelSlot.FrontLeft, "WheelFrontLeft", new Vector3(sideOffset, attachmentHeight, frontOffset), wheelRadius, restLength, travel, frontSteering, 0.25f, 0.25f, 0.27f),
-            new VehicleWheelDefinition(VehicleWheelSlot.FrontRight, "WheelFrontRight", new Vector3(-sideOffset, attachmentHeight, frontOffset), wheelRadius, restLength, travel, frontSteering, 0.25f, 0.25f, 0.27f),
-            new VehicleWheelDefinition(VehicleWheelSlot.RearLeft, "WheelBackLeft", new Vector3(sideOffset, attachmentHeight, rearOffset), wheelRadius, restLength, travel, 0f, 0.25f, 0.25f, 0.23f),
-            new VehicleWheelDefinition(VehicleWheelSlot.RearRight, "WheelBackRight", new Vector3(-sideOffset, attachmentHeight, rearOffset), wheelRadius, restLength, travel, 0f, 0.25f, 0.25f, 0.23f),
+            new VehicleWheelDefinition(VehicleWheelSlot.FrontLeft, "WheelFrontLeft", new Vector3(sideOffset, attachmentHeight, frontOffset), wheelRadius, restLength, travel, frontSteering, frontDriveRatio, frontBrakeRatio, frontLoadRatio),
+            new VehicleWheelDefinition(VehicleWheelSlot.FrontRight, "WheelFrontRight", new Vector3(-sideOffset, attachmentHeight, frontOffset), wheelRadius, restLength, travel, frontSteering, frontDriveRatio, frontBrakeRatio, frontLoadRatio),
+            new VehicleWheelDefinition(VehicleWheelSlot.RearLeft, "WheelBackLeft", new Vector3(sideOffset, attachmentHeight, rearOffset), wheelRadius, restLength, travel, 0f, rearDriveRatio, rearBrakeRatio, rearLoadRatio),
+            new VehicleWheelDefinition(VehicleWheelSlot.RearRight, "WheelBackRight", new Vector3(-sideOffset, attachmentHeight, rearOffset), wheelRadius, restLength, travel, 0f, rearDriveRatio, rearBrakeRatio, rearLoadRatio),
         ];
     }
 }
