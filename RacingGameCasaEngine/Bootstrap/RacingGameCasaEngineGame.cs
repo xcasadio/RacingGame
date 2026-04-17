@@ -34,6 +34,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     private readonly RuntimeRaceWorldBinder _raceWorldBinder;
     private readonly FrontEndNavigationSmokeValidator? _navigationSmokeValidator;
     private readonly TrackMigrationCaptureValidator? _trackMigrationCaptureValidator;
+    private readonly CarProfileAuditValidator? _carProfileAuditValidator;
     private readonly TrackRuntimeSceneExportValidator? _trackRuntimeSceneExportValidator;
     private readonly string _displaySettingsFileName;
     private readonly string _frontEndOptionsFileName;
@@ -75,6 +76,11 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         if (launchOptions.CaptureTrackAudit)
         {
             _trackMigrationCaptureValidator = new TrackMigrationCaptureValidator(this, _frontEndFlow);
+        }
+
+        if (launchOptions.CaptureCarProfileAudit)
+        {
+            _carProfileAuditValidator = new CarProfileAuditValidator(this, _frontEndFlow, launchOptions.CarProfileAuditFilePath);
         }
 
         if (launchOptions.ExportTrackRuntimeScene)

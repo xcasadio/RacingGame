@@ -21,9 +21,10 @@ public static class Program
 
         bool validateFrontEndNavigation = args.Contains("--smoke-frontend", StringComparer.OrdinalIgnoreCase);
         bool captureTrackAudit = args.Contains("--capture-track-audit", StringComparer.OrdinalIgnoreCase);
+        bool captureCarProfileAudit = args.Contains("--capture-car-profile-audit", StringComparer.OrdinalIgnoreCase);
         bool exportTrackRuntimeScene = args.Contains("--export-track-runtime-scene", StringComparer.OrdinalIgnoreCase);
         bool verifyLegacyImportProfile = args.Contains("--verify-legacy-import-profile", StringComparer.OrdinalIgnoreCase);
-        EnsureSingleAutomationMode(validateFrontEndNavigation, captureTrackAudit, exportTrackRuntimeScene, verifyLegacyImportProfile);
+        EnsureSingleAutomationMode(validateFrontEndNavigation, captureTrackAudit, captureCarProfileAudit, exportTrackRuntimeScene, verifyLegacyImportProfile);
 
         Logs.AddLogger(new DebugLogger());
         string logFileName = Path.Combine(AppContext.BaseDirectory, $"racinggame-casaengine-{Environment.ProcessId}.log");
@@ -65,8 +66,10 @@ public static class Program
         {
             ValidateFrontEndNavigation = validateFrontEndNavigation,
             CaptureTrackAudit = captureTrackAudit,
+            CaptureCarProfileAudit = captureCarProfileAudit,
             ExportTrackRuntimeScene = exportTrackRuntimeScene,
             RuntimeSceneExportFilePath = GetOptionValue(args, "--track-runtime-export-file"),
+            CarProfileAuditFilePath = GetOptionValue(args, "--car-profile-audit-file"),
         };
 
         using var game = new RacingGameCasaEngineGame(runtimeContext, displaySettingsPath, frontEndOptionsPath, launchOptions)
@@ -80,6 +83,7 @@ public static class Program
     private static void EnsureSingleAutomationMode(
         bool validateFrontEndNavigation,
         bool captureTrackAudit,
+        bool captureCarProfileAudit,
         bool exportTrackRuntimeScene,
         bool verifyLegacyImportProfile)
     {
@@ -90,6 +94,11 @@ public static class Program
         }
 
         if (captureTrackAudit)
+        {
+            enabledModes++;
+        }
+
+        if (captureCarProfileAudit)
         {
             enabledModes++;
         }

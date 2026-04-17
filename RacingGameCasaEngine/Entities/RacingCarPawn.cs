@@ -38,6 +38,8 @@ public sealed class RacingCarPawn : Pawn
 
     internal CarPerformanceProfile? CarProfile { get; set; }
 
+    internal VehicleControlInput? ForcedControlInput { get; set; }
+
     internal VehicleDrivingMode DrivingMode { get; set; } = VehicleDrivingMode.Arcade;
 
     public float TargetTopSpeedMph { get; set; } = 170.0f;

@@ -100,14 +100,23 @@ public sealed class VehicleDynamicsComponent : EntityComponent
             return;
         }
 
-        CasaEngine.Framework.Input.InputComponent? input = pawn.World?.Game?.InputComponent;
-        if (input == null)
+        VehicleControlInput controlInput;
+        if (pawn.ForcedControlInput.HasValue)
         {
-            SyncPawnCompatibility(pawn);
-            return;
+            controlInput = pawn.ForcedControlInput.Value;
+        }
+        else
+        {
+            CasaEngine.Framework.Input.InputComponent? input = pawn.World?.Game?.InputComponent;
+            if (input == null)
+            {
+                SyncPawnCompatibility(pawn);
+                return;
+            }
+
+            controlInput = VehicleInputReader.Read(input, controller);
         }
 
-        VehicleControlInput controlInput = VehicleInputReader.Read(input, controller);
         VehicleDynamicsExecutionContext context = CreateContext(pawn, elapsedTime, controlInput, trackPhysics, session);
         GetSolver(_activeDrivingMode).Update(context);
         ApplyRuntimeToPawn(pawn);
