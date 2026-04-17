@@ -133,7 +133,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             float driveForce = forwardThrottle > 0f
                 ? forwardThrottle * tuning.MaxDriveForce * transmissionFrame.DriveForceScale * definition.DriveForceRatio
                 : context.Input.Throttle * tuning.MaxReverseDriveForce * definition.DriveForceRatio;
-            float longitudinalForce = driveForce - (longitudinalVelocity * tuning.LongitudinalDamping);
+            float longitudinalForce = driveForce - (longitudinalVelocity * tuning.LongitudinalDamping * definition.StaticLoadRatio);
 
             if (context.Input.Throttle < 0f && Math.Abs(longitudinalVelocity) > 0.25f)
             {
@@ -144,7 +144,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
                 longitudinalForce -= MathF.Sign(longitudinalVelocity) * tuning.RollingResistanceForce * definition.BrakeForceRatio;
             }
 
-            float lateralForce = -lateralVelocity * tuning.LateralGrip;
+            float lateralForce = -lateralVelocity * tuning.LateralGrip * definition.StaticLoadRatio;
             Vector2 tireForce = new(longitudinalForce, lateralForce);
             float maxGripForce = Math.Max(900f, wheelLoad * tuning.TireGripScale);
             if (tireForce.LengthSquared() > maxGripForce * maxGripForce)
@@ -153,9 +153,9 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
                 tireForce *= maxGripForce;
             }
 
-            Vector3 contactForce = (sample.Up * suspensionForce) + (wheelForward * tireForce.X) + (wheelRight * tireForce.Y);
-            totalForce += contactForce;
-            totalTorque += Vector3.Cross(sample.SupportPoint - context.Chassis.Position, contactForce);
+            Vector3 planarContactForce = (wheelForward * tireForce.X) + (wheelRight * tireForce.Y);
+            totalForce += planarContactForce;
+            totalTorque += Vector3.Cross(sample.SupportPoint - context.Chassis.Position, planarContactForce);
 
             Vector3 attachmentTarget = sample.SupportPoint + (sample.Up * (definition.Radius + clampedSuspensionLength));
             accumulatedSupportPosition += attachmentTarget - wheelOffset;
@@ -192,6 +192,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
 
         Vector3 acceleration = totalForce / context.Chassis.Mass;
         context.Chassis.LinearVelocity += acceleration * context.ElapsedTime;
+        context.Chassis.LinearVelocity -= averageSurfaceUp * Vector3.Dot(context.Chassis.LinearVelocity, averageSurfaceUp);
         context.Chassis.LinearVelocity -= context.Chassis.LinearVelocity * tuning.LinearDrag * context.ElapsedTime;
         context.Chassis.LinearVelocity = VehicleDynamicsMath.ClampMagnitude(
             context.Chassis.LinearVelocity,
