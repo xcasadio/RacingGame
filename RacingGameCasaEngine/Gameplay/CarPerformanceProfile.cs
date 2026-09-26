@@ -28,8 +28,8 @@ internal sealed class CarPerformanceProfile
         LegacyMaxAccelerationPerSecond = legacyMaxAccelerationPerSecond;
         TransmissionDefinition = transmissionDefinition;
         WheelDefinitions = wheelDefinitions;
-        Arcade = arcade;
-        Simulation = simulation;
+        Arcade = arcade.WithDerivedForwardSpeed(targetTopSpeedMph);
+        Simulation = simulation.WithDerivedForwardSpeed(targetTopSpeedMph);
     }
 
     public string Id { get; }
@@ -58,14 +58,23 @@ internal sealed class CarPerformanceProfile
 internal sealed record ArcadeVehicleTuningProfile(
     float ForwardAcceleration,
     float ReverseAcceleration,
-    float MaxForwardSpeedUnitsPerSecond,
     float MaxReverseSpeedUnitsPerSecond,
     float TurnRateRadiansPerSecond,
-    float IdleDeceleration);
+    float IdleDeceleration)
+{
+    public float MaxForwardSpeedUnitsPerSecond { get; init; }
+
+    public ArcadeVehicleTuningProfile WithDerivedForwardSpeed(float targetTopSpeedMph)
+    {
+        return this with
+        {
+            MaxForwardSpeedUnitsPerSecond = VehicleSpeedCalibration.ComputeForwardSpeedUnitsPerSecond(targetTopSpeedMph, VehicleDrivingMode.Arcade),
+        };
+    }
+}
 
 internal sealed record SimulationVehicleTuningProfile(
     float ChassisMass,
-    float MaxForwardSpeedUnitsPerSecond,
     float MaxReverseSpeedUnitsPerSecond,
     float MaxDriveForce,
     float MaxReverseDriveForce,
@@ -84,4 +93,47 @@ internal sealed record SimulationVehicleTuningProfile(
     float FallbackForwardAcceleration,
     float FallbackReverseAcceleration,
     float FallbackIdleDeceleration,
-    float FallbackSteeringRateRadiansPerSecond);
+    float FallbackSteeringRateRadiansPerSecond)
+{
+    public float MaxForwardSpeedUnitsPerSecond { get; init; }
+
+    public SimulationVehicleTuningProfile WithDerivedForwardSpeed(float targetTopSpeedMph)
+    {
+        return this with
+        {
+            MaxForwardSpeedUnitsPerSecond = VehicleSpeedCalibration.ComputeForwardSpeedUnitsPerSecond(targetTopSpeedMph, VehicleDrivingMode.Simulation),
+        };
+    }
+}
+
+internal static class VehicleSpeedCalibration
+{
+    private const float ReferenceTopSpeedMph = 275f;
+    private const float ArcadeReferenceForwardSpeedUnitsPerSecond = 36f;
+    private const float SimulationReferenceForwardSpeedUnitsPerSecond = 38f;
+
+    public static float ComputeForwardSpeedUnitsPerSecond(float targetTopSpeedMph, VehicleDrivingMode drivingMode)
+    {
+        if (targetTopSpeedMph <= 0f)
+        {
+            throw new ArgumentOutOfRangeException(nameof(targetTopSpeedMph));
+        }
+
+        return targetTopSpeedMph * GetForwardSpeedUnitsPerMph(drivingMode);
+    }
+
+    public static float ConvertSpeedUnitsToDisplayMph(float speedUnitsPerSecond, VehicleDrivingMode drivingMode)
+    {
+        float unitsPerMph = GetForwardSpeedUnitsPerMph(drivingMode);
+        return unitsPerMph <= 0.0001f
+            ? 0f
+            : Math.Abs(speedUnitsPerSecond) / unitsPerMph;
+    }
+
+    private static float GetForwardSpeedUnitsPerMph(VehicleDrivingMode drivingMode)
+    {
+        return drivingMode == VehicleDrivingMode.Simulation
+            ? SimulationReferenceForwardSpeedUnitsPerSecond / ReferenceTopSpeedMph
+            : ArcadeReferenceForwardSpeedUnitsPerSecond / ReferenceTopSpeedMph;
+    }
+}

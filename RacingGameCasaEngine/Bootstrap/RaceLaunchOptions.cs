@@ -8,9 +8,15 @@ internal sealed class RaceLaunchOptions
 
     public bool CaptureCarProfileAudit { get; init; }
 
+    public bool CaptureCarTopSpeedAudit { get; init; }
+
     public bool ExportTrackRuntimeScene { get; init; }
 
     public string? RuntimeSceneExportFilePath { get; init; }
 
     public string? CarProfileAuditFilePath { get; init; }
+
+    public string? CarTopSpeedAuditFilePath { get; init; }
+
+    public string? CarTopSpeedAuditTrackName { get; init; }
 }

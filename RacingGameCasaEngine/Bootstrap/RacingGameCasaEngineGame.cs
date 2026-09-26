@@ -7,6 +7,7 @@ using CasaEngine.Framework.Entities;
 using CasaEngine.Framework.Game;
 using CasaEngine.Framework.Game.Components;
 using CasaEngine.Framework.World;
+using MGUI.Core.UI.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
@@ -35,6 +36,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     private readonly FrontEndNavigationSmokeValidator? _navigationSmokeValidator;
     private readonly TrackMigrationCaptureValidator? _trackMigrationCaptureValidator;
     private readonly CarProfileAuditValidator? _carProfileAuditValidator;
+    private readonly CarTopSpeedAuditValidator? _carTopSpeedAuditValidator;
     private readonly TrackRuntimeSceneExportValidator? _trackRuntimeSceneExportValidator;
     private readonly string _displaySettingsFileName;
     private readonly string _frontEndOptionsFileName;
@@ -81,6 +83,11 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         if (launchOptions.CaptureCarProfileAudit)
         {
             _carProfileAuditValidator = new CarProfileAuditValidator(this, _frontEndFlow, launchOptions.CarProfileAuditFilePath);
+        }
+
+        if (launchOptions.CaptureCarTopSpeedAudit)
+        {
+            _carTopSpeedAuditValidator = new CarTopSpeedAuditValidator(this, _frontEndFlow, launchOptions.CarTopSpeedAuditFilePath, launchOptions.CarTopSpeedAuditTrackName);
         }
 
         if (launchOptions.ExportTrackRuntimeScene)
@@ -373,6 +380,11 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
             ApplyRaceWorldVisibilityState();
             Logs.WriteInfo(circuitOnlyViewEnabled ? "Circuit-only view enabled" : "Circuit-only view disabled");
         }
+
+        if (InputComponent.KeyboardManager.IsKeyJustPressed(XnaKeys.F5))
+        {
+            CaptureMovementDebugReport();
+        }
     }
 
     private void ApplyDebugMouseCursorState()
@@ -417,6 +429,34 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     private void CaptureScreenshot()
     {
         CaptureScreenshotWithStem(null);
+    }
+
+    private void CaptureMovementDebugReport()
+    {
+        if (!RaceSession.IsActive)
+        {
+            Logs.WriteInfo("Movement debug report unavailable because no race session is active.");
+            return;
+        }
+
+        try
+        {
+            string report = RaceSession.BuildMovementDebugReport();
+            string diagnosticsDirectory = Path.Combine(GetUserDataDirectory(), "Diagnostics");
+            Directory.CreateDirectory(diagnosticsDirectory);
+
+            string filePath = Path.Combine(
+                diagnosticsDirectory,
+                $"movement-debug-{DateTime.Now:yyyyMMdd-HHmmssfff}.txt");
+            File.WriteAllText(filePath, report);
+            new StringClipboard().Text = report;
+            Logs.WriteInfo($"Movement debug report copied to clipboard and saved: {filePath}");
+        }
+        catch (Exception ex)
+        {
+            Logs.WriteException(ex);
+            Logs.WriteWarning("Failed to capture the movement debug report.");
+        }
     }
 
     internal string CaptureScreenshotWithStem(string? fileStem)

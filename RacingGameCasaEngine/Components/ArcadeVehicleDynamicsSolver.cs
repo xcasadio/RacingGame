@@ -270,7 +270,7 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         float normalizedSpeed = Math.Clamp(Math.Abs(_speedUnitsPerSecond) / tuning.MaxForwardSpeedUnitsPerSecond, 0f, 1f);
         context.Telemetry.DrivingMode = VehicleDrivingMode.Arcade;
         context.Telemetry.SpeedUnitsPerSecond = _speedUnitsPerSecond;
-        context.Telemetry.CurrentSpeedMph = normalizedSpeed * context.Pawn.TargetTopSpeedMph;
+        context.Telemetry.CurrentSpeedMph = VehicleSpeedCalibration.ConvertSpeedUnitsToDisplayMph(_speedUnitsPerSecond, VehicleDrivingMode.Arcade);
         context.Telemetry.SteeringInput = steering;
         context.Telemetry.NormalizedSpeed = normalizedSpeed;
         context.Telemetry.EngineRpm = context.TransmissionState.EngineRpm;

@@ -150,7 +150,8 @@ internal sealed class RuntimeRaceSession
             builder.AppendLine($"SteeringInput: {PlayerPawn.SteeringInput:0.000}");
             if (PlayerPawn.VehicleDynamics is { } dynamics)
             {
-                builder.AppendLine($"VehicleDynamics: {dynamics.BuildDebugSummary()}");
+                builder.AppendLine("VehicleDynamics:");
+                builder.AppendLine(dynamics.BuildDetailedDebugReport());
             }
         }
 

@@ -22,9 +22,10 @@ public static class Program
         bool validateFrontEndNavigation = args.Contains("--smoke-frontend", StringComparer.OrdinalIgnoreCase);
         bool captureTrackAudit = args.Contains("--capture-track-audit", StringComparer.OrdinalIgnoreCase);
         bool captureCarProfileAudit = args.Contains("--capture-car-profile-audit", StringComparer.OrdinalIgnoreCase);
+        bool captureCarTopSpeedAudit = args.Contains("--capture-car-top-speed-audit", StringComparer.OrdinalIgnoreCase);
         bool exportTrackRuntimeScene = args.Contains("--export-track-runtime-scene", StringComparer.OrdinalIgnoreCase);
         bool verifyLegacyImportProfile = args.Contains("--verify-legacy-import-profile", StringComparer.OrdinalIgnoreCase);
-        EnsureSingleAutomationMode(validateFrontEndNavigation, captureTrackAudit, captureCarProfileAudit, exportTrackRuntimeScene, verifyLegacyImportProfile);
+        EnsureSingleAutomationMode(validateFrontEndNavigation, captureTrackAudit, captureCarProfileAudit, captureCarTopSpeedAudit, exportTrackRuntimeScene, verifyLegacyImportProfile);
 
         Logs.AddLogger(new DebugLogger());
         string logFileName = Path.Combine(AppContext.BaseDirectory, $"racinggame-casaengine-{Environment.ProcessId}.log");
@@ -67,9 +68,12 @@ public static class Program
             ValidateFrontEndNavigation = validateFrontEndNavigation,
             CaptureTrackAudit = captureTrackAudit,
             CaptureCarProfileAudit = captureCarProfileAudit,
+            CaptureCarTopSpeedAudit = captureCarTopSpeedAudit,
             ExportTrackRuntimeScene = exportTrackRuntimeScene,
             RuntimeSceneExportFilePath = GetOptionValue(args, "--track-runtime-export-file"),
             CarProfileAuditFilePath = GetOptionValue(args, "--car-profile-audit-file"),
+            CarTopSpeedAuditFilePath = GetOptionValue(args, "--car-top-speed-audit-file"),
+            CarTopSpeedAuditTrackName = GetOptionValue(args, "--car-top-speed-audit-track"),
         };
 
         using var game = new RacingGameCasaEngineGame(runtimeContext, displaySettingsPath, frontEndOptionsPath, launchOptions)
@@ -84,6 +88,7 @@ public static class Program
         bool validateFrontEndNavigation,
         bool captureTrackAudit,
         bool captureCarProfileAudit,
+        bool captureCarTopSpeedAudit,
         bool exportTrackRuntimeScene,
         bool verifyLegacyImportProfile)
     {
@@ -99,6 +104,11 @@ public static class Program
         }
 
         if (captureCarProfileAudit)
+        {
+            enabledModes++;
+        }
+
+        if (captureCarTopSpeedAudit)
         {
             enabledModes++;
         }

@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using Microsoft.Xna.Framework;
 using CasaEngine.Framework.Gameplay;
 using RacingGameCasaEngine.Bootstrap;
@@ -127,6 +129,62 @@ public sealed class VehicleDynamicsComponent : EntityComponent
         string profileId = _activeProfile?.Id ?? "fallback";
         float targetTopSpeedMph = _activeProfile?.TargetTopSpeedMph ?? 0f;
         return $"profile={profileId} mode={_activeDrivingMode} targetMph={_telemetry.CurrentSpeedMph:0.0}/{targetTopSpeedMph:0.0} speed={_telemetry.SpeedUnitsPerSecond:0.000} rpm={_telemetry.EngineRpm:0} fallback={_telemetry.IsFallbackActive} wheels={VehicleDynamicsMath.BuildWheelDebugSummary(_wheelStates)}";
+    }
+
+    internal string BuildDetailedDebugReport()
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine($"Summary: {BuildDebugSummary()}");
+
+        if (_activeProfile == null)
+        {
+            return builder.ToString().TrimEnd();
+        }
+
+        CarPerformanceProfile profile = _activeProfile;
+        VehicleTransmissionDefinition transmission = _transmissionDefinition;
+        ArcadeVehicleTuningProfile arcade = profile.Arcade;
+        SimulationVehicleTuningProfile simulation = profile.Simulation;
+
+        float totalDriveRatio = 0f;
+        float totalBrakeRatio = 0f;
+        float totalStaticLoadRatio = 0f;
+        float weightedDrivenWheelRadius = 0f;
+        for (int index = 0; index < _wheelDefinitions.Length; index++)
+        {
+            VehicleWheelDefinition definition = _wheelDefinitions[index];
+            totalDriveRatio += definition.DriveForceRatio;
+            totalBrakeRatio += definition.BrakeForceRatio;
+            totalStaticLoadRatio += definition.StaticLoadRatio;
+            weightedDrivenWheelRadius += definition.Radius * definition.DriveForceRatio;
+        }
+
+        float averageDrivenWheelRadius = totalDriveRatio > 0.0001f
+            ? weightedDrivenWheelRadius / totalDriveRatio
+            : 0f;
+
+        builder.AppendLine($"Profile: id={profile.Id} name='{profile.Name}' targetTopSpeedMph={profile.TargetTopSpeedMph:0.0} legacyMassKg={profile.LegacyMassKilograms:0.0} legacyAccel={profile.LegacyMaxAccelerationPerSecond:0.00}");
+        builder.AppendLine($"Transmission: forward={BuildForwardGearRatioSummary(transmission)} reverse={transmission.ReverseGearRatio.ToString("0.00", CultureInfo.InvariantCulture)} finalDrive={transmission.FinalDriveRatio.ToString("0.00", CultureInfo.InvariantCulture)} idleRpm={transmission.IdleRpm:0} upshiftRpm={transmission.UpshiftRpm:0} downshiftRpm={transmission.DownshiftRpm:0} redlineRpm={transmission.RedlineRpm:0}");
+        builder.AppendLine($"WheelModel: drivenRadius={averageDrivenWheelRadius.ToString("0.000", CultureInfo.InvariantCulture)} driveRatioSum={totalDriveRatio.ToString("0.00", CultureInfo.InvariantCulture)} brakeRatioSum={totalBrakeRatio.ToString("0.00", CultureInfo.InvariantCulture)} staticLoadRatioSum={totalStaticLoadRatio.ToString("0.00", CultureInfo.InvariantCulture)}");
+        builder.AppendLine($"ArcadeTuning: accel={arcade.ForwardAcceleration.ToString("0.00", CultureInfo.InvariantCulture)} reverseAccel={arcade.ReverseAcceleration.ToString("0.00", CultureInfo.InvariantCulture)} maxUnits={arcade.MaxForwardSpeedUnitsPerSecond.ToString("0.00", CultureInfo.InvariantCulture)} idleDecel={arcade.IdleDeceleration.ToString("0.00", CultureInfo.InvariantCulture)} turnRate={arcade.TurnRateRadiansPerSecond.ToString("0.00", CultureInfo.InvariantCulture)}");
+        builder.AppendLine($"SimulationTuning: mass={simulation.ChassisMass.ToString("0.00", CultureInfo.InvariantCulture)} maxUnits={simulation.MaxForwardSpeedUnitsPerSecond.ToString("0.00", CultureInfo.InvariantCulture)} maxDrive={simulation.MaxDriveForce.ToString("0.00", CultureInfo.InvariantCulture)} reverseDrive={simulation.MaxReverseDriveForce.ToString("0.00", CultureInfo.InvariantCulture)} brake={simulation.MaxBrakeForce.ToString("0.00", CultureInfo.InvariantCulture)} longDamp={simulation.LongitudinalDamping.ToString("0.00", CultureInfo.InvariantCulture)} linearDrag={simulation.LinearDrag.ToString("0.000", CultureInfo.InvariantCulture)} lateralGrip={simulation.LateralGrip.ToString("0.00", CultureInfo.InvariantCulture)} tireGripScale={simulation.TireGripScale.ToString("0.00", CultureInfo.InvariantCulture)}");
+
+        builder.AppendLine("GearRedline:");
+        for (int gear = 1; gear <= transmission.ForwardGearCount; gear++)
+        {
+            float redlineSpeedUnits = VehicleTransmissionLogic.ComputeForwardSpeedUnitsAtEngineRpm(transmission, gear, transmission.RedlineRpm, _wheelDefinitions);
+            float redlineMph = VehicleSpeedCalibration.ConvertSpeedUnitsToDisplayMph(redlineSpeedUnits, VehicleDrivingMode.Simulation);
+            builder.AppendLine($"  G{gear}: redlineUnits={redlineSpeedUnits.ToString("0.00", CultureInfo.InvariantCulture)} redlineMph={redlineMph.ToString("0.0", CultureInfo.InvariantCulture)}");
+        }
+
+        builder.AppendLine("SimulationFullThrottleEstimate:");
+        for (int gear = 1; gear <= transmission.ForwardGearCount; gear++)
+        {
+            SimulationGearEstimate estimate = EstimateSimulationGearEquilibrium(profile, transmission, _wheelDefinitions, gear, totalDriveRatio, totalStaticLoadRatio);
+            builder.AppendLine($"  G{gear}: eqUnits={estimate.SpeedUnitsPerSecond.ToString("0.00", CultureInfo.InvariantCulture)} eqMph={estimate.DisplayMph.ToString("0.0", CultureInfo.InvariantCulture)} rpm={estimate.EngineRpm.ToString("0", CultureInfo.InvariantCulture)} drive={estimate.DriveForce.ToString("0", CultureInfo.InvariantCulture)} resist={estimate.ResistiveForce.ToString("0", CultureInfo.InvariantCulture)} net={estimate.NetForce.ToString("0", CultureInfo.InvariantCulture)}");
+        }
+
+        return builder.ToString().TrimEnd();
     }
 
     private VehicleDynamicsExecutionContext CreateContext(
@@ -333,4 +391,77 @@ public sealed class VehicleDynamicsComponent : EntityComponent
 
         return wheelStates;
     }
+
+    private static string BuildForwardGearRatioSummary(VehicleTransmissionDefinition transmission)
+    {
+        var builder = new StringBuilder();
+        for (int index = 0; index < transmission.ForwardGearRatios.Count; index++)
+        {
+            if (index > 0)
+            {
+                builder.Append('/');
+            }
+
+            builder.Append(transmission.ForwardGearRatios[index].ToString("0.00", CultureInfo.InvariantCulture));
+        }
+
+        return builder.ToString();
+    }
+
+    private static SimulationGearEstimate EstimateSimulationGearEquilibrium(
+        CarPerformanceProfile profile,
+        VehicleTransmissionDefinition transmission,
+        IReadOnlyList<VehicleWheelDefinition> wheelDefinitions,
+        int gear,
+        float totalDriveRatio,
+        float totalStaticLoadRatio)
+    {
+        SimulationVehicleTuningProfile tuning = profile.Simulation;
+        float gearRedlineSpeedUnits = VehicleTransmissionLogic.ComputeForwardSpeedUnitsAtEngineRpm(
+            transmission,
+            gear,
+            transmission.RedlineRpm,
+            wheelDefinitions);
+        float bestSpeedUnits = 0f;
+        float bestDisplayMph = 0f;
+        float bestEngineRpm = transmission.IdleRpm;
+        float bestDriveForce = 0f;
+        float bestResistiveForce = 0f;
+        float bestNetForce = float.MaxValue;
+        int maxSampleIndex = Math.Max(1, (int)MathF.Ceiling(gearRedlineSpeedUnits * 10f));
+
+        for (int sampleIndex = 0; sampleIndex <= maxSampleIndex; sampleIndex++)
+        {
+            float speedUnits = Math.Min(sampleIndex * 0.1f, gearRedlineSpeedUnits);
+            float drivenWheelAngularSpeed = VehicleTransmissionLogic.ComputeDrivenWheelAngularSpeed(wheelDefinitions, speedUnits);
+            VehicleTransmissionFrame frame = VehicleTransmissionLogic.EvaluateForwardFrame(transmission, gear, drivenWheelAngularSpeed, 1f);
+            float driveForce = tuning.MaxDriveForce * frame.DriveForceScale * totalDriveRatio;
+            float resistiveForce = (speedUnits * tuning.LongitudinalDamping * totalStaticLoadRatio)
+                + (Math.Abs(speedUnits) * tuning.ChassisMass * tuning.LinearDrag);
+            float netForce = driveForce - resistiveForce;
+
+            if (Math.Abs(netForce) >= Math.Abs(bestNetForce))
+            {
+                continue;
+            }
+
+            bestNetForce = netForce;
+            bestSpeedUnits = speedUnits;
+            bestDisplayMph = VehicleSpeedCalibration.ConvertSpeedUnitsToDisplayMph(speedUnits, VehicleDrivingMode.Simulation);
+            bestEngineRpm = frame.EngineRpm;
+            bestDriveForce = driveForce;
+            bestResistiveForce = resistiveForce;
+        }
+
+        return new SimulationGearEstimate(gear, bestSpeedUnits, bestDisplayMph, bestEngineRpm, bestDriveForce, bestResistiveForce, bestNetForce);
+    }
+
+    private readonly record struct SimulationGearEstimate(
+        int Gear,
+        float SpeedUnitsPerSecond,
+        float DisplayMph,
+        float EngineRpm,
+        float DriveForce,
+        float ResistiveForce,
+        float NetForce);
 }

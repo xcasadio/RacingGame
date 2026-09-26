@@ -8,9 +8,6 @@ namespace RacingGameCasaEngine.Bootstrap;
 
 internal static class RaceFrontEndCatalog
 {
-    private const float BaselineArcadeForwardSpeedUnitsPerSecond = 36f;
-    private const float BaselineSimulationForwardSpeedUnitsPerSecond = 38f;
-
     public static IReadOnlyList<CarPerformanceProfile> CarProfiles { get; } = CreateCarProfiles();
 
     public static IReadOnlyList<CarDefinition> Cars { get; } =
@@ -100,7 +97,7 @@ internal static class RaceFrontEndCatalog
     {
         return
         [
-            new CarPerformanceProfile(
+            CreateCarProfile(
                 "car-1",
                 "Car 1",
                 "Long gearing and the highest top speed in the roster.",
@@ -108,32 +105,28 @@ internal static class RaceFrontEndCatalog
                 288f,
                 1015f,
                 4.0f,
-                CreateTransmissionDefinition(
-                    [3.05f, 2.06f, 1.48f, 1.15f, 0.91f],
-                    3.00f,
-                    7.25f,
-                    950f,
-                    6550f,
-                    3050f,
-                    7800f,
-                    0.24f),
+                [3.05f, 2.06f, 1.48f, 1.15f, 0.91f],
+                3.00f,
+                950f,
+                5200f,
+                2550f,
+                7800f,
+                0.24f,
                 CreateWheelDefinitions(1.04f, -1.70f, 1.90f, 0.44f, 0.24f, 0.26f, 0.27f, 0.23f, 0.27f, 0.23f),
                 new ArcadeVehicleTuningProfile(
                     18.5f,
                     13.0f,
-                    BaselineArcadeForwardSpeedUnitsPerSecond * 1.05f,
                     12f,
                     1.68f,
                     17.5f),
                 new SimulationVehicleTuningProfile(
                     1015f,
-                    BaselineSimulationForwardSpeedUnitsPerSecond * 1.05f,
                     12f,
                     7400f,
                     4000f,
                     8900f,
                     65f,
-                    240f,
+                    12f,
                     2550f,
                     27000f,
                     3400f,
@@ -147,7 +140,7 @@ internal static class RaceFrontEndCatalog
                     9.0f,
                     13.0f,
                     0.56f)),
-            new CarPerformanceProfile(
+            CreateCarProfile(
                 "car-2",
                 "Car 2",
                 "Shorter gearing with the strongest launch, but more weight to settle.",
@@ -155,32 +148,28 @@ internal static class RaceFrontEndCatalog
                 275f,
                 1175f,
                 6.0f,
-                CreateTransmissionDefinition(
-                    [3.32f, 2.24f, 1.64f, 1.28f, 1.03f],
-                    3.08f,
-                    7.95f,
-                    950f,
-                    6400f,
-                    3300f,
-                    7700f,
-                    0.20f),
+                [3.32f, 2.24f, 1.64f, 1.28f, 1.03f],
+                3.08f,
+                950f,
+                6400f,
+                3300f,
+                7700f,
+                0.20f,
                 CreateWheelDefinitions(1.06f, -1.66f, 1.86f, 0.42f, 0.24f, 0.26f, 0.28f, 0.22f, 0.29f, 0.21f),
                 new ArcadeVehicleTuningProfile(
                     24.0f,
                     15.0f,
-                    BaselineArcadeForwardSpeedUnitsPerSecond,
                     12f,
                     1.60f,
                     19.0f),
                 new SimulationVehicleTuningProfile(
                     1175f,
-                    BaselineSimulationForwardSpeedUnitsPerSecond,
                     12f,
                     8450f,
                     4600f,
                     9600f,
                     75f,
-                    270f,
+                    8f,
                     2500f,
                     30000f,
                     3800f,
@@ -194,7 +183,7 @@ internal static class RaceFrontEndCatalog
                     9.5f,
                     14.0f,
                     0.52f)),
-            new CarPerformanceProfile(
+            CreateCarProfile(
                 "car-3",
                 "Car 3",
                 "Lightweight chassis with the quickest rotation and the best grip reserve.",
@@ -202,32 +191,28 @@ internal static class RaceFrontEndCatalog
                 240f,
                 875f,
                 5.0f,
-                CreateTransmissionDefinition(
-                    [3.20f, 2.18f, 1.58f, 1.19f, 0.95f],
-                    2.98f,
-                    7.45f,
-                    950f,
-                    6700f,
-                    3000f,
-                    7900f,
-                    0.18f),
+                [3.20f, 2.18f, 1.58f, 1.19f, 0.95f],
+                2.98f,
+                950f,
+                6700f,
+                3000f,
+                7900f,
+                0.18f,
                 CreateWheelDefinitions(1.02f, -1.72f, 1.82f, 0.50f, 0.23f, 0.27f, 0.26f, 0.24f, 0.25f, 0.25f),
                 new ArcadeVehicleTuningProfile(
                     21.0f,
                     14.5f,
-                    BaselineArcadeForwardSpeedUnitsPerSecond * 0.88f,
                     12f,
                     1.88f,
                     16.5f),
                 new SimulationVehicleTuningProfile(
                     875f,
-                    BaselineSimulationForwardSpeedUnitsPerSecond * 0.88f,
                     12f,
                     7800f,
                     4300f,
                     9000f,
                     60f,
-                    220f,
+                    70f,
                     3250f,
                     25500f,
                     3250f,
@@ -242,6 +227,50 @@ internal static class RaceFrontEndCatalog
                     12.5f,
                     0.62f)),
         ];
+    }
+
+    private static CarPerformanceProfile CreateCarProfile(
+        string id,
+        string name,
+        string summary,
+        Color accentColor,
+        float targetTopSpeedMph,
+        float legacyMassKilograms,
+        float legacyMaxAccelerationPerSecond,
+        IReadOnlyList<float> forwardGearRatios,
+        float reverseGearRatio,
+        float idleRpm,
+        float upshiftRpm,
+        float downshiftRpm,
+        float redlineRpm,
+        float shiftDurationSeconds,
+        VehicleWheelDefinition[] wheelDefinitions,
+        ArcadeVehicleTuningProfile arcade,
+        SimulationVehicleTuningProfile simulation)
+    {
+        VehicleTransmissionDefinition transmissionDefinition = CreateTransmissionDefinitionAlignedToSimulationTopSpeed(
+            targetTopSpeedMph,
+            wheelDefinitions,
+            forwardGearRatios,
+            reverseGearRatio,
+            idleRpm,
+            upshiftRpm,
+            downshiftRpm,
+            redlineRpm,
+            shiftDurationSeconds);
+
+        return new CarPerformanceProfile(
+            id,
+            name,
+            summary,
+            accentColor,
+            targetTopSpeedMph,
+            legacyMassKilograms,
+            legacyMaxAccelerationPerSecond,
+            transmissionDefinition,
+            wheelDefinitions,
+            arcade,
+            simulation);
     }
 
     private static IReadOnlyList<string> BuildStatLabels(CarPerformanceProfile profile)
@@ -313,16 +342,29 @@ internal static class RaceFrontEndCatalog
         return ((currentValue - minValue) / (maxValue - minValue)) * 100f;
     }
 
-    private static VehicleTransmissionDefinition CreateTransmissionDefinition(
+    private static VehicleTransmissionDefinition CreateTransmissionDefinitionAlignedToSimulationTopSpeed(
+        float targetTopSpeedMph,
+        IReadOnlyList<VehicleWheelDefinition> wheelDefinitions,
         IReadOnlyList<float> forwardGearRatios,
         float reverseGearRatio,
-        float finalDriveRatio,
         float idleRpm,
         float upshiftRpm,
         float downshiftRpm,
         float redlineRpm,
         float shiftDurationSeconds)
     {
+        if (targetTopSpeedMph <= 0f)
+        {
+            throw new ArgumentOutOfRangeException(nameof(targetTopSpeedMph));
+        }
+
+        float finalDriveRatio = VehicleTransmissionLogic.ComputeFinalDriveRatioForTargetForwardSpeed(
+            forwardGearRatios,
+            forwardGearRatios.Count,
+            VehicleSpeedCalibration.ComputeForwardSpeedUnitsPerSecond(targetTopSpeedMph, VehicleDrivingMode.Simulation),
+            redlineRpm,
+            wheelDefinitions);
+
         return new VehicleTransmissionDefinition(
             forwardGearRatios,
             reverseGearRatio,

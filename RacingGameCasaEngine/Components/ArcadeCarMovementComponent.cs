@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.Entities;
 using RacingGameCasaEngine.GameFramework;
+using RacingGameCasaEngine.Gameplay;
 using RacingGameCasaEngine.Worlds;
 using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
 
@@ -94,7 +95,7 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         MaybeLogInputChange(session, pawn, controller, throttle, steering);
 
         float previousSpeedUnitsPerSecond = _speedUnitsPerSecond;
-        UpdateSpeed(throttle, elapsedTime);
+        UpdateSpeed(pawn, throttle, elapsedTime);
 
         RaceTrackPhysicsComponent? trackPhysics = ResolveTrackPhysics(pawn.World, session);
         if (trackPhysics == null
@@ -140,7 +141,7 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
 
         if (Math.Abs(_speedUnitsPerSecond) > 0.05f && Math.Abs(steering) > 0f)
         {
-            float steeringScale = Math.Clamp(_speedUnitsPerSecond / MaxForwardSpeedUnitsPerSecond, -0.75f, 1f);
+            float steeringScale = Math.Clamp(_speedUnitsPerSecond / GetEffectiveMaxForwardSpeedUnitsPerSecond(pawn), -0.75f, 1f);
             float turnAmount = steering * controller.SteeringSensitivityScale * TurnRateRadiansPerSecond * steeringScale * elapsedTime;
             _movementForward = RotateDirectionAroundAxis(_movementForward, currentSurface.Up, turnAmount, currentSurface.Forward);
         }
@@ -182,8 +183,10 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         MaybeLogMovementSample(session, pawn, throttle, steering, desiredPosition, resolvedPosition, nextSurface, barrierContact.TouchedBarrier, barrierContact.OutsideRoadBounds);
     }
 
-    private void UpdateSpeed(float throttle, float elapsedTime)
+    private void UpdateSpeed(RacingCarPawn pawn, float throttle, float elapsedTime)
     {
+        float maxForwardSpeedUnitsPerSecond = GetEffectiveMaxForwardSpeedUnitsPerSecond(pawn);
+
         if (throttle > 0f)
         {
             _speedUnitsPerSecond += ForwardAcceleration * Math.Clamp(throttle, 0f, 1f) * elapsedTime;
@@ -200,7 +203,7 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         _speedUnitsPerSecond = Math.Clamp(
             _speedUnitsPerSecond,
             -MaxReverseSpeedUnitsPerSecond,
-            MaxForwardSpeedUnitsPerSecond);
+            maxForwardSpeedUnitsPerSecond);
     }
 
     private void UpdateFallbackMovement(RacingCarPawn pawn, RacingPlayerController controller, float steering, float elapsedTime)
@@ -213,7 +216,7 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
 
         if (Math.Abs(_speedUnitsPerSecond) > 0.05f && Math.Abs(steering) > 0f)
         {
-            float steeringScale = Math.Clamp(_speedUnitsPerSecond / MaxForwardSpeedUnitsPerSecond, -0.75f, 1f);
+            float steeringScale = Math.Clamp(_speedUnitsPerSecond / GetEffectiveMaxForwardSpeedUnitsPerSecond(pawn), -0.75f, 1f);
             float turnAmount = steering * controller.SteeringSensitivityScale * TurnRateRadiansPerSecond * steeringScale * elapsedTime;
             Quaternion rotation = Quaternion.CreateFromAxisAngle(Vector3.Up, turnAmount);
             rootComponent.LocalOrientation = Quaternion.Normalize(rotation * rootComponent.LocalOrientation);
@@ -273,8 +276,8 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
 
     private void UpdateTelemetry(RacingCarPawn pawn, float steering, float previousSpeedUnitsPerSecond, float elapsedTime)
     {
-        float normalizedSpeed = Math.Clamp(Math.Abs(_speedUnitsPerSecond) / MaxForwardSpeedUnitsPerSecond, 0f, 1f);
-        pawn.CurrentSpeedMph = normalizedSpeed * pawn.TargetTopSpeedMph;
+        float normalizedSpeed = Math.Clamp(Math.Abs(_speedUnitsPerSecond) / GetEffectiveMaxForwardSpeedUnitsPerSecond(pawn), 0f, 1f);
+        pawn.CurrentSpeedMph = VehicleSpeedCalibration.ConvertSpeedUnitsToDisplayMph(_speedUnitsPerSecond, VehicleDrivingMode.Arcade);
         pawn.SteeringInput = steering;
 
         int gear = Math.Clamp(1 + (int)(5 * normalizedSpeed), 1, 5);
@@ -301,6 +304,13 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
 
         pawn.CurrentGear = gear;
         pawn.TachometerAcceleration = _tachometerAcceleration;
+    }
+
+    private float GetEffectiveMaxForwardSpeedUnitsPerSecond(RacingCarPawn pawn)
+    {
+        return pawn.TargetTopSpeedMph > 0.01f
+            ? VehicleSpeedCalibration.ComputeForwardSpeedUnitsPerSecond(pawn.TargetTopSpeedMph, VehicleDrivingMode.Arcade)
+            : MaxForwardSpeedUnitsPerSecond;
     }
 
     private static float ApplyShoulderDeceleration(float speed, float shoulderDeceleration, float elapsedTime)

@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
+using RacingGameCasaEngine.Entities;
 using RacingGameCasaEngine.Gameplay;
 using RacingGameCasaEngine.Worlds;
 
@@ -8,6 +9,8 @@ namespace RacingGameCasaEngine.Components;
 internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
 {
     private const float DebugSampleIntervalSeconds = 0.2f;
+    private const float WheelSampleRequeryPadding = 1.25f;
+    private const float FallbackSupportCorrectionMinimum = 3.5f;
 
     private float _debugElapsedSeconds;
     private float _nextDebugSampleSeconds;
@@ -77,6 +80,9 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
         Vector3 accumulatedSurfaceForward = Vector3.Zero;
         Vector3 totalForce = Vector3.Zero;
         Vector3 totalTorque = Vector3.Zero;
+        float totalDriveForce = 0f;
+        float totalLongitudinalDampingForce = 0f;
+        float totalBrakeOrRollingForce = 0f;
         int groundedWheelCount = 0;
         bool touchedGuardRail = false;
 
@@ -89,7 +95,12 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             state.AttachmentPointWorld = attachmentPoint;
             state.SteeringAngleRadians = definition.CanSteer ? context.Input.Steering * definition.MaxSteeringAngleRadians : 0f;
 
-            if (!context.TrackPhysics.TrySampleSurface(attachmentPoint, state.SurfaceSegmentHint >= 0 ? state.SurfaceSegmentHint : context.Chassis.SurfaceSegmentHint, out RaceTrackSurfaceSample sample))
+            if (!TrySampleWheelSurface(
+                    context,
+                    definition,
+                    state.SurfaceSegmentHint >= 0 ? state.SurfaceSegmentHint : context.Chassis.SurfaceSegmentHint,
+                    attachmentPoint,
+                    out RaceTrackSurfaceSample sample))
             {
                 VehicleDynamicsMath.ClearWheelState(definition, state);
                 continue;
@@ -100,7 +111,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             float suspensionLength = Vector3.Dot(attachmentPoint - sample.SupportPoint, sample.Up) - definition.Radius;
             float maxExtension = definition.SuspensionRestLength + definition.SuspensionTravel;
 
-            if (Math.Abs(sample.LateralOffset) > shoulderLimit || suspensionLength > maxExtension)
+            if (Math.Abs(sample.LateralOffset) > shoulderLimit)
             {
                 VehicleDynamicsMath.ClearWheelState(definition, state);
                 state.ContactPointWorld = sample.SupportPoint;
@@ -112,6 +123,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             groundedWheelCount++;
 
             float clampedSuspensionLength = Math.Clamp(suspensionLength, 0.04f, maxExtension);
+            float targetSuspensionLength = Math.Clamp(definition.SuspensionRestLength, 0.04f, maxExtension);
             float previousCompression = state.SuspensionCompression;
             float compression = Math.Clamp(definition.SuspensionRestLength - clampedSuspensionLength, 0f, definition.SuspensionTravel);
             float compressionVelocity = context.ElapsedTime > 0f ? (compression - previousCompression) / context.ElapsedTime : 0f;
@@ -133,15 +145,22 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             float driveForce = forwardThrottle > 0f
                 ? forwardThrottle * tuning.MaxDriveForce * transmissionFrame.DriveForceScale * definition.DriveForceRatio
                 : context.Input.Throttle * tuning.MaxReverseDriveForce * definition.DriveForceRatio;
-            float longitudinalForce = driveForce - (longitudinalVelocity * tuning.LongitudinalDamping * definition.StaticLoadRatio);
+            float longitudinalDampingForce = longitudinalVelocity * tuning.LongitudinalDamping * definition.StaticLoadRatio;
+            float longitudinalForce = driveForce - longitudinalDampingForce;
+            totalDriveForce += driveForce;
+            totalLongitudinalDampingForce += Math.Abs(longitudinalDampingForce);
 
             if (context.Input.Throttle < 0f && Math.Abs(longitudinalVelocity) > 0.25f)
             {
-                longitudinalForce -= MathF.Sign(longitudinalVelocity) * tuning.MaxBrakeForce * definition.BrakeForceRatio;
+                float brakeForce = MathF.Sign(longitudinalVelocity) * tuning.MaxBrakeForce * definition.BrakeForceRatio;
+                longitudinalForce -= brakeForce;
+                totalBrakeOrRollingForce += Math.Abs(brakeForce);
             }
             else if (Math.Abs(context.Input.Throttle) < 0.01f)
             {
-                longitudinalForce -= MathF.Sign(longitudinalVelocity) * tuning.RollingResistanceForce * definition.BrakeForceRatio;
+                float rollingResistanceForce = MathF.Sign(longitudinalVelocity) * tuning.RollingResistanceForce * definition.BrakeForceRatio;
+                longitudinalForce -= rollingResistanceForce;
+                totalBrakeOrRollingForce += Math.Abs(rollingResistanceForce);
             }
 
             float lateralForce = -lateralVelocity * tuning.LateralGrip * definition.StaticLoadRatio;
@@ -157,7 +176,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             totalForce += planarContactForce;
             totalTorque += Vector3.Cross(sample.SupportPoint - context.Chassis.Position, planarContactForce);
 
-            Vector3 attachmentTarget = sample.SupportPoint + (sample.Up * (definition.Radius + clampedSuspensionLength));
+            Vector3 attachmentTarget = sample.SupportPoint + (sample.Up * (definition.Radius + targetSuspensionLength));
             accumulatedSupportPosition += attachmentTarget - wheelOffset;
             accumulatedSurfaceUp += sample.Up;
             accumulatedSurfaceForward += wheelForward;
@@ -189,6 +208,14 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
         Vector3 averageSupportedPosition = accumulatedSupportPosition / groundedWheelCount;
         Vector3 averageSurfaceUp = VehicleDynamicsMath.NormalizeOrFallback(accumulatedSurfaceUp / groundedWheelCount, context.Chassis.SurfaceUp);
         Vector3 averageSurfaceForward = VehicleDynamicsMath.NormalizeOrFallback(accumulatedSurfaceForward / groundedWheelCount, baseForward);
+        float linearDragEquivalentForce = Math.Abs(signedForwardSpeedBefore) * tuning.LinearDrag * context.Chassis.Mass;
+        float estimatedNetForwardForce = totalDriveForce - totalLongitudinalDampingForce - totalBrakeOrRollingForce - linearDragEquivalentForce;
+        float currentGearRedlineSpeedUnits = VehicleTransmissionLogic.ComputeForwardSpeedUnitsAtEngineRpm(
+            context.TransmissionDefinition,
+            transmissionFrame.Gear,
+            context.TransmissionDefinition.RedlineRpm,
+            context.WheelDefinitions);
+        float currentGearRedlineMph = VehicleSpeedCalibration.ConvertSpeedUnitsToDisplayMph(currentGearRedlineSpeedUnits, VehicleDrivingMode.Simulation);
 
         Vector3 acceleration = totalForce / context.Chassis.Mass;
         context.Chassis.LinearVelocity += acceleration * context.ElapsedTime;
@@ -229,7 +256,18 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             forwardThrottle);
 
         UpdateTelemetry(context);
-        MaybeLogSample(context, groundedWheelCount, touchedGuardRail);
+        MaybeLogSample(
+            context,
+            groundedWheelCount,
+            touchedGuardRail,
+            transmissionFrame,
+            totalDriveForce,
+            totalLongitudinalDampingForce,
+            totalBrakeOrRollingForce,
+            linearDragEquivalentForce,
+            estimatedNetForwardForce,
+            currentGearRedlineSpeedUnits,
+            currentGearRedlineMph);
     }
 
     private void ApplyFallback(VehicleDynamicsExecutionContext context, string reason)
@@ -237,15 +275,20 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
         SimulationVehicleTuningProfile tuning = context.Profile.Simulation;
         LogFallbackState(context.Session, true, reason);
 
-        Vector3 forward = VehicleDynamicsMath.NormalizeOrFallback(context.Chassis.MovementForward, VehicleDynamicsMath.GetForward(context.Chassis.Orientation));
+        Quaternion currentOrientation = Quaternion.Normalize(context.Chassis.Orientation);
+        Vector3 forward = VehicleDynamicsMath.NormalizeOrFallback(context.Chassis.MovementForward, VehicleDynamicsMath.GetForward(currentOrientation));
         Vector3 surfaceUp = Vector3.Up;
-        if (context.TrackPhysics != null
-            && context.TrackPhysics.TrySampleSurface(context.Chassis.Position, context.Chassis.SurfaceSegmentHint, out RaceTrackSurfaceSample sample))
+        if (TryResolveFallbackSupportPose(
+                context,
+                currentOrientation,
+                out Vector3 supportedPosition,
+                out Vector3 supportedSurfaceUp,
+                out Vector3 supportedSurfaceForward))
         {
-            context.Chassis.SurfaceSegmentHint = sample.SegmentIndex;
-            surfaceUp = sample.Up;
-            forward = VehicleDynamicsMath.ProjectDirectionOntoSurface(forward, sample.Up, sample.Forward);
-            context.Chassis.Position = Vector3.Lerp(context.Chassis.Position, sample.Center, Math.Clamp(context.ElapsedTime * 3.5f, 0f, 1f));
+            surfaceUp = supportedSurfaceUp;
+            forward = VehicleDynamicsMath.ProjectDirectionOntoSurface(forward, supportedSurfaceUp, supportedSurfaceForward);
+            float correctionRate = Math.Max(FallbackSupportCorrectionMinimum, tuning.RideHeightCorrection);
+            context.Chassis.Position = Vector3.Lerp(context.Chassis.Position, supportedPosition, Math.Clamp(context.ElapsedTime * correctionRate, 0f, 1f));
         }
 
         if (Math.Abs(context.Input.Steering) > 0.001f && context.Chassis.LinearVelocity.LengthSquared() > 0.01f)
@@ -276,18 +319,199 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
         context.Chassis.SurfaceUp = surfaceUp;
         context.Chassis.HasValidSurface = false;
 
+        int fallbackSupportedWheelCount = PopulateFallbackWheelState(context, forwardSpeed);
+
+        UpdateTelemetry(context);
+        MaybeLogSample(context, groundedWheelCount: fallbackSupportedWheelCount, touchedGuardRail: false);
+    }
+
+    private static bool TryResolveFallbackSupportPose(
+        VehicleDynamicsExecutionContext context,
+        Quaternion orientation,
+        out Vector3 supportedPosition,
+        out Vector3 surfaceUp,
+        out Vector3 surfaceForward)
+    {
+        supportedPosition = context.Chassis.Position;
+        surfaceUp = VehicleDynamicsMath.NormalizeOrFallback(context.Chassis.SurfaceUp, Vector3.Up);
+        surfaceForward = VehicleDynamicsMath.NormalizeOrFallback(context.Chassis.MovementForward, VehicleDynamicsMath.GetForward(orientation));
+
+        if (context.TrackPhysics == null)
+        {
+            return false;
+        }
+
+        Vector3 accumulatedSupportedPosition = Vector3.Zero;
+        Vector3 accumulatedSurfaceUp = Vector3.Zero;
+        Vector3 accumulatedSurfaceForward = Vector3.Zero;
+        int supportCount = 0;
+        int resolvedSegmentHint = context.Chassis.SurfaceSegmentHint;
+
         for (int index = 0; index < context.WheelDefinitions.Length; index++)
         {
             VehicleWheelDefinition definition = context.WheelDefinitions[index];
             VehicleWheelRuntimeState state = context.WheelStates[index];
-            state.AttachmentPointWorld = context.Chassis.Position + VehicleDynamicsMath.TransformLocalOffset(context.Chassis.Orientation, definition.LocalAttachmentOffset);
-            state.RotationSpeedRadiansPerSecond = definition.Radius > 0.0001f ? forwardSpeed / definition.Radius : 0f;
-            state.RotationAngleRadians += state.RotationSpeedRadiansPerSecond * context.ElapsedTime;
-            VehicleDynamicsMath.ClearWheelState(definition, state);
+            Vector3 wheelOffset = VehicleDynamicsMath.TransformLocalOffset(orientation, definition.LocalAttachmentOffset);
+            Vector3 attachmentPoint = context.Chassis.Position + wheelOffset;
+
+            if (!TrySampleWheelSurface(
+                    context,
+                    definition,
+                    state.SurfaceSegmentHint >= 0 ? state.SurfaceSegmentHint : context.Chassis.SurfaceSegmentHint,
+                    attachmentPoint,
+                    out RaceTrackSurfaceSample sample))
+            {
+                continue;
+            }
+
+            float maxExtension = definition.SuspensionRestLength + definition.SuspensionTravel;
+            float targetSuspensionLength = Math.Clamp(definition.SuspensionRestLength, 0.04f, maxExtension);
+            Vector3 attachmentTarget = sample.SupportPoint + (sample.Up * (definition.Radius + targetSuspensionLength));
+
+            accumulatedSupportedPosition += attachmentTarget - wheelOffset;
+            accumulatedSurfaceUp += sample.Up;
+            accumulatedSurfaceForward += sample.Forward;
+            resolvedSegmentHint = sample.SegmentIndex;
+            supportCount++;
         }
 
-        UpdateTelemetry(context);
-        MaybeLogSample(context, groundedWheelCount: 0, touchedGuardRail: false);
+        if (supportCount > 0)
+        {
+            supportedPosition = accumulatedSupportedPosition / supportCount;
+            surfaceUp = VehicleDynamicsMath.NormalizeOrFallback(accumulatedSurfaceUp / supportCount, surfaceUp);
+            surfaceForward = VehicleDynamicsMath.NormalizeOrFallback(accumulatedSurfaceForward / supportCount, surfaceForward);
+            context.Chassis.SurfaceSegmentHint = resolvedSegmentHint;
+            return true;
+        }
+
+        float fallbackMaxDistance = RacingCarPawn.CollisionLength + context.TrackPhysics.ShoulderWidth + WheelSampleRequeryPadding;
+        if (!TrySampleStableSurface(
+                context.TrackPhysics,
+                context.Chassis.Position,
+                context.Chassis.SurfaceSegmentHint,
+                fallbackMaxDistance * fallbackMaxDistance,
+                out RaceTrackSurfaceSample fallbackSample))
+        {
+            return false;
+        }
+
+        supportedPosition = fallbackSample.SupportPoint;
+        surfaceUp = fallbackSample.Up;
+        surfaceForward = fallbackSample.Forward;
+        context.Chassis.SurfaceSegmentHint = fallbackSample.SegmentIndex;
+        return true;
+    }
+
+    private static int PopulateFallbackWheelState(VehicleDynamicsExecutionContext context, float forwardSpeed)
+    {
+        Quaternion orientation = Quaternion.Normalize(context.Chassis.Orientation);
+        Vector3 chassisForward = VehicleDynamicsMath.NormalizeOrFallback(context.Chassis.MovementForward, VehicleDynamicsMath.GetForward(orientation));
+        int supportedWheelCount = 0;
+
+        for (int index = 0; index < context.WheelDefinitions.Length; index++)
+        {
+            VehicleWheelDefinition definition = context.WheelDefinitions[index];
+            VehicleWheelRuntimeState state = context.WheelStates[index];
+            Vector3 attachmentPoint = context.Chassis.Position + VehicleDynamicsMath.TransformLocalOffset(orientation, definition.LocalAttachmentOffset);
+            state.AttachmentPointWorld = attachmentPoint;
+            state.SteeringAngleRadians = definition.CanSteer ? context.Input.Steering * definition.MaxSteeringAngleRadians : 0f;
+            state.RotationSpeedRadiansPerSecond = definition.Radius > 0.0001f ? forwardSpeed / definition.Radius : 0f;
+            state.RotationAngleRadians += state.RotationSpeedRadiansPerSecond * context.ElapsedTime;
+
+            if (!TrySampleWheelSurface(
+                    context,
+                    definition,
+                    state.SurfaceSegmentHint >= 0 ? state.SurfaceSegmentHint : context.Chassis.SurfaceSegmentHint,
+                    attachmentPoint,
+                    out RaceTrackSurfaceSample sample))
+            {
+                VehicleDynamicsMath.ClearWheelState(definition, state);
+                continue;
+            }
+
+            float maxExtension = definition.SuspensionRestLength + definition.SuspensionTravel;
+            float suspensionLength = Math.Clamp(
+                Vector3.Dot(attachmentPoint - sample.SupportPoint, sample.Up) - definition.Radius,
+                0.04f,
+                maxExtension);
+            float suspensionCompression = Math.Clamp(definition.SuspensionRestLength - suspensionLength, 0f, definition.SuspensionTravel);
+            Vector3 wheelForward = VehicleDynamicsMath.ProjectDirectionOntoSurface(chassisForward, sample.Up, sample.Forward);
+            if (definition.CanSteer)
+            {
+                wheelForward = VehicleDynamicsMath.RotateDirectionAroundAxis(wheelForward, sample.Up, state.SteeringAngleRadians, sample.Forward);
+            }
+
+            state.HasContact = true;
+            state.IsFallbackContact = true;
+            state.SurfaceSegmentHint = sample.SegmentIndex;
+            state.ContactPointWorld = sample.SupportPoint;
+            state.ContactNormal = sample.Up;
+            state.ContactForward = wheelForward;
+            state.SuspensionLength = suspensionLength;
+            state.SuspensionCompression = suspensionCompression;
+            state.SuspensionCompressionVelocity = 0f;
+            state.NormalizedCompression = definition.SuspensionTravel <= 0.0001f ? 0f : suspensionCompression / definition.SuspensionTravel;
+            state.SlipRatio = 0f;
+            state.SlipAngleRadians = 0f;
+            state.ApproximateLoad = 0f;
+            supportedWheelCount++;
+        }
+
+        return supportedWheelCount;
+    }
+
+    private static bool TrySampleWheelSurface(
+        VehicleDynamicsExecutionContext context,
+        VehicleWheelDefinition definition,
+        int segmentHint,
+        Vector3 attachmentPoint,
+        out RaceTrackSurfaceSample sample)
+    {
+        RaceTrackPhysicsComponent? trackPhysics = context.TrackPhysics;
+        if (trackPhysics == null)
+        {
+            sample = default;
+            return false;
+        }
+
+        float maxExpectedDistance = definition.Radius
+            + definition.SuspensionRestLength
+            + definition.SuspensionTravel
+            + trackPhysics.ShoulderWidth
+            + WheelSampleRequeryPadding;
+
+        return TrySampleStableSurface(
+            trackPhysics,
+            attachmentPoint,
+            segmentHint,
+            maxExpectedDistance * maxExpectedDistance,
+            out sample);
+    }
+
+    private static bool TrySampleStableSurface(
+        RaceTrackPhysicsComponent trackPhysics,
+        Vector3 position,
+        int segmentHint,
+        float maxAcceptedDistanceSquared,
+        out RaceTrackSurfaceSample sample)
+    {
+        if (!trackPhysics.TrySampleSurface(position, segmentHint, out sample))
+        {
+            return false;
+        }
+
+        if (segmentHint < 0 || sample.DistanceSquared <= maxAcceptedDistanceSquared)
+        {
+            return true;
+        }
+
+        if (trackPhysics.TrySampleSurface(position, -1, out RaceTrackSurfaceSample globalSample)
+            && globalSample.DistanceSquared < sample.DistanceSquared)
+        {
+            sample = globalSample;
+        }
+
+        return true;
     }
 
     private void UpdateTelemetry(VehicleDynamicsExecutionContext context)
@@ -334,7 +558,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
 
         context.Telemetry.DrivingMode = VehicleDrivingMode.Simulation;
         context.Telemetry.SpeedUnitsPerSecond = signedForwardSpeed;
-        context.Telemetry.CurrentSpeedMph = normalizedSpeed * context.Pawn.TargetTopSpeedMph;
+        context.Telemetry.CurrentSpeedMph = VehicleSpeedCalibration.ConvertSpeedUnitsToDisplayMph(signedForwardSpeed, VehicleDrivingMode.Simulation);
         context.Telemetry.SteeringInput = context.Input.Steering;
         context.Telemetry.TachometerAcceleration = _smoothedTachometerAcceleration;
         context.Telemetry.CurrentGear = gear;
@@ -358,7 +582,18 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
         return fallbackSegmentHint;
     }
 
-    private void MaybeLogSample(VehicleDynamicsExecutionContext context, int groundedWheelCount, bool touchedGuardRail)
+    private void MaybeLogSample(
+        VehicleDynamicsExecutionContext context,
+        int groundedWheelCount,
+        bool touchedGuardRail,
+        VehicleTransmissionFrame? transmissionFrame = null,
+        float totalDriveForce = 0f,
+        float totalLongitudinalDampingForce = 0f,
+        float totalBrakeOrRollingForce = 0f,
+        float linearDragEquivalentForce = 0f,
+        float estimatedNetForwardForce = 0f,
+        float currentGearRedlineSpeedUnits = 0f,
+        float currentGearRedlineMph = 0f)
     {
         if (context.Session == null || _debugElapsedSeconds < _nextDebugSampleSeconds)
         {
@@ -366,9 +601,12 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
         }
 
         _nextDebugSampleSeconds = _debugElapsedSeconds + DebugSampleIntervalSeconds;
+        string transmissionDiagnostics = transmissionFrame.HasValue
+            ? $" gear={transmissionFrame.Value.Gear} rpm={transmissionFrame.Value.EngineRpm:0} driveScale={transmissionFrame.Value.DriveForceScale:0.000} drive={totalDriveForce:0} damping={totalLongitudinalDampingForce:0} coastBrake={totalBrakeOrRollingForce:0} drag={linearDragEquivalentForce:0} net={estimatedNetForwardForce:0} gearRedlineUnits={currentGearRedlineSpeedUnits:0.000} gearRedlineMph={currentGearRedlineMph:0.0}"
+            : string.Empty;
         context.Session.AppendMovementDebug(
             "simulation",
-            $"mode=simulation grounded={groundedWheelCount} guardRail={touchedGuardRail} speedUnits={context.Telemetry.SpeedUnitsPerSecond:0.000} speedMph={context.Telemetry.CurrentSpeedMph:0.0} throttle={context.Input.Throttle:0.0} steering={context.Input.Steering:0.0} pos={FormatVector(context.Chassis.Position)} forward={FormatVector(context.Chassis.MovementForward)} wheels={VehicleDynamicsMath.BuildWheelDebugSummary(context.WheelStates)}");
+            $"mode=simulation grounded={groundedWheelCount} guardRail={touchedGuardRail}{transmissionDiagnostics} speedUnits={context.Telemetry.SpeedUnitsPerSecond:0.000}/{context.Profile.Simulation.MaxForwardSpeedUnitsPerSecond:0.000} speedMph={context.Telemetry.CurrentSpeedMph:0.0}/{context.Pawn.TargetTopSpeedMph:0.0} throttle={context.Input.Throttle:0.0} steering={context.Input.Steering:0.0} pos={FormatVector(context.Chassis.Position)} forward={FormatVector(context.Chassis.MovementForward)} wheels={VehicleDynamicsMath.BuildWheelDebugSummary(context.WheelStates)}");
     }
 
     private void LogFallbackState(RuntimeRaceSession? session, bool fallbackEnabled, string reason)
