@@ -26,7 +26,8 @@ internal sealed class HighscoresView : IMguiScreenView
         var scrollViewer = new MGScrollViewer(Window)
         {
             PreferredWidth = MguiUiTheme.ScaleX(1040),
-            PreferredHeight = MguiUiTheme.ScaleY(250),
+            // The band leaves 348 units to the heading, this list, the Back button (MinHeight 48) and two gaps.
+            PreferredHeight = MguiUiTheme.ScaleY(236),
             AllowClickDragScrolling = false,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,

@@ -39,7 +39,8 @@ internal sealed class OptionsView : IMguiScreenView
         var scrollViewer = new MGScrollViewer(Window)
         {
             PreferredWidth = MguiUiTheme.ScaleX(1120),
-            PreferredHeight = MguiUiTheme.ScaleY(360),
+            // The band leaves 460 units to the heading, this list, the Back button (MinHeight 48) and two gaps.
+            PreferredHeight = MguiUiTheme.ScaleY(348),
             AllowClickDragScrolling = false,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
