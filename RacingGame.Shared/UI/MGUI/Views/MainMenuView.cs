@@ -14,10 +14,12 @@ internal sealed class MainMenuView : IMguiScreenView
     private readonly MGBorder[] _buttonFaces;
     private readonly MGTextBlock[] _labels;
 
-    private static readonly MGUniformBorderBrush ActiveBorderBrush = new(new Color(255, 176, 42));
-    private static readonly MGUniformBorderBrush InactiveBorderBrush = new(new Color(28, 28, 28));
-    private static readonly MGUniformBorderBrush FaceBorderBrush = new(new Color(118, 118, 118));
-    private static readonly MGUniformBorderBrush FaceActiveBorderBrush = new(new Color(255, 212, 148));
+    // Frozen, like the other shared border brushes of MguiUiTheme: the menu view is rebuilt when the viewport size
+    // changes, and an element stays subscribed to an unfrozen border brush (MGBorder.ResyncBorderBrushSubscription).
+    private static readonly MGUniformBorderBrush ActiveBorderBrush = MguiUiTheme.CreateFrozenBorderBrush(new Color(255, 176, 42));
+    private static readonly MGUniformBorderBrush InactiveBorderBrush = MguiUiTheme.CreateFrozenBorderBrush(new Color(28, 28, 28));
+    private static readonly MGUniformBorderBrush FaceBorderBrush = MguiUiTheme.CreateFrozenBorderBrush(new Color(118, 118, 118));
+    private static readonly MGUniformBorderBrush FaceActiveBorderBrush = MguiUiTheme.CreateFrozenBorderBrush(new Color(255, 212, 148));
     private static readonly MGCornerRadius ButtonCornerRadius = new(22);
 
     public MainMenuView(MainMenu screen, MguiUiHost host)

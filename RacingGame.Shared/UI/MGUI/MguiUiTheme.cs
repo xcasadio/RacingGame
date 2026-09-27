@@ -35,7 +35,7 @@ internal static class MguiUiTheme
     private static readonly MGUniformBorderBrush BandButtonInactiveBorderBrush = CreateFrozenBorderBrush(new Color(255, 255, 255, 40));
     private static readonly MGCornerRadius MenuButtonCornerRadius = new(16);
 
-    private static MGUniformBorderBrush CreateFrozenBorderBrush(Color color)
+    internal static MGUniformBorderBrush CreateFrozenBorderBrush(Color color)
     {
         var brush = new MGUniformBorderBrush(color);
         brush.Freeze();
