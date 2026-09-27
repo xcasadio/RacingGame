@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace RacingGameCasaEngine.GameFramework;
 
-public sealed class RaceGameMode : GameMode
+public sealed class RaceGameMode : GameplayMode
 {
 	private readonly List<float> _completedLapTimesSeconds = [];
 
@@ -65,10 +65,14 @@ public sealed class RaceGameMode : GameMode
 		IsPaused = false;
 	}
 
-	public override void StartMatch()
+	public override void Start()
 	{
-		base.StartMatch();
 		StartedAtUtc ??= DateTimeOffset.UtcNow;
+	}
+
+	public override GameplayResult EvaluateResult()
+	{
+		return IsRaceFinished ? GameplayResult.Success : GameplayResult.Running;
 	}
 
 	public void ConfigureCheckpointCount(int checkpointCount)
@@ -137,7 +141,6 @@ public sealed class RaceGameMode : GameMode
 		if (CompletedLaps >= TotalLaps)
 		{
 			IsRaceFinished = true;
-			EndMatch();
 			return;
 		}
 
@@ -155,7 +158,6 @@ public sealed class RaceGameMode : GameMode
 		CompletedLaps = TotalLaps;
 		NextCheckpointIndex = 0;
 		IsRaceFinished = true;
-		EndMatch();
 	}
 
 	private void CommitLapTime(float lapTimeSeconds)

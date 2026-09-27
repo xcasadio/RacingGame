@@ -240,7 +240,9 @@ Exception de compilation P1 (ouverte par `3ed325f`) jusqu'à T4.2.
 - Validation : ces erreurs disparaissent ; aucune nouvelle erreur.
 - Commit : `fix(racing-casa): use entity possession and controller input gate`
 
-### ⏳ T3.3 — `RaceGameMode` sur `GameplayMode`
+### ✅ T3.3 — `RaceGameMode` sur `GameplayMode`
+
+> Validation (2026-09-27, exception P1) : sonde hors dépôt sans stub `GameMode` (stub `StaticModelImporter` seul) : plus aucune erreur liée au mode de jeu ; erreurs restantes = sites de T3.4 (`Coordinates`, `AssetContentManager.Load`) uniquement.
 
 - Faits (2026-09-27) : `World.SetGameplayMode(mode)` → `GameplayModeRunner.Start` : `Initialize` puis `Start()`, phase `Playing` (`World.cs:170-175`, `GameplayModeRunner.cs:13-26`) ; `World.Update` → `runner.Update` : `mode.Update` puis `EvaluateResult`, seulement en phase `Playing` ; un résultat `Success` fait passer en phase `Success` sans appeler `Stop` (`GameplayModeRunner.cs:30-55`).
 - Fichiers :

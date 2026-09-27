@@ -13,10 +13,6 @@ namespace RacingGameCasaEngine.Bootstrap;
 
 internal sealed class RuntimeRaceWorldBinder
 {
-    private static readonly PropertyInfo GameModeProperty = typeof(World).GetProperty(
-        nameof(World.GameMode),
-        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!;
-
     private static readonly FieldInfo PlayerControllersField = typeof(World).GetField(
         "_playerControllers",
         BindingFlags.Instance | BindingFlags.NonPublic)!;
@@ -46,8 +42,6 @@ internal sealed class RuntimeRaceWorldBinder
 
         var raceGameMode = new RaceGameMode();
         raceGameMode.Configure(state);
-        raceGameMode.InitGame(world);
-        GameModeProperty.SetValue(world, raceGameMode);
 
         if (TryGetPlayerStart(world) is { } playerStart
             && playerPawn.RootComponent != null)
@@ -75,7 +69,7 @@ internal sealed class RuntimeRaceWorldBinder
 
         _game.RaceSession.Bind(raceGameMode, playerController, playerPawn);
         _game.GameManager.SyncPlayerViewAssignments();
-        raceGameMode.StartMatch();
+        world.SetGameplayMode(raceGameMode);
     }
 
     private static PlayerStartComponent? TryGetPlayerStart(World world)
