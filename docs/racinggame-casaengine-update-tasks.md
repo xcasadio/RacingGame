@@ -265,7 +265,9 @@ Exception de compilation P1 (ouverte par `3ed325f`) jusqu'à T4.2.
 
 ## Phase 4 — `RacingGameCasaEngine` : chargement des `.gltf`
 
-### ⏳ T4.1 — Métadonnées legacy depuis les `extras`
+### ✅ T4.1 — Métadonnées legacy depuis les `extras`
+
+> Validation (2026-09-27, exception P1) : `RacingGameCasaEngine/Bootstrap/LegacyGltfModelReader.cs` (autonome : CasaEngine, SharpGLTF, BCL ; alias `Color` XNA car `UseWindowsForms` importe `System.Drawing`) ; dépôt : aucune nouvelle erreur (restent les sites `StaticModelImporter` de T4.2) ; sonde hors dépôt avec le seul stub `StaticModelImporter` : 0 erreur, aucun avertissement sur le nouveau fichier. La parité avec le code commité est rejouée en T4.2.
 
 - Objectif : reconstruire à partir des `extras` (P7 révisé) les champs que remplissait l'ancien importeur, puis appliquer le profil RacingGame (D9).
 - Fichiers : `RacingGameCasaEngine/Bootstrap/LegacyGltfModelReader.cs` (nouveau, autonome : ne dépend que de CasaEngine, SharpGLTF et de la BCL, pour être compilé tel quel dans la sonde de parité de T4.2) : `ReadWithMetadata(string gltfPath, ILegacyMaterialImportProfile? profile)` → `GltfStaticModelReader.ReadWithMetadata(path, null)` (profil `Neutral`), relecture des `extras` avec SharpGLTF (`ModelRoot.Load`, transitif via CasaEngine) par `MaterialIndex`, reconstruction, puis profil.
