@@ -35,7 +35,9 @@ const float BlurWidth = 1.25f;
 const float BlurWidth20 = 1.5f;
 
 // 8 Weights for ps_2_0
-const float Weights8[8] =
+// static: the blur loops read only 7 weights, so an OpenGL uniform array is trimmed
+// to 7 elements and EffectPass.Apply overflows when copying the 8-element parameter.
+static const float Weights8[8] =
 {
 	// more strength to middle to reduce effect of lighten up
 	// shadowed areas due mixing and bluring!

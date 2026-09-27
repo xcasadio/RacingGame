@@ -223,6 +223,9 @@ public class Model : IDisposable
             for (int effectNum = 0; effectNum < mesh.Effects.Count; effectNum++)
             {
                 Effect effect = mesh.Effects[effectNum];
+                // GL platforms ignore the .fx default values, restore them
+                // before the per-model overrides below.
+                LegacyEffectDefaults.ApplyOnceToModelEffect(effect);
                 // Store our 4 effect parameters
                 cachedEffectParameters.Add(effect.Parameters["diffuseTexture"]);
                 cachedEffectParameters.Add(effect.Parameters["ambientColor"]);

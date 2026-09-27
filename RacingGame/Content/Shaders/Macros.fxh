@@ -129,12 +129,14 @@
 #define BEGIN_DECLARE_CUBE_TARGET(Name, target) \
 	texture Name : target; \
 	samplerCUBE Name##Sampler = sampler_state \
-	{
+	{ \
+		Texture = <Name>;
 
 #define BEGIN_DECLARE_TEXTURE_TARGET(Name, target) \
 	Texture2D Name : target; \
 	sampler Name##Sampler = sampler_state \
-	{
+	{ \
+		Texture = <Name>;
 
 #define DECLARE_TEXTURE(Name, index) \
     sampler Name##Sampler : register(s##index) \

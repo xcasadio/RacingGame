@@ -630,6 +630,8 @@ public class ShaderEffect : IDisposable
         effect = BaseGame.Content.Load<Effect>(
             Path.Combine(Directories.ContentDirectory + "\\shaders",
                 shaderContentName));
+        // GL platforms ignore the .fx default values, restore them first.
+        LegacyEffectDefaults.ApplyOnce(effect, shaderContentName);
 
         // Reset and get all avialable parameters.
         // This is especially important for derived classes.
