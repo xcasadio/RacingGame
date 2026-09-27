@@ -3,7 +3,6 @@ global using CasaEngine.Engine.Environment;
 global using CasaEngine.Engine.Primitives.ThreeD;
 global using CasaEngine.Framework.Application;
 global using CasaEngine.Framework.Application.Components;
-global using CasaEngine.Framework.Application.Components.DebugTools;
 global using CasaEngine.Framework.Application.Components.Physics;
 global using CasaEngine.Framework.Gameplay;
 global using CasaEngine.Framework.Materials.Runtime;

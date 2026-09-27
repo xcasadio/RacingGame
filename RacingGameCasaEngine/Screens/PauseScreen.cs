@@ -1,6 +1,6 @@
 using CasaEngine.Framework.GUI;
 using MGUI.Core.UI;
-using MGUI.Core.UI.Brushes.Fill_Brushes;
+using MGUI.Core.UI.Brushes.FillBrushes;
 using MGUI.Shared.Helpers;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;

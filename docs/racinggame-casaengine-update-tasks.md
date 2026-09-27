@@ -219,7 +219,9 @@ MGUI (vérifié) : aucune écriture de brush dans RacingGame ; risque non vérif
 
 Exception de compilation P1 (ouverte par `3ed325f`) jusqu'à T4.2.
 
-### ⏳ T3.1 — Backend DesktopGL et namespaces
+### ✅ T3.1 — Backend DesktopGL et namespaces
+
+> Validation (2026-09-27, exception P1) : `dotnet build RacingGameCasaEngine/RacingGameCasaEngine.csproj` : restauration sans `NU1605` ; `obj/project.assets.json` : seul `MonoGame.Framework.DesktopGL/3.8.5.1` ; erreurs restantes = `Pawn` (T3.2), `GameMode` (T3.3), `StaticModelImporter` (T4.2) uniquement. `LegacyNamespaceStubs.cs:17` garde l'ancien nom `…Game.Components.DebugTools` (espace de noms vide, inchangé).
 
 - Fichiers : `RacingGameCasaEngine/RacingGameCasaEngine.csproj` (`MonoGame.Framework.WindowsDX 3.8.2.1105` → `MonoGame.Framework.DesktopGL 3.8.5.1`, `FontStashSharp.MonoGame` 1.5.4 → 1.5.7 comme `CasaEngine/Directory.Packages.props`, retrait du `NoWarn`/`WarningsNotAsErrors`/`RestoreNoWarn` NU1605) ; `GlobalUsings.cs` (retrait du `using …DebugTools`) ; `UI/RaceUiTheme.cs`, `UI/LegacyMenuUiTheme.cs`, `Screens/TrackSelectionScreen.cs`, `Screens/RaceHudScreen.cs`, `Screens/CarSelectionScreen.cs`, `Screens/PauseScreen.cs` (`using` des brushes).
 - Validation : restore sans `NU1605` ; `obj/project.assets.json` : seul `MonoGame.Framework.DesktopGL/3.8.5.1` ; erreurs restantes ⊂ sites de T3.2-T3.4 et `StaticModelImporter`.
@@ -227,42 +229,56 @@ Exception de compilation P1 (ouverte par `3ed325f`) jusqu'à T4.2.
 
 ### ⏳ T3.2 — Entité, possession et gate d'input
 
-- Fichiers : `Entities/RacingCarPawn.cs:9` (`: Entity`) ; `Bootstrap/RuntimeRaceWorldBinder.cs:73-75` (`Possess`) ; lectures `Controller`/`InputEnabled` : `Components/ArcadeCarMovementComponent.cs:78-79,574`, `Components/ArcadeVehicleDynamicsSolver.cs:106,202,406,409`, `Components/VehicleDynamicsComponent.cs:97-98`, `Components/RaceFlowCoordinatorComponent.cs:51`, `Bootstrap/RaceRuntimeUiCoordinator.cs:133`.
-- Étapes : appliquer P4.
+- Faits (2026-09-27) : `Controller.Possess(Entity)` n'a d'effet de bord que sur un `CharacterControllerComponent` (`Controller.cs:35-60`), absent de `RacingCarPawn` ; `Entity.World` est public (`Entity.cs:35`) ; `World.GetPlayerController(Entity)` parcourt `_playerControllers` et renvoie celui dont `Pawn == entity` (`World.cs:959-970`). P4 vérifié : l'écriture contrôleur seule `RaceFlowCoordinatorComponent.cs:107` (`HandlePauseToggle`) est suivie dans le même `Update` de l'écriture des deux drapeaux (`:49-50`) ; `RacingPlayerController.ShowPauseMenu/HidePauseMenu` n'ont aucun appelant (`rg` sur `RacingGameCasaEngine` et `CasaEngine/CasaEngine`) ; les lecteurs testent déjà les deux drapeaux dans la même condition.
+- Fichiers :
+  - `Entities/RacingCarPawn.cs` : `: Pawn` → `: Entity` ; ajout de `internal PlayerController? Controller => World?.GetPlayerController(this);` (remplace le membre supprimé, les lectures `pawn.Controller` restent inchangées) ;
+  - `Bootstrap/RuntimeRaceWorldBinder.cs:73-75` : `playerController.Pawn = …` et `playerPawn.Controller = …` → `playerController.Possess(playerPawn)` (après l'ajout du contrôleur à `_playerControllers`, pour que `GetPlayerController` le trouve) ; retrait de `playerPawn.InputEnabled = false` (`playerController.IsInputEnable = false` en `:63` reste) ;
+  - lectures `pawn.InputEnabled` retirées des conditions qui testent déjà `controller.IsInputEnable` : `Components/ArcadeCarMovementComponent.cs:79`, `Components/VehicleDynamicsComponent.cs:98` ; journaux de debug `ArcadeCarMovementComponent.cs:574` et `ArcadeVehicleDynamicsSolver.cs:409` : la valeur `pawn.InputEnabled` est remplacée par celle du contrôleur ;
+  - écritures `…PlayerPawn.InputEnabled = canDrive` retirées : `Components/RaceFlowCoordinatorComponent.cs:51`, `Bootstrap/RaceRuntimeUiCoordinator.cs:133` (le contrôleur est écrit juste avant avec la même valeur).
 - Validation : ces erreurs disparaissent ; aucune nouvelle erreur.
 - Commit : `fix(racing-casa): use entity possession and controller input gate`
 
 ### ⏳ T3.3 — `RaceGameMode` sur `GameplayMode`
 
-- Fichiers : `GameFramework/RaceGameMode.cs` ; `Bootstrap/RuntimeRaceWorldBinder.cs:16-18,49-50,80`.
-- Étapes : appliquer D3 et P3 ; remplacer la réflexion sur `World.GameMode` par `World.SetGameplayMode`.
+- Faits (2026-09-27) : `World.SetGameplayMode(mode)` → `GameplayModeRunner.Start` : `Initialize` puis `Start()`, phase `Playing` (`World.cs:170-175`, `GameplayModeRunner.cs:13-26`) ; `World.Update` → `runner.Update` : `mode.Update` puis `EvaluateResult`, seulement en phase `Playing` ; un résultat `Success` fait passer en phase `Success` sans appeler `Stop` (`GameplayModeRunner.cs:30-55`).
+- Fichiers :
+  - `GameFramework/RaceGameMode.cs` : `: GameMode` → `: GameplayMode` ; `StartMatch()` (surcharge + `base.StartMatch()`) → `public override void Start()` qui garde `StartedAtUtc ??= DateTimeOffset.UtcNow` ; ajout de `public override GameplayResult EvaluateResult() => IsRaceFinished ? GameplayResult.Success : GameplayResult.Running;` ; retrait des deux appels `EndMatch()` (`:140`, `:158`) ; `Update` n'est pas surchargé (la course reste pilotée par `RaceFlowCoordinatorComponent`) ; pause inchangée (`TogglePause` propre au jeu, `runner.Pause` n'est pas appelé) ;
+  - `Bootstrap/RuntimeRaceWorldBinder.cs` : retrait de `GameModeProperty` (`:16-18`), de `InitGame` et de l'affectation par réflexion (`:49-50`) ; `raceGameMode.StartMatch()` (`:80`) → `world.SetGameplayMode(raceGameMode)` au même endroit (même moment que l'ancien `StartMatch`).
 - Validation : ces erreurs disparaissent ; aucune nouvelle erreur.
 - Commit : `refactor(racing-casa): host race rules in a GameplayMode`
 
 ### ⏳ T3.4 — Transforms locaux et chargement d'assets
 
-- Fichiers : `Bootstrap/RuntimeRaceWorldBinder.cs:55` (`CopyLocalTransformFrom`), `Worlds/LegacyTrackSceneFactory.cs:429-431` (`LocalTransform`), `Bootstrap/RacingGameCasaEngineGame.cs:172,178` (P5).
-- Validation : erreurs restantes = `StaticModelImporter` seulement.
+- Faits (2026-09-27) : `SceneComponent.LocalTransform` + `CopyLocalTransformFrom(LocalTransform)` (`SceneComponent.cs:22,410`) ; l'ancien `AssetContentManager.Load<T>(Guid)` renvoyait l'instance partagée mise en cache (`cache = true` par défaut, `git show 295db0c6:CasaEngine/Framework/Assets/AssetContentManager.cs:73-100`) ; `Acquire<T>(Guid)` renvoie un `AssetHandle<T>` partagé, dont l'asset reste vivant tant que la poignée n'est pas rendue, `CollectUnreferenced` libérant les assets sans poignée au changement de monde (`AssetContentManager.cs:55-89`).
+- Fichiers :
+  - `Bootstrap/RuntimeRaceWorldBinder.cs:55` : `playerPawn.RootComponent.Coordinates.CopyFrom(playerStart.Coordinates)` → `playerPawn.RootComponent.CopyLocalTransformFrom(playerStart.LocalTransform)` ;
+  - `Worlds/LegacyTrackSceneFactory.cs:429-431` : `component.Coordinates.Position/Orientation/Scale` → `component.LocalTransform.Position/Orientation/Scale` ;
+  - `Bootstrap/RacingGameCasaEngineGame.cs:172,178` (P5 → `Acquire`) : les deux textures du front-end sont obtenues par `AssetContentManager.Acquire<Texture2D>(id)` ; les poignées sont conservées dans des champs pendant toute la vie du jeu (comme l'ancien cache), `MenuBackgroundTexture`/`MenuButtonsTexture` restant alimentés par `handle.Asset`.
+- Validation : erreurs restantes de `RacingGameCasaEngine` = sites `StaticModelImporter` seulement.
 - Commit : `fix(racing-casa): use LocalTransform and asset handles`
 
 ## Phase 4 — `RacingGameCasaEngine` : chargement des `.gltf`
 
 ### ⏳ T4.1 — Métadonnées legacy depuis les `extras`
 
-- Objectif : reconstruire à partir des `extras` (P7) les champs que remplissait l'ancien importeur, puis appliquer le profil RacingGame (D9).
-- Fichiers : nouveau fichier dans `RacingGameCasaEngine/Bootstrap/` (lecteur d'`extras` + application du profil).
+- Objectif : reconstruire à partir des `extras` (P7 révisé) les champs que remplissait l'ancien importeur, puis appliquer le profil RacingGame (D9).
+- Fichiers : `RacingGameCasaEngine/Bootstrap/LegacyGltfModelReader.cs` (nouveau, autonome : ne dépend que de CasaEngine, SharpGLTF et de la BCL, pour être compilé tel quel dans la sonde de parité de T4.2) : `ReadWithMetadata(string gltfPath, ILegacyMaterialImportProfile? profile)` → `GltfStaticModelReader.ReadWithMetadata(path, null)` (profil `Neutral`), relecture des `extras` avec SharpGLTF (`ModelRoot.Load`, transitif via CasaEngine) par `MaterialIndex`, reconstruction, puis profil.
 - Étapes :
-  1. Lire les `extras` des matériaux du `.gltf` avec SharpGLTF (`SharpGLTF.Core`, transitif via CasaEngine), par index de matériau (`StaticModelImportedMaterial.MaterialIndex`).
+  1. Règle de reconstruction = celle validée par la parité de T2.1 (prototype `scratchpad/paritytools/newdump`, 92 matériaux sans écart).
   2. (Même règle que la parité de T2.1, dont `ResolveTexturePath` `:679-697`.) Appliquer d'abord `legacyMaterial` comme l'ancien `BuildMaterials` (`295db0c6` `StaticModelImporter.cs:159-200` : `DiffuseColor`, `EmissiveColor`, `SpecularColor`, `SpecularPower`, avec leurs valeurs de repli), puis `legacyEffect` comme `ApplyLegacyEffectMetadata` (`:345-392`) : `EffectFilePath`, `LegacyTechniqueIndex`, `AmbientColor`, `DiffuseColor`, `SpecularColor`, `SpecularPower`, `DiffuseTextureFilePath`, `NormalTextureFilePath`, `ReflectionTextureFilePath` (chemins résolus relativement au fichier modèle, repli sur la valeur du lecteur comme l'ancien code).
-  3. Appliquer ensuite `RacingGameImportProfiles.LegacyMaterialProfile` avec les mêmes affectations que `GltfStaticModelReader.cs:510-519` (le lecteur est appelé avec le profil `null` → `Neutral`, pour que le profil RacingGame voie les métadonnées d'effet, comme avant).
-- Validation : `RacingGameCasaEngine` : aucune nouvelle erreur de compilation ; la règle de reconstruction est la même que celle utilisée pour la parité de T2.1.
+  3. Si `profile` n'est pas nul, l'appliquer ensuite avec les mêmes affectations que `GltfStaticModelReader.cs:510-519` (`SurfaceIntent`, `AlphaCutoutHint`, `BrightAmbientHint`, `UsesReflection |=`), pour que le profil RacingGame voie les métadonnées d'effet comme avant ; `null` = profil neutre déjà appliqué par le lecteur.
+- Validation : `RacingGameCasaEngine` : aucune nouvelle erreur de compilation.
 - Commit : `feat(racing-casa): restore legacy material metadata from glTF extras`
 
 ### ⏳ T4.2 — Remplacement de `StaticModelImporter`
 
-- Fichiers : `Components/LegacyCarVisualFactory.cs:30,59,72,84` (`Car.gltf`), `Worlds/LegacyTrackSceneFactory.cs:56,211,219` (`{modelName}.gltf`), `Bootstrap/LegacyImportProfileVerifier.cs` ; `RacingGameCasaEngine.csproj` : retrait du lien `..\RacingGame\Content\Models\*.X`, ajout de `Content\Models\*.gltf`, `Content\Models\*.bin`, `Content\Textures\*.png` en `CopyToOutputDirectory` (liens `Textures\*.*`, `*.CombiModel`, `*.Track` conservés).
-- Étapes : `GltfStaticModelReader` (`IsFileSupported`, `ReadWithMetadata`) + T4.1 à la place de `StaticModelImporter`.
-- Validation : `dotnet build RacingGame.slnx` : **0 erreur** (fin de l'exception P1) ; `dotnet run … -- --verify-legacy-import-profile` sans échec ; `-- --smoke-frontend` sans échec.
+- Fichiers :
+  - `Components/LegacyCarVisualFactory.cs:30,59,72,84` : chemin `Models/Car.gltf` ; `GltfStaticModelReader.IsFileSupported` ; `LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile)` ;
+  - `Worlds/LegacyTrackSceneFactory.cs:56,211,219-227` : chemin `Models/{modelName}.gltf`, même remplacement ;
+  - `Bootstrap/LegacyImportProfileVerifier.cs:14-24,49-202` : chemins `.gltf`, appels `ImportWithMetadata(filePath[, profil])` → `LegacyGltfModelReader.ReadWithMetadata(filePath, profil ou null)` ; les paramètres `StaticModelImporter importer` disparaissent ; les messages d'échec qui nomment le fichier chargé (`:59,64,80,85,90,106,111,126,133,146,151,165,185,190,195,206,211`, « Building.X », « Car.x »…) nomment le `.gltf` chargé (« Building.gltf », « Car.gltf »…) ;
+  - `RacingGameCasaEngine.csproj` : retrait du lien `..\RacingGame\Content\Models\*.X` ; ajout de `Content\Models\*.gltf`, `Content\Models\*.bin`, `Content\Textures\*.png` en `CopyToOutputDirectory` (liens `..\RacingGame\Content\Textures\*.*` — `.tga`/`.dds` résolus par T4.1 —, `*.CombiModel`, `*.Track` conservés).
+- Étapes : garde `rg -n "StaticModelImporter|\.[Xx]\"|\b(Building|Sign|StartLight|AlphaPalm|Banner|Hotel02|Car|Windmill)\.[Xx]\b" RacingGameCasaEngine --glob "*.cs" --glob "!artifacts/**"` : plus aucune occurrence (chemins et messages compris ; à l'état actuel, occurrences uniquement dans les trois fichiers de cette tâche).
+- Validation : `dotnet build RacingGame.slnx` : **0 erreur** (fin de l'exception P1) ; parité des métadonnées rejouée avec le code **commité** : la sonde `newdump` compile `RacingGameCasaEngine/Bootstrap/LegacyGltfModelReader.cs` à la place du prototype et appelle `ReadWithMetadata(path, null)` sur les `.gltf` versionnés, dans la disposition de parité de T2.1 ; comparaison à la référence de l'ancien importeur (`parity-old.jsonl`) sur les mêmes champs et noms de fichier complets : 92 matériaux, 0 écart exigés, tout écart → ⚠️ ; `obj/project.assets.json` de `RacingGameCasaEngine` : seul `MonoGame.Framework.DesktopGL/3.8.5.1` ; `dotnet run --project RacingGameCasaEngine/RacingGameCasaEngine.csproj -p:BaseOutputPath=artifacts/verify-build/ -- --verify-legacy-import-profile` sans échec ; `-- --smoke-frontend` sans échec.
 - Commit : `fix(racing-casa): load converted glTF models`
 
 ### ⏳ T4.3 — Documentation
