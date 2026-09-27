@@ -70,10 +70,8 @@ internal sealed class RuntimeRaceWorldBinder
         playerPawn.TargetTopSpeedMph = selectedProfile.TargetTopSpeedMph;
         playerPawn.CarLabel = selectedProfile.Name;
         playerPawn.DrivingMode = state.SelectedDrivingMode;
-        playerController.Pawn = playerPawn;
-        playerPawn.Controller = playerController;
-        playerPawn.InputEnabled = false;
         playerControllers.Add(playerController);
+        playerController.Possess(playerPawn);
 
         _game.RaceSession.Bind(raceGameMode, playerController, playerPawn);
         _game.GameManager.SyncPlayerViewAssignments();

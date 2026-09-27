@@ -128,11 +128,6 @@ internal sealed class RaceRuntimeUiCoordinator
             session.PlayerController.IsInputEnable = canDrive;
         }
 
-        if (session.PlayerPawn != null)
-        {
-            session.PlayerPawn.InputEnabled = canDrive;
-        }
-
         HidePauseScreen();
     }
 

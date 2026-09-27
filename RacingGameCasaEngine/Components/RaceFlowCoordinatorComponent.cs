@@ -48,7 +48,6 @@ public sealed class RaceFlowCoordinatorComponent : EntityComponent
             && !session.GameMode.IsPaused
             && !session.GameMode.IsRaceFinished;
         session.PlayerController.IsInputEnable = canDrive;
-        session.PlayerPawn.InputEnabled = canDrive;
 
         if (!canDrive)
         {

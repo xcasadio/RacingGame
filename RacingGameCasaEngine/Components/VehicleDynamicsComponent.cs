@@ -95,7 +95,6 @@ public sealed class VehicleDynamicsComponent : EntityComponent
         }
 
         if (pawn.Controller is not RacingPlayerController controller
-            || !pawn.InputEnabled
             || !controller.IsInputEnable)
         {
             SyncPawnCompatibility(pawn);

@@ -6,7 +6,7 @@ using RacingGameCasaEngine.Gameplay;
 
 namespace RacingGameCasaEngine.Entities;
 
-public sealed class RacingCarPawn : Pawn
+public sealed class RacingCarPawn : Entity
 {
     public const string PhysicsRootAnchorId = "PhysicsRoot";
 
@@ -67,6 +67,8 @@ public sealed class RacingCarPawn : Pawn
     public StaticModelComponent? CarVisualComponent => FindSceneComponent<StaticModelComponent>(BodyAnchorComponent ?? VisualPivotComponent ?? PhysicalRootComponent);
 
     internal VehicleDynamicsComponent? VehicleDynamics => GetComponent<VehicleDynamicsComponent>();
+
+    internal PlayerController? Controller => World?.GetPlayerController(this);
 
     public RacingCarPawn()
     {

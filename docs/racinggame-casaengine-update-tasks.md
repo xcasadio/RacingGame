@@ -227,7 +227,9 @@ Exception de compilation P1 (ouverte par `3ed325f`) jusqu'à T4.2.
 - Validation : restore sans `NU1605` ; `obj/project.assets.json` : seul `MonoGame.Framework.DesktopGL/3.8.5.1` ; erreurs restantes ⊂ sites de T3.2-T3.4 et `StaticModelImporter`.
 - Commit : `build(racing-casa): switch to DesktopGL and updated MGUI namespaces`
 
-### ⏳ T3.2 — Entité, possession et gate d'input
+### ✅ T3.2 — Entité, possession et gate d'input
+
+> Validation (2026-09-27, exception P1) : dans le dépôt, l'erreur `Pawn` disparaît (restent `GameMode`, `StaticModelImporter`, erreurs de déclaration) ; sonde hors dépôt (copie de `RacingGameCasaEngine` + stubs de sonde pour `GameMode` et `StaticModelImporter`, pour atteindre les corps de méthode) : plus aucune erreur `Controller`/`InputEnabled`/`Pawn`, erreurs restantes = sites de T3.3 (`World.GameMode`) et T3.4 (`Coordinates`, `AssetContentManager.Load`) uniquement. Journaux de debug : format `enabled=X/Y` conservé, `X` = valeur du contrôleur (égale à l'ancien drapeau du véhicule, P4).
 
 - Faits (2026-09-27) : `Controller.Possess(Entity)` n'a d'effet de bord que sur un `CharacterControllerComponent` (`Controller.cs:35-60`), absent de `RacingCarPawn` ; `Entity.World` est public (`Entity.cs:35`) ; `World.GetPlayerController(Entity)` parcourt `_playerControllers` et renvoie celui dont `Pawn == entity` (`World.cs:959-970`). P4 vérifié : l'écriture contrôleur seule `RaceFlowCoordinatorComponent.cs:107` (`HandlePauseToggle`) est suivie dans le même `Update` de l'écriture des deux drapeaux (`:49-50`) ; `RacingPlayerController.ShowPauseMenu/HidePauseMenu` n'ont aucun appelant (`rg` sur `RacingGameCasaEngine` et `CasaEngine/CasaEngine`) ; les lecteurs testent déjà les deux drapeaux dans la même condition.
 - Fichiers :

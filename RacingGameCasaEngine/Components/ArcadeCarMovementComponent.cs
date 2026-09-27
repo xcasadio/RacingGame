@@ -76,7 +76,6 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         }
 
         if (pawn.Controller is not RacingPlayerController controller
-            || !pawn.InputEnabled
             || !controller.IsInputEnable)
         {
             return;
@@ -571,7 +570,7 @@ public sealed class ArcadeCarMovementComponent : EntityComponent
         _lastLoggedSteering = steering;
         session.AppendMovementDebug(
             "input",
-            $"throttle={throttle:0.0} steering={steering:0.0} enabled={pawn.InputEnabled}/{controller.IsInputEnable} speedUnits={_speedUnitsPerSecond:0.000} pos={FormatVector(pawn.RootComponent?.LocalPosition ?? Vector3.Zero)}");
+            $"throttle={throttle:0.0} steering={steering:0.0} enabled={controller.IsInputEnable}/{controller.IsInputEnable} speedUnits={_speedUnitsPerSecond:0.000} pos={FormatVector(pawn.RootComponent?.LocalPosition ?? Vector3.Zero)}");
     }
 
     private void LogFallbackState(RuntimeRaceSession? session, bool fallbackEnabled, string reason)

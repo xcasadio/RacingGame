@@ -406,7 +406,7 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         bool inputEnabled = context.Pawn.Controller is RacingPlayerController racingPlayerController && racingPlayerController.IsInputEnable;
         session.AppendMovementDebug(
             "input",
-            $"mode=arcade throttle={throttle:0.0} steering={steering:0.0} enabled={context.Pawn.InputEnabled}/{inputEnabled} speedUnits={_speedUnitsPerSecond:0.000} pos={FormatVector(context.Chassis.Position)}");
+            $"mode=arcade throttle={throttle:0.0} steering={steering:0.0} enabled={inputEnabled}/{inputEnabled} speedUnits={_speedUnitsPerSecond:0.000} pos={FormatVector(context.Chassis.Position)}");
     }
 
     private void LogFallbackState(RuntimeRaceSession? session, bool fallbackEnabled, string reason)
