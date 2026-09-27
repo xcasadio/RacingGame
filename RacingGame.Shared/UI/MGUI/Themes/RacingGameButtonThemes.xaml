@@ -1,5 +1,8 @@
 <ThemeDefinitionsDocument xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core">
   <ThemeDefinition Name="RacingGame.Button.Primary" BasedOn="Light_Gray">
+    <ThemeDefinition.FontSettings>
+      <ThemeFontSettingsDefinition UseExactScale="True" />
+    </ThemeDefinition.FontSettings>
     <ThemeDefinition.Backgrounds>
       <ThemeBackgroundDefinition ElementType="Button">
         <ThemeBackgroundDefinition.Value>
@@ -26,6 +29,9 @@
   </ThemeDefinition>
 
   <ThemeDefinition Name="RacingGame.Button.Secondary" BasedOn="Light_Gray">
+    <ThemeDefinition.FontSettings>
+      <ThemeFontSettingsDefinition UseExactScale="True" />
+    </ThemeDefinition.FontSettings>
     <ThemeDefinition.Backgrounds>
       <ThemeBackgroundDefinition ElementType="Button">
         <ThemeBackgroundDefinition.Value>
@@ -52,6 +58,9 @@
   </ThemeDefinition>
 
   <ThemeDefinition Name="RacingGame.Button.Band" BasedOn="Light_Gray">
+    <ThemeDefinition.FontSettings>
+      <ThemeFontSettingsDefinition UseExactScale="True" />
+    </ThemeDefinition.FontSettings>
     <ThemeDefinition.Backgrounds>
       <ThemeBackgroundDefinition ElementType="Button">
         <ThemeBackgroundDefinition.Value>
@@ -78,6 +87,9 @@
   </ThemeDefinition>
 
   <ThemeDefinition Name="RacingGame.Button.Band.Active" BasedOn="Light_Gray">
+    <ThemeDefinition.FontSettings>
+      <ThemeFontSettingsDefinition UseExactScale="True" />
+    </ThemeDefinition.FontSettings>
     <ThemeDefinition.Backgrounds>
       <ThemeBackgroundDefinition ElementType="Button">
         <ThemeBackgroundDefinition.Value>
@@ -104,6 +116,9 @@
   </ThemeDefinition>
 
   <ThemeDefinition Name="RacingGame.Button.MenuText" BasedOn="Light_Gray">
+    <ThemeDefinition.FontSettings>
+      <ThemeFontSettingsDefinition UseExactScale="True" />
+    </ThemeDefinition.FontSettings>
     <ThemeDefinition.Backgrounds>
       <ThemeBackgroundDefinition ElementType="Button">
         <ThemeBackgroundDefinition.Value>
@@ -130,6 +145,9 @@
   </ThemeDefinition>
 
   <ThemeDefinition Name="RacingGame.Button.MenuText.Active" BasedOn="Light_Gray">
+    <ThemeDefinition.FontSettings>
+      <ThemeFontSettingsDefinition UseExactScale="True" />
+    </ThemeDefinition.FontSettings>
     <ThemeDefinition.Backgrounds>
       <ThemeBackgroundDefinition ElementType="Button">
         <ThemeBackgroundDefinition.Value>

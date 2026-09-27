@@ -22,6 +22,9 @@ internal sealed class MguiUiHost : IDisposable
         Desktop.ResponsiveSettings = new UIResponsiveSettings(new UIDesignResolution(1280, 720));
         Desktop.LoadDefaultResources();
         MguiUiTheme.LoadButtonThemes(Desktop);
+        // The SpriteFont text engine measures text at the exact scale; drawing at the suggested scale (the default)
+        // made text up to 14% wider than its layout, clipping its end. The button themes set the same in their XAML.
+        Desktop.Theme.FontSettings.UseExactScale = true;
         Desktop.UseRawNavigationInput = false;
         _inputRouter = new InputRouter();
         _inputRouter.RegisterContext(new MGUIInputContext(Desktop, 100));
