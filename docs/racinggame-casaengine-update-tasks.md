@@ -316,7 +316,9 @@ Ordre : T5.2 à T5.5 (corrections décidées pendant T5.1, D19-D22), puis repris
 - Validation : build ; `--capture-track-audit` code 0 ; vue de poursuite comparée à la capture du 2026-04-17.
 - Commit : `fix(racing-casa): light the race world with light components`
 
-### ⏳ T5.3 — Échelle du cube de ciel (D20)
+### ✅ T5.3 — Échelle du cube de ciel (D20)
+
+> Validation (2026-09-27) : build 0 erreur ; `--capture-track-audit` code 0 (21 captures). Vues de poursuite des 3 pistes comparées aux captures du 2026-04-17 (zone de scène hors HUD) : moyennes identiques à 0,5 niveau près (Beginner 105,3/116,3/119,3 contre 105,6/116,7/119,8 ; Advanced 119,4/135,3/140,7 contre 119,7/135,6/141,1 ; Expert 115,8/126,8/129,9 contre 115,9/126,8/129,9), écart absolu moyen 4 à 6 niveaux, ciel et relief visuellement identiques. Reste O12 (fine arête du cube de ciel).
 
 - Fichier : `RacingGameCasaEngine/Bootstrap/LegacySkyCubeViewPipeline.cs`.
 - Validation : build ; `--capture-track-audit` code 0 ; ciel visible, comparé au 2026-04-17.

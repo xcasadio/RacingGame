@@ -7,6 +7,10 @@ namespace RacingGameCasaEngine.Bootstrap;
 
 internal sealed class LegacySkyCubeViewPipeline : IViewRenderPipeline
 {
+    // Initial value of SkyCubeScale in LegacySkyCube.fx. MonoGame does not apply HLSL parameter initializers under
+    // OpenGL (DesktopGL): the scale stayed 0 and the sky cube collapsed to a point.
+    private const float SkyCubeScale = 100.0f;
+
     private static readonly RasterizerState SkyRasterizerState = new()
     {
         CullMode = CullMode.None,
@@ -87,6 +91,7 @@ internal sealed class LegacySkyCubeViewPipeline : IViewRenderPipeline
 
         _effect.Parameters["ViewProjection"]?.SetValue(viewProjection);
         _effect.Parameters["SkyTintColor"]?.SetValue(_skyTintColor.ToVector4());
+        _effect.Parameters["SkyCubeScale"]?.SetValue(SkyCubeScale);
         _effect.Parameters["SkyCube"]?.SetValue(_skyCube);
 
         foreach (EffectPass pass in _effect.CurrentTechnique.Passes)
