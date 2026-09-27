@@ -53,7 +53,6 @@ internal static partial class LegacyTrackSceneFactory
 
     private static readonly XmlSerializer TrackSerializer = new(typeof(LegacyTrackLayout));
     private static readonly XmlSerializer CombiSerializer = new(typeof(List<LegacyCombiObject>), new XmlRootAttribute("ArrayOfCombiObject"));
-    private static readonly StaticModelImporter StaticModelImporter = new();
     private static readonly Texture2DLoader TextureLoader = new();
     private static readonly Dictionary<string, LegacyTrackLayout> TrackCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, List<LegacyCombiObject>> CombiCache = new(StringComparer.OrdinalIgnoreCase);
@@ -208,7 +207,7 @@ internal static partial class LegacyTrackSceneFactory
             return cachedModel;
         }
 
-        string fileName = Path.Combine(GetProjectContentPath(), "Models", $"{modelName}.X");
+        string fileName = Path.Combine(GetProjectContentPath(), "Models", $"{modelName}.gltf");
         if (!File.Exists(fileName))
         {
             Logs.WriteWarning($"Legacy track model '{modelName}' not found at '{fileName}'.");
@@ -216,15 +215,14 @@ internal static partial class LegacyTrackSceneFactory
             return null;
         }
 
-        var importer = new StaticModelImporter();
-        if (!importer.IsFileSupported(fileName))
+        if (!LegacyGltfModelReader.IsFileSupported(fileName))
         {
             Logs.WriteWarning($"Legacy track model '{modelName}' uses an unsupported format for runtime import.");
             ModelCache[modelName] = null;
             return null;
         }
 
-        StaticModelImportResult importResult = importer.ImportWithMetadata(fileName, RacingGameImportProfiles.LegacyMaterialProfile);
+        StaticModelImportResult importResult = LegacyGltfModelReader.ReadWithMetadata(fileName, RacingGameImportProfiles.LegacyMaterialProfile);
         StaticModel model = importResult.Model;
         ApplyLegacyModelRootCorrection(model);
         ApplyImportedMaterials(model, importResult.Materials, modelName, assetContentManager);

@@ -43,7 +43,13 @@
     <None Include="..\RacingGame\Content\*.CombiModel" Link="Content\Models\%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\RacingGame\Content\Models\*.X" Link="Content\Models\%(Filename)%(Extension)">
+    <None Update="Content\Models\*.gltf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Models\*.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Textures\*.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

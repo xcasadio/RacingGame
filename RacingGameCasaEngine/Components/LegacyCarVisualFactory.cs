@@ -27,7 +27,6 @@ internal static class LegacyCarVisualFactory
     private static readonly Color LegacyTextureColorKey = new(255, 0, 255, 0);
     private static readonly string[] CarDiffuseTextureFileNames = ["RacerCar.tga", "RacerCar2.tga", "RacerCar3.tga"];
 
-    private static readonly StaticModelImporter StaticModelImporter = new();
     private static readonly Texture2DLoader TextureLoader = new();
     private static readonly Dictionary<string, Texture2D?> TextureCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, TextureCube?> TextureCubeCache = new(StringComparer.OrdinalIgnoreCase);
@@ -56,7 +55,7 @@ internal static class LegacyCarVisualFactory
                 return cachedModel;
             }
 
-            string filePath = Path.Combine(GetProjectContentPath(), "Models", "Car.x");
+            string filePath = Path.Combine(GetProjectContentPath(), "Models", "Car.gltf");
             if (!File.Exists(filePath))
             {
                 if (!_hasLoggedMissingCarModel)
@@ -69,7 +68,7 @@ internal static class LegacyCarVisualFactory
                 return null;
             }
 
-            if (!StaticModelImporter.IsFileSupported(filePath))
+            if (!LegacyGltfModelReader.IsFileSupported(filePath))
             {
                 if (!_hasLoggedUnsupportedCarModel)
                 {
@@ -81,7 +80,7 @@ internal static class LegacyCarVisualFactory
                 return null;
             }
 
-            StaticModelImportResult importResult = StaticModelImporter.ImportWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
+            StaticModelImportResult importResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
             StaticModel model = importResult.Model;
             ApplyImportedMaterials(model, importResult.Materials, key, assetContentManager);
             ApplyFallbackMaterials(model);

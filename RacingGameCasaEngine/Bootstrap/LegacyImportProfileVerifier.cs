@@ -11,17 +11,16 @@ internal static class LegacyImportProfileVerifier
 
         try
         {
-            var importer = new StaticModelImporter();
             var failures = new List<string>();
 
-            VerifyBuilding(importer, projectContentPath, failures);
-            VerifySign(importer, projectContentPath, failures);
-            VerifyStartLight(importer, projectContentPath, failures);
-            VerifyAlphaPalm(importer, projectContentPath, failures);
-            VerifyBanner(importer, projectContentPath, failures);
-            VerifyHotelGlass(importer, projectContentPath, failures);
-            VerifyCar(importer, projectContentPath, failures);
-            VerifyWindmill(importer, projectContentPath, failures);
+            VerifyBuilding(projectContentPath, failures);
+            VerifySign(projectContentPath, failures);
+            VerifyStartLight(projectContentPath, failures);
+            VerifyAlphaPalm(projectContentPath, failures);
+            VerifyBanner(projectContentPath, failures);
+            VerifyHotelGlass(projectContentPath, failures);
+            VerifyCar(projectContentPath, failures);
+            VerifyWindmill(projectContentPath, failures);
 
             if (failures.Count == 0)
             {
@@ -46,30 +45,30 @@ internal static class LegacyImportProfileVerifier
         }
     }
 
-    private static void VerifyBuilding(StaticModelImporter importer, string projectContentPath, List<string> failures)
+    private static void VerifyBuilding(string projectContentPath, List<string> failures)
     {
-        string filePath = Path.Combine(projectContentPath, "Models", "Building.X");
-        var profileResult = importer.ImportWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
+        string filePath = Path.Combine(projectContentPath, "Models", "Building.gltf");
+        var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
         StaticModelImportedMaterial buildingMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "Building.tga");
         RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Building", buildingMaterial);
 
         if (buildingMaterial.UsesReflection || tuning.EnableReflection)
         {
-            failures.Add("Building.X facade should stay non-reflective after material retuning.");
+            failures.Add("Building.gltf facade should stay non-reflective after material retuning.");
         }
 
         if (tuning.ApplySpecularColor(buildingMaterial.SpecularColor).X > 0.15f)
         {
-            failures.Add("Building.X facade should have a muted specular response after material retuning.");
+            failures.Add("Building.gltf facade should have a muted specular response after material retuning.");
         }
     }
 
-    private static void VerifySign(StaticModelImporter importer, string projectContentPath, List<string> failures)
+    private static void VerifySign(string projectContentPath, List<string> failures)
     {
-        string filePath = Path.Combine(projectContentPath, "Models", "Sign.X");
-        var neutralResult = importer.ImportWithMetadata(filePath);
-        var profileResult = importer.ImportWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
+        string filePath = Path.Combine(projectContentPath, "Models", "Sign.gltf");
+        var neutralResult = LegacyGltfModelReader.ReadWithMetadata(filePath, null);
+        var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
         StaticModelImportedMaterial neutralMaterial = FindMaterialByDiffuseTexture(neutralResult.Materials, "Schild.tga");
         StaticModelImportedMaterial profileMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "Schild.tga");
@@ -77,24 +76,24 @@ internal static class LegacyImportProfileVerifier
 
         if (neutralMaterial.BrightAmbientHint)
         {
-            failures.Add("Sign.X should stay neutral without the RacingGame profile.");
+            failures.Add("Sign.gltf should stay neutral without the RacingGame profile.");
         }
 
         if (!profileMaterial.BrightAmbientHint || profileMaterial.UsesReflection || profileMaterial.SurfaceIntent != LegacyMaterialSurfaceIntent.OpaqueLit)
         {
-            failures.Add("Sign.X should become bright-ambient without reflecting the scene with the RacingGame profile.");
+            failures.Add("Sign.gltf should become bright-ambient without reflecting the scene with the RacingGame profile.");
         }
 
         if (tuning.EnableReflection || tuning.ApplySpecularColor(profileMaterial.SpecularColor).X > 0.2f)
         {
-            failures.Add("Sign.X should keep a toned-down matte response after material retuning.");
+            failures.Add("Sign.gltf should keep a toned-down matte response after material retuning.");
         }
     }
 
-    private static void VerifyStartLight(StaticModelImporter importer, string projectContentPath, List<string> failures)
+    private static void VerifyStartLight(string projectContentPath, List<string> failures)
     {
-        string filePath = Path.Combine(projectContentPath, "Models", "StartLight.X");
-        var profileResult = importer.ImportWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
+        string filePath = Path.Combine(projectContentPath, "Models", "StartLight.gltf");
+        var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
         StaticModelImportedMaterial signalPole = FindMaterialByDiffuseTexture(profileResult.Materials, "TLight.tga");
         StaticModelImportedMaterial signalLens = FindMaterialByDiffuseTexture(profileResult.Materials, "Light.tga");
@@ -103,73 +102,73 @@ internal static class LegacyImportProfileVerifier
 
         if (signalPole.UsesReflection || signalLens.UsesReflection || poleTuning.EnableReflection || lensTuning.EnableReflection)
         {
-            failures.Add("StartLight.X should not reflect the scene after material retuning.");
+            failures.Add("StartLight.gltf should not reflect the scene after material retuning.");
         }
 
         if (lensTuning.ApplySpecularColor(signalLens.SpecularColor).X > 0.2f)
         {
-            failures.Add("StartLight.X light lenses should have a reduced specular response after material retuning.");
+            failures.Add("StartLight.gltf light lenses should have a reduced specular response after material retuning.");
         }
     }
 
-    private static void VerifyAlphaPalm(StaticModelImporter importer, string projectContentPath, List<string> failures)
+    private static void VerifyAlphaPalm(string projectContentPath, List<string> failures)
     {
-        string filePath = Path.Combine(projectContentPath, "Models", "AlphaPalm.X");
-        var neutralResult = importer.ImportWithMetadata(filePath);
-        var profileResult = importer.ImportWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
+        string filePath = Path.Combine(projectContentPath, "Models", "AlphaPalm.gltf");
+        var neutralResult = LegacyGltfModelReader.ReadWithMetadata(filePath, null);
+        var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
         StaticModelImportedMaterial neutralMaterial = FindMaterialByDiffuseTexture(neutralResult.Materials, "PalmLeave.tga");
         StaticModelImportedMaterial profileMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "PalmLeave.tga");
 
         if (neutralMaterial.AlphaCutoutHint)
         {
-            failures.Add("AlphaPalm.X should stay opaque without the RacingGame profile.");
+            failures.Add("AlphaPalm.gltf should stay opaque without the RacingGame profile.");
         }
 
         if (!profileMaterial.AlphaCutoutHint
             || profileMaterial.UsesReflection
             || profileMaterial.SurfaceIntent != LegacyMaterialSurfaceIntent.AlphaCutoutLit)
         {
-            failures.Add("AlphaPalm.X should enable alpha-cutout without reintroducing scene reflection with the RacingGame profile.");
+            failures.Add("AlphaPalm.gltf should enable alpha-cutout without reintroducing scene reflection with the RacingGame profile.");
         }
     }
 
-    private static void VerifyBanner(StaticModelImporter importer, string projectContentPath, List<string> failures)
+    private static void VerifyBanner(string projectContentPath, List<string> failures)
     {
-        string filePath = Path.Combine(projectContentPath, "Models", "Banner.X");
-        var profileResult = importer.ImportWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
+        string filePath = Path.Combine(projectContentPath, "Models", "Banner.gltf");
+        var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
         StaticModelImportedMaterial bannerMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "banner.tga");
 
         if (!profileResult.Materials.Any(static material => material.BrightAmbientHint))
         {
-            failures.Add("Banner.X should produce at least one bright-ambient material with the RacingGame profile.");
+            failures.Add("Banner.gltf should produce at least one bright-ambient material with the RacingGame profile.");
         }
 
         if (bannerMaterial.UsesReflection)
         {
-            failures.Add("Banner.X should stay non-reflective after material retuning.");
+            failures.Add("Banner.gltf should stay non-reflective after material retuning.");
         }
     }
 
-    private static void VerifyHotelGlass(StaticModelImporter importer, string projectContentPath, List<string> failures)
+    private static void VerifyHotelGlass(string projectContentPath, List<string> failures)
     {
-        string filePath = Path.Combine(projectContentPath, "Models", "Hotel02.X");
-        var profileResult = importer.ImportWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
+        string filePath = Path.Combine(projectContentPath, "Models", "Hotel02.gltf");
+        var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
         StaticModelImportedMaterial glassMaterial = FindMaterialByDisplayName(profileResult.Materials, "fenster");
         RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Hotel02", glassMaterial);
 
         if (!glassMaterial.UsesReflection || !tuning.EnableReflection)
         {
-            failures.Add("Hotel02.X glass should remain reflective after material retuning.");
+            failures.Add("Hotel02.gltf glass should remain reflective after material retuning.");
         }
     }
 
-    private static void VerifyCar(StaticModelImporter importer, string projectContentPath, List<string> failures)
+    private static void VerifyCar(string projectContentPath, List<string> failures)
     {
-        string filePath = Path.Combine(projectContentPath, "Models", "Car.x");
-        var profileResult = importer.ImportWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
+        string filePath = Path.Combine(projectContentPath, "Models", "Car.gltf");
+        var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
         StaticModelImportedMaterial glassMaterial = FindMaterialByEffectFile(profileResult.Materials, "ReflectionSimpleGlass.fx");
         StaticModelImportedMaterial chromeMaterial = FindMaterialByDisplayName(profileResult.Materials, "chrome");
@@ -182,33 +181,33 @@ internal static class LegacyImportProfileVerifier
 
         if (!glassMaterial.UsesReflection || !glassTuning.EnableReflection)
         {
-            failures.Add("Car.x glass should remain reflective after material retuning.");
+            failures.Add("Car.gltf glass should remain reflective after material retuning.");
         }
 
         if (paintTuning.EnableReflection || chromeTuning.EnableReflection)
         {
-            failures.Add("Car.x paint and chrome should stay non-reflective at runtime after material retuning.");
+            failures.Add("Car.gltf paint and chrome should stay non-reflective at runtime after material retuning.");
         }
 
         if (tireMaterial.UsesReflection || tireTuning.EnableReflection)
         {
-            failures.Add("Car.x tires should stay non-reflective after material retuning.");
+            failures.Add("Car.gltf tires should stay non-reflective after material retuning.");
         }
     }
 
-    private static void VerifyWindmill(StaticModelImporter importer, string projectContentPath, List<string> failures)
+    private static void VerifyWindmill(string projectContentPath, List<string> failures)
     {
-        string filePath = Path.Combine(projectContentPath, "Models", "Windmill.X");
-        var profileResult = importer.ImportWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
+        string filePath = Path.Combine(projectContentPath, "Models", "Windmill.gltf");
+        var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
         if (!profileResult.Materials.Any(static material => material.BrightAmbientHint))
         {
-            failures.Add("Windmill.X should produce at least one bright-ambient material with the RacingGame profile.");
+            failures.Add("Windmill.gltf should produce at least one bright-ambient material with the RacingGame profile.");
         }
 
         if (profileResult.Materials.Any(static material => material.UsesReflection))
         {
-            failures.Add("Windmill.X should keep the bright-ambient exception without reflecting the scene.");
+            failures.Add("Windmill.gltf should keep the bright-ambient exception without reflecting the scene.");
         }
     }
 

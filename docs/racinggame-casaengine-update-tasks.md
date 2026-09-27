@@ -278,7 +278,9 @@ Exception de compilation P1 (ouverte par `3ed325f`) jusqu'à T4.2.
 - Validation : `RacingGameCasaEngine` : aucune nouvelle erreur de compilation.
 - Commit : `feat(racing-casa): restore legacy material metadata from glTF extras`
 
-### ⏳ T4.2 — Remplacement de `StaticModelImporter`
+### ✅ T4.2 — Remplacement de `StaticModelImporter`
+
+> Validation (2026-09-27) : garde sans occurrence de code (précision : les lignes de commentaire `//` sont exclues, les seules occurrences restantes étant les commentaires de provenance de `LegacyGltfModelReader.cs` qui citent l'ancien importeur). `dotnet build RacingGame.slnx` : **0 erreur** (fin de l'exception P1) ; `obj/project.assets.json` de `RacingGameCasaEngine` : seul `MonoGame.Framework.DesktopGL/3.8.5.1`. Parité rejouée avec le code commité (`LegacyGltfModelReader.cs` compilé tel quel dans la sonde) sur les `.gltf` versionnés : **92 matériaux, 0 écart**. `-- --verify-legacy-import-profile` : « Legacy import profile verification passed. », code 0. `-- --smoke-frontend` : code 0, journal « Smoke validation completed successfully » (Splash → MainMenu → Highscores → Options → Help → CarSelection → TrackSelection → RaceHud → Paused → GameOver → MainMenu) ; seul avertissement du journal : `CasaUIAssetProvider: cannot resolve UI image 'CheckMark_64x64'` (×3), absent des journaux d'avant la mise à jour (2026-04-18) → O9.
 
 - Fichiers :
   - `Components/LegacyCarVisualFactory.cs:30,59,72,84` : chemin `Models/Car.gltf` ; `GltfStaticModelReader.IsFileSupported` ; `LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile)` ;
@@ -313,6 +315,7 @@ Exception de compilation P1 (ouverte par `3ed325f`) jusqu'à T4.2.
 | O3 | Lecture des banques XACT précompilées (`.xgs`/`.xwb`/`.xsb`) sous DesktopGL, non vérifiée. | T1.1 |
 | O4 | **Levé (T2.1).** Encodage PNG par `System.Drawing` dans l'outil : à confirmer au build de T2.1 ; sinon ⚠️ + question (pas de nouveau paquet sans accord). | T2.1 |
 | O8 | **Levé (T2.1).** Écriture par SharpGLTF d'images satellites vers `../Textures/<Nom>.png` (P2) : à vérifier au début de T2.1 ; si impossible → ⚠️ + question (alternative : PNG à côté des `.gltf`). | T2.1 |
+| O9 | Nouvel avertissement depuis la mise à jour : `CasaUIAssetProvider: cannot resolve UI image 'CheckMark_64x64'` (résolution d'image par asset du catalogue, `CasaUIAssetProvider.cs:124-129`) ; l'image existe dans `CasaEngine/MGUI/MGUI.Core/Content/Icons/CheckMark_64x64.png`, absente du catalogue `RacingGameCasaEngine/Content/AssetInfos.json`. Effet visuel (coche des cases à cocher MGUI) et correction à établir, puis question à l'auteur. | T5.1 |
 | O7 | **Tranché (D17).** Sous DesktopGL, MonoGame n'applique pas les valeurs par défaut HLSL des paramètres d'effet (limitation documentée) : 26 valeurs perdues, objets rendus noirs. Comment les rétablir : valeurs par défaut posées en C# après chargement de chaque effet (`RacingGame.Shared/Shaders/*.cs` + `Graphics/Model.cs`), `static const` dans les `.fx` pour les paramètres jamais écrits par le C# + C# pour les autres, ou retour du jeu legacy en WindowsDX ? | T1.1 |
 | O6 | **Tranché (D15).** `PostScreenShadowBlur.fx` : `Weights8[8]` lu sur 7 éléments fait planter `EffectPass.Apply` sous DesktopGL. Correction : `static const` dans le `.fx` + retrait du `SetValue` de `ShadowMapBlur.cs:87` (valeurs identiques), ou `Weights8[7]` + 7 valeurs en C#, ou autre ? | T1.1 |
 | O5 | **Tranché (D14).** Sous DesktopGL, les shaders legacy exposent leurs textures sous `<nom>Sampler` et 6 paramètres sont absents ; le jeu legacy plante au démarrage. Comment corriger : repli C# `<nom>` → `<nom>Sampler` dans `RacingGame.Shared/Shaders/*.cs`, modification des macros OpenGL de `Macros.fxh`, ou autre ? | T1.1 |
