@@ -251,7 +251,9 @@ Exception de compilation P1 (ouverte par `3ed325f`) jusqu'à T4.2.
 - Validation : ces erreurs disparaissent ; aucune nouvelle erreur.
 - Commit : `refactor(racing-casa): host race rules in a GameplayMode`
 
-### ⏳ T3.4 — Transforms locaux et chargement d'assets
+### ✅ T3.4 — Transforms locaux et chargement d'assets
+
+> Validation (2026-09-27, exception P1) : `dotnet build RacingGameCasaEngine/RacingGameCasaEngine.csproj` : erreurs restantes = `StaticModelImporter` seulement (`LegacyImportProfileVerifier.cs`, `LegacyCarVisualFactory.cs:30`, `LegacyTrackSceneFactory.cs:56`) ; sonde hors dépôt avec le seul stub `StaticModelImporter` : **0 erreur** (tous les corps de méthode compilent).
 
 - Faits (2026-09-27) : `SceneComponent.LocalTransform` + `CopyLocalTransformFrom(LocalTransform)` (`SceneComponent.cs:22,410`) ; l'ancien `AssetContentManager.Load<T>(Guid)` renvoyait l'instance partagée mise en cache (`cache = true` par défaut, `git show 295db0c6:CasaEngine/Framework/Assets/AssetContentManager.cs:73-100`) ; `Acquire<T>(Guid)` renvoie un `AssetHandle<T>` partagé, dont l'asset reste vivant tant que la poignée n'est pas rendue, `CollectUnreferenced` libérant les assets sans poignée au changement de monde (`AssetContentManager.cs:55-89`).
 - Fichiers :

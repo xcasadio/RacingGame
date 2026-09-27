@@ -46,7 +46,7 @@ internal sealed class RuntimeRaceWorldBinder
         if (TryGetPlayerStart(world) is { } playerStart
             && playerPawn.RootComponent != null)
         {
-            playerPawn.RootComponent.Coordinates.CopyFrom(playerStart.Coordinates);
+            playerPawn.RootComponent.CopyLocalTransformFrom(playerStart.LocalTransform);
         }
 
         var playerControllers = (List<PlayerController>)PlayerControllersField.GetValue(world)!;

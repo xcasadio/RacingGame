@@ -426,9 +426,9 @@ internal static partial class LegacyTrackSceneFactory
         {
             StaticModel = model,
         };
-        component.Coordinates.Position = translation;
-        component.Coordinates.Orientation = rotation;
-        component.Coordinates.Scale = scale;
+        component.LocalTransform.Position = translation;
+        component.LocalTransform.Orientation = rotation;
+        component.LocalTransform.Scale = scale;
         entity.RootComponent = component;
         return entity;
     }

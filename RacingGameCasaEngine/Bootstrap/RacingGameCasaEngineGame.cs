@@ -98,6 +98,11 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         GameManager.WorldLoaded += OnWorldLoaded;
     }
 
+    // Held for the whole game, like the cached AssetContentManager.Load they replace.
+    private AssetHandle<Texture2D>? _menuBackgroundHandle;
+
+    private AssetHandle<Texture2D>? _menuButtonsHandle;
+
     public Texture2D? MenuBackgroundTexture { get; private set; }
 
     public Texture2D? MenuButtonsTexture { get; private set; }
@@ -169,13 +174,15 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         AssetInfo? backgroundAsset = AssetCatalog.Get(RaceBootstrapAssets.MenuBackground);
         if (backgroundAsset != null)
         {
-            MenuBackgroundTexture = AssetContentManager.Load<Texture2D>(backgroundAsset.Id);
+            _menuBackgroundHandle = AssetContentManager.Acquire<Texture2D>(backgroundAsset.Id);
+            MenuBackgroundTexture = _menuBackgroundHandle.Asset;
         }
 
         AssetInfo? buttonsAsset = AssetCatalog.Get(RaceBootstrapAssets.MenuButtons);
         if (buttonsAsset != null)
         {
-            MenuButtonsTexture = AssetContentManager.Load<Texture2D>(buttonsAsset.Id);
+            _menuButtonsHandle = AssetContentManager.Acquire<Texture2D>(buttonsAsset.Id);
+            MenuButtonsTexture = _menuButtonsHandle.Asset;
         }
 
         string contentRoot = string.IsNullOrWhiteSpace(ContentPath)
