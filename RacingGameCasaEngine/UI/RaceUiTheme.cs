@@ -24,7 +24,9 @@ internal static class RaceUiTheme
 
     public static MGWindow CreateFullscreenWindow(UIRoot root, bool allowsClickThrough = false)
     {
-        if (!root.Desktop.Resources.TryGetTexture("CheckMark_64x64", out _))
+        // Textures, not TryGetTexture: an unknown name makes TryGetTexture fall back to the asset catalog
+        // (MGUI ADR-0016), which logs a warning for a texture LoadDefaultResources adds just below.
+        if (!root.Desktop.Resources.Textures.ContainsKey("CheckMark_64x64"))
         {
             root.Desktop.LoadDefaultResources();
         }

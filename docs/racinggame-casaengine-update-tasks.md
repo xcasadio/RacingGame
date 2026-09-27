@@ -324,7 +324,9 @@ Ordre : T5.2 à T5.5 (corrections décidées pendant T5.1, D19-D22), puis repris
 - Validation : build ; `--capture-track-audit` code 0 ; ciel visible, comparé au 2026-04-17.
 - Commit : `fix(racing-casa): set the legacy sky cube scale explicitly`
 
-### ⏳ T5.4 — Test des ressources MGUI par défaut (D21)
+### ✅ T5.4 — Test des ressources MGUI par défaut (D21)
+
+> Validation (2026-09-27) : build 0 erreur ; `--smoke-frontend` code 0, « Smoke validation completed successfully », journal sans aucun `[Warning]` ni `[Error]` (avant : 3 avertissements `CheckMark_64x64`). `Desktop.Resources` est la portée racine (`MGDesktop.cs:1402`, sans parent) : `Textures.ContainsKey` et l'ancien `TryGetTexture` répondent pareil pour cette portée, sans le repli vers le catalogue.
 
 - Fichier : `RacingGameCasaEngine/UI/RaceUiTheme.cs`.
 - Validation : build ; `--smoke-frontend` code 0, sans avertissement `CheckMark_64x64`.
