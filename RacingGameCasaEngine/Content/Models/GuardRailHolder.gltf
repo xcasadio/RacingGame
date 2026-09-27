@@ -1,0 +1,246 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 103,
+      "max": [
+        300,
+        775,
+        274.9949645996094
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308,
+        -115.00504302978516
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 103,
+      "max": [
+        0.9238797426223755,
+        1,
+        1
+      ],
+      "min": [
+        -1,
+        -1,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 103,
+      "max": [
+        0.9780570268630981,
+        0.508965015411377
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 204,
+      "max": [
+        102
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 1236,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1236,
+      "byteOffset": 1236,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 824,
+      "byteOffset": 2472,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 816,
+      "byteOffset": 3296,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 4112,
+      "uri": "GuardRailHolder.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "Leitplanke",
+      "uri": "../Textures/Leitplanke.png"
+    },
+    {
+      "name": "LeitplankeNormal",
+      "uri": "../Textures/LeitplankeNormal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 4
+          },
+          "floats": {
+            "ambientColor": [
+              0.313726,
+              0.313726,
+              0.313726,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\Leitplanke.tga",
+            "normalTexture": "..\\\\textures\\\\LeitplankeNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "PDX09_-_Default",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Mesh01",
+      "mesh": 0,
+      "rotation": [
+        0.70710677,
+        0,
+        0,
+        0.70710677
+      ],
+      "scale": [
+        0.002103,
+        0.002103,
+        0.002103
+      ],
+      "translation": [
+        -0.58884,
+        0.5783249,
+        -1.577237
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    }
+  ]
+}

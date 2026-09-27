@@ -1,0 +1,240 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 243,
+      "max": [
+        1.0593440532684326,
+        8.601232528686523,
+        1.137133002281189
+      ],
+      "min": [
+        -1.742595911026001,
+        -1.1508569717407227,
+        -1.0395300388336182
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 243,
+      "max": [
+        0.999978244304657,
+        0.9931157827377319,
+        0.9996309876441956
+      ],
+      "min": [
+        -0.9997304677963257,
+        -1,
+        -0.999967098236084
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 243,
+      "max": [
+        0.9893109798431396,
+        0.9589040279388428
+      ],
+      "min": [
+        -0.004110000096261501,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 984,
+      "max": [
+        242
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 2916,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2916,
+      "byteOffset": 2916,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1944,
+      "byteOffset": 5832,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3936,
+      "byteOffset": 7776,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 11712,
+      "uri": "KaktusBenny.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "KaktusBenny",
+      "uri": "../Textures/KaktusBenny.png"
+    },
+    {
+      "name": "KaktusBennyNormal",
+      "uri": "../Textures/KaktusBennyNormal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 6
+          },
+          "floats": {
+            "ambientColor": [
+              0.45098,
+              0.45098,
+              0.45098,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              0.917647,
+              0.917647,
+              0.917647,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              0.411765,
+              0.411765,
+              0.411765,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\KaktusBenny.tga",
+            "normalTexture": "..\\\\textures\\\\KaktusBennyNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "PDX03_-_Default",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Kaktus",
+      "mesh": 0,
+      "scale": [
+        0.439322,
+        0.439322,
+        0.439322
+      ],
+      "translation": [
+        0,
+        0.50614905,
+        -0
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    }
+  ]
+}

@@ -1,0 +1,422 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 1860,
+      "max": [
+        2.2230589389801025,
+        10.875961303710938,
+        3.174999952316284
+      ],
+      "min": [
+        -1.3970000743865967,
+        0,
+        -3.174999952316284
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 1860,
+      "max": [
+        1,
+        1,
+        1
+      ],
+      "min": [
+        -1,
+        -1,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 1860,
+      "max": [
+        1.0013829469680786,
+        0.9987829923629761
+      ],
+      "min": [
+        -0.9763079881668091,
+        -1.0697388648986816
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 3855,
+      "max": [
+        1859
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 28,
+      "max": [
+        0.09525000303983688,
+        0,
+        2.6670000553131104
+      ],
+      "min": [
+        -2.6388111114501953,
+        -7.162619113922119,
+        -2.6670000553131104
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5126,
+      "count": 28,
+      "max": [
+        1,
+        0,
+        1
+      ],
+      "min": [
+        -1,
+        0,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "count": 28,
+      "max": [
+        1,
+        1
+      ],
+      "min": [
+        0,
+        0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5125,
+      "count": 42,
+      "max": [
+        27
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 22320,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 22320,
+      "byteOffset": 22320,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 14880,
+      "byteOffset": 44640,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 15420,
+      "byteOffset": 59520,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 336,
+      "byteOffset": 74940,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 336,
+      "byteOffset": 75276,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 224,
+      "byteOffset": 75612,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 168,
+      "byteOffset": 75836,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 76004,
+      "uri": "Casino01.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "ladyluck",
+      "uri": "../Textures/ladyluck.png"
+    },
+    {
+      "name": "ladyluckNormal",
+      "uri": "../Textures/ladyluckNormal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 6
+          },
+          "floats": {
+            "ambientColor": [
+              0.1,
+              0.1,
+              0.1,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              0.313726,
+              0.313726,
+              0.313726,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\ladyluck.tga",
+            "normalTexture": "..\\\\textures\\\\ladyluckNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "Material__153",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\ReflectionSimpleGlass.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 1
+          },
+          "floats": {
+            "alphaFactor": [
+              1
+            ],
+            "ambientColor": [
+              0.15,
+              0.15,
+              0.15,
+              1
+            ],
+            "diffuseColor": [
+              0.25,
+              0.25,
+              0.25,
+              1
+            ],
+            "shininess": [
+              14
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "Material__39",
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 4,
+            "NORMAL": 5,
+            "TEXCOORD_0": 6
+          },
+          "indices": 7,
+          "material": 1
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "$dummy_root",
+      "children": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "LadyLuck",
+      "mesh": 0,
+      "scale": [
+        6.268106,
+        6.268106,
+        6.268106
+      ],
+      "translation": [
+        -0.067035,
+        0.047966,
+        0.762001
+      ]
+    },
+    {
+      "name": "glas",
+      "mesh": 1,
+      "scale": [
+        6.268106,
+        6.268106,
+        6.268106
+      ],
+      "translation": [
+        8.497373,
+        46.218834,
+        0.762001
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    }
+  ]
+}

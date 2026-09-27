@@ -1,0 +1,236 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 346,
+      "max": [
+        10.899435043334961,
+        4.317999839782715,
+        -0.42358899116516113
+      ],
+      "min": [
+        -6.734425067901611,
+        0,
+        -6.349999904632568
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 346,
+      "max": [
+        1,
+        1,
+        1
+      ],
+      "min": [
+        -1,
+        -1.9999999949504854E-06,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 346,
+      "max": [
+        1.0008820295333862,
+        27.66666603088379
+      ],
+      "min": [
+        -51.11111068725586,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 624,
+      "max": [
+        345
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 4152,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 4152,
+      "byteOffset": 4152,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2768,
+      "byteOffset": 8304,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2496,
+      "byteOffset": 11072,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 13568,
+      "uri": "Ruin.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "ruin",
+      "uri": "../Textures/ruin.png"
+    },
+    {
+      "name": "ruinNormal",
+      "uri": "../Textures/ruinNormal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 6
+          },
+          "floats": {
+            "ambientColor": [
+              0.203922,
+              0.203922,
+              0.203922,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              0.917647,
+              0.917647,
+              0.917647,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              0.556863,
+              0.556863,
+              0.556863,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\ruin.tga",
+            "normalTexture": "..\\\\textures\\\\ruinNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "PDX07_-_Default",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Box01",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Box01",
+      "mesh": 0,
+      "translation": [
+        -3.302,
+        0,
+        4.064
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 189,
+      "max": [
+        1.5019170045852661,
+        7.874000072479248,
+        0.9729710221290588
+      ],
+      "min": [
+        -2.216912031173706,
+        -0,
+        -0.6096000075340271
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 189,
+      "max": [
+        0.9997036457061768,
+        1,
+        0.9997036457061768
+      ],
+      "min": [
+        -0.9997036457061768,
+        -1,
+        -0.9997036457061768
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 189,
+      "max": [
+        0.9893109798431396,
+        0.9589040279388428
+      ],
+      "min": [
+        -0.004110000096261501,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 768,
+      "max": [
+        188
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 2268,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2268,
+      "byteOffset": 2268,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1512,
+      "byteOffset": 4536,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3072,
+      "byteOffset": 6048,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 9120,
+      "uri": "Kaktus.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "Kaktus",
+      "uri": "../Textures/Kaktus.png"
+    },
+    {
+      "name": "KaktusNormal",
+      "uri": "../Textures/KaktusNormal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 6
+          },
+          "floats": {
+            "ambientColor": [
+              0.282353,
+              0.282353,
+              0.282353,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              0.419608,
+              0.419608,
+              0.419608,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\Kaktus.tga",
+            "normalTexture": "..\\\\textures\\\\KaktusNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "PDX09_-_Default",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Kaktus",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Kaktus",
+      "mesh": 0,
+      "scale": [
+        0.540132,
+        0.540132,
+        0.540132
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    }
+  ]
+}

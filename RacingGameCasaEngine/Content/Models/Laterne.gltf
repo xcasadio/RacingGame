@@ -1,0 +1,231 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 183,
+      "max": [
+        2.6256818771362305,
+        8.704011917114258,
+        0.2783850133419037
+      ],
+      "min": [
+        -0.22853699326515198,
+        0,
+        -0.2783850133419037
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 183,
+      "max": [
+        1,
+        0.9410890936851501,
+        1
+      ],
+      "min": [
+        -1,
+        -0.9410893321037292,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 183,
+      "max": [
+        0.9853429794311523,
+        0.9847540259361267
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 636,
+      "max": [
+        182
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 2196,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2196,
+      "byteOffset": 2196,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1464,
+      "byteOffset": 4392,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2544,
+      "byteOffset": 5856,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 8400,
+      "uri": "Laterne.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "streetlamp2",
+      "uri": "../Textures/streetlamp2.png"
+    },
+    {
+      "name": "streetlamp2Normal",
+      "uri": "../Textures/streetlamp2Normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 8
+          },
+          "floats": {
+            "ambientColor": [
+              0.180392,
+              0.180392,
+              0.180392,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              0.15
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\streetlamp2.tga",
+            "normalTexture": "..\\\\textures\\\\streetlamp2Normal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "PDX20_-_Default",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Cylinder01",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Cylinder01",
+      "mesh": 0
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    }
+  ]
+}

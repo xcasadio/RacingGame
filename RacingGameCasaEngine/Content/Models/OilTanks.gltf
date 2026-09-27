@@ -1,0 +1,246 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        2.03200101852417,
+        7.132339000701904,
+        5.638800144195557
+      ],
+      "min": [
+        -4.332067966461182,
+        -2.300067901611328,
+        -2.2351999282836914
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        1,
+        1,
+        1
+      ],
+      "min": [
+        -1,
+        -1,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        0.9945279955863953,
+        0.9869120121002197
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 1608,
+      "max": [
+        515
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 6192,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 6192,
+      "byteOffset": 6192,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 4128,
+      "byteOffset": 12384,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 6432,
+      "byteOffset": 16512,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 22944,
+      "uri": "OilTanks.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "Oiltank",
+      "uri": "../Textures/Oiltank.png"
+    },
+    {
+      "name": "OiltankNormal",
+      "uri": "../Textures/OiltankNormal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 4
+          },
+          "floats": {
+            "ambientColor": [
+              0.1,
+              0.1,
+              0.1,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\Oiltank.tga",
+            "normalTexture": "..\\\\textures\\\\OiltankNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "PDX09_-_Default",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Oiltank01",
+      "mesh": 0,
+      "rotation": [
+        0.70710677,
+        0,
+        0,
+        0.70710677
+      ],
+      "scale": [
+        3.359999,
+        3.359999,
+        3.359999
+      ],
+      "translation": [
+        6.827518,
+        18.092922,
+        -8.008292
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    }
+  ]
+}

@@ -1,0 +1,1141 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 108,
+      "max": [
+        62.84878921508789,
+        46.9403076171875,
+        37.071598052978516
+      ],
+      "min": [
+        -108.79595947265625,
+        -50.501651763916016,
+        -25.424734115600586
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 108,
+      "max": [
+        0.8598325252532959,
+        1,
+        1.99999976757681E-06
+      ],
+      "min": [
+        -0.75999915599823,
+        -1,
+        -9.999997701015673E-07
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 108,
+      "max": [
+        1,
+        1
+      ],
+      "min": [
+        0,
+        0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 162,
+      "max": [
+        107
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 199,
+      "max": [
+        19.482107162475586,
+        -27.294166564941406,
+        16.401981353759766
+      ],
+      "min": [
+        -10.635645866394043,
+        -34.26597595214844,
+        -23.32135772705078
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5126,
+      "count": 199,
+      "max": [
+        0.9664440155029297,
+        1,
+        0.9999949932098389
+      ],
+      "min": [
+        -0.9999921321868896,
+        -0.3192688524723053,
+        -0.9717673659324646
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "count": 199,
+      "max": [
+        0.5963870286941528,
+        0.9800119996070862
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5125,
+      "count": 453,
+      "max": [
+        198
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 8,
+      "componentType": 5126,
+      "count": 2244,
+      "max": [
+        9.269264221191406,
+        62.81523132324219,
+        93.07247924804688
+      ],
+      "min": [
+        -64.80198669433594,
+        2.2250738585072014E-308,
+        -6.650303840637207
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 9,
+      "componentType": 5126,
+      "count": 2244,
+      "max": [
+        1,
+        1.0000002248489182E-06,
+        0.7599995136260986
+      ],
+      "min": [
+        -1,
+        0,
+        -0.75999915599823
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 10,
+      "componentType": 5126,
+      "count": 2244,
+      "max": [
+        0.9741939902305603,
+        0.9900000095367432
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 11,
+      "componentType": 5125,
+      "count": 3366,
+      "max": [
+        2243
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 12,
+      "componentType": 5126,
+      "count": 12054,
+      "max": [
+        29.16665267944336,
+        75.06880187988281,
+        44.81743621826172
+      ],
+      "min": [
+        -72.14934539794922,
+        2.2250738585072014E-308,
+        -130.3807373046875
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 13,
+      "componentType": 5126,
+      "count": 12054,
+      "max": [
+        1,
+        1,
+        1
+      ],
+      "min": [
+        -1,
+        -1,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 14,
+      "componentType": 5126,
+      "count": 12054,
+      "max": [
+        1.0072989463806152,
+        0.9958369731903076
+      ],
+      "min": [
+        -1.1780790090560913,
+        -1.00132417678833
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 15,
+      "componentType": 5125,
+      "count": 18600,
+      "max": [
+        12053
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 16,
+      "componentType": 5126,
+      "count": 10,
+      "max": [
+        19.833375930786133,
+        -36.481327056884766,
+        16.445634841918945
+      ],
+      "min": [
+        -3.906522035598755,
+        -41.48964309692383,
+        -24.065753936767578
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 17,
+      "componentType": 5126,
+      "count": 10,
+      "max": [
+        -0.4969407618045807,
+        -0,
+        0.8677845597267151
+      ],
+      "min": [
+        -0.9999145269393921,
+        -0,
+        -0.013072993606328964
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 18,
+      "componentType": 5126,
+      "count": 10,
+      "max": [
+        0.5387319922447205,
+        0.5928620100021362
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 19,
+      "componentType": 5125,
+      "count": 18,
+      "max": [
+        9
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 20,
+      "componentType": 5126,
+      "count": 131,
+      "max": [
+        14.305374145507812,
+        0,
+        2.8195149898529053
+      ],
+      "min": [
+        -2.817556858062744,
+        -9.999999974752427E-07,
+        -4.084122180938721
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 21,
+      "componentType": 5126,
+      "count": 131,
+      "max": [
+        9.999999974752427E-07,
+        1,
+        9.999999974752427E-07
+      ],
+      "min": [
+        -3.999999989900971E-06,
+        2.2250738585072014E-308,
+        -1.9999999949504854E-06
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 22,
+      "componentType": 5126,
+      "count": 131,
+      "max": [
+        0.998803973197937,
+        0.40980303287506104
+      ],
+      "min": [
+        -0.001196000026538968,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 23,
+      "componentType": 5125,
+      "count": 405,
+      "max": [
+        130
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 1296,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1296,
+      "byteOffset": 1296,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 864,
+      "byteOffset": 2592,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 648,
+      "byteOffset": 3456,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2388,
+      "byteOffset": 4104,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2388,
+      "byteOffset": 6492,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1592,
+      "byteOffset": 8880,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1812,
+      "byteOffset": 10472,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 26928,
+      "byteOffset": 12284,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 26928,
+      "byteOffset": 39212,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 17952,
+      "byteOffset": 66140,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 13464,
+      "byteOffset": 84092,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 144648,
+      "byteOffset": 97556,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 144648,
+      "byteOffset": 242204,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 96432,
+      "byteOffset": 386852,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 74400,
+      "byteOffset": 483284,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 120,
+      "byteOffset": 557684,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 120,
+      "byteOffset": 557804,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 80,
+      "byteOffset": 557924,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 72,
+      "byteOffset": 558004,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1572,
+      "byteOffset": 558076,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1572,
+      "byteOffset": 559648,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1048,
+      "byteOffset": 561220,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1620,
+      "byteOffset": 562268,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 563888,
+      "uri": "Hotel02.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "plazacasino",
+      "uri": "../Textures/plazacasino.png"
+    },
+    {
+      "name": "plazacasinoNormal",
+      "uri": "../Textures/plazacasinoNormal.png"
+    },
+    {
+      "name": "gelaender",
+      "uri": "../Textures/gelaender.png"
+    },
+    {
+      "name": "gelaenderNormal",
+      "uri": "../Textures/gelaenderNormal.png"
+    },
+    {
+      "name": "plazaschild",
+      "uri": "../Textures/plazaschild.png"
+    },
+    {
+      "name": "plazaschildNormal",
+      "uri": "../Textures/plazaschildNormal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\ReflectionSimpleGlass.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 1
+          },
+          "floats": {
+            "alphaFactor": [
+              1
+            ],
+            "ambientColor": [
+              0.15,
+              0.15,
+              0.15,
+              1
+            ],
+            "diffuseColor": [
+              0.368627,
+              0.635294,
+              0.905882,
+              1
+            ],
+            "shininess": [
+              24
+            ],
+            "specularColor": [
+              0.737255,
+              0.890196,
+              0.898039,
+              1
+            ]
+          },
+          "strings": {
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "fenster",
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 8
+          },
+          "floats": {
+            "ambientColor": [
+              0.098039,
+              0.098039,
+              0.098039,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              0.733333,
+              0.733333,
+              0.733333,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              1
+            ],
+            "specularColor": [
+              0.498039,
+              0.498039,
+              0.498039,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\plazacasino.tga",
+            "normalTexture": "..\\\\textures\\\\plazacasinoNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "casino2",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 0
+          },
+          "floats": {
+            "ambientColor": [
+              0.1,
+              0.1,
+              0.1,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\gelaender.tga",
+            "normalTexture": "..\\\\textures\\\\gelaenderNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "Material__298",
+      "normalTexture": {
+        "index": 3
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 2
+        },
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 8
+          },
+          "floats": {
+            "ambientColor": [
+              0.1,
+              0.1,
+              0.1,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              0.866667,
+              0.866667,
+              0.866667,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              1
+            ],
+            "specularColor": [
+              0.282353,
+              0.282353,
+              0.282353,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\plazacasino.tga",
+            "normalTexture": "..\\\\textures\\\\plazacasinoNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "casino",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 4
+          },
+          "floats": {
+            "ambientColor": [
+              0.1,
+              0.1,
+              0.1,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\plazaschild.tga",
+            "normalTexture": "..\\\\textures\\\\plazaschildNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "Material__163",
+      "normalTexture": {
+        "index": 5
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 4
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 4,
+            "NORMAL": 5,
+            "TEXCOORD_0": 6
+          },
+          "indices": 7,
+          "material": 1
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 8,
+            "NORMAL": 9,
+            "TEXCOORD_0": 10
+          },
+          "indices": 11,
+          "material": 2
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 12,
+            "NORMAL": 13,
+            "TEXCOORD_0": 14
+          },
+          "indices": 15,
+          "material": 3
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 16,
+            "NORMAL": 17,
+            "TEXCOORD_0": 18
+          },
+          "indices": 19,
+          "material": 3
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 20,
+            "NORMAL": 21,
+            "TEXCOORD_0": 22
+          },
+          "indices": 23,
+          "material": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "$dummy_root",
+      "children": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "name": "fenster_node",
+      "mesh": 0,
+      "rotation": [
+        0.5,
+        -0.5,
+        0.5,
+        0.5
+      ],
+      "scale": [
+        0.675134,
+        1,
+        1
+      ],
+      "translation": [
+        12.815612,
+        37.032936,
+        18.234184
+      ]
+    },
+    {
+      "name": "vordach",
+      "mesh": 1,
+      "translation": [
+        -7.7258,
+        41.436253,
+        15.873634
+      ]
+    },
+    {
+      "name": "gel_nder",
+      "mesh": 2,
+      "rotation": [
+        0,
+        0.5,
+        0,
+        0.8660254
+      ],
+      "scale": [
+        1.0000005,
+        1,
+        0.6751338
+      ],
+      "translation": [
+        12.215751,
+        -2.021717,
+        -43.79779
+      ]
+    },
+    {
+      "name": "Palace_casino",
+      "mesh": 3,
+      "scale": [
+        1,
+        1,
+        0.675134
+      ],
+      "translation": [
+        34.97196,
+        -2.042331,
+        32.483727
+      ]
+    },
+    {
+      "name": "transparente_fenster",
+      "mesh": 4,
+      "translation": [
+        -7.7258,
+        41.436253,
+        15.873634
+      ]
+    },
+    {
+      "name": "Line01",
+      "mesh": 5,
+      "rotation": [
+        0.6041215,
+        -0.36747417,
+        0.36747417,
+        0.60412145
+      ],
+      "scale": [
+        0.99999994,
+        0.99999994,
+        1
+      ],
+      "translation": [
+        6.93231,
+        66.83363,
+        1.386826
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    },
+    {
+      "source": 2
+    },
+    {
+      "source": 3
+    },
+    {
+      "source": 4
+    },
+    {
+      "source": 5
+    }
+  ]
+}

@@ -1,0 +1,241 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 638,
+      "max": [
+        1.1430000066757202,
+        -1.2899880409240723,
+        6.349999904632568
+      ],
+      "min": [
+        -7.238999843597412,
+        -8.362011909484863,
+        -1.2699999809265137
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 638,
+      "max": [
+        1,
+        1,
+        1
+      ],
+      "min": [
+        -1,
+        -1,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 638,
+      "max": [
+        0.9863380193710327,
+        0.9791120290756226
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 1488,
+      "max": [
+        637
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 7656,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 7656,
+      "byteOffset": 7656,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 5104,
+      "byteOffset": 15312,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 5952,
+      "byteOffset": 20416,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 26368,
+      "uri": "OilPump.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "OilWell",
+      "uri": "../Textures/OilWell.png"
+    },
+    {
+      "name": "OilWellNormal",
+      "uri": "../Textures/OilWellNormal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 4
+          },
+          "floats": {
+            "ambientColor": [
+              0.1,
+              0.1,
+              0.1,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\OilWell.tga",
+            "normalTexture": "..\\\\textures\\\\OilWellNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "PDX07_-_Default",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "OilWell",
+      "mesh": 0,
+      "rotation": [
+        0.70710677,
+        0,
+        0,
+        0.70710677
+      ],
+      "translation": [
+        3.175,
+        6.096,
+        4.826
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    }
+  ]
+}

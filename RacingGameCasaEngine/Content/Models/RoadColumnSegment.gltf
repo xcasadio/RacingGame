@@ -1,0 +1,675 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 62,
+      "max": [
+        39.370079040527344,
+        24.42910385131836,
+        34.095489501953125
+      ],
+      "min": [
+        -39.370079040527344,
+        -20,
+        -34.095489501953125
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 62,
+      "max": [
+        0.8660253882408142,
+        1,
+        1
+      ],
+      "min": [
+        -0.8660253882408142,
+        -1,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 62,
+      "max": [
+        0.9914969801902771,
+        1
+      ],
+      "min": [
+        0,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 108,
+      "max": [
+        61
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 744,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 744,
+      "byteOffset": 744,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 496,
+      "byteOffset": 1488,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 432,
+      "byteOffset": 1984,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 2416,
+      "uri": "RoadColumnSegment.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "RoadColumnSegment",
+      "uri": "../Textures/RoadColumnSegment.png"
+    },
+    {
+      "name": "RoadColumnSegmentNormal",
+      "uri": "../Textures/RoadColumnSegmentNormal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 6
+          },
+          "floats": {
+            "ambientColor": [
+              0.313726,
+              0.313726,
+              0.313726,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              0.654902,
+              0.654902,
+              0.654902,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\RoadColumnSegment.tga",
+            "normalTexture": "..\\\\textures\\\\RoadColumnSegmentNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "orig_09_-_Default",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            0.419608,
+            0.419608,
+            0.419608,
+            1
+          ],
+          "specular": [
+            0,
+            0,
+            0
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 3.2
+        }
+      },
+      "name": "PDX04_-_Default_04_-_DefaultSub0",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.419608,
+          0.419608,
+          0.419608,
+          1
+        ],
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            0.588,
+            0.588,
+            0.588,
+            1
+          ],
+          "specular": [
+            0,
+            0,
+            0
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 3.2
+        }
+      },
+      "name": "PDX04_-_Default_Material__57Sub1",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.588,
+          0.588,
+          0.588,
+          1
+        ],
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            0.588,
+            0.588,
+            0.588,
+            1
+          ],
+          "specular": [
+            0,
+            0,
+            0
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 3.2
+        }
+      },
+      "name": "PDX04_-_Default_Material__58Sub2",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.588,
+          0.588,
+          0.588,
+          1
+        ],
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            0.588,
+            0.588,
+            0.588,
+            1
+          ],
+          "specular": [
+            0,
+            0,
+            0
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 3.2
+        }
+      },
+      "name": "PDX04_-_Default_Material__59Sub3",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.588,
+          0.588,
+          0.588,
+          1
+        ],
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            0.588,
+            0.588,
+            0.588,
+            1
+          ],
+          "specular": [
+            0,
+            0,
+            0
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 3.2
+        }
+      },
+      "name": "PDX04_-_Default_Material__60Sub4",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.588,
+          0.588,
+          0.588,
+          1
+        ],
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            0.588,
+            0.588,
+            0.588,
+            1
+          ],
+          "specular": [
+            0,
+            0,
+            0
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 3.2
+        }
+      },
+      "name": "PDX04_-_Default_Material__61Sub5",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.588,
+          0.588,
+          0.588,
+          1
+        ],
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            0.588,
+            0.588,
+            0.588,
+            1
+          ],
+          "specular": [
+            0,
+            0,
+            0
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 3.2
+        }
+      },
+      "name": "PDX04_-_Default_Material__62Sub6",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.588,
+          0.588,
+          0.588,
+          1
+        ],
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            0.588,
+            0.588,
+            0.588,
+            1
+          ],
+          "specular": [
+            0,
+            0,
+            0
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 3.2
+        }
+      },
+      "name": "PDX04_-_Default_Material__63Sub7",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.588,
+          0.588,
+          0.588,
+          1
+        ],
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            0.588,
+            0.588,
+            0.588,
+            1
+          ],
+          "specular": [
+            0,
+            0,
+            0
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 3.2
+        }
+      },
+      "name": "PDX04_-_Default_Material__64Sub8",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.588,
+          0.588,
+          0.588,
+          1
+        ],
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            0.588,
+            0.588,
+            0.588,
+            1
+          ],
+          "specular": [
+            0,
+            0,
+            0
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 3.2
+        }
+      },
+      "name": "PDX04_-_Default_Material__65Sub9",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.588,
+          0.588,
+          0.588,
+          1
+        ],
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "$dummy_root",
+      "children": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "RoadColumnSegment",
+      "mesh": 0,
+      "scale": [
+        0.042388,
+        0.042388,
+        0.042388
+      ],
+      "translation": [
+        0,
+        0.100292,
+        -0
+      ]
+    },
+    {
+      "name": "Cylinder02",
+      "translation": [
+        0,
+        20.130836,
+        1E-06
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    }
+  ]
+}

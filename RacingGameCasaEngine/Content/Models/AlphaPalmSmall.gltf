@@ -1,0 +1,457 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 97,
+      "max": [
+        0.9143999814987183,
+        6.147113800048828,
+        0.9143999814987183
+      ],
+      "min": [
+        -0.9143999814987183,
+        0,
+        -0.9143999814987183
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 97,
+      "max": [
+        0.9991999864578247,
+        1,
+        0.9991999864578247
+      ],
+      "min": [
+        -0.9991999864578247,
+        -1,
+        -0.9991999864578247
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 97,
+      "max": [
+        0.9925389885902405,
+        0.9833160042762756
+      ],
+      "min": [
+        -0.26136699318885803,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 288,
+      "max": [
+        96
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 240,
+      "max": [
+        11.608074188232422,
+        5.6875901222229,
+        6.821616172790527
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        -1.8101999759674072,
+        -0.5635039806365967
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5126,
+      "count": 240,
+      "max": [
+        0.35663703083992004,
+        0.9989795684814453,
+        0.9076489806175232
+      ],
+      "min": [
+        -0.9981549978256226,
+        -0.3445618748664856,
+        -0.8830873966217041
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "count": 240,
+      "max": [
+        0.9942479729652405,
+        0.9708160161972046
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5125,
+      "count": 768,
+      "max": [
+        239
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 1164,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1164,
+      "byteOffset": 1164,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 776,
+      "byteOffset": 2328,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1152,
+      "byteOffset": 3104,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2880,
+      "byteOffset": 4256,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2880,
+      "byteOffset": 7136,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1920,
+      "byteOffset": 10016,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3072,
+      "byteOffset": 11936,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 15008,
+      "uri": "AlphaPalmSmall.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "Palm2_stamm",
+      "uri": "../Textures/Palm2_stamm.png"
+    },
+    {
+      "name": "Palm2_stammNormal",
+      "uri": "../Textures/Palm2_stammNormal.png"
+    },
+    {
+      "name": "PalmLeave2",
+      "uri": "../Textures/PalmLeave2.png"
+    },
+    {
+      "name": "PalmLeave2Normal",
+      "uri": "../Textures/PalmLeave2Normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 6
+          },
+          "floats": {
+            "ambientColor": [
+              0.215686,
+              0.215686,
+              0.215686,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              0.15
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\Palm2_stamm.tga",
+            "normalTexture": "..\\\\textures\\\\Palm2_stammNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "PDX09_-_Default",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 4
+          },
+          "floats": {
+            "ambientColor": [
+              0.235294,
+              0.235294,
+              0.235294,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              0.15
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\PalmLeave2.tga",
+            "normalTexture": "..\\\\textures\\\\PalmLeave2Normal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "orig_09_-_Default",
+      "normalTexture": {
+        "index": 3
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 2
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 4,
+            "NORMAL": 5,
+            "TEXCOORD_0": 6
+          },
+          "indices": 7,
+          "material": 1
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "$dummy_root",
+      "children": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "Palm2_stamm",
+      "mesh": 0,
+      "scale": [
+        0.756,
+        0.756,
+        0.756
+      ],
+      "translation": [
+        -0.028065,
+        -0.004767,
+        0.007263
+      ]
+    },
+    {
+      "name": "Mesh08",
+      "mesh": 1,
+      "rotation": [
+        -0.27059805,
+        0.6532815,
+        -0.27059805,
+        0.6532815
+      ],
+      "scale": [
+        0.849429,
+        0.849429,
+        0.849429
+      ],
+      "translation": [
+        -2.8685088,
+        8.307257,
+        6.0573435
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    },
+    {
+      "source": 2
+    },
+    {
+      "source": 3
+    }
+  ]
+}

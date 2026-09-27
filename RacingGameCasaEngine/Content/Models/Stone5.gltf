@@ -1,0 +1,240 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 138,
+      "max": [
+        241.87442016601562,
+        316.17816162109375,
+        166.38035583496094
+      ],
+      "min": [
+        -143.21597290039062,
+        -9.999999974752427E-07,
+        -176.50868225097656
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 138,
+      "max": [
+        0.8547651767730713,
+        0.9395588636398315,
+        0.9718753695487976
+      ],
+      "min": [
+        -0.9944122433662415,
+        -1,
+        -0.9054728746414185
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 138,
+      "max": [
+        0.9881410002708435,
+        1
+      ],
+      "min": [
+        0,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 540,
+      "max": [
+        137
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 1656,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1656,
+      "byteOffset": 1656,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1104,
+      "byteOffset": 3312,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2160,
+      "byteOffset": 4416,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 6576,
+      "uri": "Stone5.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "Stone5",
+      "uri": "../Textures/Stone5.png"
+    },
+    {
+      "name": "Stone5Normal",
+      "uri": "../Textures/Stone5Normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 6
+          },
+          "floats": {
+            "ambientColor": [
+              0.447059,
+              0.372549,
+              0.305882,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              0.827451,
+              0.827451,
+              0.827451,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\Stone5.tga",
+            "normalTexture": "..\\\\textures\\\\Stone5Normal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "orig_09_-_Default",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Stone5",
+      "mesh": 0,
+      "scale": [
+        0.008512,
+        0.008512,
+        0.008512
+      ],
+      "translation": [
+        -0.045626,
+        0,
+        0.04526
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    }
+  ]
+}

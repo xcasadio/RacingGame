@@ -1,0 +1,235 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 356,
+      "max": [
+        1.7246010303497314,
+        4.826000213623047,
+        0.9421169757843018
+      ],
+      "min": [
+        -1.7241730690002441,
+        -0,
+        -0.9421169757843018
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 356,
+      "max": [
+        1,
+        1,
+        0.9579386711120605
+      ],
+      "min": [
+        -1,
+        -1,
+        -0.9579386711120605
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 356,
+      "max": [
+        0.969914972782135,
+        0.9944360256195068
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 900,
+      "max": [
+        355
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 4272,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 4272,
+      "byteOffset": 4272,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2848,
+      "byteOffset": 8544,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3600,
+      "byteOffset": 11392,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 14992,
+      "uri": "Hydrant.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "Hydrant",
+      "uri": "../Textures/Hydrant.png"
+    },
+    {
+      "name": "HydrantNormal",
+      "uri": "../Textures/HydrantNormal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 4
+          },
+          "floats": {
+            "ambientColor": [
+              0.313726,
+              0.313726,
+              0.313726,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              0.905882,
+              0.905882,
+              0.905882,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              12
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\Hydrant.tga",
+            "normalTexture": "..\\\\textures\\\\HydrantNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "orig_09_-_Default",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Hydrant",
+      "mesh": 0,
+      "scale": [
+        0.291537,
+        0.291537,
+        0.291537
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    }
+  ]
+}

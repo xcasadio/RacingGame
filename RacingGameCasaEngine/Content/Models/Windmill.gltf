@@ -1,0 +1,356 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 177,
+      "max": [
+        0.6096000075340271,
+        10.731679916381836,
+        0.6096000075340271
+      ],
+      "min": [
+        -0.6096000075340271,
+        0,
+        -0.7619990110397339
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 177,
+      "max": [
+        1,
+        0.9580531120300293,
+        1
+      ],
+      "min": [
+        -1,
+        -0.9580527544021606,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 177,
+      "max": [
+        0.9200929999351501,
+        0.9925349950790405
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 600,
+      "max": [
+        176
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 182,
+      "max": [
+        3.974601984024048,
+        4.56522798538208,
+        0.7620000243186951
+      ],
+      "min": [
+        -3.967298984527588,
+        -2.318985939025879,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5126,
+      "count": 182,
+      "max": [
+        0.9721851348876953,
+        0.9721832275390625,
+        1
+      ],
+      "min": [
+        -0.9721848964691162,
+        -0.9721857905387878,
+        -0.999164342880249
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "count": 182,
+      "max": [
+        0.9877600073814392,
+        0.9823300242424011
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5125,
+      "count": 567,
+      "max": [
+        181
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 2124,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2124,
+      "byteOffset": 2124,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1416,
+      "byteOffset": 4248,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2400,
+      "byteOffset": 5664,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2184,
+      "byteOffset": 8064,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2184,
+      "byteOffset": 10248,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1456,
+      "byteOffset": 12432,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2268,
+      "byteOffset": 13888,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 16156,
+      "uri": "Windmill.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "Windmill",
+      "uri": "../Textures/Windmill.png"
+    },
+    {
+      "name": "WindmillNormal",
+      "uri": "../Textures/WindmillNormal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 1,
+            "technique": 6
+          },
+          "floats": {
+            "ambientColor": [
+              0.486275,
+              0.486275,
+              0.486275,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              0.65098,
+              0.65098,
+              0.65098,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\Windmill.tga",
+            "normalTexture": "..\\\\textures\\\\WindmillNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "PDX02_-_Default",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 4,
+            "NORMAL": 5,
+            "TEXCOORD_0": 6
+          },
+          "indices": 7,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "$dummy_root",
+      "children": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "Windmill_LowPoly",
+      "mesh": 0,
+      "scale": [
+        5.834399,
+        5.834399,
+        5.834399
+      ],
+      "translation": [
+        -0.00468,
+        -0.001353,
+        -0.831662
+      ]
+    },
+    {
+      "name": "Windmill_Wings",
+      "mesh": 1,
+      "scale": [
+        5.834399,
+        5.834399,
+        5.834399
+      ],
+      "translation": [
+        -0.00468,
+        60.79398,
+        -0.831659
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    }
+  ]
+}

@@ -1,0 +1,246 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 497,
+      "max": [
+        883.96240234375,
+        32.2120475769043,
+        38.056793212890625
+      ],
+      "min": [
+        -335.5827941894531,
+        -7.066245079040527,
+        -30.99549102783203
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 497,
+      "max": [
+        1,
+        1,
+        1
+      ],
+      "min": [
+        -1,
+        -1,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 497,
+      "max": [
+        2.4333300590515137,
+        1.4604949951171875
+      ],
+      "min": [
+        -0.002234000014141202,
+        -1.5981030464172363
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 897,
+      "max": [
+        496
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 5964,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 5964,
+      "byteOffset": 5964,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3976,
+      "byteOffset": 11928,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3588,
+      "byteOffset": 15904,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 19492,
+      "uri": "Train.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "train",
+      "uri": "../Textures/train.png"
+    },
+    {
+      "name": "trainNormal",
+      "uri": "../Textures/trainNormal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 8
+          },
+          "floats": {
+            "ambientColor": [
+              0.1,
+              0.1,
+              0.1,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "shininess": [
+              16
+            ],
+            "specularColor": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\train.tga",
+            "normalTexture": "..\\\\textures\\\\trainNormal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "PDX02_-_Default",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Box01",
+      "mesh": 0,
+      "rotation": [
+        0.5,
+        -0.5,
+        0.5,
+        0.5
+      ],
+      "scale": [
+        0.120514,
+        0.180952,
+        0.120514
+      ],
+      "translation": [
+        2.5635095,
+        4.3989353,
+        -29.314796
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    }
+  ]
+}

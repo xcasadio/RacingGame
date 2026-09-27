@@ -1,0 +1,457 @@
+{
+  "asset": {
+    "generator": "Open Asset Import Library (assimp v6.0.dcad2ae)",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 234,
+      "max": [
+        18.3051700592041,
+        24.658958435058594,
+        11.364147186279297
+      ],
+      "min": [
+        -24.067893981933594,
+        -13.691000938415527,
+        -32.65015411376953
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 234,
+      "max": [
+        0.5116740465164185,
+        0.9997577667236328,
+        0.42282694578170776
+      ],
+      "min": [
+        -0.7230643630027771,
+        2.2250738585072014E-308,
+        -0.8114542961120605
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 234,
+      "max": [
+        0.9985949993133545,
+        0.9995009899139404
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 780,
+      "max": [
+        233
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 264,
+      "max": [
+        1.3590320348739624,
+        11.51235580444336,
+        3.309420108795166
+      ],
+      "min": [
+        -3.614867925643921,
+        0,
+        -2.9363560676574707
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5126,
+      "count": 264,
+      "max": [
+        0.9997384548187256,
+        0.9682097434997559,
+        0.9937471151351929
+      ],
+      "min": [
+        -0.9995598793029785,
+        -0.803162693977356,
+        -0.998523473739624
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "count": 264,
+      "max": [
+        0.9767249822616577,
+        0.9995579719543457
+      ],
+      "min": [
+        2.2250738585072014E-308,
+        2.2250738585072014E-308
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5125,
+      "count": 909,
+      "max": [
+        263
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 2808,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2808,
+      "byteOffset": 2808,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1872,
+      "byteOffset": 5616,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3120,
+      "byteOffset": 7488,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3168,
+      "byteOffset": 10608,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3168,
+      "byteOffset": 13776,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2112,
+      "byteOffset": 16944,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3636,
+      "byteOffset": 19056,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 22692,
+      "uri": "AlphaDeadTree.bin"
+    }
+  ],
+  "images": [
+    {
+      "name": "Ast",
+      "uri": "../Textures/Ast.png"
+    },
+    {
+      "name": "Ast_Normal",
+      "uri": "../Textures/Ast_Normal.png"
+    },
+    {
+      "name": "Trunk",
+      "uri": "../Textures/Trunk.png"
+    },
+    {
+      "name": "Trunk_Normal",
+      "uri": "../Textures/Trunk_Normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 6
+          },
+          "floats": {
+            "ambientColor": [
+              0.333333,
+              0.333333,
+              0.333333,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              0.839216,
+              0.839216,
+              0.839216,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              0.15
+            ],
+            "shininess": [
+              4
+            ],
+            "specularColor": [
+              0.54902,
+              0.54902,
+              0.54902,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\Ast.tga",
+            "normalTexture": "..\\\\textures\\\\Ast_Normal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "PDX01_-_Defaultb",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    },
+    {
+      "extensions": {
+        "KHR_materials_specular": {}
+      },
+      "extras": {
+        "legacyMaterial": {
+          "diffuse": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "specular": [
+            1,
+            1,
+            1
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "shininess": 0
+        },
+        "legacyEffect": {
+          "file": "..\\\\shaders\\\\NormalMapping.fx",
+          "dwords": {
+            "lightDir": 0,
+            "technique": 6
+          },
+          "floats": {
+            "ambientColor": [
+              0.243137,
+              0.243137,
+              0.243137,
+              1
+            ],
+            "carHueColorChange": [
+              0
+            ],
+            "diffuseColor": [
+              0.827451,
+              0.827451,
+              0.827451,
+              1
+            ],
+            "shadowCarColor": [
+              1,
+              1,
+              1,
+              0.15
+            ],
+            "shininess": [
+              21
+            ],
+            "specularColor": [
+              0.615686,
+              0.615686,
+              0.615686,
+              1
+            ]
+          },
+          "strings": {
+            "NormalizeCubeTexture": "..\\\\textures\\\\NormalizeCubeMap.dds",
+            "diffuseTexture": "..\\\\textures\\\\Trunk.tga",
+            "normalTexture": "..\\\\textures\\\\Trunk_Normal.tga",
+            "reflectionCubeTexture": "..\\\\textures\\\\SkyCubeMap.dds"
+          }
+        }
+      },
+      "name": "PDX01_-_Default",
+      "normalTexture": {
+        "index": 3
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 2
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 4,
+            "NORMAL": 5,
+            "TEXCOORD_0": 6
+          },
+          "indices": 7,
+          "material": 1
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "$dummy_root",
+      "children": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "Ast_Dead",
+      "mesh": 0,
+      "rotation": [
+        0.15439484,
+        0.30030724,
+        -0.07568152,
+        0.93821657
+      ],
+      "scale": [
+        0.1923047,
+        0.19230518,
+        0.19230497
+      ],
+      "translation": [
+        1.304854,
+        2.8952901,
+        1.790802
+      ]
+    },
+    {
+      "name": "Foliage02",
+      "mesh": 1,
+      "scale": [
+        0.937965,
+        0.937965,
+        0.937965
+      ],
+      "translation": [
+        -0.074677,
+        0.057476,
+        0.208563
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    },
+    {
+      "source": 2
+    },
+    {
+      "source": 3
+    }
+  ]
+}
