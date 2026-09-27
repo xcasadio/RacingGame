@@ -1,5 +1,7 @@
 # RacingGame -> CasaEngine - Analyse detaillee des manques materiaux legacy
 
+> Note (2026-09-27) : document historique, non mis a jour. CasaEngine a supprime `StaticModelImporter` ; les references a ce fichier et a ses numeros de ligne ci-dessous decrivent l'etat d'avant cette suppression. Les modeles `.X` sont desormais convertis en `.gltf` par `scripts/LegacyModelGltfConverter`, et les metadonnees legacy (effet, technique, couleurs, textures) sont relues depuis les `extras` glTF par `RacingGameCasaEngine/Bootstrap/LegacyGltfModelReader.cs`. Voir `docs/legacy-import-profile.md` et `docs/racinggame-casaengine-update-tasks.md`.
+
 ## Objectif du document
 
 Ce document formalise l'etat actuel de la reproduction des materiaux legacy `.X` de RacingGame dans CasaEngine, puis liste de facon detaillee ce qui manque encore pour atteindre une vraie parite visuelle.

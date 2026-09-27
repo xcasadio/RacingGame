@@ -57,6 +57,7 @@ For new screens, keep gameplay or scene rendering inside the `GameScreen` implem
 
 `RacingGameCasaEngine` now keeps legacy material compatibility split between neutral CasaEngine hooks and a project-owned optional profile.
 See [docs/legacy-import-profile.md](docs/legacy-import-profile.md) for the bootstrap point, isolation guarantees, and bounded verification command.
+The legacy `.x` models are converted to glTF, with their textures, by [scripts/LegacyModelGltfConverter](scripts/LegacyModelGltfConverter/README.md).
 
 ## Screenshot
 ![image 1](/github/XNA_Racing-Game_01_small.jpg)

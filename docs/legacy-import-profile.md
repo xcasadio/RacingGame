@@ -7,7 +7,14 @@ This workspace keeps project-specific legacy material interpretation out of Casa
 - `CasaEngine.Framework.Assets.Loaders.ILegacyMaterialImportProfile` is the neutral extension point for reinterpreting preserved legacy import metadata.
 - `NeutralLegacyMaterialImportProfile` is the default fallback. It only consumes explicit metadata already present on imported materials.
 - `LegacyImportedMaterialPresentationResolver` is the shared generic mapping from imported hints to render-ready presentation data used by both the editor import path and the RacingGame runtime compatibility path.
-- `StaticModelImporter.ImportWithMetadata(...)` and `EditorAssetImportService.ImportFile(...)` both accept an optional legacy import profile.
+- `GltfStaticModelReader.ReadWithMetadata(...)` and `EditorAssetImportService.ImportFile(...)` both accept an optional legacy import profile.
+- The runtime only reads glTF models: CasaEngine removed its runtime Assimp importer (`StaticModelImporter`), and `GltfStaticModelReader` does not read the legacy `.x` `EffectInstance` metadata.
+
+## RacingGame converted models
+
+- The legacy `.x` models of `RacingGame/Content/Models` are converted once by `scripts/LegacyModelGltfConverter` (see its README) into `RacingGameCasaEngine/Content/Models/*.gltf` and `*.bin`, with their `.tga` textures converted to `RacingGameCasaEngine/Content/Textures/*.png`.
+- The converter stores the legacy material metadata in the glTF material `extras`: `legacyMaterial` (diffuse, specular, emissive, shininess) and `legacyEffect` (raw `EffectInstance`: file, dwords, floats, strings).
+- `RacingGameCasaEngine/Bootstrap/LegacyGltfModelReader.cs` reads a converted model with `GltfStaticModelReader`, restores the legacy metadata from the `extras` with the rules of the old importer, then applies the legacy import profile.
 
 ## RacingGame bootstrap
 
@@ -16,7 +23,7 @@ This workspace keeps project-specific legacy material interpretation out of Casa
   - exact `LegacyTechniqueIndex` reflection mapping,
   - `Sign` / `Banner` / `Windmill` bright-ambient conventions,
   - `Alpha` / `Palm` / `Leave` / `Ast` / `plants` alpha-cutout conventions.
-- `RacingGameCasaEngine/Worlds/LegacyTrackSceneFactory.cs` imports runtime legacy models through that profile.
+- `RacingGameCasaEngine/Worlds/LegacyTrackSceneFactory.cs` and `RacingGameCasaEngine/Components/LegacyCarVisualFactory.cs` load the converted models through `LegacyGltfModelReader` with that profile.
 - `RacingGameCasaEngine/Bootstrap/LegacyImportProfileVerifier.cs` is the bounded regression harness for representative assets.
 
 ## Isolation guarantees
@@ -33,7 +40,7 @@ This workspace keeps project-specific legacy material interpretation out of Casa
 
 1. Implement `ILegacyMaterialImportProfile` inside the game project.
 2. Expose it from a project bootstrap class similar to `RacingGameImportProfiles`.
-3. Pass it to `StaticModelImporter.ImportWithMetadata(...)` and `EditorAssetImportService.ImportFile(...)` where legacy content is imported.
+3. Pass it to `GltfStaticModelReader.ReadWithMetadata(...)` (or to a project reader that restores the legacy metadata first, like `LegacyGltfModelReader`) and `EditorAssetImportService.ImportFile(...)` where legacy content is imported.
 4. Add a bounded verifier on representative assets before deleting any compatibility fallback.
 
 ## Bounded verification

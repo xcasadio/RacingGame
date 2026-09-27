@@ -291,7 +291,9 @@ Exception de compilation P1 (ouverte par `3ed325f`) jusqu'à T4.2.
 - Validation : `dotnet build RacingGame.slnx` : **0 erreur** (fin de l'exception P1) ; parité des métadonnées rejouée avec le code **commité** : la sonde `newdump` compile `RacingGameCasaEngine/Bootstrap/LegacyGltfModelReader.cs` à la place du prototype et appelle `ReadWithMetadata(path, null)` sur les `.gltf` versionnés, dans la disposition de parité de T2.1 ; comparaison à la référence de l'ancien importeur (`parity-old.jsonl`) sur les mêmes champs et noms de fichier complets : 92 matériaux, 0 écart exigés, tout écart → ⚠️ ; `obj/project.assets.json` de `RacingGameCasaEngine` : seul `MonoGame.Framework.DesktopGL/3.8.5.1` ; `dotnet run --project RacingGameCasaEngine/RacingGameCasaEngine.csproj -p:BaseOutputPath=artifacts/verify-build/ -- --verify-legacy-import-profile` sans échec ; `-- --smoke-frontend` sans échec.
 - Commit : `fix(racing-casa): load converted glTF models`
 
-### ⏳ T4.3 — Documentation
+### ✅ T4.3 — Documentation
+
+> Validation (2026-09-27) : `docs/legacy-import-profile.md` décrit la conversion (`scripts/LegacyModelGltfConverter`), les `extras` glTF et `LegacyGltfModelReader` ; section « Legacy Import Profile » de `README.md` : lien vers le README de l'outil ; `docs/racinggame-casaengine-material-gap-analysis.md` : note d'en-tête datée qui le déclare historique, analyse non réécrite. Garde `rg -n "StaticModelImporter" docs README.md` : restent les plans de tâches historiques, l'analyse déclarée historique et la phrase de `legacy-import-profile.md` qui mentionne la suppression.
 
 - Fichiers : `docs/legacy-import-profile.md`, `docs/racinggame-casaengine-material-gap-analysis.md` (références à `StaticModelImporter`), `README.md` (section « Legacy Import Profile »), `scripts/LegacyModelGltfConverter` (usage dans le README de l'outil ou `docs/`).
 - Validation : `rg -n "StaticModelImporter" docs README.md` : plus de référence au code supprimé (hors historique explicite).
