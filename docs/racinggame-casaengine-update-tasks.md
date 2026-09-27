@@ -82,6 +82,10 @@ MGUI (vérifié) : aucune écriture de brush dans RacingGame ; risque non vérif
 | D16 | Latitude pour les incompatibilités legacy ↔ OpenGL de même nature : correction sans arrêt, **uniquement** dans `RacingGame/Content/Shaders/*.fx`/`*.fxh` et `RacingGame.Shared/Shaders/*.cs`, **uniquement** si une sonde prouve la cause et que le comportement est préservé (mêmes valeurs, même rendu attendu) ; chaque correction est notée sous T1.1 ; sinon ⚠️ + arrêt (décision de l'auteur, 2026-09-27). |
 | D17 | Valeurs par défaut HLSL ignorées par MonoGame sur GL : elles sont **posées en C#** après le chargement de chaque effet (helper dans `RacingGame.Shared/Shaders`, appelé par `ShaderEffect.Reload` et par `Graphics/Model.cs` pour les effets des modèles), valeurs recopiées des initialiseurs `.fx`, rendu attendu identique à DX ; les `.fx` ne changent pas pour cela (décision de l'auteur, 2026-09-27, question O7). |
 | D18 | `Cube.X` est **exclu** de la conversion (`--skip Cube`) : `RacingGameCasaEngine` ne le charge pas, le jeu legacy l'utilise via MGCB ; 56 modèles convertis (décision de l'auteur, 2026-09-27). |
+| D19 | Éclairage de la course `RacingGameCasaEngine` (O10) : 3 `LightComponent` directionnelles, sans ombre, aux valeurs de l'ancien éclairage implicite de CasaEngine (`295db0c6`, `EnvironmentLightingResolver.CreateLegacyLighting`), ajoutées au monde de course ; le code `DefaultLighting` sans effet de `RacingGameCasaEngineGame` est supprimé (décision de l'auteur, 2026-09-27). |
+| D20 | Ciel `RacingGameCasaEngine` (O11) : `SkyCubeScale = 100` posé en C# dans `LegacySkyCubeViewPipeline.DrawSkyCube` (même approche que D17) ; CasaEngine n'est pas modifié (décision de l'auteur, 2026-09-27). |
+| D21 | O9 : `RaceUiTheme` teste `Resources.Textures.ContainsKey("CheckMark_64x64")` au lieu de `TryGetTexture` (décision de l'auteur, 2026-09-27). |
+| D22 | R4 : dans `RacingGame.Shared`, une instance de `VisualStateFillBrush` transparent par usage au lieu du champ statique partagé, et `Freeze()` des deux brushes de bordure statiques ; rendu inchangé (décision de l'auteur, 2026-09-27). |
 
 ## Points à valider (propositions de l'agent)
 
@@ -301,7 +305,38 @@ Exception de compilation P1 (ouverte par `3ed325f`) jusqu'à T4.2.
 
 ## Phase 5 — Validation finale
 
-### ⏳ T5.1 — Validation globale et rapport
+Ordre : T5.2 à T5.5 (corrections décidées pendant T5.1, D19-D22), puis reprise de T5.1.
+
+### ✅ T5.2 — Éclairage explicite de la course (D19)
+
+> Validation (2026-09-27) : build 0 erreur ; `--capture-track-audit` code 0 (21 captures). Couleurs des anciennes lumières (niveaux de gris) passées en intensité de lumières blanches : valeurs reçues par le shader identiques (`ForwardLightBinder` multiplie diffuse et spéculaire par l'intensité), sans quantification 8 bits de `Color`. Zone route de la vue de poursuite Expert : moyenne (115,7 ; 122,9 ; 122,7), identique à la sonde « lumières seules » (écart moyen 0,4) ; la sonde « lumières + ciel » retrouve la moyenne du 2026-04-17 (105,3 contre 105,6) : le ciel (T5.3) complète le rendu. Code `DefaultLighting` retiré (aucun `RenderFrame` de `RacingGameCasaEngine` n'est construit sans éclairage : seul `RenderPipeline.cs:226` passe `view.Lighting`).
+
+- Fichiers : `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs` (3 entités lumière dans `CreateRaceWorld`), `RacingGameCasaEngine/Bootstrap/RacingGameCasaEngineGame.cs` (suppression de `ConfigureCurrentWorldLighting` et de l'alias `DirLight`).
+- Valeurs : directions et couleurs de `CreateLegacyLighting` (`295db0c6`), intensité 1, `CastShadows = false` ; orientation depuis la direction comme `CasaEngine.Demos/DemoSceneLightRig.CreateOrientationFromForward`.
+- Validation : build ; `--capture-track-audit` code 0 ; vue de poursuite comparée à la capture du 2026-04-17.
+- Commit : `fix(racing-casa): light the race world with light components`
+
+### ⏳ T5.3 — Échelle du cube de ciel (D20)
+
+- Fichier : `RacingGameCasaEngine/Bootstrap/LegacySkyCubeViewPipeline.cs`.
+- Validation : build ; `--capture-track-audit` code 0 ; ciel visible, comparé au 2026-04-17.
+- Commit : `fix(racing-casa): set the legacy sky cube scale explicitly`
+
+### ⏳ T5.4 — Test des ressources MGUI par défaut (D21)
+
+- Fichier : `RacingGameCasaEngine/UI/RaceUiTheme.cs`.
+- Validation : build ; `--smoke-frontend` code 0, sans avertissement `CheckMark_64x64`.
+- Commit : `fix(racing-casa): check default MGUI resources without asset lookup`
+
+### ⏳ T5.5 — Brushes MGUI partagés du jeu legacy (D22)
+
+- Fichier : `RacingGame.Shared/UI/MGUI/MguiUiTheme.cs`.
+- Validation : build de la solution ; lancement du jeu legacy (menu principal rendu, sans exception).
+- Commit : `fix(racing): stop sharing subscribed MGUI brushes`
+
+### ⚠️ T5.1 — Validation globale et rapport
+
+> État (2026-09-27) : validations automatiques passées. `dotnet build RacingGame.slnx` : 0 erreur ; `project.assets.json` de `RacingGame`, `RacingGame.Shared` et `RacingGameCasaEngine` : seul `MonoGame.Framework.DesktopGL/3.8.5.1` ; build `-p:BaseOutputPath=artifacts/verify-build/` puis `--smoke-frontend`, `--verify-legacy-import-profile` et `--capture-track-audit` : code 0 (audit : 3 pistes, 21 captures ; seul avertissement : O9). **Bloquée** : les captures d'audit montrent deux régressions du rendu de `RacingGameCasaEngine` depuis la mise à jour, scène non éclairée (O10) et ciel absent (O11), qui demandent une décision de l'auteur ; O9 et R4 instruits, O12 et O13 relevés. Passe `verifier` et rapport final en attente de ces décisions.
 
 - Étapes : « Validation globale » complète ; vérification à l'exécution du risque MGUI des brushes partagés (R4) ; passe `verifier` indépendante ; rapport de fin.
 - Commit : `docs(racing): close CasaEngine update plan`
@@ -317,7 +352,11 @@ Exception de compilation P1 (ouverte par `3ed325f`) jusqu'à T4.2.
 | O3 | Lecture des banques XACT précompilées (`.xgs`/`.xwb`/`.xsb`) sous DesktopGL, non vérifiée. | T1.1 |
 | O4 | **Levé (T2.1).** Encodage PNG par `System.Drawing` dans l'outil : à confirmer au build de T2.1 ; sinon ⚠️ + question (pas de nouveau paquet sans accord). | T2.1 |
 | O8 | **Levé (T2.1).** Écriture par SharpGLTF d'images satellites vers `../Textures/<Nom>.png` (P2) : à vérifier au début de T2.1 ; si impossible → ⚠️ + question (alternative : PNG à côté des `.gltf`). | T2.1 |
-| O9 | Nouvel avertissement depuis la mise à jour : `CasaUIAssetProvider: cannot resolve UI image 'CheckMark_64x64'` (résolution d'image par asset du catalogue, `CasaUIAssetProvider.cs:124-129`) ; l'image existe dans `CasaEngine/MGUI/MGUI.Core/Content/Icons/CheckMark_64x64.png`, absente du catalogue `RacingGameCasaEngine/Content/AssetInfos.json`. Effet visuel (coche des cases à cocher MGUI) et correction à établir, puis question à l'auteur. | T5.1 |
+| O9 | Nouvel avertissement depuis la mise à jour : `CasaUIAssetProvider: cannot resolve UI image 'CheckMark_64x64'`. **Cause établie (T5.1)** : `RaceUiTheme.CreateFullscreenWindow` (`RacingGameCasaEngine/UI/RaceUiTheme.cs:27`) teste `Resources.TryGetTexture("CheckMark_64x64")` pour savoir si `LoadDefaultResources()` a déjà été appelé ; depuis la mise à jour, un nom inconnu à la racine est résolu par le catalogue d'assets (MGUI ADR-0016 : `MGResources.TryGetTexture` → `CasaUIAssetProvider.TryResolveImage`), qui journalise un avertissement par fournisseur. `LoadDefaultResources()` charge ensuite l'icône (`MGDesktop.cs:1290-1291`) : aucun effet visuel. Correction possible : tester `root.Desktop.Resources.Textures.ContainsKey("CheckMark_64x64")`, qui ne passe pas par le catalogue. Décision de l'auteur. | T5.1 |
+| O10 | **Régression** : scène de course de `RacingGameCasaEngine` non éclairée (noire) dans les captures `--capture-track-audit` du 2026-09-27, éclairée dans celles du 2026-04-17. Cause : CasaEngine `604c2fbea` (« add explicit light components ») a retiré les 3 lumières directionnelles implicites de `EnvironmentLightingResolver` ; les lumières viennent maintenant des `LightComponent` du monde (`WorldLightCollector.Collect`, `RenderPipeline.cs:167`) et `RacingGameCasaEngine` n'en crée aucune. Les affectations `renderer.DefaultLighting` de `RacingGameCasaEngineGame` (valeurs « course ») n'avaient déjà aucun effet avant la mise à jour : `view.Lighting` est toujours fourni (`Lighting = frame.Lighting ?? DefaultLighting`, ancien et nouveau moteur). Sonde (scratchpad) : 3 `LightComponent` directionnelles aux valeurs exactes de l'ancien éclairage implicite (CasaEngine `295db0c6`, `CreateLegacyLighting`), sans ombre, ajoutées au monde de course → vue de poursuite identique à la capture du 2026-04-17. Valeurs à retenir et sort du code `DefaultLighting` : décision de l'auteur. | T5.1 |
+| O11 | **Régression** : ciel absent (fond uni `RaceSkySystem.Settings.HorizonColor`). Cause : `CasaEngine/Content/Shaders/LegacySkyCube.fx` déclare `float SkyCubeScale = 100.0f;` ; sous DesktopGL la valeur par défaut HLSL n'est pas appliquée (même limitation que O7), l'échelle vaut 0 et le cube dégénère ; `LegacySkyCubeViewPipeline.DrawSkyCube` ne pose que `ViewProjection`, `SkyTintColor` et `SkyCube`. Sonde : `SkyCubeScale = 100` posé en C# dans `DrawSkyCube` → ciel identique au 2026-04-17. Correction côté `RacingGameCasaEngine` (même approche que D17) ou dans CasaEngine (hors périmètre) : décision de l'auteur. | T5.1 |
+| O12 | Observation (P3, différée) : ciel rétabli en sonde, un fin trait sombre (arête du cube de ciel) le traverse ; absent le 2026-04-17. `SamplerState.LinearClamp` posé avant le dessin, testé en sonde : sans effet. Cause non établie. | — |
+| O13 | Observation (P3, différée) : les vues d'audit à caméra fixe de `TrackMigrationCaptureValidator` (`SetPositionAndTarget` : départ, secteurs, vue d'ensemble du terrain) n'ont plus le même cadrage que le 2026-04-17 (vues plongeantes rapprochées avant, vues obliques conformes aux formules du validateur maintenant). La vue de poursuite du joueur est identique. Outil d'audit seulement ; cause côté moteur non établie. | — |
 | O7 | **Tranché (D17).** Sous DesktopGL, MonoGame n'applique pas les valeurs par défaut HLSL des paramètres d'effet (limitation documentée) : 26 valeurs perdues, objets rendus noirs. Comment les rétablir : valeurs par défaut posées en C# après chargement de chaque effet (`RacingGame.Shared/Shaders/*.cs` + `Graphics/Model.cs`), `static const` dans les `.fx` pour les paramètres jamais écrits par le C# + C# pour les autres, ou retour du jeu legacy en WindowsDX ? | T1.1 |
 | O6 | **Tranché (D15).** `PostScreenShadowBlur.fx` : `Weights8[8]` lu sur 7 éléments fait planter `EffectPass.Apply` sous DesktopGL. Correction : `static const` dans le `.fx` + retrait du `SetValue` de `ShadowMapBlur.cs:87` (valeurs identiques), ou `Weights8[7]` + 7 valeurs en C#, ou autre ? | T1.1 |
 | O5 | **Tranché (D14).** Sous DesktopGL, les shaders legacy exposent leurs textures sous `<nom>Sampler` et 6 paramètres sont absents ; le jeu legacy plante au démarrage. Comment corriger : repli C# `<nom>` → `<nom>Sampler` dans `RacingGame.Shared/Shaders/*.cs`, modification des macros OpenGL de `Macros.fxh`, ou autre ? | T1.1 |
@@ -328,6 +367,7 @@ Exception de compilation P1 (ouverte par `3ed325f`) jusqu'à T4.2.
 - R2 : parité visuelle des modèles convertis (O1).
 - R3 : différences visuelles ou audio du jeu legacy en DesktopGL (O2, O3).
 - R4 : brushes MGUI statiques partagés et abonnements (`MguiUiTheme.cs:30-32`) : rétention possible, non vérifiée ; option documentée : `Freeze()` (`UIFreezableBrush.cs:25`), à décider avec l'auteur si le problème est constaté.
+  - Constat (lecture du code, T5.1) : `MGElement.ApplyBackgroundEffective` (`MGElement.cs:1719-1731`) s'abonne au `PropertyChanged` du `VisualStateFillBrush` de fond sans condition de gel et ne s'en désabonne qu'au changement de brush. `MguiUiTheme.TransparentBackground` a 8 usages, dans des vues recréées à chaque visite d'écran (`new CarSelectionView(...)`, etc.) : chaque élément reste référencé par le brush statique, rétention croissante avec la navigation. Les bordures (`MGBorder.ResyncBorderBrushSubscription`) ne s'abonnent qu'à un brush non gelé : `Freeze()` suffit pour `BandButton*BorderBrush`, pas pour le fond. Non mesuré à l'exécution (pas de navigation automatisée dans le jeu legacy). Correction possible : une instance par usage pour le fond et `Freeze()` des bordures statiques. Décision de l'auteur.
 
 ## Hors périmètre
 

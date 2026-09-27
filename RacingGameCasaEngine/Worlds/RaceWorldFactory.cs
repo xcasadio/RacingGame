@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.Components;
 using RacingGameCasaEngine.Entities;
+using Color = Microsoft.Xna.Framework.Color;
 
 namespace RacingGameCasaEngine.Worlds;
 
@@ -23,6 +24,17 @@ public static class RaceWorldFactory
     internal const string TrackGuardRailHolderEntityNamePrefix = "Track.GuardRailHolder.";
     internal const string TrackColumnsEntityNamePrefix = "Track.Columns.";
     internal const string TrackColumnSegmentEntityNamePrefix = "Track.ColumnSegment.";
+
+    // The implicit lighting the old CasaEngine applied to every view (CasaEngine 295db0c6,
+    // EnvironmentLightingResolver.CreateLegacyLighting). CasaEngine now lights a world only through its
+    // LightComponents (CasaEngine 604c2fbea). Each old color is a gray level: it becomes the intensity of a white
+    // light, so the shader receives the same values (ForwardLightBinder multiplies both colors by the intensity).
+    private static readonly (string Name, Vector3 Direction, float Intensity, bool HasSpecular)[] LegacyDirectionalLights =
+    [
+        ("Light.Key", new Vector3(-0.5265408f, -0.5735765f, -0.6275069f), 0.92f, true),
+        ("Light.Fill", new Vector3(0.7198464f, 0.3420201f, 0.6040227f), 0.71f, false),
+        ("Light.Back", new Vector3(0.4545195f, -0.7660444f, 0.4545195f), 0.36f, true),
+    ];
 
     internal static bool IsRaceWorld(World world)
     {
@@ -76,6 +88,11 @@ public static class RaceWorldFactory
         world.AddEntity(CreateCameraEntity(enableChaseCamera: true));
         world.AddEntity(CreateRaceRootEntity(trackScene.PhysicsProfile));
 
+        foreach (Entity entity in CreateLegacyLightEntities())
+        {
+            world.AddEntity(entity);
+        }
+
         foreach (Entity entity in trackScene.TrackEntities)
         {
             world.AddEntity(entity);
@@ -116,6 +133,47 @@ public static class RaceWorldFactory
         }
 
         return cameraEntity;
+    }
+
+    private static IEnumerable<Entity> CreateLegacyLightEntities()
+    {
+        foreach (var light in LegacyDirectionalLights)
+        {
+            var entity = new Entity
+            {
+                Name = light.Name,
+                RootComponent = new LightComponent
+                {
+                    Type = LightType.Directional,
+                    LocalOrientation = CreateOrientationFromForward(light.Direction),
+                    Color = Color.White,
+                    SpecularColor = light.HasSpecular ? Color.White : Color.Black,
+                    Intensity = light.Intensity,
+                    CastShadows = false,
+                },
+            };
+            entity.ApplyExplicitPolicies(EntityPolicySet.StaticDecoration);
+            yield return entity;
+        }
+    }
+
+    // A LightComponent shines along its Forward. Same as CasaEngine.Demos DemoSceneLightRig.CreateOrientationFromForward.
+    private static Quaternion CreateOrientationFromForward(Vector3 forward)
+    {
+        forward = Vector3.Normalize(forward);
+        float dot = Math.Clamp(Vector3.Dot(Vector3.Forward, forward), -1.0f, 1.0f);
+        if (dot >= 0.9999f)
+        {
+            return Quaternion.Identity;
+        }
+
+        if (dot <= -0.9999f)
+        {
+            return Quaternion.CreateFromAxisAngle(Vector3.Up, MathHelper.Pi);
+        }
+
+        Vector3 axis = Vector3.Normalize(Vector3.Cross(Vector3.Forward, forward));
+        return Quaternion.CreateFromAxisAngle(axis, MathF.Acos(dot));
     }
 
     private static Entity CreatePlayerStartEntity()

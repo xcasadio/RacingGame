@@ -16,7 +16,6 @@ using Microsoft.Xna.Framework.Media;
 using RacingGameCasaEngine.Persistence;
 using RacingGameCasaEngine.Worlds;
 using Color = Microsoft.Xna.Framework.Color;
-using DirLight = CasaEngine.Framework.Rendering.DirectionalLight;
 using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace RacingGameCasaEngine.Bootstrap;
@@ -215,7 +214,6 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     {
         _raceWorldBinder.BindCurrentWorld(_frontEndFlow.State);
         ApplyFrontEndOptions(_frontEndFlow.State);
-        ConfigureCurrentWorldLighting();
         ConfigureCurrentWorldSky();
         ApplyDebugMouseCursorState();
         ApplyRaceWorldVisibilityState();
@@ -227,52 +225,6 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         base.Update(gameTime);
         HandleRuntimeDebugHotkeys();
         _frontEndFlow.UpdateRuntimeRaceUi(gameTime);
-    }
-
-    private void ConfigureCurrentWorldLighting()
-    {
-        StaticMeshRendererComponent? renderer = this.GetGameComponent<StaticMeshRendererComponent>();
-        if (renderer == null)
-        {
-            return;
-        }
-
-        if (GameManager.CurrentWorld is { } world && RaceWorldFactory.IsRaceWorld(world))
-        {
-            renderer.DefaultLighting.ActiveDirectionalLightCount = 3;
-            renderer.DefaultLighting.AmbientColor = new Vector3(0.16f, 0.17f, 0.19f);
-            renderer.DefaultLighting.DirectionalLights[0] = new DirLight(
-                new Vector3(-0.42f, -0.86f, -0.29f),
-                new Vector3(1.00f, 0.94f, 0.83f),
-                new Vector3(0.95f, 0.90f, 0.84f),
-                1.10f);
-            renderer.DefaultLighting.DirectionalLights[1] = new DirLight(
-                new Vector3(0.58f, -0.28f, 0.76f),
-                new Vector3(0.30f, 0.36f, 0.46f),
-                Vector3.Zero,
-                0.85f);
-            renderer.DefaultLighting.DirectionalLights[2] = new DirLight(
-                new Vector3(0.18f, -0.35f, -0.92f),
-                new Vector3(0.20f, 0.19f, 0.18f),
-                new Vector3(0.18f, 0.18f, 0.18f),
-                0.60f);
-            return;
-        }
-
-        renderer.DefaultLighting.ActiveDirectionalLightCount = 3;
-        renderer.DefaultLighting.AmbientColor = new Vector3(0.05f, 0.05f, 0.05f);
-        renderer.DefaultLighting.DirectionalLights[0] = new DirLight(
-            new Vector3(-0.5265408f, -0.5735765f, -0.6275069f),
-            new Vector3(0.92f, 0.92f, 0.92f),
-            new Vector3(0.92f, 0.92f, 0.92f));
-        renderer.DefaultLighting.DirectionalLights[1] = new DirLight(
-            new Vector3(0.7198464f, 0.3420201f, 0.6040227f),
-            new Vector3(0.71f, 0.71f, 0.71f),
-            Vector3.Zero);
-        renderer.DefaultLighting.DirectionalLights[2] = new DirLight(
-            new Vector3(0.4545195f, -0.7660444f, 0.4545195f),
-            new Vector3(0.36f, 0.36f, 0.36f),
-            new Vector3(0.36f, 0.36f, 0.36f));
     }
 
     private void ConfigureCurrentWorldSky()
