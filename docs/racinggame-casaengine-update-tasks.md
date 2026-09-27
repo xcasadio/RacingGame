@@ -332,7 +332,9 @@ Ordre : T5.2 à T5.5 (corrections décidées pendant T5.1, D19-D22), puis repris
 - Validation : build ; `--smoke-frontend` code 0, sans avertissement `CheckMark_64x64`.
 - Commit : `fix(racing-casa): check default MGUI resources without asset lookup`
 
-### ⏳ T5.5 — Brushes MGUI partagés du jeu legacy (D22)
+### 🧪 T5.5 — Brushes MGUI partagés du jeu legacy (D22)
+
+> Validation (2026-09-27) : `dotnet build RacingGame.slnx` 0 erreur. Jeu legacy lancé 30 s (`RacingGame/bin/Debug/net9.0-windows/RacingGame.exe`) : vivant et réactif, stderr vide, `git status` inchangé ; écran titre MGUI rendu (« Press Start » en `AccentColor`, fond `TransparentBackground`). L'accès à `AccentColor` exécute l'initialiseur de type : les deux `Freeze()` passent sans exception. **Reste à vérifier manuellement** (pas de navigation automatisée) : écrans Options, Highscores et sélection de voiture, dont les boutons « band » reçoivent les bordures gelées (bascule actif/inactif au survol et au focus).
 
 - Fichier : `RacingGame.Shared/UI/MGUI/MguiUiTheme.cs`.
 - Validation : build de la solution ; lancement du jeu legacy (menu principal rendu, sans exception).

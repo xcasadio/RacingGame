@@ -27,10 +27,20 @@ internal static class MguiUiTheme
     public static readonly Color SecondaryTextColor = new(205, 212, 224);
     public static readonly Color SuccessColor = Color.LightGreen;
     public static readonly Color DangerColor = new(255, 104, 92);
-    public static readonly VisualStateFillBrush TransparentBackground = new(Color.Transparent.AsFillBrush());
-    private static readonly MGUniformBorderBrush BandButtonActiveBorderBrush = new(new Color(255, 176, 42, 220));
-    private static readonly MGUniformBorderBrush BandButtonInactiveBorderBrush = new(new Color(255, 255, 255, 40));
+    // A new instance per use: an element subscribes to its background brush and only unsubscribes when the brush is
+    // replaced (MGElement.ApplyBackgroundEffective), so a shared static brush kept every element of every screen alive.
+    public static VisualStateFillBrush TransparentBackground => new(Color.Transparent.AsFillBrush());
+    // Frozen: an element only subscribes to an unfrozen border brush (MGBorder.ResyncBorderBrushSubscription).
+    private static readonly MGUniformBorderBrush BandButtonActiveBorderBrush = CreateFrozenBorderBrush(new Color(255, 176, 42, 220));
+    private static readonly MGUniformBorderBrush BandButtonInactiveBorderBrush = CreateFrozenBorderBrush(new Color(255, 255, 255, 40));
     private static readonly MGCornerRadius MenuButtonCornerRadius = new(16);
+
+    private static MGUniformBorderBrush CreateFrozenBorderBrush(Color color)
+    {
+        var brush = new MGUniformBorderBrush(color);
+        brush.Freeze();
+        return brush;
+    }
 
     public static int ScaleX(int xAt1280) => xAt1280;
     public static int ScaleY(int yAt720) => yAt720;
