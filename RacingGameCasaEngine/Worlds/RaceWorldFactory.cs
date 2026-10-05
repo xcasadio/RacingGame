@@ -31,6 +31,18 @@ public static class RaceWorldFactory
     // light, so the shader receives the same values (ForwardLightBinder multiplies both colors by the intensity).
     private const string KeyLightName = "Light.Key";
 
+    // Shadow map of the race world, tuned on the track audit views (ai-agent/tasks/rgce-hud-shadows-start-tasks.md, T3.1):
+    // - 4096 texels over 2 x 150 units: a texel of 0.07 unit instead of 0.2 with the engine's 1024 over 2 x 100, so road and
+    //   car shadow edges step far less, and shadows reach about as far as RacingGame's visible range of 129 units;
+    // - normal bias 0.4 unit: removes the acne of the terrain lit at grazing angles, and shrinks cast shadows little;
+    // - depth bias: the engine's 0.001.
+    // Measured uncapped in 1920x1080: 1.6 ms per frame, as with the engine's settings (1.4 ms without shadows). The map
+    // takes about 128 MB of video memory instead of 8.
+    private const int ShadowMapResolution = 4096;
+    private const float ShadowMaxDistance = 150f;
+    private const float ShadowDepthBias = 0.001f;
+    private const float ShadowNormalBias = 0.4f;
+
     private static readonly (string Name, Vector3 Direction, float Intensity, bool HasSpecular)[] LegacyDirectionalLights =
     [
         (KeyLightName, new Vector3(-0.5265408f, -0.5735765f, -0.6275069f), 0.92f, true),
@@ -92,6 +104,10 @@ public static class RaceWorldFactory
 
         // The Shadows option: the race world renders shadow maps, cast by its key light.
         world.EnvironmentSettings.Shadows.Enabled = state.EnableShadows;
+        world.EnvironmentSettings.Shadows.Resolution = ShadowMapResolution;
+        world.EnvironmentSettings.Shadows.MaxDistance = ShadowMaxDistance;
+        world.EnvironmentSettings.Shadows.DepthBias = ShadowDepthBias;
+        world.EnvironmentSettings.Shadows.NormalBias = ShadowNormalBias;
         foreach (Entity entity in CreateLegacyLightEntities(keyLightCastsShadows: state.EnableShadows))
         {
             world.AddEntity(entity);

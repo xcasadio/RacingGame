@@ -249,7 +249,7 @@ Découverte en lecture seule (deux workflows de découverte avec contre-vérific
 
 ## Phase 3 — Ombres
 
-### ⏳ T3.1 — Réglage des ombres de course
+### 🧪 T3.1 — Réglage des ombres de course
 
 - Objectif : D1 selon P5.
 - Fichiers : `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs` (réglages de `world.EnvironmentSettings.Shadows`).
@@ -265,6 +265,33 @@ Découverte en lecture seule (deux workflows de découverte avec contre-vérific
   - fichier d'options de l'auteur restauré à l'identique ;
   - 🧪 ombres en mouvement jugées par l'auteur.
 - Commit : `feat(racing-casa): tune the race shadow settings`
+
+> Validation (2026-10-05) :
+> - Réglages retenus (`Worlds/RaceWorldFactory.cs`) : `Resolution` 4096, `MaxDistance` 150, `DepthBias` 0,001 (valeur du moteur), `NormalBias` 0,4. Le texel passe de 0,195 à 0,073 unité.
+> - Méthode, avec trois écarts à P5 :
+>   - une seule construction de la sonde (copie de HEAD dans le scratchpad), qui lit les réglages dans des variables d'environnement, au lieu d'une construction par variante ;
+>   - coût mesuré sans plafond dans la sonde : pas fixe et VSync coupés, images comptées 4 s sur la vue de course arrêtée en 1920×1080. Pas d'activation de Show FPS : `front-end-options.json` n'est pas touché ;
+>   - grille des biais étendue à `NormalBias` 0,2 ; 0,3 ; 0,4 ; 0,5, parce qu'aucune valeur de P5 n'enlevait l'acné.
+> - Coût par image (2 passes, bruit ±0,03 ms) :
+>   - ombres coupées : 1,40 ms ;
+>   - réglages du moteur (1024/100) : 1,60 à 1,62 ms ;
+>   - toutes les variantes 1024 à 4096 × 60 à 150 : 1,58 à 1,64 ms ;
+>   - réglage retenu : 1,61 ms.
+>   Aucune différence mesurable sur cette machine. La carte 4096 prend environ 128 Mo de mémoire vidéo au lieu de 8 ; si l'allocation échoue, le moteur se passe d'ombres (`ShadowPass.cs:184-196`).
+> - Planches (vue de course, vues d'audit au cadrage stable `Advanced-*` et `Expert-*`) :
+>   - marches de l'ombre du rail et de la voiture nettement réduites dès 2048, et plus encore à 4096. Une distance de 60 perd les ombres lointaines, et à 100 la limite de la carte les tronque, comme avant ; 150 les garde ;
+>   - acné des pentes en lumière rasante présente à `NormalBias` ≤ 0,2 quel que soit `DepthBias` (0,0005 à 0,002), résiduelle à 0,3, absente à 0,4 et 0,5 ;
+>   - en contrepartie, les ombres portées rétrécissent un peu quand `NormalBias` monte : environ −10 % à 0,3, −17 % à 0,5. La bande d'ombre du rail sur la route est plus fine qu'avant. L'ombre de la voiture reste collée à la voiture à toutes les valeurs.
+> - Mesures parasites écartées :
+>   - les vues d'audit Beginner changent de cadrage dans certains runs : la caméra de debug de l'audit suit la vraie souris. Deux runs identiques donnent des images identiques ;
+>   - les états de menu de `--capture-ui-screens` montrent le survol de la souris immobile (`help` 0,18, `track-selection` 0,03), comme en T2.1.
+> - Effet de bord de la sonde, corrigé : forcer la VSync à false dans `ApplyFrontEndOptions` l'a enregistrée dans `%LOCALAPPDATA%\CasaEngine\RacingGameCasaEngine\display-settings.json`, ce que fait chaque lancement de course (`RacingGameCasaEngineGame.cs:139-140`). `IsVSyncEnabled` y est remis à true, la valeur d'avant la sonde : la première grille plafonnait à 100 images/s parce que le lancement de course la rallumait. `front-end-options.json` est identique à la sauvegarde du chantier précédent (même SHA-1).
+> - `dotnet build RacingGame.slnx` : 0 erreur, 0 avertissement.
+> - `--smoke-frontend`, `--verify-legacy-import-profile`, `--capture-track-audit` (21 captures) et `--capture-ui-screens` : code 0, journaux sans `[Warning]` ni `[Error]`.
+> - `--capture-ui-screens` contre `references-70fee31` : `race-hud` 2,77/2,97/2,97, `race-finished` 4,47/4,21/3,65 et `pause` 0,87/0,93/0,93, des écarts attendus puisque ce sont les ombres ; les états de menu ne changent pas, hors survol.
+> - Nouvelles références : `references-<SHA>`, avec les trois états de course de ce run (`ui-run-20261005-205209`) et les sept états de menu de `references-70fee31`, dont le code n'a pas changé. Le SHA est noté sous T4.1.
+> - O1 reste ouvert : la carte suit la caméra sans s'aligner sur les texels. Les texels plus petits rendent le scintillement moins visible, sans le supprimer.
+> - 🧪 Reste : ombres en mouvement jugées par l'auteur, dont la finesse de l'ombre du rail.
 
 ## Phase 4 — Clôture
 
