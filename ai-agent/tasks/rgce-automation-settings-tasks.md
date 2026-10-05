@@ -112,6 +112,7 @@ Découverte en lecture seule dans la session principale. Les fichiers:ligne renv
   - en jeu normal, changer la résolution et un volume dans Options, puis Retour : les deux fichiers sont mis à jour ;
   - relancer le jeu : les réglages sont conservés ;
   - démarrer puis quitter une course : la date des deux fichiers ne change pas.
+  - après avoir choisi une autre résolution (par exemple 1280×720) par Options et Retour, lancer `--capture-ui-screens` : les 10 captures sont en 1920×1080 (remarque A1 du `verifier`).
 
 ---
 
@@ -196,7 +197,7 @@ Découverte en lecture seule dans la session principale. Les fichiers:ligne renv
 
 ## Phase 2 — Validation et clôture
 
-### ⏳ T2.1 — Validation globale, vérification indépendante et clôture
+### ✅ T2.1 — Validation globale, vérification indépendante et clôture
 
 - Objectif : prouver l'objectif sur les 6 validateurs, puis clore le plan.
 - Fichiers : ce plan, `ai-agent/README.md`.
@@ -216,6 +217,14 @@ Découverte en lecture seule dans la session principale. Les fichiers:ligne renv
   5. Mettre à jour la ligne du plan dans `ai-agent/README.md` : exécuté, et vérifications manuelles 🧪 restantes.
 - Validation : tous les points de « Validation globale », sauf la vérification manuelle de l'auteur.
 - Commit : `docs(racing-casa): close the automation settings plan`
+- Note de validation (2026-10-05) :
+  - Runs sur `2b3c473`, un par un : `--smoke-frontend` (7 s), `--capture-ui-screens` (20 s), `--capture-track-audit` (16 s), `--capture-car-profile-audit` (53 s), `--capture-car-top-speed-audit` (61 s), `--export-track-runtime-scene` (6 s) et `--verify-legacy-import-profile` (0 s). Les sorties des audits et de l'export vont dans le scratchpad.
+  - Les 7 sortent avec le code 0, sans `[Warning]` ni `[Error]` dans le journal.
+  - Avant le premier run, après chaque run et après le dernier : `display-settings.json` `18eafcb4c8df587195def3f11aead8a887090e1a` (21:34:37.978) et `front-end-options.json` `cdf4b80185913ece1d86d954751a1c492ce09728` (21:34:38.002), SHA-1 et dates identiques.
+  - Smoke : `Verified applied resolution on MainMenu`. Capture UI : 10 PNG en 1920×1080 (`ui-run-20261005-214506`).
+  - `git status` : seul `.serena/` est non suivi ; aucun dossier `artifacts/` n'a été créé.
+  - Passe `verifier` indépendante : **CONFIRMED**. Elle a relancé elle-même les 7 modes : code 0, journaux propres, fichiers inchangés (SHA-1 et dates relus après ses runs). Elle a aussi fait un build complet `--no-incremental` : 0 erreur, aucun avertissement dans RGCE. Aucun autre écrivain des deux fichiers n'a été trouvé dans RGCE, RGCE.UI et le runtime CasaEngine.
+  - Remarque A1 du `verifier` (P4, différée) : « 1920×1080 quelle que soit la résolution enregistrée » n'est prouvé à l'exécution que pour 1920×1080, la résolution actuelle de l'auteur. Pour les autres, la preuve vient du code (note de T1.2). Contre-vérification ajoutée aux vérifications manuelles de l'auteur.
 
 ---
 
