@@ -141,7 +141,7 @@ Découverte en lecture seule (deux workflows de découverte avec contre-vérific
 
 ## Phase 1 — HUD ×2
 
-### ⏳ T1.1 — HUD de course deux fois plus grand
+### 🧪 T1.1 — HUD de course deux fois plus grand
 
 - Objectif : D2 et P2.
 - Fichiers :
@@ -161,6 +161,18 @@ Découverte en lecture seule (deux workflows de découverte avec contre-vérific
   - éditeur : `capture_editor_screen.ps1` sur `RaceHud.uiscreen` code 0, ligne d'état sans erreur ;
   - 🧪 taille jugée en jeu par l'auteur, à plusieurs résolutions.
 - Commit : `feat(racing-casa): double the race HUD size`
+
+> Validation (2026-10-05) :
+> - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE. `--smoke-frontend` : code 0, journal sans `[Warning]` ni `[Error]`.
+> - `--capture-ui-screens` (2 runs, code 0, journaux propres) contre `references-55304bb` :
+>   - `race-hud` 8,31/8,04/7,76, `pause` 2,75/2,67/2,58 et `race-finished` 16,85/14,95/12,88 : écarts attendus, HUD doublé ;
+>   - autres états à 0,00, sauf un état par run touché par le survol de la vraie souris : `main-menu` 0,28 et `track-selection` 0,03 au 1er run (bouton PLAY en surbrillance), `options` 0,28 au 2e (rangée de boutons du haut) ; chaque fois 0,00 à l'autre run ;
+>   - entre les deux runs : `race-hud` et `pause` à 0,00 (rendu stable), `race-finished` 0,11 (correctif ci-dessous).
+> - Mesures sur `race-hud` en 1920×1080, échelle 1 : panneau Laps de (20, 20) à (241, 179), bord droit de Times à x = 362 (20 + 342) ; planche : chiffres, aiguille (pivot au centre du cadran) et textes à leur place, ombre des textes à (1, 1).
+> - Correctif dans la tâche : les textes du panneau de fin perdaient le bas de leurs jambages (« Victory », « Lap »), défaut déjà visible dans `references-55304bb` et doublé par le ×2 (M8, texte dessiné sous sa boîte). Ils ont maintenant `ClipToBounds="False"`, comme les textes du HUD.
+> - Éditeur : `scripts/capture_editor_screen.ps1 -Screen UI/Screens/RaceHud/RaceHud.uiscreen` : code 0, diagnostics sans erreur, ligne d'état « Loaded RaceHud.xaml », HUD doublé avec les données de conception.
+> - Nouvelles références : le 2e run (`ui-run-20261005-195808`), dont `ui-options.png` est remplacée par celle du 1er run (même code pour cet écran, sans survol), copié en `references-<SHA>` ; le SHA de ce commit est noté sous T2.1.
+> - 🧪 Reste : taille du HUD jugée en jeu par l'auteur, à plusieurs résolutions.
 
 ## Phase 2 — Annonce du départ
 

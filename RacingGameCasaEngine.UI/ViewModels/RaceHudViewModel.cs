@@ -137,17 +137,17 @@ public sealed class RaceHudNumberViewModel : RaceViewModelBase
 
 /// <summary>
 /// Data context of <c>Screen.RaceHud</c>, refreshed by the screen every frame from the race session. The digit boxes are
-/// those of the code-built HUD at a responsive scale of 1 (RaceHud.xaml gives the panel sizes): lap in the laps panel,
-/// speed and gear in the tachometer.
+/// those of the code-built HUD, doubled like the panels of RaceHud.xaml (the ingame.png boxes at 1.0 in the laps panel,
+/// at 1.15 in the tachometer), at a responsive scale of 1: lap in the laps panel, speed and gear in the tachometer.
 /// </summary>
 public sealed class RaceHudViewModel : RaceViewModelBase
 {
     public const int GameOverLineCount = 5;
 
     // Panel sizes of RaceHud.xaml at a responsive scale of 1, and their ingame.png sprite sizes.
-    private const int TimesPanelHeight = 64;
+    private const int TimesPanelHeight = 128;
     private const int TimesSpriteHeight = 128;
-    private const int TopTimesPanelWidth = 141;
+    private const int TopTimesPanelWidth = 282;
     private const int TopTimesSpriteWidth = 282;
 
     // A finished race shows at least this many line slots, the count of the code-built HUD, so short races keep its layout.
@@ -163,15 +163,15 @@ public sealed class RaceHudViewModel : RaceViewModelBase
     private Visibility _gameOverVisibility = Visibility.Collapsed;
     private string _gameOverTitle = string.Empty;
     private string _exitHint = string.Empty;
-    private int _timeFontSize = 19;
-    private int _trackFontSize = 13;
-    private int _rowFontSize = 15;
+    private int _timeFontSize = 38;
+    private int _trackFontSize = 26;
+    private int _rowFontSize = 30;
 
-    public RaceHudNumberViewModel Lap { get; } = new(8, 6, 40, 66, 0f, 1);
+    public RaceHudNumberViewModel Lap { get; } = new(15, 12, 80, 133, 0f, 1);
 
-    public RaceHudNumberViewModel Speed { get; } = new(106, 147, 85, 41, 0.5f, 3);
+    public RaceHudNumberViewModel Speed { get; } = new(211, 294, 170, 83, 0.5f, 3);
 
-    public RaceHudNumberViewModel Gear { get; } = new(164, 86, 30, 41, 0.5f, 1);
+    public RaceHudNumberViewModel Gear { get; } = new(329, 171, 60, 83, 0.5f, 1);
 
     public string CurrentLapTime
     {

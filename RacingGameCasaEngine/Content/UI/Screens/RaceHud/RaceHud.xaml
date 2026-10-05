@@ -4,83 +4,83 @@
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False" AllowsClickThrough="True"
         Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
   <!--
-    Race HUD. Panel sizes and positions are those of the code-built HUD at a responsive scale of 1: the ingame.png
-    rectangles scaled by 0.5 (panels) and 0.575 (tachometer), rounded half to even like Math.Round. The responsive
-    layout scales them with the UI, as it scaled the code-built panels. The panel texts take their font sizes from the
+    Race HUD, twice the size of the code-built HUD: at a responsive scale of 1, the ingame.png rectangles scaled by 1.0
+    (panels) and 1.15 (tachometer) instead of 0.5 and 0.575, and edge offsets of 20 instead of 10, rounded half to even
+    like Math.Round. The responsive layout scales them with the UI, as it scaled the code-built panels. The panel texts take their font sizes from the
     view model (RaceHudViewModel.UpdateTextSizes), which follows the UI scale as the code-built texts did; they draw a
     few pixels lower than the code-built texts (MGTextBlock offsets its text by the font's draw origin), so they and the
     times panel do not clip their content.
   -->
   <OverlayPanel UseResponsiveLayout="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-    <!-- Laps: 222x160 at 0.5; current lap digit in the box (8, 6, 40, 66), left aligned (RaceHudViewModel.Lap). -->
-    <Border BorderThickness="0" Background="rgba(0,0,0,0)" Width="111" Height="80" ResponsiveAnchor="TopLeft" Offset="10,10,0,0" ZIndex="5">
+    <!-- Laps: 222x160; current lap digit in the box (15, 12, 80, 133), left aligned (RaceHudViewModel.Lap). -->
+    <Border BorderThickness="0" Background="rgba(0,0,0,0)" Width="222" Height="160" ResponsiveAnchor="TopLeft" Offset="20,20,0,0" ZIndex="5">
       <OverlayPanel>
-        <Image SourceName="Ui.Hud.Laps" Stretch="Fill" Width="111" Height="80" HorizontalAlignment="Left" VerticalAlignment="Top" />
+        <Image SourceName="Ui.Hud.Laps" Stretch="Fill" Width="222" Height="160" HorizontalAlignment="Left" VerticalAlignment="Top" />
         <Image SourceName="{dataBinding:MGBinding Path=Lap.Digit0.SourceName}" Visibility="{dataBinding:MGBinding Path=Lap.Digit0.Visibility}"
                Margin="{dataBinding:MGBinding Path=Lap.Digit0.Margin}" Width="{dataBinding:MGBinding Path=Lap.Digit0.Width}"
                Height="{dataBinding:MGBinding Path=Lap.Digit0.Height}" Stretch="Fill" HorizontalAlignment="Left" VerticalAlignment="Top" />
       </OverlayPanel>
     </Border>
-    <!-- Current and best lap times: 342x128 at 0.5; texts at (77, 7) and (77, 39), 38 pt at 0.5. -->
-    <Border BorderThickness="0" Background="rgba(0,0,0,0)" Width="171" Height="64" ResponsiveAnchor="BottomLeft" Offset="10,0,0,10" ZIndex="5" ClipToBounds="False">
+    <!-- Current and best lap times: 342x128; texts at (154, 14) and (154, 78), 38 pt. -->
+    <Border BorderThickness="0" Background="rgba(0,0,0,0)" Width="342" Height="128" ResponsiveAnchor="BottomLeft" Offset="20,0,0,20" ZIndex="5" ClipToBounds="False">
       <OverlayPanel ClipToBounds="False">
-        <Image SourceName="Ui.Hud.CurrentAndBest" Stretch="Fill" Width="171" Height="64" HorizontalAlignment="Left" VerticalAlignment="Top" />
+        <Image SourceName="Ui.Hud.CurrentAndBest" Stretch="Fill" Width="342" Height="128" HorizontalAlignment="Left" VerticalAlignment="Top" />
         <TextBlock Text="{dataBinding:MGBinding Path=CurrentLapTime}" Foreground="rgb(255,185,80)" FontSize="{dataBinding:MGBinding Path=TimeFontSize}" IsBold="True" IsShadowed="True" ShadowOffset="1,1" ShadowColor="rgba(0,0,0,191)" Padding="0" WrapText="False" UseResponsiveTextScale="False" ClipToBounds="False"
-                   Margin="77,7,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                   Margin="154,14,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
         <TextBlock Text="{dataBinding:MGBinding Path=BestLapTime}" Foreground="White" FontSize="{dataBinding:MGBinding Path=TimeFontSize}" IsBold="True" IsShadowed="True" ShadowOffset="1,1" ShadowColor="rgba(0,0,0,191)" Padding="0" WrapText="False" UseResponsiveTextScale="False" ClipToBounds="False"
-                   Margin="77,39,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                   Margin="154,78,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
       </OverlayPanel>
     </Border>
-    <!-- Track name and best five times: 282 wide at 0.5; header 31 high, then five rows of 31 with gaps of 2. -->
-    <Border BorderThickness="0" Background="rgba(0,0,0,0)" Width="141" Height="196" ResponsiveAnchor="TopRight" Offset="0,10,10,0" ZIndex="5">
+    <!-- Track name and best five times: 282 wide; header 62 high, then five rows of 62 with gaps of 4; texts 11 below a row's top. -->
+    <Border BorderThickness="0" Background="rgba(0,0,0,0)" Width="282" Height="392" ResponsiveAnchor="TopRight" Offset="0,20,20,0" ZIndex="5">
       <OverlayPanel>
-        <Image SourceName="Ui.Hud.TrackName" Stretch="Fill" Width="141" Height="31" HorizontalAlignment="Left" VerticalAlignment="Top" />
+        <Image SourceName="Ui.Hud.TrackName" Stretch="Fill" Width="282" Height="62" HorizontalAlignment="Left" VerticalAlignment="Top" />
         <TextBlock Text="{dataBinding:MGBinding Path=TrackName}" Foreground="White" FontSize="{dataBinding:MGBinding Path=TrackFontSize}" IsBold="True" IsShadowed="True" ShadowOffset="1,1" ShadowColor="rgba(0,0,0,191)" Padding="0" WrapText="False" UseResponsiveTextScale="False" ClipToBounds="False"
-                   Margin="0,5,0,0" HorizontalAlignment="Center" VerticalAlignment="Top" />
-        <Image SourceName="Ui.Hud.Best5Row" Stretch="Fill" Width="141" Height="31" Margin="0,33,0,0"
+                   Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Top" />
+        <Image SourceName="Ui.Hud.Best5Row" Stretch="Fill" Width="282" Height="62" Margin="0,66,0,0"
                HorizontalAlignment="Left" VerticalAlignment="Top" />
         <TextBlock Text="1." Foreground="White" FontSize="{dataBinding:MGBinding Path=RowFontSize}" IsBold="True" IsShadowed="True" ShadowOffset="1,1" ShadowColor="rgba(0,0,0,191)" Padding="0" WrapText="False" UseResponsiveTextScale="False" ClipToBounds="False"
-                   Margin="10,39,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                   Margin="20,77,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
         <TextBlock Text="{dataBinding:MGBinding Path=Top0Time}" Foreground="White" FontSize="{dataBinding:MGBinding Path=RowFontSize}" IsBold="True" IsShadowed="True" ShadowOffset="1,1" ShadowColor="rgba(0,0,0,191)" Padding="0" WrapText="False" UseResponsiveTextScale="False" ClipToBounds="False"
-                   Margin="41,39,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
-        <Image SourceName="Ui.Hud.Best5Row" Stretch="Fill" Width="141" Height="31" Margin="0,66,0,0"
+                   Margin="82,77,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+        <Image SourceName="Ui.Hud.Best5Row" Stretch="Fill" Width="282" Height="62" Margin="0,132,0,0"
                HorizontalAlignment="Left" VerticalAlignment="Top" />
         <TextBlock Text="2." Foreground="White" FontSize="{dataBinding:MGBinding Path=RowFontSize}" IsBold="True" IsShadowed="True" ShadowOffset="1,1" ShadowColor="rgba(0,0,0,191)" Padding="0" WrapText="False" UseResponsiveTextScale="False" ClipToBounds="False"
-                   Margin="10,72,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                   Margin="20,143,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
         <TextBlock Text="{dataBinding:MGBinding Path=Top1Time}" Foreground="White" FontSize="{dataBinding:MGBinding Path=RowFontSize}" IsBold="True" IsShadowed="True" ShadowOffset="1,1" ShadowColor="rgba(0,0,0,191)" Padding="0" WrapText="False" UseResponsiveTextScale="False" ClipToBounds="False"
-                   Margin="41,72,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
-        <Image SourceName="Ui.Hud.Best5Row" Stretch="Fill" Width="141" Height="31" Margin="0,99,0,0"
+                   Margin="82,143,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+        <Image SourceName="Ui.Hud.Best5Row" Stretch="Fill" Width="282" Height="62" Margin="0,198,0,0"
                HorizontalAlignment="Left" VerticalAlignment="Top" />
         <TextBlock Text="3." Foreground="White" FontSize="{dataBinding:MGBinding Path=RowFontSize}" IsBold="True" IsShadowed="True" ShadowOffset="1,1" ShadowColor="rgba(0,0,0,191)" Padding="0" WrapText="False" UseResponsiveTextScale="False" ClipToBounds="False"
-                   Margin="10,105,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                   Margin="20,209,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
         <TextBlock Text="{dataBinding:MGBinding Path=Top2Time}" Foreground="White" FontSize="{dataBinding:MGBinding Path=RowFontSize}" IsBold="True" IsShadowed="True" ShadowOffset="1,1" ShadowColor="rgba(0,0,0,191)" Padding="0" WrapText="False" UseResponsiveTextScale="False" ClipToBounds="False"
-                   Margin="41,105,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
-        <Image SourceName="Ui.Hud.Best5Row" Stretch="Fill" Width="141" Height="31" Margin="0,132,0,0"
+                   Margin="82,209,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+        <Image SourceName="Ui.Hud.Best5Row" Stretch="Fill" Width="282" Height="62" Margin="0,264,0,0"
                HorizontalAlignment="Left" VerticalAlignment="Top" />
         <TextBlock Text="4." Foreground="White" FontSize="{dataBinding:MGBinding Path=RowFontSize}" IsBold="True" IsShadowed="True" ShadowOffset="1,1" ShadowColor="rgba(0,0,0,191)" Padding="0" WrapText="False" UseResponsiveTextScale="False" ClipToBounds="False"
-                   Margin="10,138,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                   Margin="20,275,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
         <TextBlock Text="{dataBinding:MGBinding Path=Top3Time}" Foreground="White" FontSize="{dataBinding:MGBinding Path=RowFontSize}" IsBold="True" IsShadowed="True" ShadowOffset="1,1" ShadowColor="rgba(0,0,0,191)" Padding="0" WrapText="False" UseResponsiveTextScale="False" ClipToBounds="False"
-                   Margin="41,138,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
-        <Image SourceName="Ui.Hud.Best5Row" Stretch="Fill" Width="141" Height="31" Margin="0,165,0,0"
+                   Margin="82,275,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+        <Image SourceName="Ui.Hud.Best5Row" Stretch="Fill" Width="282" Height="62" Margin="0,330,0,0"
                HorizontalAlignment="Left" VerticalAlignment="Top" />
         <TextBlock Text="5." Foreground="White" FontSize="{dataBinding:MGBinding Path=RowFontSize}" IsBold="True" IsShadowed="True" ShadowOffset="1,1" ShadowColor="rgba(0,0,0,191)" Padding="0" WrapText="False" UseResponsiveTextScale="False" ClipToBounds="False"
-                   Margin="10,171,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                   Margin="20,341,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
         <TextBlock Text="{dataBinding:MGBinding Path=Top4Time}" Foreground="White" FontSize="{dataBinding:MGBinding Path=RowFontSize}" IsBold="True" IsShadowed="True" ShadowOffset="1,1" ShadowColor="rgba(0,0,0,191)" Padding="0" WrapText="False" UseResponsiveTextScale="False" ClipToBounds="False"
-                   Margin="41,171,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                   Margin="82,341,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
       </OverlayPanel>
     </Border>
     <!--
-      Tachometer: 343x341 at 0.575 = 197x196. The needle (16x107) turns about (111, 112) of the panel, its sprite's
-      (14, 173) pivot, so its top-left is (103, 12) and its origin (0.5, 100/107). Speed in (106, 147, 85, 41) and gear
-      in (164, 86, 30, 41), centred.
+      Tachometer: 343x341 at 1.15 = 394x392. The needle (32x214) turns about (223, 223) of the panel, its sprite's
+      (14, 173) pivot, so its top-left is (207, 24) and its origin (0.5, 199/214). Speed in (211, 294, 170, 83) and gear
+      in (329, 171, 60, 83), centred.
     -->
-    <Border BorderThickness="0" Background="rgba(0,0,0,0)" Width="197" Height="196" ResponsiveAnchor="BottomRight" Offset="0,0,0,0" ZIndex="10">
+    <Border BorderThickness="0" Background="rgba(0,0,0,0)" Width="394" Height="392" ResponsiveAnchor="BottomRight" Offset="0,0,0,0" ZIndex="10">
       <OverlayPanel>
-        <Image SourceName="Ui.Hud.Tacho" Stretch="Fill" Width="197" Height="196" HorizontalAlignment="Left" VerticalAlignment="Top" />
-        <Image SourceName="Ui.Hud.Needle" Stretch="Fill" Width="16" Height="107" Margin="103,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"
+        <Image SourceName="Ui.Hud.Tacho" Stretch="Fill" Width="394" Height="392" HorizontalAlignment="Left" VerticalAlignment="Top" />
+        <Image SourceName="Ui.Hud.Needle" Stretch="Fill" Width="32" Height="214" Margin="207,24,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"
                RenderTransformTranslation="{dataBinding:MGBinding Path=NeedleRotation, TargetPathOverride=RenderTransform.Rotation}">
           <Image.RenderTransform>
-            <RenderTransform Origin="0.5,0.934579" />
+            <RenderTransform Origin="0.5,0.929907" />
           </Image.RenderTransform>
         </Image>
         <Image SourceName="{dataBinding:MGBinding Path=Speed.Digit0.SourceName}" Visibility="{dataBinding:MGBinding Path=Speed.Digit0.Visibility}"
@@ -97,24 +97,27 @@
                Height="{dataBinding:MGBinding Path=Gear.Digit0.Height}" Stretch="Fill" HorizontalAlignment="Left" VerticalAlignment="Top" />
       </OverlayPanel>
     </Border>
-    <!-- Race-finished panel: one line per completed lap, then the rank (five slots, at least four shown). -->
-    <Border BorderThickness="2" BorderBrush="rgb(255,156,0)" Background="rgba(8,12,18,220)" Padding="24" Width="420"
+    <!--
+      Race-finished panel, twice the code-built one: one line per completed lap, then the rank (five slots, at least four
+      shown). Its texts do not clip, so their descenders, drawn below the text block like the HUD texts, stay visible.
+    -->
+    <Border BorderThickness="4" BorderBrush="rgb(255,156,0)" Background="rgba(8,12,18,220)" Padding="48" Width="840"
             HorizontalAlignment="Center" VerticalAlignment="Center" ResponsiveAnchor="Center" Offset="0,0,0,0" ZIndex="20"
             Visibility="{dataBinding:MGBinding Path=GameOverVisibility}">
-      <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <TextBlock Text="{dataBinding:MGBinding Path=GameOverTitle}" Foreground="rgb(255,156,0)" FontSize="26" UseResponsiveTextScale="True"
+      <StackPanel Orientation="Vertical" Spacing="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <TextBlock Text="{dataBinding:MGBinding Path=GameOverTitle}" Foreground="rgb(255,156,0)" FontSize="52" UseResponsiveTextScale="True" ClipToBounds="False"
                    HorizontalAlignment="Center" TextAlignment="Center" />
         <TextBlock Text="{dataBinding:MGBinding Path=GameOverLine0}" Visibility="{dataBinding:MGBinding Path=GameOverLine0Visibility}"
-                   Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" HorizontalAlignment="Stretch" TextAlignment="Left" />
+                   Foreground="White" FontSize="28" WrapText="True" UseResponsiveTextScale="True" ClipToBounds="False" HorizontalAlignment="Stretch" TextAlignment="Left" />
         <TextBlock Text="{dataBinding:MGBinding Path=GameOverLine1}" Visibility="{dataBinding:MGBinding Path=GameOverLine1Visibility}"
-                   Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" HorizontalAlignment="Stretch" TextAlignment="Left" />
+                   Foreground="White" FontSize="28" WrapText="True" UseResponsiveTextScale="True" ClipToBounds="False" HorizontalAlignment="Stretch" TextAlignment="Left" />
         <TextBlock Text="{dataBinding:MGBinding Path=GameOverLine2}" Visibility="{dataBinding:MGBinding Path=GameOverLine2Visibility}"
-                   Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" HorizontalAlignment="Stretch" TextAlignment="Left" />
+                   Foreground="White" FontSize="28" WrapText="True" UseResponsiveTextScale="True" ClipToBounds="False" HorizontalAlignment="Stretch" TextAlignment="Left" />
         <TextBlock Text="{dataBinding:MGBinding Path=GameOverLine3}" Visibility="{dataBinding:MGBinding Path=GameOverLine3Visibility}"
-                   Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" HorizontalAlignment="Stretch" TextAlignment="Left" />
+                   Foreground="White" FontSize="28" WrapText="True" UseResponsiveTextScale="True" ClipToBounds="False" HorizontalAlignment="Stretch" TextAlignment="Left" />
         <TextBlock Text="{dataBinding:MGBinding Path=GameOverLine4}" Visibility="{dataBinding:MGBinding Path=GameOverLine4Visibility}"
-                   Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" HorizontalAlignment="Stretch" TextAlignment="Left" />
-        <TextBlock Text="{dataBinding:MGBinding Path=ExitHint}" Foreground="rgb(205,212,224)" FontSize="14" WrapText="True" UseResponsiveTextScale="True"
+                   Foreground="White" FontSize="28" WrapText="True" UseResponsiveTextScale="True" ClipToBounds="False" HorizontalAlignment="Stretch" TextAlignment="Left" />
+        <TextBlock Text="{dataBinding:MGBinding Path=ExitHint}" Foreground="rgb(205,212,224)" FontSize="28" WrapText="True" UseResponsiveTextScale="True" ClipToBounds="False"
                    HorizontalAlignment="Center" TextAlignment="Center" />
       </StackPanel>
     </Border>

@@ -161,6 +161,8 @@ Verified in the editor discovery and in the per-screen editor captures (`scripts
 
 ## Race HUD text rendering (D15)
 
+> These measurements describe the HUD of the XAML migration. The HUD was doubled afterwards, with its font sizes (plan `ai-agent/tasks/rgce-hud-shadows-start-tasks.md`, T1.1).
+
 The HUD texts were drawn by `DrawShadowedText`; they are now bold shadowed `TextBlock`s (offset 1,1, colour `rgba(0,0,0,191)`, the old values). The measurements below are text ink boxes compared with `references-579e1d7`, in 1920×1080 at UI scale 1, on the race-finished capture; the race HUD capture gives the same sizes and offsets.
 
 | Text | Size (design → drawn) | Ink width | Ink height | Vertical offset |
