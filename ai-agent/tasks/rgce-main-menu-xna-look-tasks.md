@@ -142,7 +142,7 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
 
 ## Phase 1 — Images
 
-### ⏳ T1.1 — Glyphes d'icônes transparents et libellés
+### ✅ T1.1 — Glyphes d'icônes transparents et libellés
 
 - Objectif : P3, partie images ; libellés de D2.
 - Fichiers :
@@ -160,6 +160,20 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
   - build 0 erreur ;
   - `--smoke-frontend` sans avertissement (sprites résolus).
 - Commit : `feat(racing-casa): extract the main menu icon glyphs and labels`
+
+> Validation (2026-10-05) :
+> - Outil `scripts/MenuIconExtractor` (console `net9.0-windows`, `System.Drawing`, sans paquet, README).
+>   - L'image écrite, `Content/UI/Sprites/Ui.Menu.Glyphs.png` (1060×212), est identique au bit près d'un run à l'autre (SHA-1).
+>   - Boîtes des glyphes (pixels couverts à moitié) égales aux mesures de la découverte : Play x 47..163 y 49..164 ; Highscores 34..182 / 33..172 ; Options 37..175 / 52..166 ; Help 70..143 / 59..156 ; Quit 60..150 / 60..156.
+>   - Aucun pixel hors de la boîte élargie de 3 px : les traces des coins arrondis du biseau, vues au 1er essai, sont écartées.
+>   - Planche sur dégradé clair et sur fond sombre : glyphes noirs nets, sans halo gris.
+> - Générateur (`scripts/generate_rgce_ui_assets.py`) :
+>   - texture `Ui.Menu.GlyphsTexture` avec son png, 5 sprites `Ui.Menu.Glyph*` (cadres de 212×212) et 5 sprites `Ui.Menu.Label*` (rectangles `MenuText*GfxRect`) ;
+>   - 2e exécution sans changement (même SHA-1 du catalogue) ; 12 entrées ajoutées en fin de catalogue, aucune autre modifiée ;
+>   - chaînes sprite → texture → png résolues ; planche des libellés « START RACE », « HIGHSCORES », « OPTIONS », « HELP », « QUIT » sur fond sombre, nette.
+>   - Les anciens `Ui.Menu.Icon*` restent jusqu'à T2.1, qui passe le menu aux glyphes.
+> - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement RGCE ; les 12 fichiers sont copiés dans la sortie.
+> - `--smoke-frontend` : code 0, catalogue de 64 assets, aucun avertissement ; réglages de l'auteur inchangés (même SHA-1).
 
 ## Phase 2 — Menu
 

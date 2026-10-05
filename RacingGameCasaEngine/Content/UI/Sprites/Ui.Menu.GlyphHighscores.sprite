@@ -1,0 +1,17 @@
+{
+  "id": "15fb2759-86c8-5778-9a15-172b5c36ca99",
+  "name": "Ui.Menu.GlyphHighscores",
+  "sprite_sheet_asset_id": "a80cffa0-a7fb-5b6b-8678-2d2c9e893193",
+  "location": {
+    "x": 212,
+    "y": 0,
+    "w": 212,
+    "h": 212
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

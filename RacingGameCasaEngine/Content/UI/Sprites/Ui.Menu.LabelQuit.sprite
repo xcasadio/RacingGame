@@ -1,0 +1,17 @@
+{
+  "id": "2ef08503-f8e2-5bae-b07a-412d4b985485",
+  "name": "Ui.Menu.LabelQuit",
+  "sprite_sheet_asset_id": "0e470a8a-1582-5839-9a0c-96d2adc604eb",
+  "location": {
+    "x": 212,
+    "y": 454,
+    "w": 212,
+    "h": 24
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

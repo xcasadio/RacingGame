@@ -1,0 +1,17 @@
+{
+  "id": "dd6b82ce-0ec3-55d2-bc4c-b10aa01ae119",
+  "name": "Ui.Menu.GlyphQuit",
+  "sprite_sheet_asset_id": "a80cffa0-a7fb-5b6b-8678-2d2c9e893193",
+  "location": {
+    "x": 848,
+    "y": 0,
+    "w": 212,
+    "h": 212
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

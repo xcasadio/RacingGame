@@ -311,6 +311,78 @@
       "name": "Sound.Bleep",
       "file_name": "Audio/Bleep.sound",
       "asset_type": "sound"
+    },
+    {
+      "id": "b232634f-4cd3-5e51-9b3c-aea88f03fd42",
+      "name": "Ui.Menu.GlyphsImage",
+      "file_name": "UI/Sprites/Ui.Menu.Glyphs.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "a80cffa0-a7fb-5b6b-8678-2d2c9e893193",
+      "name": "Ui.Menu.GlyphsTexture",
+      "file_name": "UI/Sprites/Ui.Menu.GlyphsTexture.texture",
+      "asset_type": "texture"
+    },
+    {
+      "id": "baeef82b-811b-5b2b-9455-ee4bd9a803fe",
+      "name": "Ui.Menu.GlyphPlay",
+      "file_name": "UI/Sprites/Ui.Menu.GlyphPlay.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "15fb2759-86c8-5778-9a15-172b5c36ca99",
+      "name": "Ui.Menu.GlyphHighscores",
+      "file_name": "UI/Sprites/Ui.Menu.GlyphHighscores.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "69d9ba84-a74a-5ba1-8fb2-cc61901d4063",
+      "name": "Ui.Menu.GlyphOptions",
+      "file_name": "UI/Sprites/Ui.Menu.GlyphOptions.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "2791a4ae-7202-5fc6-940d-225f8d971b9b",
+      "name": "Ui.Menu.GlyphHelp",
+      "file_name": "UI/Sprites/Ui.Menu.GlyphHelp.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "dd6b82ce-0ec3-55d2-bc4c-b10aa01ae119",
+      "name": "Ui.Menu.GlyphQuit",
+      "file_name": "UI/Sprites/Ui.Menu.GlyphQuit.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "51d19086-4438-5214-8fa0-01478b227983",
+      "name": "Ui.Menu.LabelPlay",
+      "file_name": "UI/Sprites/Ui.Menu.LabelPlay.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "520f660f-389b-5d49-9f4d-0544da66ab49",
+      "name": "Ui.Menu.LabelHighscores",
+      "file_name": "UI/Sprites/Ui.Menu.LabelHighscores.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "d9c2c4a8-19db-5271-beb5-5dade756358c",
+      "name": "Ui.Menu.LabelOptions",
+      "file_name": "UI/Sprites/Ui.Menu.LabelOptions.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "e9ebb30e-3613-53bd-9f02-1b832c4e5cd1",
+      "name": "Ui.Menu.LabelHelp",
+      "file_name": "UI/Sprites/Ui.Menu.LabelHelp.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "2ef08503-f8e2-5bae-b07a-412d4b985485",
+      "name": "Ui.Menu.LabelQuit",
+      "file_name": "UI/Sprites/Ui.Menu.LabelQuit.sprite",
+      "asset_type": "sprite"
     }
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "id": "51d19086-4438-5214-8fa0-01478b227983",
+  "name": "Ui.Menu.LabelPlay",
+  "sprite_sheet_asset_id": "0e470a8a-1582-5839-9a0c-96d2adc604eb",
+  "location": {
+    "x": 0,
+    "y": 214,
+    "w": 212,
+    "h": 24
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

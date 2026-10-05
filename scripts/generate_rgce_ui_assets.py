@@ -26,6 +26,8 @@ TEXTURES = [
     ("Ui.Menu.BackgroundTexture", "MenuBackground", None),
     ("Ui.Menu.ButtonsTexture", "MenuButtons", None),
     ("Ui.Hud.IngameTexture", "Ui.Hud.IngameImage", "Textures/ingame.png"),
+    # Main-menu icon glyphs on a transparent background, written by scripts/MenuIconExtractor from buttons.png.
+    ("Ui.Menu.GlyphsTexture", "Ui.Menu.GlyphsImage", "UI/Sprites/Ui.Menu.Glyphs.png"),
 ]
 
 # (sprite asset name, texture asset name, x, y, w, h)
@@ -40,6 +42,18 @@ SPRITES = [
     ("Ui.Menu.IconOptions", "Ui.Menu.ButtonsTexture", 474, 50, 112, 112),
     ("Ui.Menu.IconHelp", "Ui.Menu.ButtonsTexture", 686, 50, 112, 112),
     ("Ui.Menu.IconQuit", "Ui.Menu.ButtonsTexture", 262, 290, 112, 112),
+    # Main-menu icon glyphs (full 212x212 button frames, Ui.Menu.Glyphs.png) and the labels shown under the selected button
+    # (buttons.png MenuText*GfxRect of RacingGame's UIRenderer).
+    ("Ui.Menu.GlyphPlay", "Ui.Menu.GlyphsTexture", 0, 0, 212, 212),
+    ("Ui.Menu.GlyphHighscores", "Ui.Menu.GlyphsTexture", 212, 0, 212, 212),
+    ("Ui.Menu.GlyphOptions", "Ui.Menu.GlyphsTexture", 424, 0, 212, 212),
+    ("Ui.Menu.GlyphHelp", "Ui.Menu.GlyphsTexture", 636, 0, 212, 212),
+    ("Ui.Menu.GlyphQuit", "Ui.Menu.GlyphsTexture", 848, 0, 212, 212),
+    ("Ui.Menu.LabelPlay", "Ui.Menu.ButtonsTexture", 0, 214, 212, 24),
+    ("Ui.Menu.LabelHighscores", "Ui.Menu.ButtonsTexture", 212, 214, 212, 24),
+    ("Ui.Menu.LabelOptions", "Ui.Menu.ButtonsTexture", 424, 214, 212, 24),
+    ("Ui.Menu.LabelHelp", "Ui.Menu.ButtonsTexture", 636, 214, 212, 24),
+    ("Ui.Menu.LabelQuit", "Ui.Menu.ButtonsTexture", 212, 454, 212, 24),
     ("Ui.Track.Beginner", "Ui.Menu.ButtonsTexture", 0, 480, 212, 352),
     ("Ui.Track.Advanced", "Ui.Menu.ButtonsTexture", 212, 480, 212, 352),
     ("Ui.Track.Expert", "Ui.Menu.ButtonsTexture", 424, 480, 212, 352),

@@ -1,0 +1,17 @@
+{
+  "id": "e9ebb30e-3613-53bd-9f02-1b832c4e5cd1",
+  "name": "Ui.Menu.LabelHelp",
+  "sprite_sheet_asset_id": "0e470a8a-1582-5839-9a0c-96d2adc604eb",
+  "location": {
+    "x": 636,
+    "y": 214,
+    "w": 212,
+    "h": 24
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

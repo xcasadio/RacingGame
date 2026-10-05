@@ -1,0 +1,17 @@
+{
+  "id": "2791a4ae-7202-5fc6-940d-225f8d971b9b",
+  "name": "Ui.Menu.GlyphHelp",
+  "sprite_sheet_asset_id": "a80cffa0-a7fb-5b6b-8678-2d2c9e893193",
+  "location": {
+    "x": 636,
+    "y": 0,
+    "w": 212,
+    "h": 212
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}
