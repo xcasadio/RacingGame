@@ -1,0 +1,31 @@
+{
+  "view_model_type": "RaceCarSelectionViewModel",
+  "values": {
+    "Decoration": {
+      "LogoLeft": 451,
+      "LogoTop": 40,
+      "LogoWidth": 755,
+      "LogoHeight": 246
+    },
+    "Summary": "Car 1\nLong gearing and the highest top speed in the roster.",
+    "Stat0Label": "Max Speed: 288 mph",
+    "Stat0Fill": 100.0,
+    "Stat1Label": "Acceleration: 4.0 m/s^2",
+    "Stat1Fill": 0.0,
+    "Stat2Label": "Mass: 1015 kg",
+    "Stat2Fill": 46.7,
+    "Stat3Label": "Handling: Agile",
+    "Stat3Fill": 24.2,
+    "Swatch0Color": "rgba(255,255,255,255)",
+    "Swatch1Color": "rgba(255,255,0,255)",
+    "Swatch2Color": "rgba(0,0,255,255)",
+    "Swatch3Color": "rgba(128,0,128,255)",
+    "Swatch4Color": "rgba(255,0,0,255)",
+    "Swatch5Color": "rgba(0,128,0,255)",
+    "Swatch6Color": "rgba(0,128,128,255)",
+    "Swatch7Color": "rgba(128,128,128,255)",
+    "Swatch8Color": "rgba(210,105,30,255)",
+    "Swatch9Color": "rgba(255,165,0,255)",
+    "Swatch10Color": "rgba(46,139,87,255)"
+  }
+}

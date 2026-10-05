@@ -8,6 +8,11 @@
     <AssemblyName>RacingGameCasaEngine.UI</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Same version as RacingGameCasaEngine and the CasaEngine pin: the editor loads its own copy. -->
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.5.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Core\MGUI.Core.csproj" />
     <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Shared\MGUI.Shared.csproj" />
   </ItemGroup>
   <!-- The CasaEngine editor loads this assembly from the editor project root (GameplayDllName of

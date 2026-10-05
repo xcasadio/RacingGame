@@ -11,7 +11,7 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace RacingGameCasaEngine.UI;
 
-internal sealed class CarSelectionPreviewRenderer
+internal sealed class CarSelectionPreviewRenderer : IDisposable
 {
     private const int PreviewWidth = 360;
     private const int PreviewHeight = 220;
@@ -61,6 +61,13 @@ internal sealed class CarSelectionPreviewRenderer
     }
 
     internal MGTextureData TextureData => _textureData;
+
+    /// <summary>Releases the render target and the effect; the car models belong to the asset manager.</summary>
+    public void Dispose()
+    {
+        _renderTarget.Dispose();
+        _effect.Dispose();
+    }
 
     internal void Update(GameTime gameTime, int selectedCarIndex, int selectedCarColorIndex)
     {

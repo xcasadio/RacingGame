@@ -1,0 +1,141 @@
+<Window xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core"
+        xmlns:dataBinding="clr-namespace:MGUI.Core.UI.DataBinding;assembly=MGUI.Core"
+        Width="1280" Height="720" ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
+        WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
+        Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
+  <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <!-- Menu decoration (RaceMenuDecorationViewModel): background, then the bouncing logo placed by the view model. -->
+    <Image SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
+           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+    <Image SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Decoration.LogoMargin}"
+           Width="{dataBinding:MGBinding Path=Decoration.LogoWidth}" Height="{dataBinding:MGBinding Path=Decoration.LogoHeight}" />
+    <Border BorderThickness="0" BorderBrush="rgba(0,0,0,0)" Background="rgba(0,0,0,132)" Margin="0,191,0,0" Height="439" Padding="28,14,28,18"
+            HorizontalAlignment="Stretch" VerticalAlignment="Top">
+      <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <!-- Previous and next car; the screen restyles both every frame (hover and focus). -->
+        <Button Name="btnPrevious" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
+                Background="rgba(0,0,0,24)" MinWidth="72" MinHeight="96" HorizontalAlignment="Center" HorizontalContentAlignment="Center"
+                ResponsiveAnchor="MiddleLeft" Offset="0,0,0,84">
+          <TextBlock Text="&lt;" Foreground="White" FontSize="30" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
+        </Button>
+        <Button Name="btnNext" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
+                Background="rgba(0,0,0,24)" MinWidth="72" MinHeight="96" HorizontalAlignment="Center" HorizontalContentAlignment="Center"
+                ResponsiveAnchor="MiddleRight" Offset="0,0,0,84">
+          <TextBlock Text="&gt;" Foreground="White" FontSize="30" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
+        </Button>
+        <StackPanel Orientation="Horizontal" Spacing="38" HorizontalAlignment="Center" VerticalAlignment="Center" Offset="58,20,58,108">
+          <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center" Width="340">
+            <TextBlock Text="Preview" Foreground="rgb(255,156,0)" FontSize="14" WrapText="False" UseResponsiveTextScale="True"
+                       HorizontalAlignment="Center" TextAlignment="Center" />
+            <Border BorderThickness="2" BorderBrush="rgba(255,255,255,70)" CornerRadius="18" Background="rgba(0,0,0,24)" Padding="0"
+                    Width="340" Height="220" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <!-- 3D car preview rendered by the screen into a render target (RaceCarSelectionViewModel.PreviewImage). -->
+              <Image Source="{dataBinding:MGBinding Path=PreviewImage}" Stretch="Uniform" Width="336" Height="216"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+          </StackPanel>
+          <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Stretch" VerticalAlignment="Center" Width="300">
+            <TextBlock Text="{dataBinding:MGBinding Path=Summary}" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
+            <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+              <TextBlock Text="{dataBinding:MGBinding Path=Stat0Label}" Foreground="White" FontSize="14" WrapText="False" UseResponsiveTextScale="True" />
+              <ProgressBar Minimum="0" Maximum="100" Value="{dataBinding:MGBinding Path=Stat0Fill}" Size="10" ShowValue="False" Width="240"
+                           BorderThickness="0" CornerRadius="0" Background="rgba(0,0,0,0)" CompletedBrush="White" IncompleteBrush="rgba(0,0,0,0)"
+                           HorizontalAlignment="Left" />
+            </StackPanel>
+            <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+              <TextBlock Text="{dataBinding:MGBinding Path=Stat1Label}" Foreground="White" FontSize="14" WrapText="False" UseResponsiveTextScale="True" />
+              <ProgressBar Minimum="0" Maximum="100" Value="{dataBinding:MGBinding Path=Stat1Fill}" Size="10" ShowValue="False" Width="240"
+                           BorderThickness="0" CornerRadius="0" Background="rgba(0,0,0,0)" CompletedBrush="White" IncompleteBrush="rgba(0,0,0,0)"
+                           HorizontalAlignment="Left" />
+            </StackPanel>
+            <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+              <TextBlock Text="{dataBinding:MGBinding Path=Stat2Label}" Foreground="White" FontSize="14" WrapText="False" UseResponsiveTextScale="True" />
+              <ProgressBar Minimum="0" Maximum="100" Value="{dataBinding:MGBinding Path=Stat2Fill}" Size="10" ShowValue="False" Width="240"
+                           BorderThickness="0" CornerRadius="0" Background="rgba(0,0,0,0)" CompletedBrush="White" IncompleteBrush="rgba(0,0,0,0)"
+                           HorizontalAlignment="Left" />
+            </StackPanel>
+            <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+              <TextBlock Text="{dataBinding:MGBinding Path=Stat3Label}" Foreground="White" FontSize="14" WrapText="False" UseResponsiveTextScale="True" />
+              <ProgressBar Minimum="0" Maximum="100" Value="{dataBinding:MGBinding Path=Stat3Fill}" Size="10" ShowValue="False" Width="240"
+                           BorderThickness="0" CornerRadius="0" Background="rgba(0,0,0,0)" CompletedBrush="White" IncompleteBrush="rgba(0,0,0,0)"
+                           HorizontalAlignment="Left" />
+            </StackPanel>
+          </StackPanel>
+        </StackPanel>
+        <!-- Eleven fixed colour swatches; the screen restyles the selected one every frame. -->
+        <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    ResponsiveAnchor="BottomCenter" Offset="0,0,0,4">
+          <TextBlock Text="Car Color:" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
+          <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Name="swatch0" Background="{dataBinding:MGBinding Path=Swatch0Brush, TargetPathOverride=BackgroundBrush}"
+                    BorderThickness="2" BorderBrush="rgba(153,153,153,153)" Width="56" Height="56" Padding="0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+              <TextBlock Text="" Foreground="White" FontSize="10" />
+            </Button>
+            <Button Name="swatch1" Background="{dataBinding:MGBinding Path=Swatch1Brush, TargetPathOverride=BackgroundBrush}"
+                    BorderThickness="2" BorderBrush="rgba(153,153,153,153)" Width="56" Height="56" Padding="0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+              <TextBlock Text="" Foreground="White" FontSize="10" />
+            </Button>
+            <Button Name="swatch2" Background="{dataBinding:MGBinding Path=Swatch2Brush, TargetPathOverride=BackgroundBrush}"
+                    BorderThickness="2" BorderBrush="rgba(153,153,153,153)" Width="56" Height="56" Padding="0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+              <TextBlock Text="" Foreground="White" FontSize="10" />
+            </Button>
+            <Button Name="swatch3" Background="{dataBinding:MGBinding Path=Swatch3Brush, TargetPathOverride=BackgroundBrush}"
+                    BorderThickness="2" BorderBrush="rgba(153,153,153,153)" Width="56" Height="56" Padding="0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+              <TextBlock Text="" Foreground="White" FontSize="10" />
+            </Button>
+            <Button Name="swatch4" Background="{dataBinding:MGBinding Path=Swatch4Brush, TargetPathOverride=BackgroundBrush}"
+                    BorderThickness="2" BorderBrush="rgba(153,153,153,153)" Width="56" Height="56" Padding="0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+              <TextBlock Text="" Foreground="White" FontSize="10" />
+            </Button>
+            <Button Name="swatch5" Background="{dataBinding:MGBinding Path=Swatch5Brush, TargetPathOverride=BackgroundBrush}"
+                    BorderThickness="2" BorderBrush="rgba(153,153,153,153)" Width="56" Height="56" Padding="0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+              <TextBlock Text="" Foreground="White" FontSize="10" />
+            </Button>
+            <Button Name="swatch6" Background="{dataBinding:MGBinding Path=Swatch6Brush, TargetPathOverride=BackgroundBrush}"
+                    BorderThickness="2" BorderBrush="rgba(153,153,153,153)" Width="56" Height="56" Padding="0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+              <TextBlock Text="" Foreground="White" FontSize="10" />
+            </Button>
+            <Button Name="swatch7" Background="{dataBinding:MGBinding Path=Swatch7Brush, TargetPathOverride=BackgroundBrush}"
+                    BorderThickness="2" BorderBrush="rgba(153,153,153,153)" Width="56" Height="56" Padding="0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+              <TextBlock Text="" Foreground="White" FontSize="10" />
+            </Button>
+            <Button Name="swatch8" Background="{dataBinding:MGBinding Path=Swatch8Brush, TargetPathOverride=BackgroundBrush}"
+                    BorderThickness="2" BorderBrush="rgba(153,153,153,153)" Width="56" Height="56" Padding="0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+              <TextBlock Text="" Foreground="White" FontSize="10" />
+            </Button>
+            <Button Name="swatch9" Background="{dataBinding:MGBinding Path=Swatch9Brush, TargetPathOverride=BackgroundBrush}"
+                    BorderThickness="2" BorderBrush="rgba(153,153,153,153)" Width="56" Height="56" Padding="0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+              <TextBlock Text="" Foreground="White" FontSize="10" />
+            </Button>
+            <Button Name="swatch10" Background="{dataBinding:MGBinding Path=Swatch10Brush, TargetPathOverride=BackgroundBrush}"
+                    BorderThickness="2" BorderBrush="rgba(153,153,153,153)" Width="56" Height="56" Padding="0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+              <TextBlock Text="" Foreground="White" FontSize="10" />
+            </Button>
+          </StackPanel>
+        </StackPanel>
+      </OverlayPanel>
+    </Border>
+    <!-- A (select) and B (back) buttons; the screen dims each image when its button is neither focused nor hovered. -->
+    <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center"
+                ResponsiveAnchor="BottomRight" Offset="0,0,48,20">
+      <Button Name="btnSelect" Background="rgba(0,0,0,0)" BorderThickness="0" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Image Name="imgSelect" SourceName="Ui.Button.Select" Stretch="Uniform" Width="136" Height="60" HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Button>
+      <Button Name="btnCancel" Background="rgba(0,0,0,0)" BorderThickness="0" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Image Name="imgCancel" SourceName="Ui.Button.Back" Stretch="Uniform" Width="136" Height="60" HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Button>
+    </StackPanel>
+  </OverlayPanel>
+</Window>

@@ -263,6 +263,12 @@
       "name": "Screen.TrackSelection",
       "file_name": "UI/Screens/TrackSelection/TrackSelection.uiscreen",
       "asset_type": "uiscreen"
+    },
+    {
+      "id": "6c64de19-45ba-403b-90f2-33160abdc0f6",
+      "name": "Screen.CarSelection",
+      "file_name": "UI/Screens/CarSelection/CarSelection.uiscreen",
+      "asset_type": "uiscreen"
     }
   ]
 }

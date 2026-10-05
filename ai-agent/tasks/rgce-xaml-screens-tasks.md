@@ -339,7 +339,20 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 - Objectif : 3 pistes (sprites), noms liés, sélection et boutons A/B.
 - Commit : `feat(racing-casa): load the track selection from a XAML screen asset`
 
-### ⏳ T2.5 — CarSelection
+### 🧪 T2.5 — CarSelection
+
+> Validation (2026-10-05) :
+> - **Écran** : `Screen.CarSelection`, avec `RaceCarSelectionViewModel` qui expose le résumé, 4 libellés et 4 barres de statistiques, l'image de l'aperçu 3D et 11 pastilles :
+>   - l'aperçu (`MGTextureData` de la cible de rendu) est lié à `Image.Source` (P8) ;
+>   - le renderer est créé au chargement et libéré par le `Dispose` de l'écran, appelé par `Hide` ; `CarSelectionPreviewRenderer` implémente désormais `IDisposable` (cible de rendu et effet) ;
+>   - chaque pastille lie tout son pinceau de fond (`TargetPathOverride=BackgroundBrush`), construit comme dans le code : la couleur est liée (D3) et tous les états visuels la montrent ;
+>   - flèches, sélection des pastilles et boutons A et B restylés en code (D6).
+> - **Dépendances** : la bibliothèque référence aussi `MGUI.Core` et `MonoGame.Framework.DesktopGL` 3.8.5.1, même version que RGCE et que l'épinglage du moteur, pour `MGTextureData`, `VisualStateFillBrush` et `Color`.
+> - **Cycles** : 2 sur 3. Au 1er essai, la ligne d'état de l'éditeur affichait une erreur de données de conception : Newtonsoft refuse un objet JSON pour `Microsoft.Xna.Framework.Color` et exige une chaîne. Le convertisseur alors utilisé dépend de l'enregistrement global fait par `DataBinding` (`DataBinding.cs:813-832`), ce qui est fragile. Les couleurs des pastilles sont donc des chaînes au format XAML (`rgba(…)`), analysées par `XNAColorStringConverter.ParseColor`. L'écran passe toujours la `Color` exacte du catalogue. Écart à rapporter en T6.2 (O5).
+> - **Build et jeu** : `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, aucun avertissement.
+> - **Captures** contre `references-579e1d7` : `car-selection` à 0,00, aperçu 3D compris ; `race-hud` à 0,09/0,10/0,10 et `pause` à 0,02 (décor, O4) ; le reste à 0,00.
+> - **Éditeur** : `capture_editor_screen.ps1` sur `CarSelection.uiscreen`, code 0. L'aperçu montre le résumé « Car 1 », les statistiques et leurs barres, relevées sur la capture de référence, ainsi que les flèches. Le cadre de l'aperçu 3D est vide, comme prévu. Les pastilles sont sous la zone visible à 100 %. Ligne d'état sans « Design-time data: ».
+> - 🧪 Reste à vérifier par l'auteur : flèches (changement de voiture et aperçu 3D), clic sur les pastilles, A et B, navigation au clavier et à la manette.
 
 - Objectif : résumé, 4 statistiques (barres de progression liées), 11 pastilles de couleur, flèches, aperçu 3D lié (P8) et libéré. Dans l'éditeur, l'aperçu 3D reste vide : `MGTextureData` ne peut pas venir du JSON de conception, son premier membre étant une interface (`CasaEngine/MGUI/MGUI.Core/UI/MGTextureData.cs:11`).
 - Commit : `feat(racing-casa): load the car selection from a XAML screen asset`

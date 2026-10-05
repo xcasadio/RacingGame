@@ -1,0 +1,12 @@
+{
+  "id": "6c64de19-45ba-403b-90f2-33160abdc0f6",
+  "name": "Screen.CarSelection",
+  "source_xaml_file": "CarSelection.xaml",
+  "theme_name": "",
+  "preview_resolution": {
+    "x": 1280,
+    "y": 720
+  },
+  "resource_files": [],
+  "design_time_data_file": "CarSelection.design.json"
+}
