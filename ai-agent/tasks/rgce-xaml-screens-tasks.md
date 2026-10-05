@@ -615,7 +615,21 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 
 ## Phase 6 — Nettoyage, rapports et clôture
 
-### ⏳ T6.1 — Suppression du code de construction devenu mort
+### ✅ T6.1 — Suppression du code de construction devenu mort
+
+> Validation (2026-10-05) :
+> - **Supprimé (P13)** :
+>   - `Screens/RaceFrontEndScreenBase.cs`, `UI/LegacyMenuUiAtlas.cs` (rectangles repris par le script) et `UI/RaceUiTheme.cs`, qui ne servaient plus que l'ancienne base ;
+>   - les fabriques de `LegacyMenuUiTheme` ;
+>   - `UiImageResources.AsImage` ;
+>   - les propriétés et handles `MenuBackgroundTexture`/`MenuButtonsTexture` avec leur chargement, et les constantes `RaceBootstrapAssets.MenuBackground`/`MenuButtons` ;
+>   - `RaceHudTexture` et le chargement de `ingame.png` par `Texture2D.FromFile`, mort depuis T3.2 (même cas que les textures de menu, bien que P13 ne le nomme pas).
+> - **Gardé** : les fonctions d'état visuel (D6) et leurs couleurs dans `LegacyMenuUiTheme`, `UiImageResources.AsRenderTarget` pour l'aperçu 3D.
+> - **Garde `rg`** : la garde de la validation globale ne trouve que des allocations de tableaux (`new MGButton[...]`). La forme stricte, `rg -n "new MG\w+\(" RacingGameCasaEngine/Screens RacingGameCasaEngine/UI`, ne trouve que les pinceaux du restylage (D6) et le `MGTextureData` de l'aperçu 3D : aucune construction d'élément.
+> - **Build et jeu** : `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, aucun avertissement.
+> - **Captures** contre `references-55304bb` : 0,00 sur les 10 états.
+>   - Ces références portaient deux survols de la souris réelle, capturés pendant T4.1 : bouton Back de `help` (0,18) et carte centrale de `track-selection` (0,03).
+>   - Les deux runs propres de cette tâche sont identiques à `references-579e1d7` pour ces états ; les deux images ont donc été remplacées par celles du run `ui-run-20261005-175730`.
 
 - Objectif : P13.
 - Validation :

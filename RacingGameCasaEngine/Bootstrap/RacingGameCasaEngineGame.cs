@@ -105,17 +105,6 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         GameManager.WorldLoaded += OnWorldLoaded;
     }
 
-    // Held for the whole game, like the cached AssetContentManager.Load they replace.
-    private AssetHandle<Texture2D>? _menuBackgroundHandle;
-
-    private AssetHandle<Texture2D>? _menuButtonsHandle;
-
-    public Texture2D? MenuBackgroundTexture { get; private set; }
-
-    public Texture2D? MenuButtonsTexture { get; private set; }
-
-    public Texture2D? RaceHudTexture { get; private set; }
-
     internal RuntimeRaceSession RaceSession { get; }
 
     /// <summary>Gamepad vibration on guard-rail hits (Gamepad Vibration option).</summary>
@@ -173,52 +162,8 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
 
     protected override void LoadContentPrivate()
     {
-        LoadBootstrapAssets();
-
         World world = RaceWorldFactory.CreateFrontEndWorld();
         GameManager.SetWorldToLoad(world);
-    }
-
-    private void LoadBootstrapAssets()
-    {
-        AssetInfo? backgroundAsset = AssetCatalog.Get(RaceBootstrapAssets.MenuBackground);
-        if (backgroundAsset != null)
-        {
-            _menuBackgroundHandle = AssetContentManager.Acquire<Texture2D>(backgroundAsset.Id);
-            MenuBackgroundTexture = _menuBackgroundHandle.Asset;
-        }
-
-        AssetInfo? buttonsAsset = AssetCatalog.Get(RaceBootstrapAssets.MenuButtons);
-        if (buttonsAsset != null)
-        {
-            _menuButtonsHandle = AssetContentManager.Acquire<Texture2D>(buttonsAsset.Id);
-            MenuButtonsTexture = _menuButtonsHandle.Asset;
-        }
-
-        string contentRoot = string.IsNullOrWhiteSpace(ContentPath)
-            ? Path.Combine(AppContext.BaseDirectory, "Content")
-            : ContentPath;
-        if (!Path.IsPathRooted(contentRoot))
-        {
-            contentRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, contentRoot));
-        }
-
-        string raceHudTexturePath = Path.Combine(contentRoot, "Textures", "ingame.png");
-        if (!File.Exists(raceHudTexturePath))
-        {
-            Logs.WriteWarning($"Race HUD texture '{raceHudTexturePath}' was not found.");
-            return;
-        }
-
-        try
-        {
-            RaceHudTexture ??= Texture2D.FromFile(GraphicsDevice, raceHudTexturePath);
-        }
-        catch (Exception ex)
-        {
-            Logs.WriteException(ex);
-            Logs.WriteWarning($"Race HUD texture '{raceHudTexturePath}' could not be loaded.");
-        }
     }
 
     private void OnWorldLoaded(object? sender, EventArgs e)
