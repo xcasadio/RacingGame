@@ -638,7 +638,14 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
   - `--smoke-frontend` code 0.
 - Commit : `refactor(racing-casa): remove code-built screen factories`
 
-### ⏳ T6.2 — Rapports
+### ✅ T6.2 — Rapports
+
+> Validation (2026-10-05) : `docs/mgui-gaps-from-rgce-xaml-screens.md`, en anglais, ne recense que les manques effectivement rencontrés en T1.2 → T3.2, chacun avec sa preuve (fichier:ligne du sous-module), ce que fait RGCE et le lien à l'audit du moteur quand il existe.
+> - **MGUI, 12 entrées (P11)** : états visuels sans épaisseur ni couleur de bordure ni couleur de texte, focus non propagé, pas d'événements, pas de rectangle source, pas d'indexeur, rotation non liable (reste de G9), deux emplacements seulement pour `Background`, décalage et rognage du texte, échelle de texte responsive, nom d'image vide, `AllowClickDragScrolling`, ressources par défaut et libération des écrans.
+> - **Éditeur, 4 entrées (O5)** : aperçu non fidèle, données de conception sans `Color`, automatisation, réécritures de File > Save.
+> - **Section chiffrée du HUD (D15)** : mêmes tailles et mêmes glyphes, textes plus bas de 2 à 3 px, écarts par panneau.
+> - **Post Screen Effects (D14)** : aucune lecture de l'option dans RGCE, effets legacy `PostScreenMenu` et `PostScreenGlow`, `ScreenEffectService` limité au voile et aux fondus.
+> - Pas de code touché : ni build ni test requis.
 
 - Objectif :
   - `docs/mgui-gaps-from-rgce-xaml-screens.md` (P11), à partir des contournements effectivement faits pendant T1.2 → T3.2 ;
