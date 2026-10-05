@@ -52,6 +52,10 @@ internal static partial class LegacyTrackSceneFactory
         new Vector3(0f, 0f, 0f),
     ];
 
+    // The start light's models: red, yellow and green (RacingGame.Shared/Landscapes/TrackObjectManager.cs).
+    internal const string StartLightEntityNamePrefix = "Track.Scenery.StartLight.";
+    private static readonly string[] StartLightModelNames = ["StartLight", "StartLight2", "StartLight3"];
+
     private static readonly XmlSerializer TrackSerializer = new(typeof(LegacyTrackLayout));
     private static readonly XmlSerializer CombiSerializer = new(typeof(List<LegacyCombiObject>), new XmlRootAttribute("ArrayOfCombiObject"));
     private static readonly Texture2DLoader TextureLoader = new();
@@ -406,6 +410,12 @@ internal static partial class LegacyTrackSceneFactory
         return CreateStaticModelEntity($"Track.Ground.{trackName}", groundModel, transform);
     }
 
+    /// <summary>The start light's red, yellow and green models, loaded once (null for a missing one).</summary>
+    internal static StaticModel?[] LoadStartLightModels(AssetContentManager assetContentManager)
+    {
+        return StartLightModelNames.Select(modelName => LoadLegacyModel(modelName, assetContentManager)).ToArray();
+    }
+
     private static Entity CreateStaticModelEntity(string name, StaticModel model, Matrix transform)
     {
         if (!transform.Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation))
@@ -640,7 +650,9 @@ internal static partial class LegacyTrackSceneFactory
             * Matrix.CreateTranslation(new Vector3(startPoint.RoadWidth * LegacyRoadWidthScale * 0.50f - 0.3f, 6.0f, -0.2f))
             * startPointSpace
             * Matrix.CreateTranslation(startPoint.Position);
-        AddSceneryEntities(entities, "StartLight3", startLightTransform, placementState, ref sceneryIndex, assetContentManager);
+        // Built red, as RacingGame's ResetStartLight left it; RaceStartLight turns it yellow, then green.
+        AddSceneryEntities(entities, StartLightModelNames[0], startLightTransform, placementState, ref sceneryIndex, assetContentManager);
+        LoadStartLightModels(assetContentManager);
 
         float checkpointGap = CheckpointGap;
         float signGap = SignGap;

@@ -462,7 +462,8 @@ public static partial class Program
             * Matrix.CreateTranslation(new Vector3(startPoint.RoadWidth * LegacyRoadWidthScale * 0.50f - 0.3f, 6.0f, -0.2f))
             * startPointSpace
             * Matrix.CreateTranslation(startPoint.Position);
-        AddExpectedSceneryEntities(state, "StartLight3", startLightTransform);
+        // RacingGameCasaEngine builds the start light red and turns it green at the start; the scene export runs before.
+        AddExpectedSceneryEntities(state, "StartLight", startLightTransform);
 
         float checkpointGap = CheckpointGap;
         float signGap = SignGap;

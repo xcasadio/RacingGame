@@ -13,6 +13,7 @@ public sealed class RaceFlowCoordinatorComponent : EntityComponent
 {
     private readonly List<RaceCheckpointTriggerComponent> _checkpointTriggers = [];
     private bool _isInitialized;
+    private RaceStartLight? _startLight;
     private bool _hasPreviousPlayerPosition;
     private Vector3 _previousPlayerPosition;
 
@@ -37,12 +38,14 @@ public sealed class RaceFlowCoordinatorComponent : EntityComponent
         if (!_isInitialized)
         {
             InitializeCheckpoints(Owner.World, session.GameMode);
+            _startLight = RaceStartLight.Find(Owner.World);
             _isInitialized = true;
         }
 
         HandlePauseToggle(game, session.GameMode, session.PlayerController);
 
         session.GameMode.UpdateCountdown(elapsedTime);
+        _startLight?.Show(RaceStartLight.GetColor(session.GameMode.CountdownSecondsRemaining));
         bool canDrive = !session.IsDebugCameraEnabled
             && session.GameMode.CountdownSecondsRemaining <= 0f
             && !session.GameMode.IsPaused

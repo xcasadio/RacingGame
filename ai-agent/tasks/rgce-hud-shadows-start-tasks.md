@@ -176,7 +176,7 @@ Découverte en lecture seule (deux workflows de découverte avec contre-vérific
 
 ## Phase 2 — Annonce du départ
 
-### ⏳ T2.1 — Feu de départ animé
+### 🧪 T2.1 — Feu de départ animé
 
 - Objectif : D3, partie visuelle, selon P3.
 - Fichiers :
@@ -194,6 +194,22 @@ Découverte en lecture seule (deux workflows de découverte avec contre-vérific
   - planches de la sonde : rouge, jaune, vert visibles ;
   - 🧪 départ observé par l'auteur.
 - Commit : `feat(racing-casa): animate the race start light`
+
+> Validation (2026-10-05) :
+> - Références de T1.1 : `references-70fee31` (commit `70fee31`).
+> - Voie retenue : (B), sans essayer (A), parce que la lecture du code écarte (A).
+>   - (A) entre en conflit avec la vue de debug « circuit seul » : `ApplyRaceWorldVisibilityState` réécrit `IsVisible` de tout le décor (`Bootstrap/RacingGameCasaEngineGame.cs:325-341`) et rallumerait les trois feux.
+>   - (B) est prévue par le moteur : `StaticModelComponent.InitializeWithWorld` retire les sous-meshes générés avant de reconstruire (« re-initialize », `StaticModelComponent.cs:226-236`). `StaticModel.Initialize` est idempotent (`StaticModel.cs:66-71`), et le retrait des sous-meshes ne fait que les détacher (`SceneComponent.cs:403-408`). Le rendu est en temps réel par défaut (`RenderView.cs:84`).
+> - Code :
+>   - le feu est construit rouge (`StartLight`), comme `ResetStartLight` le laissait ; les modèles jaune et vert sont chargés avec la piste ;
+>   - `GameFramework/RaceStartLight.cs` change le modèle, avec une trace par couleur ;
+>   - `RaceFlowCoordinatorComponent` lui donne la couleur du décompte : rouge à 1 s ou plus, jaune entre 1 s et 0 (exclu), vert à 0.
+> - Outil `scripts/TrackPlacementExporter` (hors solution) : sa copie de la fabrique attend maintenant `StartLight`, le modèle construit. L'export de scène se fait pendant le décompte (deux images stables après le chargement, `TrackRuntimeSceneExportValidator.cs:100-122`). `dotnet build scripts/TrackPlacementExporter` : 0 erreur.
+> - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE.
+> - `--smoke-frontend`, `--capture-track-audit` (21 captures) et `--capture-ui-screens` : code 0, journaux sans `[Warning]` ni `[Error]`. Dans chaque course, la séquence « Start light: red, yellow, green » apparaît une fois : 1 course pour le smoke, 3 pour l'audit, 1 pour les captures. Dans l'audit, le feu reste rouge 2 s puis jaune 1 s.
+> - `--capture-ui-screens` contre `references-70fee31` : états de course à 0,00 (feu vert après le décompte, comme avant). `help` à 0,18 et `track-selection` à 0,03 : écarts localisés sur un bouton, dus au survol de la vraie souris.
+> - Sonde (copie dans le scratchpad, validateur de captures modifié dans la copie seulement) : feu rouge à 1,5 s du départ, jaune à 0,5 s, vert après le départ. À 2,5 s, la caméra d'intro, vue de côté, ne montre pas le feu.
+> - 🧪 Reste : départ observé en jeu par l'auteur.
 
 ### ⏳ T2.2 — Sons « Beep » et « Bleep »
 
