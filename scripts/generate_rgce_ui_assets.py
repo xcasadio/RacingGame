@@ -2,7 +2,8 @@
 .texture wrappers they reference, and their catalogue entries in Content/AssetInfos.json.
 
 The rectangles are those the code-built screens used (RacingGameCasaEngine/UI/LegacyMenuUiAtlas.cs,
-UI/LegacyMenuUiTheme.cs icon crop, Screens/RaceHudScreen.cs). A sprite chain is png entry <- .texture
+Screens/RaceHudScreen.cs), plus the main menu's label rectangles of RacingGame's UIRenderer and its icon glyphs, which
+scripts/MenuIconExtractor writes to Content/UI/Sprites/Ui.Menu.Glyphs.png. A sprite chain is png entry <- .texture
 (texture_asset_id) <- .sprite (sprite_sheet_asset_id, location), as in CasaEngine's RPGDemo (Screens/MainHUD).
 
 Catalogue contract (plan ai-agent/tasks/rgce-xaml-screens-tasks.md, P5): the script owns only the entries whose name
@@ -36,12 +37,7 @@ SPRITES = [
     ("Ui.Menu.Background", "Ui.Menu.BackgroundTexture", 0, 0, 1024, 640),
     ("Ui.Menu.Logo", "Ui.Menu.BackgroundTexture", 0, 649, 1024, 374),
     ("Ui.Menu.SplashBackground", "Ui.Menu.BackgroundTexture", 0, 0, 1024, 1024),
-    # buttons.png (1024x1024): main-menu icons (inner 112x112 crop of each 212x212 cell), tracks, A/B buttons.
-    ("Ui.Menu.IconPlay", "Ui.Menu.ButtonsTexture", 50, 50, 112, 112),
-    ("Ui.Menu.IconHighscores", "Ui.Menu.ButtonsTexture", 262, 50, 112, 112),
-    ("Ui.Menu.IconOptions", "Ui.Menu.ButtonsTexture", 474, 50, 112, 112),
-    ("Ui.Menu.IconHelp", "Ui.Menu.ButtonsTexture", 686, 50, 112, 112),
-    ("Ui.Menu.IconQuit", "Ui.Menu.ButtonsTexture", 262, 290, 112, 112),
+    # buttons.png (1024x1024): tracks, A/B buttons.
     # Main-menu icon glyphs (full 212x212 button frames, Ui.Menu.Glyphs.png) and the labels shown under the selected button
     # (buttons.png MenuText*GfxRect of RacingGame's UIRenderer).
     ("Ui.Menu.GlyphPlay", "Ui.Menu.GlyphsTexture", 0, 0, 212, 212),

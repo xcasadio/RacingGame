@@ -6,6 +6,56 @@
       "LogoTop": 40,
       "LogoWidth": 755,
       "LogoHeight": 246
+    },
+    "BandTopPixels": 315,
+    "BandHeightPixels": 216,
+    "RowLeft": 286,
+    "RowTop": 343,
+    "ButtonSpacing": 18,
+    "Play": {
+      "Size": 148,
+      "Top": 0,
+      "Rim": 7,
+      "Radius": 27,
+      "LabelGap": 6,
+      "SlotHeight": 170,
+      "IsSelected": true
+    },
+    "Highscores": {
+      "Size": 122,
+      "Top": 13,
+      "Rim": 6,
+      "Radius": 22,
+      "LabelGap": 6,
+      "SlotHeight": 170,
+      "IsSelected": false
+    },
+    "Options": {
+      "Size": 122,
+      "Top": 13,
+      "Rim": 6,
+      "Radius": 22,
+      "LabelGap": 6,
+      "SlotHeight": 170,
+      "IsSelected": false
+    },
+    "Help": {
+      "Size": 122,
+      "Top": 13,
+      "Rim": 6,
+      "Radius": 22,
+      "LabelGap": 6,
+      "SlotHeight": 170,
+      "IsSelected": false
+    },
+    "Quit": {
+      "Size": 122,
+      "Top": 13,
+      "Rim": 6,
+      "Radius": 22,
+      "LabelGap": 6,
+      "SlotHeight": 170,
+      "IsSelected": false
     }
   }
 }

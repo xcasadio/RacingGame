@@ -177,7 +177,7 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
 
 ## Phase 2 — Menu
 
-### ⏳ T2.1 — Bande et boutons en dégradés MGUI
+### ✅ T2.1 — Bande et boutons en dégradés MGUI
 
 - Objectif : P2 et P3, à l'état « aucun sélectionné » des formules (tous les boutons à 182) ou avec Play sélectionné sans animation, pour valider la mise en page.
 - Fichiers : `Content/UI/Screens/MainMenu/MainMenu.xaml`, `MainMenu.design.json`, et si besoin `RacingGameCasaEngine.UI/ViewModels/RaceMainMenuViewModel.cs`.
@@ -187,6 +187,28 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
   - planche comparée à la capture de l'original et au rendu des formules ;
   - éditeur sans erreur.
 - Commit : `feat(racing-casa): draw the main menu band and buttons like the original`
+
+> Validation (2026-10-05) :
+> - Écarts au plan, avec leurs raisons :
+>   - mise en page : `RaceMainMenuViewModel.Update` calcule chaque image, en pixels de l'écran, les formules de l'original (`CalcRectangle`, `CalcRectangleCenteredWithGivenHeight`, `XToRes`, `YToRes`, arrondi au pair), au lieu de la mise à l'échelle responsive de MGUI proposée en P2. Le résultat est exact à toute résolution, y compris le mélange largeur/hauteur de l'original en 16:10, et le logo garde son calcul ;
+>   - l'anneau orange, l'opacité de 0,75 et le libellé sont déjà dessinés, liés au view model, Play étant sélectionné ; T2.2 rend la sélection dynamique.
+> - Dessin (`MainMenu.xaml`), proportionnel à chaque bouton :
+>   - face en dégradé vertical sur le fond du `Button` (255 → 147, soit #F8F8F8 → #A0A0A0 prolongé aux bords) ;
+>   - rebord #C1C1C1 de 10/212 ;
+>   - biseau en 4 bandes concentriques (`BandedBorderBrush`) de bordures ancrées pleines, une couleur par côté, mesurées dans l'art (plus sombres en bas) ;
+>   - glyphe `Ui.Menu.Glyph*` étiré sur le bouton ;
+>   - anneau #FF9C00 superposé au rebord du sélectionné ;
+>   - libellé `Ui.Menu.Label*` sous le sélectionné.
+>
+>   Le `MainMenuScreen` ne restyle plus le menu ; `ApplyMainMenuButtonState` et ses brosses sont supprimés. Les anciens sprites `Ui.Menu.Icon*` sont retirés du générateur, du catalogue (59 entrées) et du contenu ; une 2e exécution du générateur ne change rien.
+> - Correctif dans la tâche : sans `HorizontalContentAlignment`/`VerticalContentAlignment="Stretch"` sur le bouton, le `Border` du biseau, vide, restait centré à sa taille minimale et dessinait une pastille au centre de chaque bouton. Trouvé sur la 1re capture, confirmé par une sonde dans le dossier de build.
+> - O1 : le biseau garde une couleur par côté (plus sombre en bas), en 4 marches de 2 px ; seul le dégradé continu de l'original manque (profil mesuré en 1920×1080 : 112, 158, 199, 231 en haut ; 88, 138, 172, 197 sur le côté ; face à 250).
+> - `dotnet build RacingGame.slnx` : 0 erreur, 0 avertissement. `--smoke-frontend` et `--capture-ui-screens` : code 0, aucun avertissement.
+> - Mesures contre les formules d'origine (`measure_menu.py`, sonde de taille) : bande et 5 boutons au pixel près, écart maximal 0 px, en 1920×1080 (bande 472..795, boutons 223 et 182 à x 433, 682, 890, 1098, 1306), en 1280×720 et en 1680×1050.
+> - Captures contre le run fait après `ed3c47a` : seul `main-menu` change (32,65/31,30/29,95), les 9 autres états à 0,00.
+> - Planche du bouton Play contre la cellule de `buttons.png` avec l'anneau, à la même taille : même anatomie ; coins sans anticrénelage dans MGUI.
+> - Éditeur : `capture_editor_screen.ps1` sur `MainMenu.uiscreen` code 0, diagnostics sans erreur, aperçu avec les données de conception de 1280×720.
+> - Réglages de l'auteur inchangés (même SHA-1).
 
 ### ⏳ T2.2 — Sélection, anneau, animation et libellé
 
