@@ -400,7 +400,30 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 - Validation : celle de la phase 2, pause comprise dans la capture.
 - Commit : `feat(racing-casa): load the pause screen from a XAML screen asset`
 
-### ⏳ T3.2 — HUD de course entièrement en XAML
+### 🧪 T3.2 — HUD de course entièrement en XAML
+
+> Validation (2026-10-05) :
+> - **Écran** : `Screen.RaceHud`, sans dessin libre (D4).
+>   - Panneaux en sprites `Ui.Hud.*`, tailles et positions reprises du code à l'échelle responsive 1, avec l'arrondi bancaire de `Math.Round`.
+>   - Chiffres : emplacements `Image` dont `SourceName`, `Visibility`, `Margin`, `Width` et `Height` viennent de `RaceHudNumberViewModel`, qui reproduit `DrawBigNumber` (P9).
+>   - Aiguille tournée par `TargetPathOverride=RenderTransform.Rotation` autour de (111, 112), à l'angle du code converti en degrés.
+>   - Temps, nom de piste et meilleurs temps en `TextBlock` gras ombrés (décalage 1,1, `rgba(0,0,0,191)` comme `DrawShadowedText`).
+>   - Fermeture du panneau de fin par la saisie, gardée en code.
+> - **D10** : 5 emplacements de ligne, au moins 4 visibles, la mise en page du code pour les courses courtes ; le rang n'est plus perdu sur Expert.
+> - **Taille des textes** : la police suit l'échelle d'interface comme le texte du code, `max(10, round(taille × taille du panneau mis à l'échelle / taille du sprite))`, calculée par `RaceHudViewModel.UpdateTextSizes`. L'échelle de texte responsive (`clamp(UI × multiplicateur, 0,85, 3)`) rétrécissait les glyphes d'environ 3 % en 1920×1080 et ne suit pas les panneaux.
+> - **Cycles** : 3 sur 3.
+>   1. Avertissement « cannot resolve UI image '' » : les emplacements de chiffre repliés avaient un nom vide ; ils portent désormais `Ui.Hud.Digit0`.
+>   2. Textes coupés en bas : `MGTextBlock` décale son texte de `DrawOrigin × échelle` (`MGTextBlock.cs:1605-1640`), alors que `DrawShadowedText` dessinait à la position brute ; une sonde sur une copie de la sortie l'a confirmé.
+>   3. `ClipToBounds="False"` sur les textes et le panneau des temps, tailles liées : validation passée.
+> - **Écarts de texte mesurés (D15)**, encre comparée à `references-579e1d7` en 1920×1080 :
+>   - même largeur et même hauteur pour tous les textes, sans rognage ;
+>   - décalage vertical de +3 px pour les temps, les rangs et les temps des cinq meilleurs, et de +2 px pour le nom de piste ;
+>   - écart moyen par panneau en fin de course : temps 21,8/18,4/13,9, meilleurs temps 22,9, dus au décalage du texte ; tour 4,0 et compte-tours 2,1, dus au décor vu au travers (O4) ; panneau de fin 0,00.
+>   - Chiffres pour le rapport de T6.2.
+> - **Build et jeu** : `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, aucun avertissement ; `--capture-track-audit` code 0, 21 captures, aucun avertissement.
+> - **Captures** : `race-hud` à 0,53/0,51/0,48 et `race-finished` à 0,49/0,47/0,44 (textes du HUD et décor O4) ; `pause` à 0,17 (décor) ; `options` à 0,75 (D12) ; le reste à 0,00. Sur la planche : aiguille, pivot, chiffres de vitesse, de rapport et de tour identiques.
+> - **Éditeur** : `capture_editor_screen.ps1` sur `RaceHud.uiscreen`, code 0. L'aperçu montre les panneaux du tour et des cinq meilleurs temps, et le panneau de fin avec les données de conception (police de l'éditeur, O5). Les panneaux du bas sont hors de la zone visible à 100 %. Ligne d'état sans « Design-time data: ».
+> - 🧪 Reste à vérifier par l'auteur : conduite réelle (aiguille, vitesse, rapport, tours), fin de course sur Expert (4 tours, puis rang), fermeture du panneau de fin par chaque touche et chaque bouton, HUD dans une autre résolution.
 
 - Objectif :
   - D4 et P9 : panneaux en sprites, chiffres en emplacements `Image` liés, temps et nom de piste en texte ombré, top 5, compte-tours et aiguille liée en rotation ;

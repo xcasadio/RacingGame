@@ -1,0 +1,28 @@
+{
+  "view_model_type": "RaceHudViewModel",
+  "values": {
+    "Lap": {
+      "Value": 2
+    },
+    "Speed": {
+      "Value": 0
+    },
+    "Gear": {
+      "Value": 1
+    },
+    "CurrentLapTime": "0:01.51",
+    "BestLapTime": "0:01.51",
+    "TrackName": "Beginner",
+    "Top0Time": "1:11.82",
+    "Top1Time": "1:13.21",
+    "Top2Time": "1:14.07",
+    "Top3Time": "1:14.93",
+    "Top4Time": "1:15.42",
+    "NeedleRotation": -133.49984,
+    "GameOverVisibility": "Visible",
+    "GameOverTitle": "Victory! You won.",
+    "GameOverLine0": "Lap 1 Time: 0:01.51",
+    "GameOverLine1": "Rank: 1",
+    "ExitHint": "Press Space, Enter, A, B, X, click, Start, or Back to return to menu."
+  }
+}

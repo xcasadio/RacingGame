@@ -281,6 +281,12 @@
       "name": "Screen.Pause",
       "file_name": "UI/Screens/Pause/Pause.uiscreen",
       "asset_type": "uiscreen"
+    },
+    {
+      "id": "752e1edb-5af5-4b74-8867-16860ff87e71",
+      "name": "Screen.RaceHud",
+      "file_name": "UI/Screens/RaceHud/RaceHud.uiscreen",
+      "asset_type": "uiscreen"
     }
   ]
 }

@@ -1,70 +1,32 @@
+using CasaEngine.Framework.Assets;
 using CasaEngine.Framework.GameFramework;
-using MGUI.Core.UI.Containers;
-using MGUI.Core.UI.Responsive;
-using MGUI.Shared.Rendering;
-using MGUI.Shared.Text;
 using CasaEngine.Framework.GUI;
 using MGUI.Core.UI;
-using MGUI.Core.UI.Brushes.FillBrushes;
-using MGUI.Shared.Helpers;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using RacingGameCasaEngine.Bootstrap;
-using RacingGameCasaEngine.UI;
-using Color = Microsoft.Xna.Framework.Color;
-using HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment;
-using Point = Microsoft.Xna.Framework.Point;
-using Rectangle = Microsoft.Xna.Framework.Rectangle;
-using Thickness = MonoGame.Extended.Thickness;
-using VerticalAlignment = MGUI.Core.UI.VerticalAlignment;
-using Visibility = MGUI.Core.UI.Visibility;
+using RacingGameCasaEngine.UI.ViewModels;
 using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace RacingGameCasaEngine.Screens;
 
-internal sealed class RaceHudScreen : RaceFrontEndScreenBase
+/// <summary>
+/// Race HUD, loaded from the <c>Screen.RaceHud</c> screen asset (Content/UI/Screens/RaceHud): panels and digits are
+/// sprites, times and names are text blocks, the tachometer needle is turned by a bound render transform. The values come
+/// from <see cref="RaceHudViewModel"/>, refreshed every frame from the race session; the input that closes the
+/// race-finished panel stays in code.
+/// </summary>
+internal sealed class RaceHudScreen : RaceXamlScreenBase
 {
-    private const float HudPanelScale = 0.5f;
-    private const float TachometerScale = 0.575f;
-
-    private static readonly Rectangle LapsGfxRect = new(381, 132, 222, 160);
-    private static readonly Rectangle TachoGfxRect = new(0, 0, 343, 341);
-    private static readonly Rectangle TachoArrowGfxRect = new(347, 0, 28, 186);
-    private static readonly Rectangle TachoMphGfxRect = new(184, 256, 148, 72);
-    private static readonly Rectangle TachoGearGfxRect = new(286, 149, 52, 72);
-    private static readonly Rectangle CurrentAndBestGfxRect = new(381, 2, 342, 128);
-    private static readonly Rectangle TrackNameGfxRect = new(726, 2, 282, 62);
-    private static readonly Rectangle Best5GfxRect = new(726, 66, 282, 62);
-    private static readonly Rectangle[] BigNumberRects =
-    {
-        new(2, 342, 80, 133),
-        new(84, 342, 80, 133),
-        new(167, 342, 80, 133),
-        new(247, 342, 78, 133),
-        new(330, 342, 80, 133),
-        new(411, 342, 80, 133),
-        new(495, 342, 80, 133),
-        new(578, 342, 80, 133),
-        new(659, 342, 80, 133),
-        new(749, 342, 80, 133),
-    };
+    private const int TopTimeCount = 5;
 
     private readonly RacingGameCasaEngineGame _game;
     private readonly RaceFrontEndState _state;
     private readonly Action _returnToMenu;
-    private MGBorder? _lapsPanel;
-    private MGBorder? _timesPanel;
-    private MGBorder? _topTimesPanel;
-    private MGBorder? _tachometer;
-    private MGBorder? _gameOverPanel;
-    private MGTextBlock? _gameOverTitle;
-    private MGTextBlock? _exitHint;
-    private MGTextBlock[]? _gameOverLines;
-    private string? _fontFamily;
+    private readonly RaceHudViewModel _viewModel = new();
     private bool _returnRequested;
 
-    public RaceHudScreen(RacingGameCasaEngineGame game, RaceFrontEndState state, Action returnToMenu)
-        : base(backgroundTexture: null)
+    public RaceHudScreen(AssetContentManager assetContentManager, RacingGameCasaEngineGame game, RaceFrontEndState state, Action returnToMenu)
+        : base(assetContentManager, "Screen.RaceHud")
     {
         _game = game;
         _state = state;
@@ -73,86 +35,10 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
 
     public override UILayer Layer => UILayer.HUD;
 
-    protected override void BuildScreen(UIRoot root)
+    protected override void OnWindowLoaded(MGWindow window)
     {
-        MGWindow window = CreateForegroundWindow(root);
-        window.AllowsClickThrough = true;
-        _fontFamily = window.Desktop.DefaultFontFamily;
-
-        var overlay = new MGOverlayPanel(window)
-        {
-            UseResponsiveLayout = true,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-        };
-
-        _lapsPanel = CreateHudPanel(window, LapsGfxRect, DrawLapsPanel, HudPanelScale);
-        _lapsPanel.ResponsiveAnchor = ResponsiveAnchor.TopLeft;
-        overlay.TryAddChild(_lapsPanel, new Thickness(10, 10, 0, 0), 5);
-
-        _timesPanel = CreateHudPanel(window, CurrentAndBestGfxRect, DrawTimesPanel, HudPanelScale);
-        _timesPanel.ResponsiveAnchor = ResponsiveAnchor.BottomLeft;
-        overlay.TryAddChild(_timesPanel, new Thickness(10, 0, 0, 10), 5);
-
-        _topTimesPanel = CreateHudPanel(
-            window,
-            new Rectangle(0, 0, TrackNameGfxRect.Width, TrackNameGfxRect.Height + 4 + (Best5GfxRect.Height * 5) + (4 * 4)),
-            DrawTopTimesPanel,
-            HudPanelScale);
-        _topTimesPanel.ResponsiveAnchor = ResponsiveAnchor.TopRight;
-        overlay.TryAddChild(_topTimesPanel, new Thickness(0, 10, 10, 0), 5);
-
-        _tachometer = CreateHudPanel(window, TachoGfxRect, DrawTachometer, TachometerScale);
-        _tachometer.ResponsiveAnchor = ResponsiveAnchor.BottomRight;
-        overlay.TryAddChild(_tachometer, new Thickness(0, 0, 0, 0), 10);
-
-        _gameOverPanel = RaceUiTheme.CreatePanel(window, 420);
-        _gameOverPanel.Padding = new Thickness(24);
-        _gameOverPanel.Visibility = Visibility.Collapsed;
-
-        var gameOverStack = new MGStackPanel(window, MGUI.Core.UI.Orientation.Vertical)
-        {
-            Spacing = 8,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-        };
-
-        _gameOverTitle = new MGTextBlock(window, string.Empty, RaceUiTheme.AccentColor, 26)
-        {
-            HorizontalAlignment = HorizontalAlignment.Center,
-            TextAlignment = HorizontalAlignment.Center,
-            UseResponsiveTextScale = true,
-        };
-        gameOverStack.TryAddChild(_gameOverTitle);
-
-        _gameOverLines = new MGTextBlock[4];
-        for (int i = 0; i < _gameOverLines.Length; i++)
-        {
-            _gameOverLines[i] = new MGTextBlock(window, string.Empty, Color.White, 14)
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                TextAlignment = HorizontalAlignment.Left,
-                WrapText = true,
-                UseResponsiveTextScale = true,
-            };
-            gameOverStack.TryAddChild(_gameOverLines[i]);
-        }
-
-        _exitHint = new MGTextBlock(window, string.Empty, RaceUiTheme.SecondaryTextColor, 14)
-        {
-            HorizontalAlignment = HorizontalAlignment.Center,
-            TextAlignment = HorizontalAlignment.Center,
-            WrapText = true,
-            UseResponsiveTextScale = true,
-        };
-        gameOverStack.TryAddChild(_exitHint);
-
-        _gameOverPanel.SetContent(gameOverStack);
-        _gameOverPanel.ResponsiveAnchor = ResponsiveAnchor.Center;
-        overlay.TryAddChild(_gameOverPanel, new Thickness(0), 20);
-
-        window.SetContent(overlay);
         Refresh();
+        window.WindowDataContext = _viewModel;
     }
 
     public override void Show()
@@ -175,172 +61,32 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
 
     private void Refresh()
     {
-        if (_gameOverPanel == null || _gameOverTitle == null || _gameOverLines == null || _exitHint == null)
+        _viewModel.UpdateTextSizes(Root.Desktop.ResponsiveMetrics.UIScaleFactor);
+        _viewModel.Lap.Value = GetCurrentLapDisplay();
+        _viewModel.CurrentLapTime = FormatMilliseconds(GetCurrentLapTimeMilliseconds());
+        _viewModel.BestLapTime = FormatMilliseconds(GetBestLapTimeMilliseconds());
+        _viewModel.TrackName = GetTrackName();
+
+        IReadOnlyList<int> topTimes = GetTopLapTimesMilliseconds();
+        for (int i = 0; i < TopTimeCount; i++)
         {
-            return;
+            _viewModel.SetTopTime(i, i < topTimes.Count && topTimes[i] > 0
+                ? FormatMilliseconds(topTimes[i])
+                : "--:--.--");
         }
 
-        _gameOverPanel.Visibility = IsGameOver ? Visibility.Visible : Visibility.Collapsed;
-        _gameOverTitle.Text = IsGameOver ? "Victory! You won." : string.Empty;
+        // Same angle as the code-built needle (-2.33 + acceleration * 2.5 radians), in degrees for the render transform.
+        float acceleration = Math.Clamp(GetTachometerNeedleValue(), 0f, 1f);
+        _viewModel.NeedleRotation = MathHelper.ToDegrees(-2.33f + acceleration * 2.5f);
+        _viewModel.Speed.Value = GetHudSpeedDisplay();
+        _viewModel.Gear.Value = GetHudGearDisplay();
 
-        IReadOnlyList<string> lines = GetGameOverLines();
-        for (int i = 0; i < _gameOverLines.Length; i++)
-        {
-            _gameOverLines[i].Text = i < lines.Count ? lines[i] : string.Empty;
-        }
-
-        _exitHint.Text = IsGameOver
+        _viewModel.GameOverVisibility = IsGameOver ? Visibility.Visible : Visibility.Collapsed;
+        _viewModel.GameOverTitle = IsGameOver ? "Victory! You won." : string.Empty;
+        _viewModel.SetGameOverLines(GetGameOverLines());
+        _viewModel.ExitHint = IsGameOver
             ? "Press Space, Enter, A, B, X, click, Start, or Back to return to menu."
             : string.Empty;
-    }
-
-    private MGBorder CreateHudPanel(MGWindow window, Rectangle designBounds, EventHandler<MGElement.MGElementDrawEventArgs> drawHandler, float scale)
-    {
-        var panel = new MGBorder(window)
-        {
-            BackgroundBrush = new VisualStateFillBrush(Color.Transparent.AsFillBrush()),
-            BorderBrush = null,
-            BorderThickness = new Thickness(0),
-            PreferredWidth = Scale(designBounds.Width, scale),
-            PreferredHeight = Scale(designBounds.Height, scale),
-        };
-        panel.OnEndingDraw += drawHandler;
-        return panel;
-    }
-
-    private void DrawLapsPanel(object? sender, MGElement.MGElementDrawEventArgs e)
-    {
-        if (_lapsPanel == null || !TryGetHudTexture(out Texture2D hudTexture))
-        {
-            return;
-        }
-
-        Rectangle bounds = TranslateBounds(_lapsPanel.LayoutBounds, e.DA.Offset);
-        dynamic drawTransaction = e.DA.DT;
-        drawTransaction.DrawTextureTo(UiImageResources.AsImage(hudTexture), LapsGfxRect, bounds, Color.White * e.DA.Opacity);
-
-        float scaleX = bounds.Width / (float)LapsGfxRect.Width;
-        float scaleY = bounds.Height / (float)LapsGfxRect.Height;
-
-        Rectangle numberBounds = new(
-            bounds.X + Scale(15, scaleX),
-            bounds.Y + Scale(12, scaleY),
-            Scale(80, scaleX),
-            Scale(133, scaleY));
-        DrawBigNumber(drawTransaction, hudTexture, numberBounds, GetCurrentLapDisplay(), e.DA.Opacity, 0f);
-    }
-
-    private void DrawTimesPanel(object? sender, MGElement.MGElementDrawEventArgs e)
-    {
-        if (_timesPanel == null || !TryGetHudTexture(out Texture2D hudTexture))
-        {
-            return;
-        }
-
-        Rectangle bounds = TranslateBounds(_timesPanel.LayoutBounds, e.DA.Offset);
-        dynamic drawTransaction = e.DA.DT;
-        drawTransaction.DrawTextureTo(UiImageResources.AsImage(hudTexture), CurrentAndBestGfxRect, bounds, Color.White * e.DA.Opacity);
-
-        float scaleX = bounds.Width / (float)CurrentAndBestGfxRect.Width;
-        float scaleY = bounds.Height / (float)CurrentAndBestGfxRect.Height;
-
-        DrawShadowedText(drawTransaction, FormatMilliseconds(GetCurrentLapTimeMilliseconds()), bounds.X + Scale(154, scaleX), bounds.Y + Scale(14, scaleY), new Color(255, 185, 80), 38, CustomFontStyles.Bold, e.DA.Opacity, scaleY);
-        DrawShadowedText(drawTransaction, FormatMilliseconds(GetBestLapTimeMilliseconds()), bounds.X + Scale(154, scaleX), bounds.Y + Scale(78, scaleY), Color.White, 38, CustomFontStyles.Bold, e.DA.Opacity, scaleY);
-    }
-
-    private void DrawTopTimesPanel(object? sender, MGElement.MGElementDrawEventArgs e)
-    {
-        if (_topTimesPanel == null || !TryGetHudTexture(out Texture2D hudTexture) || string.IsNullOrEmpty(_fontFamily))
-        {
-            return;
-        }
-
-        Rectangle bounds = TranslateBounds(_topTimesPanel.LayoutBounds, e.DA.Offset);
-        dynamic drawTransaction = e.DA.DT;
-
-        float scaleX = bounds.Width / (float)TrackNameGfxRect.Width;
-        float scaleY = scaleX;
-
-        Rectangle trackBounds = new(bounds.X, bounds.Y, bounds.Width, Scale(TrackNameGfxRect.Height, scaleY));
-        drawTransaction.DrawTextureTo(UiImageResources.AsImage(hudTexture), TrackNameGfxRect, trackBounds, Color.White * e.DA.Opacity);
-
-        string trackName = GetTrackName();
-        Vector2 trackSize = drawTransaction.MeasureText(_fontFamily, CustomFontStyles.Bold, trackName, Scale(26, scaleY));
-        DrawShadowedText(
-            drawTransaction,
-            trackName,
-            trackBounds.X + (int)Math.Round((trackBounds.Width - trackSize.X) / 2f),
-            trackBounds.Y + Scale(10, scaleY),
-            Color.White,
-            26,
-            CustomFontStyles.Bold,
-            e.DA.Opacity,
-            scaleY);
-
-        int rowHeight = Scale(Best5GfxRect.Height, scaleY);
-        int gap = Scale(4, scaleY);
-        IReadOnlyList<int> topTimes = GetTopLapTimesMilliseconds();
-
-        for (int i = 0; i < 5; i++)
-        {
-            Rectangle rowBounds = new(bounds.X, trackBounds.Bottom + gap + (i * (rowHeight + gap)), bounds.Width, rowHeight);
-            drawTransaction.DrawTextureTo(UiImageResources.AsImage(hudTexture), Best5GfxRect, rowBounds, Color.White * e.DA.Opacity);
-            DrawShadowedText(drawTransaction, $"{i + 1}.", rowBounds.X + Scale(20, scaleX), rowBounds.Y + Scale(11, scaleY), Color.White, 30, CustomFontStyles.Bold, e.DA.Opacity, scaleY);
-
-            string timeText = i < topTimes.Count && topTimes[i] > 0
-                ? FormatMilliseconds(topTimes[i])
-                : "--:--.--";
-            DrawShadowedText(drawTransaction, timeText, rowBounds.X + Scale(82, scaleX), rowBounds.Y + Scale(11, scaleY), Color.White, 30, CustomFontStyles.Bold, e.DA.Opacity, scaleY);
-        }
-    }
-
-    private void DrawTachometer(object? sender, MGElement.MGElementDrawEventArgs e)
-    {
-        if (_tachometer == null || !TryGetHudTexture(out Texture2D hudTexture))
-        {
-            return;
-        }
-
-        Rectangle bounds = TranslateBounds(_tachometer.LayoutBounds, e.DA.Offset);
-        dynamic drawTransaction = e.DA.DT;
-        drawTransaction.DrawTextureTo(UiImageResources.AsImage(hudTexture), TachoGfxRect, bounds, Color.White * e.DA.Opacity);
-
-        float scaleX = bounds.Width / (float)TachoGfxRect.Width;
-        float scaleY = bounds.Height / (float)TachoGfxRect.Height;
-
-        float acceleration = Math.Clamp(GetTachometerNeedleValue(), 0f, 1f);
-        float rotation = -2.33f + acceleration * 2.5f;
-
-        Rectangle arrowBounds = new(
-            bounds.X + Scale(194, scaleX),
-            bounds.Y + Scale(194, scaleY),
-            Scale(TachoArrowGfxRect.Width, scaleX),
-            Scale(TachoArrowGfxRect.Height, scaleY));
-
-        Vector2 rotationOrigin = new(TachoArrowGfxRect.Width / 2f, TachoArrowGfxRect.Height - 13f);
-        drawTransaction.DrawTextureTo(
-            UiImageResources.AsImage(hudTexture),
-            TachoArrowGfxRect,
-            arrowBounds,
-            Color.White * e.DA.Opacity,
-            rotationOrigin,
-            rotation,
-            0,
-            SpriteEffects.None);
-
-        Rectangle mphBounds = new(
-            bounds.X + Scale(TachoMphGfxRect.X, scaleX),
-            bounds.Y + Scale(TachoMphGfxRect.Y, scaleY),
-            Scale(TachoMphGfxRect.Width, scaleX),
-            Scale(TachoMphGfxRect.Height, scaleY));
-        DrawBigNumber(drawTransaction, hudTexture, mphBounds, GetHudSpeedDisplay(), e.DA.Opacity);
-
-        Rectangle gearBounds = new(
-            bounds.X + Scale(TachoGearGfxRect.X, scaleX),
-            bounds.Y + Scale(TachoGearGfxRect.Y, scaleY),
-            Scale(TachoGearGfxRect.Width, scaleX),
-            Scale(TachoGearGfxRect.Height, scaleY));
-        DrawBigNumber(drawTransaction, hudTexture, gearBounds, GetHudGearDisplay(), e.DA.Opacity);
     }
 
     private bool IsGameOver => _game.RaceSession.GameMode?.IsRaceFinished == true;
@@ -363,12 +109,6 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         var gamePad = _game.InputComponent.GamePadManager.GetGamePad(localPlayer.ControllerId);
         return gamePad.IsConnected
             && (gamePad.AJustPressed || gamePad.BJustPressed || gamePad.XJustPressed || gamePad.BackJustPressed || gamePad.StartJustPressed);
-    }
-
-    private bool TryGetHudTexture(out Texture2D hudTexture)
-    {
-        hudTexture = _game.RaceHudTexture!;
-        return hudTexture != null;
     }
 
     private bool TryGetActiveRace(out RuntimeRaceSession session, out GameFramework.RaceGameMode gameMode, out Entities.RacingCarPawn playerPawn)
@@ -500,43 +240,6 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         return lines;
     }
 
-    private void DrawShadowedText(object drawTransaction, string text, int x, int y, Color color, int fontSizeAtDesign, CustomFontStyles style, float opacity, float scale)
-    {
-        if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(_fontFamily))
-        {
-            return;
-        }
-
-        int fontSize = Math.Max(10, (int)Math.Round(fontSizeAtDesign * scale));
-        dynamic transaction = drawTransaction;
-        transaction.DrawShadowedText(_fontFamily, style, text, new Vector2(x, y), color * opacity, Color.Black * 0.75f * opacity, fontSize);
-    }
-
-    private static void DrawBigNumber(object drawTransaction, Texture2D hudTexture, Rectangle targetBounds, int number, float opacity, float horizontalAlignment = 0.5f)
-    {
-        string text = Math.Max(0, number).ToString();
-        float scale = targetBounds.Height / (float)BigNumberRects[0].Height;
-        int totalWidth = text.Sum(character => (int)Math.Round(BigNumberRects[character - '0'].Width * scale));
-
-        if (totalWidth > targetBounds.Width && totalWidth > 0)
-        {
-            scale *= targetBounds.Width / (float)totalWidth;
-            totalWidth = text.Sum(character => (int)Math.Round(BigNumberRects[character - '0'].Width * scale));
-        }
-
-        int x = targetBounds.X + Math.Max(0, (int)Math.Round((targetBounds.Width - totalWidth) * horizontalAlignment));
-        dynamic transaction = drawTransaction;
-        foreach (char character in text)
-        {
-            Rectangle source = BigNumberRects[character - '0'];
-            int width = (int)Math.Round(source.Width * scale);
-            int height = (int)Math.Round(source.Height * scale);
-            Rectangle destination = new(x, targetBounds.Y + Math.Max(0, (targetBounds.Height - height) / 2), width, height);
-            transaction.DrawTextureTo(UiImageResources.AsImage(hudTexture), source, destination, Color.White * opacity);
-            x += width;
-        }
-    }
-
     private static int GetRank(int bestLapMilliseconds, IReadOnlyList<int> topLapTimes)
     {
         int rank = 1;
@@ -549,16 +252,6 @@ internal sealed class RaceHudScreen : RaceFrontEndScreenBase
         }
 
         return rank;
-    }
-
-    private static Rectangle TranslateBounds(Rectangle bounds, Point offset)
-    {
-        return new Rectangle(bounds.X + offset.X, bounds.Y + offset.Y, bounds.Width, bounds.Height);
-    }
-
-    private static int Scale(int value, float scale)
-    {
-        return (int)Math.Round(value * scale);
     }
 
     private static int ToMilliseconds(float seconds)
