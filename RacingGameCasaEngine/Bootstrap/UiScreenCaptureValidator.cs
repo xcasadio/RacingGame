@@ -1,4 +1,5 @@
 using CasaEngine.Core.Log;
+using CasaEngine.Framework.Application;
 using RacingGameCasaEngine.Worlds;
 
 namespace RacingGameCasaEngine.Bootstrap;
@@ -7,10 +8,14 @@ namespace RacingGameCasaEngine.Bootstrap;
 /// --capture-ui-screens: walks the 10 UI states (front-end screens, race HUD, pause, race finished) through the flow's
 /// automation entry points, captures the back buffer of each once it has settled, and moves the captures into a folder of
 /// their own (Screenshots/ui-run-&lt;timestamp&gt;/ui-&lt;state&gt;.png) so scripts/UiCaptureCompare can compare two runs.
+/// The run uses a fixed windowed back buffer of <see cref="CaptureWidth"/> x <see cref="CaptureHeight"/>, applied without saving it,
+/// so captures do not depend on the persisted display settings (the --smoke-frontend run toggles the saved resolution).
 /// </summary>
 internal sealed class UiScreenCaptureValidator
 {
     private const int ExpectedCaptureCount = 10;
+    private const int CaptureWidth = 1920;
+    private const int CaptureHeight = 1080;
     private static readonly TimeSpan SettleDelay = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan MinimumStepInterval = TimeSpan.FromMilliseconds(250);
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(120);
@@ -72,6 +77,9 @@ internal sealed class UiScreenCaptureValidator
             _flow.State.SelectedCarIndex = 0;
             _flow.State.SelectedCarColorIndex = 0;
             _flow.State.SelectedTrackIndex = 0;
+
+            DisplaySettings current = _game.GetDisplaySettings();
+            _game.ApplyDisplaySettings(new DisplaySettings(CaptureWidth, CaptureHeight, false, current.IsVSyncEnabled), persistToProjectSettings: false);
             Logs.WriteInfo($"UI screen capture started, run folder {_runDirectory}");
         }
 
@@ -98,7 +106,7 @@ internal sealed class UiScreenCaptureValidator
         switch (_step)
         {
             case CaptureStep.WaitForSplash:
-                if (IsSettled(frontEndWorld && currentState == RaceFrontEndFlow.SplashStateName, totalTime))
+                if (IsSettled(frontEndWorld && currentState == RaceFrontEndFlow.SplashStateName && HasCaptureSize(), totalTime))
                 {
                     CaptureAndAdvance("splash", CaptureStep.OpenMainMenu, totalTime);
                 }
@@ -237,6 +245,12 @@ internal sealed class UiScreenCaptureValidator
                 Complete();
                 break;
         }
+    }
+
+    private bool HasCaptureSize()
+    {
+        DisplaySettings settings = _game.GetDisplaySettings();
+        return settings.Width == CaptureWidth && settings.Height == CaptureHeight;
     }
 
     // True once the condition has held for SettleDelay, so a screen is captured after it has been laid out and drawn.
