@@ -696,7 +696,7 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 | O3 | **Tranché (D15).** Rendu des textes du HUD (`DrawShadowedText` contre `TextBlock`). | T3.2, T6.2 |
 | O4 | Bruit de décor dans les états de course : `CreateDeterministicTrackRandom` (`Worlds/LegacyTrackSceneFactory.cs:767-773`) amorce son `Random` avec `System.HashCode`, aléatoire d'un processus à l'autre ; le choix des panneaux (`Track.Scenery.Banner*`) change donc à chaque lancement. Écart observé jusqu'à 1,40 sur `race-hud` entre deux runs, HUD identique. Bug antérieur, hors périmètre : signalé à l'auteur dans une tâche séparée. Les états de course sont jugés sur la planche, en ignorant le décor. | T1.2 → T3.2 |
 | O5 | Aperçu de l'éditeur non fidèle à l'exécution (état vérifié, « Éditeur CasaEngine »). Constaté en T5.2 : une fenêtre `Stretch` sans taille y prend la taille de son contenu, d'où la taille de conception. Ces écarts sont dans le moteur (D8) : ils sont notés écran par écran et rapportés en T6.2, jamais contournés. | T5.2 → T3.2, T6.2 |
-| O6 | Ombres de course crénelées avec les réglages par défaut du moteur (`ShadowSettings` : résolution 1024, distance 100). Un réglage fin (résolution, distance, biais) est une décision de l'auteur, hors D11. | T4.1, rapport final |
+| O6 | **Traité par T3.1 de [rgce-hud-shadows-start-tasks.md](rgce-hud-shadows-start-tasks.md) (`f94ed3e`).** Ombres de course crénelées avec les réglages par défaut du moteur (`ShadowSettings` : résolution 1024, distance 100). Un réglage fin (résolution, distance, biais) est une décision de l'auteur, hors D11. | T4.1, rapport final |
 
 ## Hors périmètre
 

@@ -295,7 +295,33 @@ Découverte en lecture seule (deux workflows de découverte avec contre-vérific
 
 ## Phase 4 — Clôture
 
-### ⏳ T4.1 — Validation globale et rapport de fin
+### 🧪 T4.1 — Validation globale et rapport de fin
+
+> Validation (2026-10-05) :
+> - Références de T3.1 : `references-f94ed3e` (commit `f94ed3e`).
+> - **Build** : `dotnet build RacingGame.slnx` 0 erreur ; build non incrémental de `RacingGameCasaEngine` et `RacingGameCasaEngine.UI` sans avertissement dans leurs projets.
+> - **Jeu**, sur le code final (T3.1) :
+>   - `--smoke-frontend`, `--verify-legacy-import-profile`, `--capture-track-audit` et `--capture-ui-screens` donnent le code 0, sans `[Warning]` ni `[Error]` ;
+>   - chaque course trace la séquence rouge/« Beep », jaune/« Beep », vert/« Bleep ».
+> - **Éditeur** : `capture_editor_screen.ps1` sur `RaceHud.uiscreen` code 0 (T1.1). L'écran n'a pas changé depuis.
+> - **Passe `verifier`** indépendante : **CONFIRMED** sur les 5 points (HUD ×2 recalculé valeur par valeur, feu, sons, réglages d'ombres, périmètre et sous-module inchangé). Elle a rejoué le build, l'audit et les captures, et comparé `ui-run-20261005-205754` à `references-f94ed3e` : états de course à 0,00, menus ≤ 0,18 (survol). Pas de P0 à P2. Deux remarques P4, reportées :
+>   - les références de comparaison viennent du même commit : elles prouvent la stabilité, la justesse du HUD étant établie par le recalcul ;
+>   - une image de plus d'une seconde ferait sauter un signal du feu et son son, comme dans le jeu legacy.
+> - **Sous-module** : `git diff --name-only 5c2c73a..f94ed3e` ne liste aucun chemin `CasaEngine/` ; `git -C CasaEngine status --porcelain` vide.
+> - **Réglages de l'auteur** : `display-settings.json` (VSync rétablie en T3.1) et `front-end-options.json` sont inchangés pendant la vérification (même SHA-1). Le verifier n'a pas lancé `--smoke-frontend`.
+> - 🧪 Reste la vérification manuelle par l'auteur (liste « Validation globale » et notes 🧪 de T1.1 → T3.1).
+>
+> Rapport de fin :
+> - **HUD** : deux fois plus grand, panneau de fin compris (T1.1). Les textes de ce panneau ne perdent plus le bas de leurs lettres.
+> - **Départ** : le feu de départ 3D passe du rouge au jaune puis au vert, avec « Beep », « Beep » puis « Bleep », comme dans le jeu legacy (T2.1, T2.2). Les sons passent par le système audio de CasaEngine (ADR-0003) et suivent l'option Sound Volume.
+> - **Ombres** : 4096 texels sur 2 × 150 unités, biais normal 0,4 (T3.1). Les marches sont environ 2,7 fois plus fines, l'acné du terrain a disparu et les ombres lointaines sont gardées. Coût sans différence mesurable ; environ 128 Mo de mémoire vidéo au lieu de 8.
+> - **Risques** :
+>   - mémoire vidéo de la carte 4096 sur une petite carte graphique : sans allocation, pas d'ombres ;
+>   - ombres portées un peu plus fines, à cause du biais normal ;
+>   - scintillement en mouvement (O1).
+> - **Points ouverts pour l'auteur** :
+>   - O1 ;
+>   - les validateurs réécrivent `display-settings.json` (résolution, VSync) à chaque run : tâche séparée proposée.
 
 - Objectif : validation globale, passe `verifier` indépendante, rapport de fin, index à jour.
 - Commit : `docs(racing-casa): close the HUD, shadows and start light plan`
