@@ -239,6 +239,12 @@
       "name": "Editor",
       "file_name": "Worlds/Editor.world",
       "asset_type": "world"
+    },
+    {
+      "id": "a47f9bc8-28b7-473c-a1f0-f04e95729a02",
+      "name": "Screen.MainMenu",
+      "file_name": "UI/Screens/MainMenu/MainMenu.uiscreen",
+      "asset_type": "uiscreen"
     }
   ]
 }

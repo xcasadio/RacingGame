@@ -1,0 +1,97 @@
+<Window xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core"
+        xmlns:dataBinding="clr-namespace:MGUI.Core.UI.DataBinding;assembly=MGUI.Core"
+        Width="1280" Height="720" ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
+        WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
+        Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
+  <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <!-- Menu decoration (RaceMenuDecorationViewModel): background, then the bouncing logo placed by the view model. -->
+    <Image SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
+           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+    <Image SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Decoration.LogoMargin}"
+           Width="{dataBinding:MGBinding Path=Decoration.LogoWidth}" Height="{dataBinding:MGBinding Path=Decoration.LogoHeight}" />
+    <!-- Menu band. The screen restyles each button, its face and its label every frame (hover and focus). -->
+    <Border BorderThickness="0" BorderBrush="rgba(0,0,0,0)" Background="rgba(0,0,0,132)" Margin="0,315,0,0" Height="216" Padding="28,20,28,18"
+            HorizontalAlignment="Stretch" VerticalAlignment="Top">
+      <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Name="btnPlay" Background="rgb(52,52,52)" BorderBrush="rgb(28,28,28)" BorderThickness="5" CornerRadius="22" Padding="0"
+                    Width="105" Height="105" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Border Name="facePlay" BorderThickness="2" BorderBrush="rgb(118,118,118)" CornerRadius="18" Background="rgb(172,172,172)" Padding="6"
+                      Width="95" Height="95" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Border CornerRadius="14" Background="rgb(224,224,224)" Padding="8">
+                  <Border CornerRadius="10" Background="rgb(248,248,248)" Padding="10">
+                    <Image SourceName="Ui.Menu.IconPlay" Stretch="Uniform" Width="45" Height="45" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                </Border>
+              </Border>
+            </Button>
+            <TextBlock Name="lblPlay" Text="PLAY" Foreground="rgb(212,212,212)" FontSize="14" WrapText="True" UseResponsiveTextScale="True"
+                       HorizontalAlignment="Center" TextAlignment="Center" />
+          </StackPanel>
+          <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Name="btnHighscores" Background="rgb(52,52,52)" BorderBrush="rgb(28,28,28)" BorderThickness="5" CornerRadius="22" Padding="0"
+                    Width="105" Height="105" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Border Name="faceHighscores" BorderThickness="2" BorderBrush="rgb(118,118,118)" CornerRadius="18" Background="rgb(172,172,172)" Padding="6"
+                      Width="95" Height="95" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Border CornerRadius="14" Background="rgb(224,224,224)" Padding="8">
+                  <Border CornerRadius="10" Background="rgb(248,248,248)" Padding="10">
+                    <Image SourceName="Ui.Menu.IconHighscores" Stretch="Uniform" Width="45" Height="45" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                </Border>
+              </Border>
+            </Button>
+            <TextBlock Name="lblHighscores" Text="HIGHSCORES" Foreground="rgb(212,212,212)" FontSize="14" WrapText="True" UseResponsiveTextScale="True"
+                       HorizontalAlignment="Center" TextAlignment="Center" />
+          </StackPanel>
+          <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Name="btnOptions" Background="rgb(52,52,52)" BorderBrush="rgb(28,28,28)" BorderThickness="5" CornerRadius="22" Padding="0"
+                    Width="105" Height="105" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Border Name="faceOptions" BorderThickness="2" BorderBrush="rgb(118,118,118)" CornerRadius="18" Background="rgb(172,172,172)" Padding="6"
+                      Width="95" Height="95" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Border CornerRadius="14" Background="rgb(224,224,224)" Padding="8">
+                  <Border CornerRadius="10" Background="rgb(248,248,248)" Padding="10">
+                    <Image SourceName="Ui.Menu.IconOptions" Stretch="Uniform" Width="45" Height="45" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                </Border>
+              </Border>
+            </Button>
+            <TextBlock Name="lblOptions" Text="OPTIONS" Foreground="rgb(212,212,212)" FontSize="14" WrapText="True" UseResponsiveTextScale="True"
+                       HorizontalAlignment="Center" TextAlignment="Center" />
+          </StackPanel>
+          <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Name="btnHelp" Background="rgb(52,52,52)" BorderBrush="rgb(28,28,28)" BorderThickness="5" CornerRadius="22" Padding="0"
+                    Width="105" Height="105" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Border Name="faceHelp" BorderThickness="2" BorderBrush="rgb(118,118,118)" CornerRadius="18" Background="rgb(172,172,172)" Padding="6"
+                      Width="95" Height="95" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Border CornerRadius="14" Background="rgb(224,224,224)" Padding="8">
+                  <Border CornerRadius="10" Background="rgb(248,248,248)" Padding="10">
+                    <Image SourceName="Ui.Menu.IconHelp" Stretch="Uniform" Width="45" Height="45" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                </Border>
+              </Border>
+            </Button>
+            <TextBlock Name="lblHelp" Text="HELP" Foreground="rgb(212,212,212)" FontSize="14" WrapText="True" UseResponsiveTextScale="True"
+                       HorizontalAlignment="Center" TextAlignment="Center" />
+          </StackPanel>
+          <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Name="btnQuit" Background="rgb(52,52,52)" BorderBrush="rgb(28,28,28)" BorderThickness="5" CornerRadius="22" Padding="0"
+                    Width="105" Height="105" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Border Name="faceQuit" BorderThickness="2" BorderBrush="rgb(118,118,118)" CornerRadius="18" Background="rgb(172,172,172)" Padding="6"
+                      Width="95" Height="95" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Border CornerRadius="14" Background="rgb(224,224,224)" Padding="8">
+                  <Border CornerRadius="10" Background="rgb(248,248,248)" Padding="10">
+                    <Image SourceName="Ui.Menu.IconQuit" Stretch="Uniform" Width="45" Height="45" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                </Border>
+              </Border>
+            </Button>
+            <TextBlock Name="lblQuit" Text="QUIT" Foreground="rgb(212,212,212)" FontSize="14" WrapText="True" UseResponsiveTextScale="True"
+                       HorizontalAlignment="Center" TextAlignment="Center" />
+          </StackPanel>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </OverlayPanel>
+</Window>

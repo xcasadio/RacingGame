@@ -1,0 +1,11 @@
+{
+  "view_model_type": "RaceMainMenuViewModel",
+  "values": {
+    "Decoration": {
+      "LogoLeft": 451,
+      "LogoTop": 40,
+      "LogoWidth": 755,
+      "LogoHeight": 246
+    }
+  }
+}

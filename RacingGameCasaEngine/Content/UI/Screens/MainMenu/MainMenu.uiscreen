@@ -1,0 +1,12 @@
+{
+  "id": "a47f9bc8-28b7-473c-a1f0-f04e95729a02",
+  "name": "Screen.MainMenu",
+  "source_xaml_file": "MainMenu.xaml",
+  "theme_name": "",
+  "preview_resolution": {
+    "x": 1280,
+    "y": 720
+  },
+  "resource_files": [],
+  "design_time_data_file": "MainMenu.design.json"
+}

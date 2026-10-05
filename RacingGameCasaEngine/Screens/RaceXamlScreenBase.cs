@@ -1,5 +1,6 @@
 using CasaEngine.Framework.Assets;
 using CasaEngine.Framework.UI;
+using RacingGameCasaEngine.UI.ViewModels;
 
 namespace RacingGameCasaEngine.Screens;
 
@@ -37,5 +38,11 @@ internal abstract class RaceXamlScreenBase : XamlUIScreenBase
     {
         base.Hide();
         Dispose();
+    }
+
+    /// <summary>Places the menu logo for the current viewport and time, as the code-built menu screens did every frame.</summary>
+    protected void UpdateMenuDecoration(RaceMenuDecorationViewModel decoration, double totalSeconds)
+    {
+        decoration.Update(Root.Metrics.ViewportSize.X, Root.Metrics.ViewportSize.Y, totalSeconds);
     }
 }

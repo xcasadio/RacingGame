@@ -282,7 +282,19 @@ Validation commune :
 
 Retour arrière commun : avant commit, suppression des fichiers créés par la tâche et `git restore` des fichiers modifiés ; après, `git revert`.
 
-### ⏳ T2.1 — MainMenu et décor partagé
+### 🧪 T2.1 — MainMenu et décor partagé
+
+> Validation (2026-10-05) :
+> - **Écran** : `Screen.MainMenu` dans une seule fenêtre, avec fond, logo, bande et 5 entrées (P4). `RaceMenuDecorationViewModel` reprend la formule du rebond du logo ; `RaceMainMenuViewModel` l'expose par `Decoration`. Restylage par image, en code, avec `LegacyMenuUiTheme.ApplyMainMenuButtonState` (D6).
+> - **Build et jeu** :
+>   - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans les fichiers touchés ;
+>   - `--smoke-frontend` : code 0, aucun avertissement ;
+>   - `MainMenu.design.json` absent de la sortie du build.
+> - **Captures** contre `references-579e1d7` :
+>   - `main-menu` à 0,00, identique au pixel près au menu construit en code, rebond du logo compris ;
+>   - au 1er run, `help` (non migré) était à 0,18/0,11/0,08 : son bouton Back apparaissait actif. Au 2e run, 0,00 sur les 10 états. Le curseur de la souris réelle bougeait pendant les runs (position relevée deux fois, différente), d'où un survol.
+> - **Éditeur** : `capture_editor_screen.ps1` sur `MainMenu.uiscreen` donne le code 0. L'aperçu montre le fond, le logo placé par les données de conception (451, 40, 755×246 : formule du jeu en 1280×720 à t = 0) et les 5 boutons avec leurs icônes. Ligne d'état sans « Design-time data: » : la propriété `Decoration` en lecture seule est bien remplie par `PopulateObject`.
+> - 🧪 Reste à vérifier par l'auteur : clics sur les 5 entrées, navigation au clavier et à la manette, survol.
 
 - Objectif : `MenuDecorationViewModel` (fond, rectangle et rebond du logo, P4) et menu principal à 5 icônes (sprites `Ui.Menu.*`).
 - Commit : `feat(racing-casa): load the main menu from a XAML screen asset`

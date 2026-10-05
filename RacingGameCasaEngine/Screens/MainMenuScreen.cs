@@ -1,99 +1,66 @@
+using CasaEngine.Framework.Assets;
 using CasaEngine.Framework.GUI;
 using MGUI.Core.UI;
-using MGUI.Core.UI.Containers;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using RacingGameCasaEngine.UI;
-using HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment;
-using Rectangle = Microsoft.Xna.Framework.Rectangle;
+using RacingGameCasaEngine.UI.ViewModels;
 
 namespace RacingGameCasaEngine.Screens;
 
-internal sealed class MainMenuScreen : RaceFrontEndScreenBase
+/// <summary>Main menu, loaded from the <c>Screen.MainMenu</c> screen asset (Content/UI/Screens/MainMenu).</summary>
+internal sealed class MainMenuScreen : RaceXamlScreenBase
 {
-    private readonly Action _openCarSelection;
-    private readonly Action _openHighscores;
-    private readonly Action _openOptions;
-    private readonly Action _openHelp;
-    private readonly Action _requestExit;
+    // Element name suffixes in MainMenu.xaml (btn*, face*, lbl*), in the order of the actions.
+    private static readonly string[] EntryNames = ["Play", "Highscores", "Options", "Help", "Quit"];
 
-    private MGButton? _playButton;
+    private readonly Action[] _actions;
+    private readonly RaceMainMenuViewModel _viewModel = new();
+
     private MGButton[] _buttons = [];
     private MGBorder[] _buttonFaces = [];
     private MGTextBlock[] _labels = [];
 
-    public MainMenuScreen(Texture2D? backgroundTexture, Texture2D? buttonsTexture, Action openCarSelection, Action openHighscores, Action openOptions, Action openHelp, Action requestExit)
-        : base(backgroundTexture, buttonsTexture)
+    public MainMenuScreen(AssetContentManager assetContentManager, Action openCarSelection, Action openHighscores, Action openOptions, Action openHelp, Action requestExit)
+        : base(assetContentManager, "Screen.MainMenu")
     {
-        _openCarSelection = openCarSelection;
-        _openHighscores = openHighscores;
-        _openOptions = openOptions;
-        _openHelp = openHelp;
-        _requestExit = requestExit;
+        _actions = [openCarSelection, openHighscores, openOptions, openHelp, requestExit];
     }
 
     public override UILayer Layer => UILayer.Menu;
 
     public override bool IsModal => true;
 
-    protected override void BuildScreen(UIRoot root)
+    protected override void OnWindowLoaded(MGWindow window)
     {
-        if (ButtonsTexture == null)
+        window.WindowDataContext = _viewModel;
+        UpdateMenuDecoration(_viewModel.Decoration, 0.0);
+
+        _buttons = new MGButton[EntryNames.Length];
+        _buttonFaces = new MGBorder[EntryNames.Length];
+        _labels = new MGTextBlock[EntryNames.Length];
+
+        for (int i = 0; i < EntryNames.Length; i++)
         {
-            throw new InvalidOperationException("Legacy menu atlas is required for the main menu.");
+            _buttons[i] = FindControl<MGButton>("btn" + EntryNames[i]);
+            _buttonFaces[i] = FindControl<MGBorder>("face" + EntryNames[i]);
+            _labels[i] = FindControl<MGTextBlock>("lbl" + EntryNames[i]);
+
+            Action action = _actions[i];
+            _buttons[i].AddCommandHandler((_, _) => action());
         }
-
-        var window = CreateForegroundWindow(root);
-        var band = LegacyMenuUiTheme.CreateMenuBand(window, 315, 216, new MonoGame.Extended.Thickness(28, 20, 28, 18));
-        var content = LegacyMenuUiTheme.CreateVerticalStack(window, spacing: 10);
-        content.HorizontalAlignment = HorizontalAlignment.Center;
-        content.VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center;
-
-        var buttonDefinitions = new[]
-        {
-            new MenuButtonDefinition("PLAY", LegacyMenuUiAtlas.MenuButtonPlay, _openCarSelection),
-            new MenuButtonDefinition("HIGHSCORES", LegacyMenuUiAtlas.MenuButtonHighscores, _openHighscores),
-            new MenuButtonDefinition("OPTIONS", LegacyMenuUiAtlas.MenuButtonOptions, _openOptions),
-            new MenuButtonDefinition("HELP", LegacyMenuUiAtlas.MenuButtonHelp, _openHelp),
-            new MenuButtonDefinition("QUIT", LegacyMenuUiAtlas.MenuButtonQuit, _requestExit),
-        };
-
-        var buttonsRow = LegacyMenuUiTheme.CreateHorizontalStack(window, spacing: 10);
-        _buttons = new MGButton[buttonDefinitions.Length];
-        _buttonFaces = new MGBorder[buttonDefinitions.Length];
-        _labels = new MGTextBlock[buttonDefinitions.Length];
-
-        for (int i = 0; i < buttonDefinitions.Length; i++)
-        {
-            var item = LegacyMenuUiTheme.CreateVerticalStack(window, spacing: 8);
-            item.HorizontalAlignment = HorizontalAlignment.Center;
-            item.VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center;
-
-            _buttons[i] = LegacyMenuUiTheme.CreateMainMenuIconButton(window, ButtonsTexture, buttonDefinitions[i].SourceRect, buttonDefinitions[i].Action, out MGBorder face);
-            _buttonFaces[i] = face;
-            _labels[i] = LegacyMenuUiTheme.CreateBodyText(window, buttonDefinitions[i].Label, LegacyMenuUiTheme.MutedTextColor);
-            _labels[i].HorizontalAlignment = HorizontalAlignment.Center;
-            _labels[i].TextAlignment = HorizontalAlignment.Center;
-
-            item.TryAddChild(_buttons[i]);
-            item.TryAddChild(_labels[i]);
-            buttonsRow.TryAddChild(item);
-        }
-
-        content.TryAddChild(buttonsRow);
-        band.SetContent(content);
-        window.SetContent(band);
-        _playButton = _buttons[0];
     }
 
     public override void Show()
     {
-        _playButton?.Focus();
+        if (_buttons.Length > 0)
+        {
+            _buttons[0].Focus();
+        }
     }
 
     public override void Update(GameTime gameTime)
     {
-        UpdateMenuDecoration(gameTime.TotalGameTime.TotalSeconds);
+        UpdateMenuDecoration(_viewModel.Decoration, gameTime.TotalGameTime.TotalSeconds);
 
         for (int i = 0; i < _buttons.Length; i++)
         {
@@ -101,6 +68,4 @@ internal sealed class MainMenuScreen : RaceFrontEndScreenBase
             LegacyMenuUiTheme.ApplyMainMenuButtonState(_buttons[i], _buttonFaces[i], _labels[i], isActive);
         }
     }
-
-    private sealed record MenuButtonDefinition(string Label, Rectangle SourceRect, Action Action);
 }
