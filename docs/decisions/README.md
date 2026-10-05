@@ -18,3 +18,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0002 | RacingGameCasaEngine's content folder is a CasaEngine editor project | Accepted | 2026-10-05 |
 | ADR-0003 | RacingGameCasaEngine plays its sound effects through CasaEngine's audio system | Accepted | 2026-10-05 |
 | ADR-0004 | RacingGameCasaEngine saves the user settings only when the player leaves the Options screen | Accepted | 2026-10-05 |
+| ADR-0005 | RacingGameCasaEngine's main menu reproduces the original XNA menu with MGUI brushes | Accepted | 2026-10-05 |
