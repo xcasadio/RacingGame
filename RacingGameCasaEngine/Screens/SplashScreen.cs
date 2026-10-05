@@ -1,18 +1,17 @@
+using CasaEngine.Framework.Assets;
 using CasaEngine.Framework.GUI;
 using MGUI.Core.UI;
-using MGUI.Core.UI.Containers;
-using Microsoft.Xna.Framework.Graphics;
-using RacingGameCasaEngine.UI;
 
 namespace RacingGameCasaEngine.Screens;
 
-internal sealed class SplashScreen : RaceFrontEndScreenBase
+/// <summary>Bootstrap title gate, loaded from the <c>Screen.Splash</c> screen asset (Content/UI/Screens/Splash).</summary>
+internal sealed class SplashScreen : RaceXamlScreenBase
 {
     private readonly Action _continueToMenu;
     private MGButton? _continueButton;
 
-    public SplashScreen(Texture2D? backgroundTexture, Action continueToMenu)
-        : base(backgroundTexture)
+    public SplashScreen(AssetContentManager assetContentManager, Action continueToMenu)
+        : base(assetContentManager, "Screen.Splash")
     {
         _continueToMenu = continueToMenu;
     }
@@ -21,20 +20,10 @@ internal sealed class SplashScreen : RaceFrontEndScreenBase
 
     public override bool IsModal => true;
 
-    protected override void BuildScreen(UIRoot root)
+    protected override void OnWindowLoaded(MGWindow window)
     {
-        var window = CreateForegroundWindow(root);
-        var panel = RaceUiTheme.CreatePanel(window, preferredWidth: 520);
-        var content = RaceUiTheme.CreateVerticalStack(window, spacing: 20);
-
-        content.TryAddChild(RaceUiTheme.CreateTitle(window, "RacingGame"));
-        content.TryAddChild(RaceUiTheme.CreateBody(window, "CasaEngine bootstrap splash screen. This replaces the old title gate and hands control to the new menu stack."));
-
-        _continueButton = RaceUiTheme.CreatePrimaryButton(window, "Continue", _continueToMenu);
-        content.TryAddChild(_continueButton);
-
-        panel.SetContent(content);
-        window.SetContent(panel);
+        _continueButton = FindControl<MGButton>("btnContinue");
+        _continueButton.AddCommandHandler((_, _) => _continueToMenu());
     }
 
     public override void Show()

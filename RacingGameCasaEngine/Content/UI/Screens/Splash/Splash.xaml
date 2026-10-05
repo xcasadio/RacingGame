@@ -1,0 +1,24 @@
+<Window xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core"
+        ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
+        WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
+        Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
+  <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Image SourceName="Ui.Menu.SplashBackground" Stretch="UniformToFill" IsHitTestVisible="False"
+           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+    <Border BorderThickness="2" BorderBrush="rgb(255,156,0)" Background="rgba(8,12,18,220)" Padding="28" Width="520"
+            HorizontalAlignment="Center" VerticalAlignment="Center">
+      <StackPanel Orientation="Vertical" Spacing="20" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <TextBlock Text="RacingGame" Foreground="rgb(255,156,0)" FontSize="28" WrapText="True" UseResponsiveTextScale="True"
+                   HorizontalAlignment="Center" TextAlignment="Center" />
+        <TextBlock Text="CasaEngine bootstrap splash screen. This replaces the old title gate and hands control to the new menu stack."
+                   Foreground="rgb(205,212,224)" FontSize="14" WrapText="True" UseResponsiveTextScale="True"
+                   HorizontalAlignment="Stretch" TextAlignment="Center" />
+        <Button Name="btnContinue" BorderBrush="Black" BorderThickness="2" Background="rgb(255,156,0)" Padding="18,12,18,12"
+                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+          <TextBlock Text="Continue" Foreground="White" FontSize="16" UseResponsiveTextScale="True"
+                     HorizontalAlignment="Center" TextAlignment="Center" />
+        </Button>
+      </StackPanel>
+    </Border>
+  </OverlayPanel>
+</Window>

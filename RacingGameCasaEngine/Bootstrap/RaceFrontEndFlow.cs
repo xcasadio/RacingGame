@@ -54,7 +54,7 @@ internal sealed class RaceFrontEndFlow
     private void RegisterFactories()
     {
         GameScreenManager screenManager = _game.GameManager.ScreenManager;
-        screenManager.RegisterFactory(SplashStateName, () => new SplashScreen(_game.MenuBackgroundTexture, OpenMainMenu));
+        screenManager.RegisterFactory(SplashStateName, () => new SplashScreen(_game.AssetContentManager, OpenMainMenu));
         screenManager.RegisterFactory(MainMenuStateName, () => new MainMenuScreen(_game.MenuBackgroundTexture, _game.MenuButtonsTexture, OpenCarSelection, OpenHighscores, OpenOptions, OpenHelp, RequestExit));
         screenManager.RegisterFactory(CarSelectionStateName, () => new CarSelectionScreen(_game, _game.MenuBackgroundTexture, _game.MenuButtonsTexture, _state, OpenTrackSelection, OpenMainMenu));
         screenManager.RegisterFactory(TrackSelectionStateName, () => new TrackSelectionScreen(_game.MenuBackgroundTexture, _game.MenuButtonsTexture, _state, StartRace, OpenCarSelection));

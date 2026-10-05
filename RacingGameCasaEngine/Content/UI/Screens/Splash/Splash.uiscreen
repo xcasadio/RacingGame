@@ -1,0 +1,11 @@
+{
+  "id": "df45eb24-336b-4725-832e-ef36a3e102ed",
+  "name": "Screen.Splash",
+  "source_xaml_file": "Splash.xaml",
+  "theme_name": "",
+  "preview_resolution": {
+    "x": 1280,
+    "y": 720
+  },
+  "resource_files": []
+}

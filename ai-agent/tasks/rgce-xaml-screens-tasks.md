@@ -164,6 +164,8 @@ Ce que le chantier ne livre pas est dans « Hors périmètre ».
 >
 > Correctif (2026-10-05) : le 1er run de T1.2 sortait en 1280×720 contre 1674×1150 pour les références, et l'outil a refusé la comparaison. Cause : chaque `--smoke-frontend` bascule et enregistre la résolution (1280×720 ↔ 1920×1080, `FrontEndNavigationSmokeValidator.cs:95-103`). `--capture-ui-screens` applique donc désormais 1920×1080 fenêtré par `ApplyDisplaySettings(..., persistToProjectSettings: false)`, sans rien enregistrer, et attend cette taille avant la 1re capture. Les références sont régénérées depuis le commit du correctif, dont les écrans sont ceux d'origine ; son SHA est noté ici dans le commit de T1.2.
 >
+> Références en vigueur : commit `579e1d7`, régénérées par `git archive 579e1d7 RacingGameCasaEngine` dans un dossier temporaire (références de projet `CasaEngine` et `RacingGame` du csproj rendues absolues vers ce dépôt, le sous-module CasaEngine étant inchangé depuis `3ed325f`), build, `--capture-ui-screens`. Dossier `%LOCALAPPDATA%\CasaEngine\RacingGameCasaEngine\Screenshots\references-579e1d7`, 10 captures en 1920×1080.
+>
 > Anciennes références (avant correctif, caduques) : commit `50fb3b0`, dossier `%LOCALAPPDATA%\CasaEngine\RacingGameCasaEngine\Screenshots\references-50fb3b0` (10 captures, 1674×1150).
 
 - Objectif : outillage versionné et références durables pour la comparaison avant/après (P10), avant tout changement d'écran.
@@ -220,7 +222,9 @@ Ce que le chantier ne livre pas est dans « Hors périmètre ».
 - Retour arrière : suppression des fichiers générés et `git restore` de `AssetInfos.json` et du csproj avant commit ; `git revert` après.
 - Commit : `feat(racing-casa): generate UI sprite assets for XAML screens`
 
-### 🚧 T1.2 — Base XAML commune et Splash
+### ✅ T1.2 — Base XAML commune et Splash
+
+> Validation (2026-10-05) : `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, aucun avertissement. `--capture-ui-screens` code 0, aucun avertissement. `UiCaptureCompare` contre `references-579e1d7` : `splash` à 0,00, rendu XAML identique au pixel près à l'écran construit en code ; les 6 autres écrans de menu et `race-finished` à 0,00 ; `race-hud` 0,94/1,17/1,40 et `pause` 0,29/0,37/0,44. Ces deux écarts de course viennent du décor (O4), le HUD étant identique sur la planche. Base `RaceXamlScreenBase` : `LoadDefaultResources` avant chargement, `Dispose` dans `Hide`, sûr car `ScreenStack` n'appelle `Hide` qu'au `Pop`/`Remove` et relit `GetWindows()` ensuite (`ScreenStack.cs:79-107`). 🧪 non requis : le Splash n'a qu'un bouton, que la sonde de capture n'actionne pas ; sa vérification au clic reste dans la vérification manuelle globale.
 
 - Objectif : la base `RaceXamlScreenBase` (P3) existe et Splash est le premier écran migré, de bout en bout.
 - Fichiers :
@@ -377,6 +381,7 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 | O1 | **Tranché (D10).** Ligne « Rank » perdue sur Expert. | T3.2 |
 | O2 | **Tranché (D11 → D14).** Options sans effet (`PostEffects`, `Shadows`, `HighDetail`, `Vibration`). | T2.6, T4.1, T4.2, T6.2 |
 | O3 | **Tranché (D15).** Rendu des textes du HUD (`DrawShadowedText` contre `TextBlock`). | T3.2, T6.2 |
+| O4 | Bruit de décor dans les états de course : `CreateDeterministicTrackRandom` (`Worlds/LegacyTrackSceneFactory.cs:767-773`) amorce son `Random` avec `System.HashCode`, aléatoire d'un processus à l'autre ; le choix des panneaux (`Track.Scenery.Banner*`) change donc à chaque lancement. Écart observé jusqu'à 1,40 sur `race-hud` entre deux runs, HUD identique. Bug antérieur, hors périmètre : signalé à l'auteur dans une tâche séparée. Les états de course sont jugés sur la planche, en ignorant le décor. | T1.2 → T3.2 |
 
 ## Hors périmètre
 

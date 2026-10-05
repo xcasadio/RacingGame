@@ -227,6 +227,12 @@
       "name": "Ui.Hud.Digit9",
       "file_name": "UI/Sprites/Ui.Hud.Digit9.sprite",
       "asset_type": "sprite"
+    },
+    {
+      "id": "df45eb24-336b-4725-832e-ef36a3e102ed",
+      "name": "Screen.Splash",
+      "file_name": "UI/Screens/Splash/Splash.uiscreen",
+      "asset_type": "uiscreen"
     }
   ]
 }
