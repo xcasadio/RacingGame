@@ -251,6 +251,12 @@
       "name": "Screen.Help",
       "file_name": "UI/Screens/Help/Help.uiscreen",
       "asset_type": "uiscreen"
+    },
+    {
+      "id": "d7c1131b-52a7-4a40-8aac-47db2a598642",
+      "name": "Screen.Highscores",
+      "file_name": "UI/Screens/Highscores/Highscores.uiscreen",
+      "asset_type": "uiscreen"
     }
   ]
 }

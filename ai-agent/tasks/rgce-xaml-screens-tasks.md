@@ -313,7 +313,15 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 - Objectif : sections d'aide liées au catalogue (`RaceFrontEndCatalog.HelpSections`, emplacements fixes, P7), bouton Back.
 - Commit : `feat(racing-casa): load the help screen from a XAML screen asset`
 
-### ⏳ T2.3 — Highscores
+### 🧪 T2.3 — Highscores
+
+> Validation (2026-10-05) :
+> - **Écran** : `Screen.Highscores`, avec 3 onglets littéraux, restylés en code chaque image, et 10 lignes fixes liées à `RaceHighscoresViewModel.Entry0..9`. Les lignes sont formatées par l'écran depuis `RaceFrontEndCatalog.Highscores` ; le niveau sélectionné reste local à l'écran.
+> - **Pinceaux de fond** : l'attribut XAML `Background` ne remplace que les emplacements Normal et Focused du pinceau du thème (`Element.cs:1180-1189`), alors que le code remplaçait tout le pinceau (`new VisualStateFillBrush(brush)`). RGCE ne charge aucun thème : le pinceau d'origine est `new VisualStateFillBrush(null)` (`MGTheme.cs:690-696`), sans couleur de survol et avec le même assombrissement de 0,06 à l'appui. Survol, focus et appui sont donc identiques ; seuls les emplacements Selected et Disabled diffèrent, et ces boutons ne s'en servent pas. Constat valable aussi pour le Splash.
+> - **Build et jeu** : `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, aucun avertissement ; `Highscores.design.json` absent de la sortie.
+> - **Captures** contre `references-579e1d7` : `highscores` à 0,00, identique au pixel près ; les autres états à 0,00, et 0,01 sur `race-hud`.
+> - **Éditeur** : `capture_editor_screen.ps1` sur `Highscores.uiscreen`, code 0. L'aperçu montre les onglets et les lignes Beginner des données de conception. Ligne d'état sans « Design-time data: ».
+> - 🧪 Reste à vérifier par l'auteur : clic sur chaque onglet (tableau mis à jour), Back, navigation au clavier et à la manette.
 
 - Objectif : 3 onglets et 10 lignes liés au view model, niveau sélectionné local à l'écran.
 - Commit : `feat(racing-casa): load the highscores screen from a XAML screen asset`

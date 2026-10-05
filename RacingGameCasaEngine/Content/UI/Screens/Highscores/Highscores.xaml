@@ -1,0 +1,58 @@
+<Window xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core"
+        xmlns:dataBinding="clr-namespace:MGUI.Core.UI.DataBinding;assembly=MGUI.Core"
+        Width="1280" Height="720" ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
+        WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
+        Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
+  <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <!-- Menu decoration (RaceMenuDecorationViewModel): background, then the bouncing logo placed by the view model. -->
+    <Image SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
+           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+    <Image SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Decoration.LogoMargin}"
+           Width="{dataBinding:MGBinding Path=Decoration.LogoWidth}" Height="{dataBinding:MGBinding Path=Decoration.LogoHeight}" />
+    <Border BorderThickness="0" BorderBrush="rgba(0,0,0,0)" Background="rgba(0,0,0,132)" Margin="0,165,0,0" Height="390" Padding="32,22,32,20"
+            HorizontalAlignment="Stretch" VerticalAlignment="Top">
+      <StackPanel Orientation="Vertical" Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <TextBlock Text="Highscores" Foreground="rgb(255,156,0)" FontSize="26" UseResponsiveTextScale="True"
+                   HorizontalAlignment="Center" TextAlignment="Center" />
+        <ScrollViewer Width="1040" Height="250" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Top">
+            <!-- Level tabs: the screen restyles them every frame (selected level, hover and focus). -->
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Button Name="tabBeginner" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
+                      Background="rgba(0,0,0,24)" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
+                <TextBlock Text="Beginner" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
+              </Button>
+              <Button Name="tabAdvanced" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
+                      Background="rgba(0,0,0,24)" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
+                <TextBlock Text="Advanced" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
+              </Button>
+              <Button Name="tabExpert" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
+                      Background="rgba(0,0,0,24)" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
+                <TextBlock Text="Expert" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
+              </Button>
+            </StackPanel>
+            <!-- Ten fixed board lines (RaceHighscoresViewModel.Entry0..9). -->
+            <TextBlock Text="{dataBinding:MGBinding Path=Entry0}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
+            <TextBlock Text="{dataBinding:MGBinding Path=Entry1}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
+            <TextBlock Text="{dataBinding:MGBinding Path=Entry2}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
+            <TextBlock Text="{dataBinding:MGBinding Path=Entry3}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
+            <TextBlock Text="{dataBinding:MGBinding Path=Entry4}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
+            <TextBlock Text="{dataBinding:MGBinding Path=Entry5}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
+            <TextBlock Text="{dataBinding:MGBinding Path=Entry6}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
+            <TextBlock Text="{dataBinding:MGBinding Path=Entry7}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
+            <TextBlock Text="{dataBinding:MGBinding Path=Entry8}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
+            <TextBlock Text="{dataBinding:MGBinding Path=Entry9}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
+          </StackPanel>
+        </ScrollViewer>
+        <!-- Size bound to the UI scale (RaceMenuTextButtonViewModel); the screen restyles the button every frame. -->
+        <Button Name="btnBack" BorderBrush="rgb(96,96,96)" BorderThickness="2" CornerRadius="16"
+                Padding="{dataBinding:MGBinding Path=BackButton.Padding}" MinWidth="{dataBinding:MGBinding Path=BackButton.MinWidth}"
+                MinHeight="{dataBinding:MGBinding Path=BackButton.MinHeight}" Height="{dataBinding:MGBinding Path=BackButton.Height}"
+                HorizontalAlignment="Center" HorizontalContentAlignment="Center">
+          <TextBlock Text="Back" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
+        </Button>
+      </StackPanel>
+    </Border>
+  </OverlayPanel>
+</Window>

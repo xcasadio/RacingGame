@@ -1,0 +1,21 @@
+{
+  "view_model_type": "RaceHighscoresViewModel",
+  "values": {
+    "Decoration": {
+      "LogoLeft": 451,
+      "LogoTop": 40,
+      "LogoWidth": 755,
+      "LogoHeight": 246
+    },
+    "Entry0": " 1.  A. Vega             01:11.82",
+    "Entry1": " 2.  M. Ford             01:13.21",
+    "Entry2": " 3.  L. Stone            01:14.07",
+    "Entry3": " 4.  T. Park             01:14.93",
+    "Entry4": " 5.  N. Hart             01:15.42",
+    "Entry5": "",
+    "Entry6": "",
+    "Entry7": "",
+    "Entry8": "",
+    "Entry9": ""
+  }
+}
