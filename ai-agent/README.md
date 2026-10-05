@@ -5,4 +5,4 @@ Le plan du chantier précédent (mise à jour de CasaEngine) est resté dans [do
 
 | Fichier | Sujet | Reste à faire |
 |---|---|---|
-| [tasks/rgce-xaml-screens-tasks.md](tasks/rgce-xaml-screens-tasks.md) | Écrans MGUI de RacingGameCasaEngine en assets `.uiscreen` liés à des view models | Plan approuvé (2026-10-05), exécution en mode AUTO : phases 0 → 6 |
+| [tasks/rgce-xaml-screens-tasks.md](tasks/rgce-xaml-screens-tasks.md) | Écrans MGUI de RacingGameCasaEngine en assets `.uiscreen` liés à des view models | Exécuté (2026-10-05), validation globale et passe `verifier` CONFIRMED. Reste : vérifications manuelles de l'auteur (tâches 🧪 T2.1 → T4.2, T6.3), points ouverts O4 et O6 |

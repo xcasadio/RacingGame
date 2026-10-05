@@ -654,7 +654,31 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
   - écarts entre l'aperçu de l'éditeur et l'exécution rencontrés sur les 9 écrans (O5).
 - Commit : `docs(racing-casa): report MGUI gaps met by the XAML screens`
 
-### ⏳ T6.3 — Validation globale et rapport de fin
+### 🧪 T6.3 — Validation globale et rapport de fin
+
+> Validation (2026-10-05) :
+> - **Build** : `dotnet build RacingGame.slnx` 0 erreur ; build complet sans avertissement dans `RacingGameCasaEngine` ni `RacingGameCasaEngine.UI`.
+> - **Jeu** : `--smoke-frontend`, `--verify-legacy-import-profile` et `--capture-track-audit` donnent le code 0, sans `[Warning]` ni `[Error]`.
+> - **Garde** : forme stricte (T6.1), aucune construction d'élément MGUI en code.
+> - **Captures** (run `ui-run-20261005-180238`) :
+>   - contre `references-55304bb` (références actuelles, ombres activées) : 0,00 sur les 10 états ;
+>   - contre `references-579e1d7` (avant le chantier) : seuls `options` (0,75, D12) et les états de course (`race-hud` 6,46, `pause` 2,12, `race-finished` 4,51 : ombres par défaut, D11) diffèrent ; les 6 autres sont à 0,00.
+> - **Éditeur** : `capture_editor_screen.ps1` donne le code 0 sur les 9 écrans, ligne d'état « Loaded <Nom>.xaml » sans « Design-time data: » (planche des lignes d'état contrôlée).
+> - **Passe `verifier`** indépendante : **CONFIRMED**, avec les 7 critères rejoués (build, validateurs, captures contre les deux jeux de références, éditeur sur les 9 écrans, D10 → D15, sous-modules inchangés), sans régression P0 à P2. Deux remarques P4 :
+>   - parité du HUD mesurée seulement en 1920×1080 : déjà dans les vérifications manuelles de T3.2 ;
+>   - les écrans encore empilés à la fermeture ne sont pas libérés, comme avant.
+> - **Sous-modules** : `git diff ff6bc6f~1 HEAD -- CasaEngine` vide, `git -C CasaEngine status --short` vide.
+> - 🧪 Reste la vérification manuelle par l'auteur (liste « Validation globale » et notes 🧪 de T2.1 → T4.2).
+>
+> Rapport de fin :
+> - **Écrans** : les 9 écrans sont des assets `.uiscreen` + `.xaml` liés à 11 view models de `RacingGameCasaEngine.UI`. Le HUD est entièrement en XAML, et le code de construction est supprimé.
+> - **Projet éditeur** : `RacingGameCasaEngine/Content` est un projet de l'éditeur CasaEngine, avec données de conception par écran et le script de capture `scripts/capture_editor_screen.ps1`.
+> - **Options rendues effectives** : Shadows (D11) et Gamepad Vibration (D13) ; High Detail retirée (D12) ; Post Screen Effects documentée sans effet (D14).
+> - **Rapports** : `docs/mgui-gaps-from-rgce-xaml-screens.md` (MGUI, éditeur, D14, D15) ; ADR-0001 et ADR-0002.
+> - **Points ouverts pour l'auteur** :
+>   - O4 : aléa du décor, tâche séparée ;
+>   - O6 : réglage fin des ombres ;
+>   - `ArcadeCarMovementComponent` inutilisé, tâche séparée proposée.
 
 - Objectif : validation globale, passe `verifier` indépendante, rapport de fin, index `ai-agent/README.md` à jour.
 - Commit : `docs(racing-casa): close the XAML screens plan`
