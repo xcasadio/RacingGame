@@ -275,6 +275,12 @@
       "name": "Screen.Options",
       "file_name": "UI/Screens/Options/Options.uiscreen",
       "asset_type": "uiscreen"
+    },
+    {
+      "id": "283bca15-d209-4084-961c-1368db9f2119",
+      "name": "Screen.Pause",
+      "file_name": "UI/Screens/Pause/Pause.uiscreen",
+      "asset_type": "uiscreen"
     }
   ]
 }

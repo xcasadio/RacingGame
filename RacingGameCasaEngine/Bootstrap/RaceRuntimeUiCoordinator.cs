@@ -95,7 +95,7 @@ internal sealed class RaceRuntimeUiCoordinator
             return;
         }
 
-        _pauseScreen = new PauseScreen(_game, ResumeRace, ReturnToFrontEnd);
+        _pauseScreen = new PauseScreen(_game.AssetContentManager, _game, ResumeRace, ReturnToFrontEnd);
         _game.GameManager.ScreenManager.PushScreen(_pauseScreen, viewId);
     }
 

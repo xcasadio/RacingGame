@@ -1,24 +1,23 @@
+using CasaEngine.Framework.Assets;
 using CasaEngine.Framework.GUI;
 using MGUI.Core.UI;
-using MGUI.Core.UI.Brushes.FillBrushes;
-using MGUI.Shared.Helpers;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
-using RacingGameCasaEngine.UI;
-using Color = Microsoft.Xna.Framework.Color;
+using RacingGameCasaEngine.UI.ViewModels;
 
 namespace RacingGameCasaEngine.Screens;
 
-internal sealed class PauseScreen : RaceFrontEndScreenBase
+/// <summary>Race pause, loaded from the <c>Screen.Pause</c> screen asset (Content/UI/Screens/Pause).</summary>
+internal sealed class PauseScreen : RaceXamlScreenBase
 {
     private readonly RacingGameCasaEngineGame _game;
     private readonly Action _resume;
     private readonly Action _returnToMenu;
-    private MGTextBlock? _summary;
+    private readonly RacePauseViewModel _viewModel = new();
     private MGButton? _resumeButton;
 
-    public PauseScreen(RacingGameCasaEngineGame game, Action resume, Action returnToMenu)
-        : base(backgroundTexture: null)
+    public PauseScreen(AssetContentManager assetContentManager, RacingGameCasaEngineGame game, Action resume, Action returnToMenu)
+        : base(assetContentManager, "Screen.Pause")
     {
         _game = game;
         _resume = resume;
@@ -29,25 +28,14 @@ internal sealed class PauseScreen : RaceFrontEndScreenBase
 
     public override bool IsModal => true;
 
-    protected override void BuildScreen(UIRoot root)
+    protected override void OnWindowLoaded(MGWindow window)
     {
-        MGWindow window = CreateForegroundWindow(root);
-        window.BackgroundBrush = new VisualStateFillBrush(new Color(0, 0, 0, 170).AsFillBrush());
-
-        var panel = RaceUiTheme.CreatePanel(window, 560);
-        var content = RaceUiTheme.CreateVerticalStack(window, spacing: 14);
-        _summary = RaceUiTheme.CreateBody(window, string.Empty);
-        _resumeButton = RaceUiTheme.CreatePrimaryButton(window, "Resume", _resume);
-
-        content.TryAddChild(RaceUiTheme.CreateTitle(window, "Paused"));
-        content.TryAddChild(_summary);
-        content.TryAddChild(RaceUiTheme.CreateBody(window, "Press Escape or GamePad Start to resume instantly, or use the buttons below."));
-        content.TryAddChild(_resumeButton);
-        content.TryAddChild(RaceUiTheme.CreateSecondaryButton(window, "Back to main menu", _returnToMenu));
-
-        panel.SetContent(content);
-        window.SetContent(panel);
         RefreshSummary();
+        window.WindowDataContext = _viewModel;
+
+        _resumeButton = FindControl<MGButton>("btnResume");
+        _resumeButton.AddCommandHandler((_, _) => _resume());
+        FindControl<MGButton>("btnMainMenu").AddCommandHandler((_, _) => _returnToMenu());
     }
 
     public override void Show()
@@ -67,12 +55,12 @@ internal sealed class PauseScreen : RaceFrontEndScreenBase
         RuntimeRaceSession session = _game.RaceSession;
         if (!session.IsActive || session.GameMode == null)
         {
-            _summary!.Text = "Race session unavailable.";
+            _viewModel.Summary = "Race session unavailable.";
             return;
         }
 
         int displayedLap = Math.Min(session.GameMode.CompletedLaps + 1, session.GameMode.TotalLaps);
-        _summary!.Text = $"{session.TrackName} | Lap {displayedLap}/{session.GameMode.TotalLaps} | Total {FormatTime(session.GameMode.RaceTimeSeconds)}";
+        _viewModel.Summary = $"{session.TrackName} | Lap {displayedLap}/{session.GameMode.TotalLaps} | Total {FormatTime(session.GameMode.RaceTimeSeconds)}";
     }
 
     private static string FormatTime(float seconds)

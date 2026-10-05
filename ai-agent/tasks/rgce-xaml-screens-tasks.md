@@ -384,7 +384,17 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 
 ## Phase 3 — Écrans de course
 
-### ⏳ T3.1 — Pause
+### 🧪 T3.1 — Pause
+
+> Validation (2026-10-05) :
+> - **Écran** : `Screen.Pause`, une fenêtre voilée qui contient le panneau, avec le résumé lié à `RacePauseViewModel.Summary` et rafraîchi chaque image depuis la session. Resume et « Back to main menu » passent par `AddCommandHandler`. Le retrait par `RaceRuntimeUiCoordinator.HidePauseScreen` (`RemoveScreen`) appelle `Hide`, donc `Dispose`.
+> - **Build et jeu** : `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, aucun avertissement.
+> - **Captures** contre `references-579e1d7` :
+>   - `pause` à 0,28/0,33/0,39 et `race-hud` à 0,90/1,05/1,23 : bruit de décor (O4), mêmes ordres de grandeur qu'en T1.2 ;
+>   - dans le rectangle du panneau (680, 381)–(1240, 699), écart moyen de 0,04 et maximum de 10 niveaux. Ces écarts sont gris (R = G = B) et limités au haut du panneau : c'est le décor vu à travers le fond à 220/255 d'opacité. Textes et boutons sont identiques ;
+>   - `options` à 0,75 (D12) ; le reste à 0,00.
+> - **Éditeur** : `capture_editor_screen.ps1` sur `Pause.uiscreen`, code 0. L'aperçu montre le panneau, le résumé des données de conception et Resume. Ligne d'état sans « Design-time data: ».
+> - 🧪 Reste à vérifier par l'auteur : Resume, retour au menu, Échap et Start de la manette.
 
 - Objectif : résumé de course lié (piste, tour, temps total), boutons Reprendre et Retour au menu.
 - Validation : celle de la phase 2, pause comprise dans la capture.
