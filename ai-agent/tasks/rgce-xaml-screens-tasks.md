@@ -357,7 +357,23 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 - Objectif : résumé, 4 statistiques (barres de progression liées), 11 pastilles de couleur, flèches, aperçu 3D lié (P8) et libéré. Dans l'éditeur, l'aperçu 3D reste vide : `MGTextureData` ne peut pas venir du JSON de conception, son premier membre étant une interface (`CasaEngine/MGUI/MGUI.Core/UI/MGTextureData.cs:11`).
 - Commit : `feat(racing-casa): load the car selection from a XAML screen asset`
 
-### ⏳ T2.6 — Options
+### 🧪 T2.6 — Options
+
+> Validation (2026-10-05) :
+> - **Écran** : `Screen.Options`, avec `RaceOptionsViewModel`.
+>   - Nom, 6 cases et 3 curseurs liés à double sens (`Mode=TwoWay`). L'écran écrit tout changement dans `RaceFrontEndState` sur `PropertyChanged` (P1 révisé) et rafraîchit les champs depuis l'état à chaque image ; le nom ne suit que la zone de texte, comme avant.
+>   - Bande et zone défilante dimensionnées depuis `Root.Metrics` (zone sûre, échelle) une fois au chargement (P6).
+>   - Boutons de résolution, de mode de conduite et Back restylés en code.
+>   - Application des réglages au bouton Back, inchangée.
+> - **D12** : « High Detail » retirée de l'écran, de `RaceFrontEndState.EnableHighDetail` et de `FrontEndOptionsPersistence`, en lecture comme en écriture. Une clé `EnableHighDetail` dans un ancien fichier n'est plus lue.
+> - **Double sens** (déduit du code lu, sans clic simulé) : `MGCheckBox.IsChecked`, `MGSlider.Value` et `MGTextBox.Text` notifient leur changement (`MGCheckBox.cs:223`, `MGSlider.cs:113`, `MGTextBox.cs:182`), et un binding `TwoWay` le renvoie à la source (`DataBinding.cs:960-968`).
+> - **Build et jeu** : `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, aucun avertissement.
+> - **Captures** contre `references-579e1d7` : `options` à 0,75/0,53/0,70, sous le seuil.
+>   - Les écarts tiennent dans le rectangle (689, 421)–(1210, 604) : la ligne « High Detail » retirée (D12) et les lignes suivantes, remontées de 32 px. Au-dessus et en dessous, c'est identique au pixel près.
+>   - La planche montre la même mise en page, sans la ligne retirée. Les références d'`options` changent donc avec cette tâche.
+>   - Les autres états sont à 0,00 et à 0,01 sur `race-hud`.
+> - **Éditeur** : `capture_editor_screen.ps1` sur `Options.uiscreen`, code 0. L'aperçu montre le formulaire avec les valeurs de conception (état par défaut, mise en page en 1280×720). Ligne d'état sans « Design-time data: ».
+> - 🧪 Reste à vérifier par l'auteur : saisie du nom, clic sur chaque case et chaque curseur (valeur affichée et reprise après Back), boutons de résolution et de mode, Back qui applique les réglages, navigation au clavier et à la manette.
 
 - Objectif :
   - formulaire lié à double sens : nom (`TextBox`), 7 cases, 3 curseurs avec libellés de valeur, 5 résolutions, 2 modes ;

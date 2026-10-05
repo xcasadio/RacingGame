@@ -1,0 +1,28 @@
+{
+  "view_model_type": "RaceOptionsViewModel",
+  "values": {
+    "Decoration": {
+      "LogoLeft": 451,
+      "LogoTop": 40,
+      "LogoWidth": 755,
+      "LogoHeight": 246
+    },
+    "BandTop": 24,
+    "BandHeight": 672,
+    "ScrollWidth": 1120,
+    "ScrollHeight": 526,
+    "PlayerName": "Player One",
+    "IsFullscreen": false,
+    "EnableVSync": true,
+    "EnablePostEffects": true,
+    "EnableShadows": true,
+    "ShowFps": false,
+    "EnableVibration": true,
+    "SoundVolume": 80.0,
+    "MusicVolume": 70.0,
+    "ControllerSensitivity": 60.0,
+    "SoundVolumeText": "80",
+    "MusicVolumeText": "70",
+    "ControllerSensitivityText": "60"
+  }
+}

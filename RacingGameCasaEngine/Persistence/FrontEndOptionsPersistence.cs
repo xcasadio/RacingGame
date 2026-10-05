@@ -19,7 +19,6 @@ internal static class FrontEndOptionsPersistence
         state.PlayerName = rootElement["PlayerName"]?.Value<string>() ?? state.PlayerName;
         state.EnablePostEffects = rootElement["EnablePostEffects"]?.Value<bool>() ?? state.EnablePostEffects;
         state.EnableShadows = rootElement["EnableShadows"]?.Value<bool>() ?? state.EnableShadows;
-        state.EnableHighDetail = rootElement["EnableHighDetail"]?.Value<bool>() ?? state.EnableHighDetail;
         state.ShowFps = rootElement["ShowFps"]?.Value<bool>() ?? state.ShowFps;
         state.EnableVibration = rootElement["EnableVibration"]?.Value<bool>() ?? state.EnableVibration;
         state.SoundVolume = ClampPercentage(rootElement["SoundVolume"]?.Value<int>() ?? state.SoundVolume);
@@ -47,7 +46,6 @@ internal static class FrontEndOptionsPersistence
             ["PlayerName"] = state.PlayerName,
             ["EnablePostEffects"] = state.EnablePostEffects,
             ["EnableShadows"] = state.EnableShadows,
-            ["EnableHighDetail"] = state.EnableHighDetail,
             ["ShowFps"] = state.ShowFps,
             ["EnableVibration"] = state.EnableVibration,
             ["SoundVolume"] = ClampPercentage(state.SoundVolume),

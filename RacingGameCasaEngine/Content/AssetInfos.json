@@ -269,6 +269,12 @@
       "name": "Screen.CarSelection",
       "file_name": "UI/Screens/CarSelection/CarSelection.uiscreen",
       "asset_type": "uiscreen"
+    },
+    {
+      "id": "89e68948-b6b1-4fd2-bb42-0b9576daa90b",
+      "name": "Screen.Options",
+      "file_name": "UI/Screens/Options/Options.uiscreen",
+      "asset_type": "uiscreen"
     }
   ]
 }

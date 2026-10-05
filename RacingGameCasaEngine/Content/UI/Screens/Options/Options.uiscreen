@@ -1,0 +1,12 @@
+{
+  "id": "89e68948-b6b1-4fd2-bb42-0b9576daa90b",
+  "name": "Screen.Options",
+  "source_xaml_file": "Options.xaml",
+  "theme_name": "",
+  "preview_resolution": {
+    "x": 1280,
+    "y": 720
+  },
+  "resource_files": [],
+  "design_time_data_file": "Options.design.json"
+}

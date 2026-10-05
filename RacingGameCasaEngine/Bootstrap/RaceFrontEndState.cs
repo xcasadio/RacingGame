@@ -24,8 +24,6 @@ internal sealed class RaceFrontEndState
 
     public bool EnableShadows { get; set; } = true;
 
-    public bool EnableHighDetail { get; set; } = true;
-
     public bool ShowFps { get; set; } = false;
 
     public bool EnableVibration { get; set; } = true;
