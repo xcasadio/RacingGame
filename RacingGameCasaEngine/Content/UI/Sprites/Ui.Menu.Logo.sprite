@@ -1,0 +1,17 @@
+{
+  "id": "06f1a7bc-f4fd-5550-bd68-a04fd0dfefdd",
+  "name": "Ui.Menu.Logo",
+  "sprite_sheet_asset_id": "b2d8e9dc-31d8-5898-a4ce-f39b4bce47c3",
+  "location": {
+    "x": 0,
+    "y": 649,
+    "w": 1024,
+    "h": 374
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

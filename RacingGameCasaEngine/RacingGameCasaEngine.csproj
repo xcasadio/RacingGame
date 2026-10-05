@@ -25,6 +25,9 @@
     <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Shared\MGUI.Shared.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="Content\UI\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Content\AssetInfos.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

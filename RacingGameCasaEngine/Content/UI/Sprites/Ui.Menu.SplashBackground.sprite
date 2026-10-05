@@ -1,0 +1,17 @@
+{
+  "id": "b6326865-62a2-5f65-a1a0-e5d23566a412",
+  "name": "Ui.Menu.SplashBackground",
+  "sprite_sheet_asset_id": "b2d8e9dc-31d8-5898-a4ce-f39b4bce47c3",
+  "location": {
+    "x": 0,
+    "y": 0,
+    "w": 1024,
+    "h": 1024
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

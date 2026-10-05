@@ -1,0 +1,17 @@
+{
+  "id": "aaa399b9-8cec-578c-8b8a-019607421636",
+  "name": "Ui.Hud.Digit8",
+  "sprite_sheet_asset_id": "d52d6c41-a694-54d1-b9cb-06956b89c916",
+  "location": {
+    "x": 659,
+    "y": 342,
+    "w": 80,
+    "h": 133
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

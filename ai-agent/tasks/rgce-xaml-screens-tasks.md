@@ -161,6 +161,8 @@ Ce que le chantier ne livre pas est dans « Hors périmètre ».
 ### ✅ T0.2 — Outillage de capture et de comparaison, références
 
 > Validation (2026-10-05) : `dotnet build RacingGame.slnx` 0 erreur ; `scripts/UiCaptureCompare` 0 erreur. `--capture-ui-screens` : code 0, 10 captures en 20 s dans `ui-run-20261005-161221`, journal sans `[Warning]` ni `[Error]`, back buffer 1674×1150 (réglages d'affichage courants). 2e run du même build (`ui-run-20261005-161307`) comparé au 1er : écart 0,00 sur 9 états et 0,01 sur `race-hud` (rendu déterministe). Copie du 1er run avec un 2e `ui-pause-….png` : code 1, « duplicate state 'pause' ». `--smoke-frontend` : code 0, aucun avertissement. Références : le 1er run, capturé sur l'arbre de travail dont le contenu est celui de ce commit, est renommé `references-<SHA court>` dans `%LOCALAPPDATA%\CasaEngine\RacingGameCasaEngine\Screenshots` ; le SHA est ajouté ici dans le commit de T1.1.
+>
+> Références : commit `50fb3b0`, dossier `%LOCALAPPDATA%\CasaEngine\RacingGameCasaEngine\Screenshots\references-50fb3b0` (10 captures, 1674×1150).
 
 - Objectif : outillage versionné et références durables pour la comparaison avant/après (P10), avant tout changement d'écran.
 - Fichiers :
@@ -190,7 +192,9 @@ Ce que le chantier ne livre pas est dans « Hors périmètre ».
 
 ## Phase 1 — Infrastructure et écran pilote
 
-### ⏳ T1.1 — Script et assets d'images
+### ✅ T1.1 — Script et assets d'images
+
+> Validation (2026-10-05) : `python scripts/generate_rgce_ui_assets.py` écrit 3 `.texture`, 29 `.sprite` (`Content/UI/Sprites/`) et 33 entrées `Ui.*` (dont `Ui.Hud.IngameImage` pour `Textures/ingame.png`). 2e exécution sur le dépôt : empreinte SHA-1 du catalogue et des 32 fichiers identique. Contrat du catalogue sur une copie avec les 5 entrées et une entrée étrangère `Foreign.Entry` : 2e exécution sans diff, les 6 entrées d'origine identiques et à leur place, octets d'origine conservés en tête du fichier, CRLF seul, pas de saut de ligne final. `dotnet build RacingGame.slnx` 0 erreur ; 32 fichiers copiés dans `Content/UI/Sprites` du build ; `--smoke-frontend` code 0, catalogue de 38 assets chargé, aucun avertissement. Résolution des sprites : vérifiée en T1.2 et par chaque écran migré.
 
 - Objectif : les sprites et textures de l'interface existent et sont catalogués (D5, P5).
 - Fichiers :

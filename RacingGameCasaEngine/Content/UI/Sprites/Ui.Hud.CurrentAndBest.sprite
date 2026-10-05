@@ -1,0 +1,17 @@
+{
+  "id": "e98e4712-afa4-5647-ab66-5c2e4a607dad",
+  "name": "Ui.Hud.CurrentAndBest",
+  "sprite_sheet_asset_id": "d52d6c41-a694-54d1-b9cb-06956b89c916",
+  "location": {
+    "x": 381,
+    "y": 2,
+    "w": 342,
+    "h": 128
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0e470a8a-1582-5839-9a0c-96d2adc604eb",
+  "name": "Ui.Menu.ButtonsTexture",
+  "texture_asset_id": "2f50aa2a-6f39-429f-b95c-44e1f78af6db",
+  "sampler_state": {
+    "texture_filter": "Linear",
+    "address_u": "Clamp",
+    "address_v": "Clamp",
+    "address_w": "Clamp",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

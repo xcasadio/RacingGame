@@ -1,0 +1,22 @@
+{
+  "id": "b2d8e9dc-31d8-5898-a4ce-f39b4bce47c3",
+  "name": "Ui.Menu.BackgroundTexture",
+  "texture_asset_id": "0d1cc5aa-ac4d-4205-b16b-e5d77f98bd4b",
+  "sampler_state": {
+    "texture_filter": "Linear",
+    "address_u": "Clamp",
+    "address_v": "Clamp",
+    "address_w": "Clamp",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

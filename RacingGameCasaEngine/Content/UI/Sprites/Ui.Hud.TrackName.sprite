@@ -1,0 +1,17 @@
+{
+  "id": "7dd1a5c8-6099-5e67-987b-1b80668df97e",
+  "name": "Ui.Hud.TrackName",
+  "sprite_sheet_asset_id": "d52d6c41-a694-54d1-b9cb-06956b89c916",
+  "location": {
+    "x": 726,
+    "y": 2,
+    "w": 282,
+    "h": 62
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

@@ -1,0 +1,22 @@
+{
+  "id": "d52d6c41-a694-54d1-b9cb-06956b89c916",
+  "name": "Ui.Hud.IngameTexture",
+  "texture_asset_id": "bd0cdc12-ec68-547d-a19e-694d335e3d3c",
+  "sampler_state": {
+    "texture_filter": "Linear",
+    "address_u": "Clamp",
+    "address_v": "Clamp",
+    "address_w": "Clamp",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

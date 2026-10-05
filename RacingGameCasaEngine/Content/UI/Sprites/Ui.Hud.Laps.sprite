@@ -1,0 +1,17 @@
+{
+  "id": "229939dd-7f4e-5ed5-98a7-b05152e2e98e",
+  "name": "Ui.Hud.Laps",
+  "sprite_sheet_asset_id": "d52d6c41-a694-54d1-b9cb-06956b89c916",
+  "location": {
+    "x": 381,
+    "y": 132,
+    "w": 222,
+    "h": 160
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

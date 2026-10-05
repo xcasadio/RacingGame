@@ -1,0 +1,17 @@
+{
+  "id": "507e60db-cfd6-5c49-b5c0-82329afc94c7",
+  "name": "Ui.Button.Select",
+  "sprite_sheet_asset_id": "0e470a8a-1582-5839-9a0c-96d2adc604eb",
+  "location": {
+    "x": 0,
+    "y": 872,
+    "w": 212,
+    "h": 92
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

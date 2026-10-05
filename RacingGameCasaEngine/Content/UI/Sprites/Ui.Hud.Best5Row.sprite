@@ -1,0 +1,17 @@
+{
+  "id": "28e0d3d2-c1f4-54dd-86c5-8950a0e5ff15",
+  "name": "Ui.Hud.Best5Row",
+  "sprite_sheet_asset_id": "d52d6c41-a694-54d1-b9cb-06956b89c916",
+  "location": {
+    "x": 726,
+    "y": 66,
+    "w": 282,
+    "h": 62
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

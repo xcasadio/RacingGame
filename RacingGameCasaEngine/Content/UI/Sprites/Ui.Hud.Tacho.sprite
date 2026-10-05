@@ -1,0 +1,17 @@
+{
+  "id": "e2ef54ea-a84b-5866-b09f-f023e98a0bf6",
+  "name": "Ui.Hud.Tacho",
+  "sprite_sheet_asset_id": "d52d6c41-a694-54d1-b9cb-06956b89c916",
+  "location": {
+    "x": 0,
+    "y": 0,
+    "w": 343,
+    "h": 341
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

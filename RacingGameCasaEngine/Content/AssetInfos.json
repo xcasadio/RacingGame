@@ -29,6 +29,204 @@
       "name": "TrackExpertData",
       "file_name": "Tracks/TrackExpert.Track",
       "asset_type": "track"
+    },
+    {
+      "id": "bd0cdc12-ec68-547d-a19e-694d335e3d3c",
+      "name": "Ui.Hud.IngameImage",
+      "file_name": "Textures/ingame.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "b2d8e9dc-31d8-5898-a4ce-f39b4bce47c3",
+      "name": "Ui.Menu.BackgroundTexture",
+      "file_name": "UI/Sprites/Ui.Menu.BackgroundTexture.texture",
+      "asset_type": "texture"
+    },
+    {
+      "id": "0e470a8a-1582-5839-9a0c-96d2adc604eb",
+      "name": "Ui.Menu.ButtonsTexture",
+      "file_name": "UI/Sprites/Ui.Menu.ButtonsTexture.texture",
+      "asset_type": "texture"
+    },
+    {
+      "id": "d52d6c41-a694-54d1-b9cb-06956b89c916",
+      "name": "Ui.Hud.IngameTexture",
+      "file_name": "UI/Sprites/Ui.Hud.IngameTexture.texture",
+      "asset_type": "texture"
+    },
+    {
+      "id": "194af497-8cb2-565d-802a-efd9c166e650",
+      "name": "Ui.Menu.Background",
+      "file_name": "UI/Sprites/Ui.Menu.Background.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "06f1a7bc-f4fd-5550-bd68-a04fd0dfefdd",
+      "name": "Ui.Menu.Logo",
+      "file_name": "UI/Sprites/Ui.Menu.Logo.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "b6326865-62a2-5f65-a1a0-e5d23566a412",
+      "name": "Ui.Menu.SplashBackground",
+      "file_name": "UI/Sprites/Ui.Menu.SplashBackground.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "a11a1d8b-7122-5692-9f51-d47d9aa53d02",
+      "name": "Ui.Menu.IconPlay",
+      "file_name": "UI/Sprites/Ui.Menu.IconPlay.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "6d994976-f752-56e6-b1da-3184d36dc184",
+      "name": "Ui.Menu.IconHighscores",
+      "file_name": "UI/Sprites/Ui.Menu.IconHighscores.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "030c4de0-3225-5f15-89ad-501386f3eae0",
+      "name": "Ui.Menu.IconOptions",
+      "file_name": "UI/Sprites/Ui.Menu.IconOptions.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "95601aec-85c9-52c5-9b90-c47d8211e9af",
+      "name": "Ui.Menu.IconHelp",
+      "file_name": "UI/Sprites/Ui.Menu.IconHelp.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "11abe99b-0782-5a3c-8b10-188d2d837ec9",
+      "name": "Ui.Menu.IconQuit",
+      "file_name": "UI/Sprites/Ui.Menu.IconQuit.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "868e5dcf-d4dd-5f4e-9087-22b147dedb4c",
+      "name": "Ui.Track.Beginner",
+      "file_name": "UI/Sprites/Ui.Track.Beginner.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "578ba990-8ef8-559f-bca9-91fd9d2ad92a",
+      "name": "Ui.Track.Advanced",
+      "file_name": "UI/Sprites/Ui.Track.Advanced.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "344ef93e-284b-54b0-b82b-94c6f1755f0a",
+      "name": "Ui.Track.Expert",
+      "file_name": "UI/Sprites/Ui.Track.Expert.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "507e60db-cfd6-5c49-b5c0-82329afc94c7",
+      "name": "Ui.Button.Select",
+      "file_name": "UI/Sprites/Ui.Button.Select.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "1e208c2f-f5b2-5e95-9987-2f93d7171e06",
+      "name": "Ui.Button.Back",
+      "file_name": "UI/Sprites/Ui.Button.Back.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "229939dd-7f4e-5ed5-98a7-b05152e2e98e",
+      "name": "Ui.Hud.Laps",
+      "file_name": "UI/Sprites/Ui.Hud.Laps.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "e2ef54ea-a84b-5866-b09f-f023e98a0bf6",
+      "name": "Ui.Hud.Tacho",
+      "file_name": "UI/Sprites/Ui.Hud.Tacho.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "640125d7-d727-532d-a161-169c9d493ac5",
+      "name": "Ui.Hud.Needle",
+      "file_name": "UI/Sprites/Ui.Hud.Needle.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "e98e4712-afa4-5647-ab66-5c2e4a607dad",
+      "name": "Ui.Hud.CurrentAndBest",
+      "file_name": "UI/Sprites/Ui.Hud.CurrentAndBest.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "7dd1a5c8-6099-5e67-987b-1b80668df97e",
+      "name": "Ui.Hud.TrackName",
+      "file_name": "UI/Sprites/Ui.Hud.TrackName.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "28e0d3d2-c1f4-54dd-86c5-8950a0e5ff15",
+      "name": "Ui.Hud.Best5Row",
+      "file_name": "UI/Sprites/Ui.Hud.Best5Row.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "38b5edc3-ab44-5219-86ff-e44c42a7db56",
+      "name": "Ui.Hud.Digit0",
+      "file_name": "UI/Sprites/Ui.Hud.Digit0.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "e2138795-b133-53ba-b1de-02f60370d263",
+      "name": "Ui.Hud.Digit1",
+      "file_name": "UI/Sprites/Ui.Hud.Digit1.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "81c1d734-5643-5642-acb5-dd376909db1c",
+      "name": "Ui.Hud.Digit2",
+      "file_name": "UI/Sprites/Ui.Hud.Digit2.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "1d0853f6-2d38-57f7-860a-bbfff266fcd3",
+      "name": "Ui.Hud.Digit3",
+      "file_name": "UI/Sprites/Ui.Hud.Digit3.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "f4a863d8-c0bb-5857-895f-9c328e43c066",
+      "name": "Ui.Hud.Digit4",
+      "file_name": "UI/Sprites/Ui.Hud.Digit4.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "19fd565b-41e9-5e09-850e-7e384c47ec23",
+      "name": "Ui.Hud.Digit5",
+      "file_name": "UI/Sprites/Ui.Hud.Digit5.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "4692295f-1e39-58fa-8704-8d12e091f2fe",
+      "name": "Ui.Hud.Digit6",
+      "file_name": "UI/Sprites/Ui.Hud.Digit6.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "babaf884-ea2a-5aa1-99a6-480a69fe8bd6",
+      "name": "Ui.Hud.Digit7",
+      "file_name": "UI/Sprites/Ui.Hud.Digit7.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "aaa399b9-8cec-578c-8b8a-019607421636",
+      "name": "Ui.Hud.Digit8",
+      "file_name": "UI/Sprites/Ui.Hud.Digit8.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "a40f3d34-6df2-5b4a-9acf-ddfa9111248d",
+      "name": "Ui.Hud.Digit9",
+      "file_name": "UI/Sprites/Ui.Hud.Digit9.sprite",
+      "asset_type": "sprite"
     }
   ]
 }

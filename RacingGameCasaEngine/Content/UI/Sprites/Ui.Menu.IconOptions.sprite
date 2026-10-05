@@ -1,0 +1,17 @@
+{
+  "id": "030c4de0-3225-5f15-89ad-501386f3eae0",
+  "name": "Ui.Menu.IconOptions",
+  "sprite_sheet_asset_id": "0e470a8a-1582-5839-9a0c-96d2adc604eb",
+  "location": {
+    "x": 474,
+    "y": 50,
+    "w": 112,
+    "h": 112
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

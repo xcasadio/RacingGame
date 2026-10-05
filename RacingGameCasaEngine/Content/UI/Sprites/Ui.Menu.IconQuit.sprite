@@ -1,0 +1,17 @@
+{
+  "id": "11abe99b-0782-5a3c-8b10-188d2d837ec9",
+  "name": "Ui.Menu.IconQuit",
+  "sprite_sheet_asset_id": "0e470a8a-1582-5839-9a0c-96d2adc604eb",
+  "location": {
+    "x": 262,
+    "y": 290,
+    "w": 112,
+    "h": 112
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

@@ -1,0 +1,17 @@
+{
+  "id": "640125d7-d727-532d-a161-169c9d493ac5",
+  "name": "Ui.Hud.Needle",
+  "sprite_sheet_asset_id": "d52d6c41-a694-54d1-b9cb-06956b89c916",
+  "location": {
+    "x": 347,
+    "y": 0,
+    "w": 28,
+    "h": 186
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}
