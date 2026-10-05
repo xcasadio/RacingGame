@@ -370,7 +370,9 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 
 > **Ordre d'exécution** : T5.1 puis T5.2 sont faites juste après T1.2, avant T2.1, premier écran doté d'un view model, car l'emplacement des view models en dépend (D19). La numérotation des phases est gardée pour ne pas renuméroter les tâches déjà notées.
 
-### ⏳ T5.1 — Contenu catalogué dans le dossier du projet
+### ✅ T5.1 — Contenu catalogué dans le dossier du projet
+
+> Validation (2026-10-05) : les 6 copies ont le SHA-1 de leurs originaux de `RacingGame/Content`. Avant et après la modification, `RacingGameCasaEngine.csproj` a été construit dans deux dossiers de sortie neufs du scratchpad (`-o`) : même `Content` des deux côtés, soit les mêmes 496 fichiers avec les mêmes SHA-1. `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement MSBuild. `--smoke-frontend` : code 0, aucun `[Warning]` ni `[Error]`.
 
 - Objectif : D18, tout fichier catalogué dans `Content/AssetInfos.json` existe physiquement sous `RacingGameCasaEngine/Content`, racine du projet éditeur. Le build produit exactement le même dossier `Content` qu'avant.
 - Fichiers :
