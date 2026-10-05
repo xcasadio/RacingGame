@@ -15,3 +15,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR | Title | Status | Date |
 |---|---|---|---|
 | ADR-0001 | RacingGameCasaEngine screens are CasaEngine screen assets bound to view models | Accepted | 2026-10-05 |
+| ADR-0002 | RacingGameCasaEngine's content folder is a CasaEngine editor project | Accepted | 2026-10-05 |
