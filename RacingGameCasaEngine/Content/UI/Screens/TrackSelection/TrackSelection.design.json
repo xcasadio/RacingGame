@@ -1,0 +1,14 @@
+{
+  "view_model_type": "RaceTrackSelectionViewModel",
+  "values": {
+    "Decoration": {
+      "LogoLeft": 451,
+      "LogoTop": 40,
+      "LogoWidth": 755,
+      "LogoHeight": 246
+    },
+    "Track0Name": "Beginner",
+    "Track1Name": "Advanced",
+    "Track2Name": "Expert"
+  }
+}

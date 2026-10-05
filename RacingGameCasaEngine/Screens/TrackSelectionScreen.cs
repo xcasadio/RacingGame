@@ -1,31 +1,33 @@
+using CasaEngine.Framework.Assets;
 using CasaEngine.Framework.GUI;
 using MGUI.Core.UI;
 using MGUI.Core.UI.Brushes.BorderBrushes;
-using MGUI.Core.UI.Brushes.FillBrushes;
-using MGUI.Core.UI.Containers;
-using MGUI.Core.UI.Responsive;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.UI;
+using RacingGameCasaEngine.UI.ViewModels;
 using Color = Microsoft.Xna.Framework.Color;
-using Microsoft.Xna.Framework.Graphics;
-using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace RacingGameCasaEngine.Screens;
 
-internal sealed class TrackSelectionScreen : RaceFrontEndScreenBase
+/// <summary>Track selection, loaded from the <c>Screen.TrackSelection</c> screen asset (Content/UI/Screens/TrackSelection).</summary>
+internal sealed class TrackSelectionScreen : RaceXamlScreenBase
 {
+    // TrackSelection.xaml has one slot per catalogue track (btnTrack*, frameTrack*, lblTrack*).
+    private const int TrackSlotCount = 3;
+
     private readonly RaceFrontEndState _state;
     private readonly Action _confirm;
     private readonly Action _back;
-    private readonly List<MGButton> _trackButtons = [];
-    private readonly List<MGBorder> _trackFrames = [];
-    private readonly List<MGTextBlock> _trackLabels = [];
+    private readonly RaceTrackSelectionViewModel _viewModel = new();
+    private MGButton[] _trackButtons = [];
+    private MGBorder[] _trackFrames = [];
+    private MGTextBlock[] _trackLabels = [];
     private MGButton? _selectButton;
     private MGButton? _backButton;
 
-    public TrackSelectionScreen(Texture2D? backgroundTexture, Texture2D? buttonsTexture, RaceFrontEndState state, Action confirm, Action back)
-        : base(backgroundTexture, buttonsTexture)
+    public TrackSelectionScreen(AssetContentManager assetContentManager, RaceFrontEndState state, Action confirm, Action back)
+        : base(assetContentManager, "Screen.TrackSelection")
     {
         _state = state;
         _confirm = confirm;
@@ -36,72 +38,46 @@ internal sealed class TrackSelectionScreen : RaceFrontEndScreenBase
 
     public override bool IsModal => true;
 
-    protected override void BuildScreen(UIRoot root)
+    protected override void OnWindowLoaded(MGWindow window)
     {
-        if (ButtonsTexture == null)
+        var tracks = RaceFrontEndCatalog.Tracks;
+        if (tracks.Count != TrackSlotCount)
         {
-            throw new InvalidOperationException("Legacy menu atlas is required for the track selection screen.");
+            throw new InvalidOperationException($"TrackSelection.xaml has {TrackSlotCount} track slots; the catalogue has {tracks.Count} tracks.");
         }
 
-        var window = CreateForegroundWindow(root);
-        var rootPanel = new MGOverlayPanel(window)
+        _viewModel.Track0Name = tracks[0].Name;
+        _viewModel.Track1Name = tracks[1].Name;
+        _viewModel.Track2Name = tracks[2].Name;
+        window.WindowDataContext = _viewModel;
+        UpdateMenuDecoration(_viewModel.Decoration, 0.0);
+
+        _trackButtons = new MGButton[TrackSlotCount];
+        _trackFrames = new MGBorder[TrackSlotCount];
+        _trackLabels = new MGTextBlock[TrackSlotCount];
+        for (int i = 0; i < TrackSlotCount; i++)
         {
-            HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Stretch,
-            VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Stretch,
-        };
-
-        var band = LegacyMenuUiTheme.CreateMenuBand(window, 248, 315, new MonoGame.Extended.Thickness(32, 22, 32, 18));
-        var stack = LegacyMenuUiTheme.CreateHorizontalStack(window, spacing: 48);
-        stack.HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center;
-        stack.VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center;
-
-        Rectangle[] trackRects =
-        [
-            LegacyMenuUiAtlas.TrackButtonBeginner,
-            LegacyMenuUiAtlas.TrackButtonAdvanced,
-            LegacyMenuUiAtlas.TrackButtonExpert,
-        ];
-
-        for (int i = 0; i < RaceFrontEndCatalog.Tracks.Count; i++)
-        {
-            int capturedIndex = i;
-            var item = LegacyMenuUiTheme.CreateVerticalStack(window, spacing: 8);
-            item.HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center;
-            item.VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center;
-
-            var button = CreateTrackButton(window, ButtonsTexture, trackRects[i], () => SelectTrack(capturedIndex), out MGBorder frame);
-            _trackButtons.Add(button);
-            _trackFrames.Add(frame);
-
-            var label = LegacyMenuUiTheme.CreateBodyText(window, RaceFrontEndCatalog.Tracks[i].Name, LegacyMenuUiTheme.PrimaryTextColor);
-            label.HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center;
-            label.TextAlignment = MGUI.Core.UI.HorizontalAlignment.Center;
-            _trackLabels.Add(label);
-
-            item.TryAddChild(button);
-            item.TryAddChild(label);
-            stack.TryAddChild(item);
+            int index = i;
+            _trackButtons[i] = FindControl<MGButton>("btnTrack" + i);
+            _trackFrames[i] = FindControl<MGBorder>("frameTrack" + i);
+            _trackLabels[i] = FindControl<MGTextBlock>("lblTrack" + i);
+            _trackButtons[i].AddCommandHandler((_, _) => SelectTrack(index));
         }
 
-        band.SetContent(stack);
-
-        var actions = LegacyMenuUiTheme.CreateHorizontalStack(window, spacing: 14);
-        actions.ResponsiveAnchor = ResponsiveAnchor.BottomRight;
-        _selectButton = LegacyMenuUiTheme.CreateSpriteButton(window, ButtonsTexture, LegacyMenuUiAtlas.BottomButtonA, _confirm);
-        _backButton = LegacyMenuUiTheme.CreateSpriteButton(window, ButtonsTexture, LegacyMenuUiAtlas.BottomButtonB, _back);
-        actions.TryAddChild(_selectButton);
-        actions.TryAddChild(_backButton);
-        rootPanel.TryAddChild(band);
-        rootPanel.TryAddChild(actions, new MonoGame.Extended.Thickness(0, 0, 48, 20));
-
-        window.SetContent(rootPanel);
+        // LegacyMenuUiTheme.ApplySpriteButtonState dims the image a sprite button carries in its Tag.
+        _selectButton = FindControl<MGButton>("btnSelect");
+        _selectButton.Tag = FindControl<MGImage>("imgSelect");
+        _selectButton.AddCommandHandler((_, _) => _confirm());
+        _backButton = FindControl<MGButton>("btnBack");
+        _backButton.Tag = FindControl<MGImage>("imgBack");
+        _backButton.AddCommandHandler((_, _) => _back());
 
         RefreshSelection();
     }
 
     public override void Show()
     {
-        if (_state.SelectedTrackIndex >= 0 && _state.SelectedTrackIndex < _trackButtons.Count)
+        if (_state.SelectedTrackIndex >= 0 && _state.SelectedTrackIndex < _trackButtons.Length)
         {
             _trackButtons[_state.SelectedTrackIndex].Focus();
         }
@@ -109,7 +85,7 @@ internal sealed class TrackSelectionScreen : RaceFrontEndScreenBase
 
     public override void Update(GameTime gameTime)
     {
-        UpdateMenuDecoration(gameTime.TotalGameTime.TotalSeconds);
+        UpdateMenuDecoration(_viewModel.Decoration, gameTime.TotalGameTime.TotalSeconds);
         RefreshSelection();
         if (_selectButton != null) LegacyMenuUiTheme.ApplySpriteButtonState(_selectButton);
         if (_backButton != null) LegacyMenuUiTheme.ApplySpriteButtonState(_backButton);
@@ -123,7 +99,7 @@ internal sealed class TrackSelectionScreen : RaceFrontEndScreenBase
 
     private void RefreshSelection()
     {
-        for (int i = 0; i < _trackButtons.Count; i++)
+        for (int i = 0; i < _trackButtons.Length; i++)
         {
             bool selected = _state.SelectedTrackIndex == i;
             _trackLabels[i].DefaultTextForeground = selected
@@ -134,38 +110,5 @@ internal sealed class TrackSelectionScreen : RaceFrontEndScreenBase
                 : new MGUniformBorderBrush(new Color(255, 255, 255, 70));
             _trackFrames[i].BorderThickness = selected ? new MonoGame.Extended.Thickness(4) : new MonoGame.Extended.Thickness(2);
         }
-    }
-
-    private static MGButton CreateTrackButton(MGWindow window, Texture2D texture, Rectangle sourceRect, Action action, out MGBorder frame)
-    {
-        var button = new MGButton(window, _ => action())
-        {
-            BackgroundBrush = new VisualStateFillBrush(Color.Transparent.AsFillBrush()),
-            BorderThickness = new MonoGame.Extended.Thickness(0),
-            Padding = new MonoGame.Extended.Thickness(0),
-            HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center,
-            VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center,
-        };
-
-        frame = new MGBorder(window, new MonoGame.Extended.Thickness(2), new MGUniformBorderBrush(new Color(255, 255, 255, 70)))
-        {
-            CornerRadius = new MGCornerRadius(18),
-            BackgroundBrush = new VisualStateFillBrush(new Color(0, 0, 0, 24).AsFillBrush()),
-            Padding = new MonoGame.Extended.Thickness(0),
-            PreferredWidth = 172,
-            PreferredHeight = 286,
-            HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center,
-            VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center,
-        };
-
-        frame.SetContent(new MGImage(window, UiImageResources.AsImage(texture), sourceRect, null, Stretch.Uniform)
-        {
-            PreferredWidth = 168,
-            PreferredHeight = 280,
-            HorizontalAlignment = MGUI.Core.UI.HorizontalAlignment.Center,
-            VerticalAlignment = MGUI.Core.UI.VerticalAlignment.Center,
-        });
-        button.SetContent(frame);
-        return button;
     }
 }

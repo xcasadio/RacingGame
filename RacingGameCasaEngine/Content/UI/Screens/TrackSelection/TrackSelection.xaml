@@ -1,0 +1,60 @@
+<Window xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core"
+        xmlns:dataBinding="clr-namespace:MGUI.Core.UI.DataBinding;assembly=MGUI.Core"
+        Width="1280" Height="720" ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
+        WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
+        Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
+  <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <!-- Menu decoration (RaceMenuDecorationViewModel): background, then the bouncing logo placed by the view model. -->
+    <Image SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
+           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+    <Image SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Decoration.LogoMargin}"
+           Width="{dataBinding:MGBinding Path=Decoration.LogoWidth}" Height="{dataBinding:MGBinding Path=Decoration.LogoHeight}" />
+    <Border BorderThickness="0" BorderBrush="rgba(0,0,0,0)" Background="rgba(0,0,0,132)" Margin="0,248,0,0" Height="315" Padding="32,22,32,18"
+            HorizontalAlignment="Stretch" VerticalAlignment="Top">
+      <!-- Three fixed track slots; every frame, the screen restyles each track frame and label from the selected track. -->
+      <StackPanel Orientation="Horizontal" Spacing="48" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Button Name="btnTrack0" Background="rgba(0,0,0,0)" BorderThickness="0" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Name="frameTrack0" BorderThickness="2" BorderBrush="rgba(255,255,255,70)" CornerRadius="18" Background="rgba(0,0,0,24)" Padding="0"
+                    Width="172" Height="286" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Image SourceName="Ui.Track.Beginner" Stretch="Uniform" Width="168" Height="280" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+          </Button>
+          <TextBlock Name="lblTrack0" Text="{dataBinding:MGBinding Path=Track0Name}" Foreground="White" FontSize="14" WrapText="True"
+                     UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
+        </StackPanel>
+        <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Button Name="btnTrack1" Background="rgba(0,0,0,0)" BorderThickness="0" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Name="frameTrack1" BorderThickness="2" BorderBrush="rgba(255,255,255,70)" CornerRadius="18" Background="rgba(0,0,0,24)" Padding="0"
+                    Width="172" Height="286" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Image SourceName="Ui.Track.Advanced" Stretch="Uniform" Width="168" Height="280" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+          </Button>
+          <TextBlock Name="lblTrack1" Text="{dataBinding:MGBinding Path=Track1Name}" Foreground="White" FontSize="14" WrapText="True"
+                     UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
+        </StackPanel>
+        <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Button Name="btnTrack2" Background="rgba(0,0,0,0)" BorderThickness="0" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Name="frameTrack2" BorderThickness="2" BorderBrush="rgba(255,255,255,70)" CornerRadius="18" Background="rgba(0,0,0,24)" Padding="0"
+                    Width="172" Height="286" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Image SourceName="Ui.Track.Expert" Stretch="Uniform" Width="168" Height="280" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+          </Button>
+          <TextBlock Name="lblTrack2" Text="{dataBinding:MGBinding Path=Track2Name}" Foreground="White" FontSize="14" WrapText="True"
+                     UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+    <!-- A (select) and B (back) buttons; the screen dims each image when its button is neither focused nor hovered. -->
+    <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center"
+                ResponsiveAnchor="BottomRight" Offset="0,0,48,20">
+      <Button Name="btnSelect" Background="rgba(0,0,0,0)" BorderThickness="0" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Image Name="imgSelect" SourceName="Ui.Button.Select" Stretch="Uniform" Width="136" Height="60" HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Button>
+      <Button Name="btnBack" Background="rgba(0,0,0,0)" BorderThickness="0" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Image Name="imgBack" SourceName="Ui.Button.Back" Stretch="Uniform" Width="136" Height="60" HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Button>
+    </StackPanel>
+  </OverlayPanel>
+</Window>

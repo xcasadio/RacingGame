@@ -326,7 +326,15 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 - Objectif : 3 onglets et 10 lignes liés au view model, niveau sélectionné local à l'écran.
 - Commit : `feat(racing-casa): load the highscores screen from a XAML screen asset`
 
-### ⏳ T2.4 — TrackSelection
+### 🧪 T2.4 — TrackSelection
+
+> Validation (2026-10-05) :
+> - **Écran** : `Screen.TrackSelection`, avec 3 emplacements de piste (sprites `Ui.Track.*`) dont les noms sont liés à `RaceTrackSelectionViewModel.Track0Name..Track2Name` depuis le catalogue. Cadres et libellés restylés en code chaque image selon la piste sélectionnée.
+> - **Boutons A et B** : sprites `Ui.Button.*` dans une rangée, avec les attributs XAML `ResponsiveAnchor="BottomRight"` et `Offset="0,0,48,20"` (équivalent de `TryAddChild(actions, offset)`). L'image est placée dans `Tag` en code pour `ApplySpriteButtonState`.
+> - **Build et jeu** : `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, aucun avertissement ; `TrackSelection.design.json` absent de la sortie.
+> - **Captures** contre `references-579e1d7` : `track-selection` à 0,00, identique au pixel près ; `race-hud` à 0,03 (décor, O4) ; le reste à 0,00.
+> - **Éditeur** : `capture_editor_screen.ps1` sur `TrackSelection.uiscreen`, code 0. L'aperçu montre les 3 pistes et leurs cadres ; les noms et les boutons A et B sont sous la zone visible à 100 % et figurent dans la hiérarchie. Ligne d'état sans « Design-time data: ».
+> - 🧪 Reste à vérifier par l'auteur : clic sur chaque piste, A (départ de la course) et B (retour), navigation au clavier et à la manette.
 
 - Objectif : 3 pistes (sprites), noms liés, sélection et boutons A/B.
 - Commit : `feat(racing-casa): load the track selection from a XAML screen asset`

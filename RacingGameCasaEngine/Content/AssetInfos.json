@@ -257,6 +257,12 @@
       "name": "Screen.Highscores",
       "file_name": "UI/Screens/Highscores/Highscores.uiscreen",
       "asset_type": "uiscreen"
+    },
+    {
+      "id": "9e4e6040-a850-45b0-b154-dbea4a404e50",
+      "name": "Screen.TrackSelection",
+      "file_name": "UI/Screens/TrackSelection/TrackSelection.uiscreen",
+      "asset_type": "uiscreen"
     }
   ]
 }
