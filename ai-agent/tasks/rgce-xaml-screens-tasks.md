@@ -158,7 +158,9 @@ Ce que le chantier ne livre pas est dans « Hors périmètre ».
 - Validation : fichiers présents ; liens de l'index valides.
 - Commit : `docs(racing-casa): plan XAML screen assets and record the decision`
 
-### ⏳ T0.2 — Outillage de capture et de comparaison, références
+### ✅ T0.2 — Outillage de capture et de comparaison, références
+
+> Validation (2026-10-05) : `dotnet build RacingGame.slnx` 0 erreur ; `scripts/UiCaptureCompare` 0 erreur. `--capture-ui-screens` : code 0, 10 captures en 20 s dans `ui-run-20261005-161221`, journal sans `[Warning]` ni `[Error]`, back buffer 1674×1150 (réglages d'affichage courants). 2e run du même build (`ui-run-20261005-161307`) comparé au 1er : écart 0,00 sur 9 états et 0,01 sur `race-hud` (rendu déterministe). Copie du 1er run avec un 2e `ui-pause-….png` : code 1, « duplicate state 'pause' ». `--smoke-frontend` : code 0, aucun avertissement. Références : le 1er run, capturé sur l'arbre de travail dont le contenu est celui de ce commit, est renommé `references-<SHA court>` dans `%LOCALAPPDATA%\CasaEngine\RacingGameCasaEngine\Screenshots` ; le SHA est ajouté ici dans le commit de T1.1.
 
 - Objectif : outillage versionné et références durables pour la comparaison avant/après (P10), avant tout changement d'écran.
 - Fichiers :

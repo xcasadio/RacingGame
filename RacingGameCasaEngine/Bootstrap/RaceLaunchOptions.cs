@@ -6,6 +6,8 @@ internal sealed class RaceLaunchOptions
 
     public bool CaptureTrackAudit { get; init; }
 
+    public bool CaptureUiScreens { get; init; }
+
     public bool CaptureCarProfileAudit { get; init; }
 
     public bool CaptureCarTopSpeedAudit { get; init; }

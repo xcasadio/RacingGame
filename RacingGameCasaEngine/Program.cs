@@ -21,11 +21,12 @@ public static class Program
 
         bool validateFrontEndNavigation = args.Contains("--smoke-frontend", StringComparer.OrdinalIgnoreCase);
         bool captureTrackAudit = args.Contains("--capture-track-audit", StringComparer.OrdinalIgnoreCase);
+        bool captureUiScreens = args.Contains("--capture-ui-screens", StringComparer.OrdinalIgnoreCase);
         bool captureCarProfileAudit = args.Contains("--capture-car-profile-audit", StringComparer.OrdinalIgnoreCase);
         bool captureCarTopSpeedAudit = args.Contains("--capture-car-top-speed-audit", StringComparer.OrdinalIgnoreCase);
         bool exportTrackRuntimeScene = args.Contains("--export-track-runtime-scene", StringComparer.OrdinalIgnoreCase);
         bool verifyLegacyImportProfile = args.Contains("--verify-legacy-import-profile", StringComparer.OrdinalIgnoreCase);
-        EnsureSingleAutomationMode(validateFrontEndNavigation, captureTrackAudit, captureCarProfileAudit, captureCarTopSpeedAudit, exportTrackRuntimeScene, verifyLegacyImportProfile);
+        EnsureSingleAutomationMode(validateFrontEndNavigation, captureTrackAudit, captureUiScreens, captureCarProfileAudit, captureCarTopSpeedAudit, exportTrackRuntimeScene, verifyLegacyImportProfile);
 
         Logs.AddLogger(new DebugLogger());
         string logFileName = Path.Combine(AppContext.BaseDirectory, $"racinggame-casaengine-{Environment.ProcessId}.log");
@@ -67,6 +68,7 @@ public static class Program
         {
             ValidateFrontEndNavigation = validateFrontEndNavigation,
             CaptureTrackAudit = captureTrackAudit,
+            CaptureUiScreens = captureUiScreens,
             CaptureCarProfileAudit = captureCarProfileAudit,
             CaptureCarTopSpeedAudit = captureCarTopSpeedAudit,
             ExportTrackRuntimeScene = exportTrackRuntimeScene,
@@ -87,6 +89,7 @@ public static class Program
     private static void EnsureSingleAutomationMode(
         bool validateFrontEndNavigation,
         bool captureTrackAudit,
+        bool captureUiScreens,
         bool captureCarProfileAudit,
         bool captureCarTopSpeedAudit,
         bool exportTrackRuntimeScene,
@@ -99,6 +102,11 @@ public static class Program
         }
 
         if (captureTrackAudit)
+        {
+            enabledModes++;
+        }
+
+        if (captureUiScreens)
         {
             enabledModes++;
         }
