@@ -435,7 +435,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
             effectiveProjectName);
     }
 
-    private static int GetResolutionIndex(int width, int height)
+    internal static int GetResolutionIndex(int width, int height)
     {
         for (int i = 0; i < MenuResolutions.Length; i++)
         {

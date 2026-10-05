@@ -9,7 +9,8 @@ namespace RacingGameCasaEngine.Bootstrap;
 /// automation entry points, captures the back buffer of each once it has settled, and moves the captures into a folder of
 /// their own (Screenshots/ui-run-&lt;timestamp&gt;/ui-&lt;state&gt;.png) so scripts/UiCaptureCompare can compare two runs.
 /// The run uses a fixed windowed back buffer of <see cref="CaptureWidth"/> x <see cref="CaptureHeight"/>, applied without saving it,
-/// so captures do not depend on the persisted display settings (the --smoke-frontend run toggles the saved resolution).
+/// so captures do not depend on the persisted display settings. The front-end state is set to the same display settings, so the
+/// options applied again when the race world loads keep that size; nothing is saved (ADR-0004).
 /// </summary>
 internal sealed class UiScreenCaptureValidator
 {
@@ -80,6 +81,9 @@ internal sealed class UiScreenCaptureValidator
 
             DisplaySettings current = _game.GetDisplaySettings();
             _game.ApplyDisplaySettings(new DisplaySettings(CaptureWidth, CaptureHeight, false, current.IsVSyncEnabled), persistToProjectSettings: false);
+            _flow.State.SelectedResolutionIndex = RacingGameCasaEngineGame.GetResolutionIndex(CaptureWidth, CaptureHeight);
+            _flow.State.IsFullscreen = false;
+            _flow.State.EnableVSync = current.IsVSyncEnabled;
             Logs.WriteInfo($"UI screen capture started, run folder {_runDirectory}");
         }
 

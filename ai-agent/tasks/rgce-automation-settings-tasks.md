@@ -171,7 +171,7 @@ Découverte en lecture seule dans la session principale. Les fichiers:ligne renv
   - Constat hors session : entre la lecture de 21:02 et le premier run, les deux fichiers ont été réécrits à 21:34:37, avec le même contenu (même SHA-1). Cela s'est passé avant tout lancement du jeu par cette session : c'est probablement un run d'une autre session ou de l'auteur, sur un exécutable sans ce correctif.
   - 🧪 restant : le chemin d'enregistrement du jeu normal (bouton Retour d'Options), à vérifier par l'auteur (P5).
 
-### ⏳ T1.2 — Garder 1920×1080 pendant toute la capture UI
+### ✅ T1.2 — Garder 1920×1080 pendant toute la capture UI
 
 - Objectif : D2, par le verrou P2.
 - Fichiers : `RacingGameCasaEngine/Bootstrap/UiScreenCaptureValidator.cs`, `RacingGameCasaEngine/Bootstrap/RacingGameCasaEngineGame.cs` (visibilité de `GetResolutionIndex`).
@@ -186,6 +186,11 @@ Découverte en lecture seule dans la session principale. Les fichiers:ligne renv
   - `--capture-ui-screens` : code 0, journal propre, 10 PNG en 1920×1080, dont `ui-race-hud`, `ui-pause` et `ui-race-finished`.
   - SHA-1 et dates des deux fichiers inchangés.
 - Commit : `fix(racing-casa): keep the UI capture back buffer at 1920x1080 through the race`
+- Note de validation (2026-10-05) :
+  - Mesure avant le code de T1.2, sur `4e532cb` : `--capture-ui-screens` donne déjà 10 PNG en 1920×1080 (`ui-run-20261005-214321`). Les réglages de l'auteur étant en 1920×1080, la réapplication au départ de course garde cette taille, que l'index d'état soit 1 ou invalide. La mesure ne pouvait donc pas trancher. Ce que verrouille D2 est déduit du code : l'état vaut 1920×1080 (index 1), fenêtré, avec la VSync courante. `ApplyFrontEndOptions` demande alors à `ApplyDisplaySettings` exactement l'affichage courant, et celui-ci sort sans rien changer (`CasaEngineGame.cs:201-209`), quelle que soit la résolution enregistrée.
+  - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE.
+  - `--capture-ui-screens` (`racinggame-casaengine-48488.log`) : code 0 en 19 s, aucun `[Warning]` ni `[Error]`. 10 PNG en 1920×1080 dans `ui-run-20261005-214405`, dont `ui-race-hud`, `ui-pause` et `ui-race-finished` (en-têtes PNG lus).
+  - SHA-1 et dates des deux fichiers inchangés.
 
 ---
 
