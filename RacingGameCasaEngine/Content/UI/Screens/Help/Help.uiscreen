@@ -1,0 +1,12 @@
+{
+  "id": "a11dddd4-8488-4dc0-9a9c-df886d7dd8c4",
+  "name": "Screen.Help",
+  "source_xaml_file": "Help.xaml",
+  "theme_name": "",
+  "preview_resolution": {
+    "x": 1280,
+    "y": 720
+  },
+  "resource_files": [],
+  "design_time_data_file": "Help.design.json"
+}

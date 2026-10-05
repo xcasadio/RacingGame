@@ -1,4 +1,3 @@
-using MGUI.Shared.Helpers;
 using MonoGame.Extended;
 
 namespace RacingGameCasaEngine.UI.ViewModels;
@@ -8,7 +7,7 @@ namespace RacingGameCasaEngine.UI.ViewModels;
 /// in its 1024x640 reference layout, scaled to the viewport and to the bounce of the moment; <see cref="Update"/>
 /// recomputes it every frame with the formula of the code-built screens.
 /// </summary>
-public sealed class RaceMenuDecorationViewModel : ViewModelBase
+public sealed class RaceMenuDecorationViewModel : RaceViewModelBase
 {
     private const float ReferenceWidth = 1024.0f;
     private const float ReferenceHeight = 640.0f;
@@ -27,10 +26,8 @@ public sealed class RaceMenuDecorationViewModel : ViewModelBase
         get => _logoLeft;
         set
         {
-            if (_logoLeft != value)
+            if (SetProperty(ref _logoLeft, value))
             {
-                _logoLeft = value;
-                NotifyPropertyChanged();
                 NotifyPropertyChanged(nameof(LogoMargin));
             }
         }
@@ -41,10 +38,8 @@ public sealed class RaceMenuDecorationViewModel : ViewModelBase
         get => _logoTop;
         set
         {
-            if (_logoTop != value)
+            if (SetProperty(ref _logoTop, value))
             {
-                _logoTop = value;
-                NotifyPropertyChanged();
                 NotifyPropertyChanged(nameof(LogoMargin));
             }
         }
@@ -56,27 +51,13 @@ public sealed class RaceMenuDecorationViewModel : ViewModelBase
     public int LogoWidth
     {
         get => _logoWidth;
-        set
-        {
-            if (_logoWidth != value)
-            {
-                _logoWidth = value;
-                NotifyPropertyChanged();
-            }
-        }
+        set => SetProperty(ref _logoWidth, value);
     }
 
     public int LogoHeight
     {
         get => _logoHeight;
-        set
-        {
-            if (_logoHeight != value)
-            {
-                _logoHeight = value;
-                NotifyPropertyChanged();
-            }
-        }
+        set => SetProperty(ref _logoHeight, value);
     }
 
     public void Update(int viewportWidth, int viewportHeight, double totalSeconds)

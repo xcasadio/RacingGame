@@ -299,7 +299,16 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 - Objectif : `MenuDecorationViewModel` (fond, rectangle et rebond du logo, P4) et menu principal à 5 icônes (sprites `Ui.Menu.*`).
 - Commit : `feat(racing-casa): load the main menu from a XAML screen asset`
 
-### ⏳ T2.2 — Help
+### 🧪 T2.2 — Help
+
+> Validation (2026-10-05) :
+> - **Écran** : `Screen.Help`, avec 6 emplacements de section fixes (titre et 2 lignes) liés à `RaceHelpViewModel.Section0..5` et remplis depuis `RaceFrontEndCatalog.HelpSections`. L'écran refuse un catalogue qui ne correspond pas aux emplacements (P7).
+> - **Bouton Back** : taille liée à `RaceMenuTextButtonViewModel`, calculée une fois depuis `Root.Metrics.Scale` avec la formule de `CreateResponsiveMenuTextButton` (P6). Base `RaceViewModelBase` ajoutée, avec un setter qui ne notifie qu'au changement.
+> - **Écart MGUI** : `ScrollViewer` n'a pas d'attribut XAML `AllowClickDragScrolling`. Sans effet ici : la valeur `false` du code est la valeur par défaut de `MGScrollViewer`.
+> - **Build et jeu** : `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, aucun avertissement ; `Help.design.json` absent de la sortie.
+> - **Captures** contre `references-579e1d7` : `help` à 0,00, identique au pixel près ; les 10 états à 0,00.
+> - **Éditeur** : `capture_editor_screen.ps1` sur `Help.uiscreen`, code 0. L'aperçu montre le titre, les sections des données de conception et le logo, avec la police de l'éditeur (O5). Ligne d'état sans « Design-time data: ».
+> - 🧪 Reste à vérifier par l'auteur : clic sur Back, défilement, navigation au clavier et à la manette.
 
 - Objectif : sections d'aide liées au catalogue (`RaceFrontEndCatalog.HelpSections`, emplacements fixes, P7), bouton Back.
 - Commit : `feat(racing-casa): load the help screen from a XAML screen asset`

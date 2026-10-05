@@ -245,6 +245,12 @@
       "name": "Screen.MainMenu",
       "file_name": "UI/Screens/MainMenu/MainMenu.uiscreen",
       "asset_type": "uiscreen"
+    },
+    {
+      "id": "a11dddd4-8488-4dc0-9a9c-df886d7dd8c4",
+      "name": "Screen.Help",
+      "file_name": "UI/Screens/Help/Help.uiscreen",
+      "asset_type": "uiscreen"
     }
   ]
 }

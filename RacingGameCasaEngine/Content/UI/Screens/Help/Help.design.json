@@ -1,0 +1,41 @@
+{
+  "view_model_type": "RaceHelpViewModel",
+  "values": {
+    "Decoration": {
+      "LogoLeft": 451,
+      "LogoTop": 40,
+      "LogoWidth": 755,
+      "LogoHeight": 246
+    },
+    "Section0": {
+      "Title": "Race Controls",
+      "Line0": "Accelerate with Up, W, GamePad A, the right trigger, or D-pad up.",
+      "Line1": "Brake or reverse with Down, S, GamePad B, the left trigger, or D-pad down."
+    },
+    "Section1": {
+      "Title": "Steering",
+      "Line0": "Steer with Left and Right, A and D, the left stick, or the D-pad.",
+      "Line1": "Controller sensitivity from Options scales the analog steering response."
+    },
+    "Section2": {
+      "Title": "Camera",
+      "Line0": "Use Page Up and Page Down, or GamePad X and Y, to change chase distance during a race.",
+      "Line1": "The chase camera now widens with speed and switches to an orbit view when the race is finished."
+    },
+    "Section3": {
+      "Title": "Race Flow",
+      "Line0": "Pause with Escape or GamePad Start once the countdown is over.",
+      "Line1": "Finish the race to open the result panel, then return to the main menu."
+    },
+    "Section4": {
+      "Title": "Menus",
+      "Line0": "This front-end uses UIRoot, ScreenStack, and GameScreenManager.",
+      "Line1": "No legacy RacingGame.Shared renderer is needed here."
+    },
+    "Section5": {
+      "Title": "Session Flow",
+      "Line0": "Splash -> Menu -> Car -> Track -> HUD is now fully wired.",
+      "Line1": "The in-game HUD keeps the original MGUI layout, while pause still runs through the same screen stack."
+    }
+  }
+}
