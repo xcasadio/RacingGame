@@ -174,6 +174,29 @@ Découverte en lecture seule (deux workflows de découverte avec contre-vérific
 > - Nouvelles références : le 2e run (`ui-run-20261005-195808`), dont `ui-options.png` est remplacée par celle du 1er run (même code pour cet écran, sans survol), copié en `references-<SHA>` ; le SHA de ce commit est noté sous T2.1.
 > - 🧪 Reste : taille du HUD jugée en jeu par l'auteur, à plusieurs résolutions.
 
+> Retour de l'auteur (2026-10-05) : en bas à gauche, les temps ne sont pas centrés dans leur conteneur ; en haut à droite, le texte non plus.
+> - Cause, établie par une découverte en lecture seule :
+>   - les textes gardaient les positions du HUD construit en code, ancrées à gauche ;
+>   - MGUI dessine les glyphes plus bas que leur boîte de ligne, parce que la hauteur de ligne vient de la police sprite Arial alors que les glyphes dessinés sont ceux de Tahoma ;
+>   - mesuré à l'échelle 1 : temps 16 px trop bas et 20 px trop à droite, débordant du panneau ; lignes du top 5 8 px trop bas.
+> - Correction (`RaceHud.xaml`) : chaque texte est centré sur la zone vide de sa case, mesurée dans `ingame.png` :
+>   - temps : x 113 à 341, à droite de « Current: » ;
+>   - nom de piste : corps de l'en-tête ;
+>   - lignes : case du rang et case du temps.
+>
+>   Un padding bas (15 et 16) remonte l'encre au centre de la case. Les temps, dont la ligne est trop haute pour ce procédé, sont placés depuis le haut de leur ligne, dans un panneau prolongé de 10 au-dessus du sprite ; le sprite reste au même endroit.
+> - Validation :
+>   - `dotnet build` : 0 erreur, aucun avertissement RGCE ;
+>   - `--smoke-frontend`, `--capture-track-audit` et `--capture-ui-screens` : code 0, journaux propres ;
+>   - écart des captures contre `references-f94ed3e` limité aux textes des deux panneaux ;
+>   - encre centrée à 2 px près (chiffres et majuscules) en 1920×1080, 1600×900, 1440×810 et 1280×720, mesuré sur des captures d'une sonde ;
+>   - éditeur : `RaceHud.uiscreen` sans erreur.
+> - Vérification indépendante (3 angles : pixels, sémantique MGUI, exactitude de la doc) :
+>   - centrage CONFIRMED ;
+>   - une affirmation fausse de la doc (le DrawOrigin, qui s'annule, a été cité comme cause du décalage) et des tolérances trop précises sont corrigées ;
+>   - P4 reportés : padding 14 un peu meilleur que 15 pour le nom de piste selon un modèle ; aperçu de l'éditeur sans les tailles de police d'exécution (E1).
+> - Réglages de l'auteur (`display-settings.json`, `front-end-options.json`) restaurés à l'identique après les runs.
+
 ## Phase 2 — Annonce du départ
 
 ### 🧪 T2.1 — Feu de départ animé

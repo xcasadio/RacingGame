@@ -144,7 +144,8 @@ public sealed class RaceHudViewModel : RaceViewModelBase
 {
     public const int GameOverLineCount = 5;
 
-    // Panel sizes of RaceHud.xaml at a responsive scale of 1, and their ingame.png sprite sizes.
+    // Sizes at which RaceHud.xaml draws the times and best-times sprites at a responsive scale of 1, and their ingame.png
+    // sprite sizes.
     private const int TimesPanelHeight = 128;
     private const int TimesSpriteHeight = 128;
     private const int TopTimesPanelWidth = 282;

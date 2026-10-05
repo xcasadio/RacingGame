@@ -15,7 +15,7 @@
 | M5 | No indexer in binding paths, no proven collection binding | Help, Highscores, CarSelection, RaceHud | fixed slots bound to flat or nested properties |
 | M6 | `RenderTransform.Rotation` has no bindable attribute | RaceHud needle | `TargetPathOverride=RenderTransform.Rotation` on `RenderTransformTranslation` |
 | M7 | XAML `Background` sets only two brush slots; no colour-to-brush conversion | swatches, all `Background` attributes | whole brush bound by `TargetPathOverride=BackgroundBrush` |
-| M8 | `TextBlock` draws its text lower than a draw transaction does | RaceHud texts | `ClipToBounds="False"`; offset reported (D15) |
+| M8 | `TextBlock` draws its text lower than a draw transaction does, and lower than its own line box | RaceHud texts | `ClipToBounds="False"`; texts centred on their cells with a measured correction (D15) |
 | M9 | Responsive text scale does not follow the UI scale | RaceHud texts | font sizes bound to values computed in code |
 | M10 | An `Image` with an empty `SourceName` asks the catalogue for it | RaceHud digit slots | collapsed slots keep a valid sprite name |
 | M11 | `ScrollViewer` has no `AllowClickDragScrolling` attribute | Help, Highscores, Options | none needed (default matches) |
@@ -86,14 +86,17 @@ The screens check that the catalogues still fit the slots. Slot counts are coupl
 - RGCE loads no theme, so the default brush has no hover colour and the same 0.06 pressed darkening (`MGUI/MGUI.Core/UI/MGTheme.cs:690-696`). Literal backgrounds therefore look the same in every state these buttons use. Only the Selected and Disabled slots differ, and these buttons use neither.
 - The car-colour swatches take their colour from the catalogue. Each binds its whole background brush, `Background="{dataBinding:MGBinding Path=SwatchNBrush, TargetPathOverride=BackgroundBrush}"`, built by `RaceCarSelectionViewModel` as the old code built it.
 
-### M8. `TextBlock` draws its text lower than a draw transaction does
+### M8. `TextBlock` draws its text lower than a draw transaction does, and lower than its own line box
 
 **Evidence.**
 - `MGTextBlock` draws at its layout position plus the font's draw origin times the scale, and also passes that draw origin to the text engine (`MGUI/MGUI.Core/UI/MGTextBlock.cs:1605-1640`).
 - `CasaDrawTransaction.DrawShadowedText`, which the code-built HUD used, draws at the given position with the same origin and adds nothing (`CasaEngine/Framework/UI/Backend/MonoGame/CasaDrawTransaction.cs:272-287`).
 - An element clips its content to its bounds by default (`MGElement.cs:3537`), so the lowered glyphs were cut at the bottom.
+- With the FontStashSharp text engine that CasaEngine installs, the glyphs also sit low inside the text block's own line box. The line height is the tight height of the Arial sprite font (`MGUI/MGUI.FontStashSharp/FontStashSharpTextEngine.cs:375-379, 616-621`, `MGUI/MGUI.MonoGame.Integration/Text/FontSet.cs:108-121`), while the glyphs drawn are Tahoma's, with their baseline at the TTF ascent below the box top. Centring a text block, with `TextAlignment` and the default `VerticalContentAlignment="Center"` (`MGUI/MGUI.Core/UI/MGTextBlock.cs:1364, 1237-1248, 1567-1569`), therefore centres the line box, not the ink.
+  - Bold digits, UI scale 1, measured: the ink centre is 7.5 px below the line-box centre at 26 pt, 9 px at 30 pt and 10 px at 38 pt.
+  - All of it comes from these metrics. `MGTextBlock` adds the draw origin to its position, and the engine passes the same origin to FontStashSharp, which subtracts it again (`MGUI/MGUI.FontStashSharp/FontStashSharpTextEngine.cs:780-784`). The draw origin only explains the difference with `DrawShadowedText`.
 
-**In RGCE.** The HUD text blocks, and the times panel that holds two of them, set `ClipToBounds="False"`. The remaining offset is measured in "Race HUD text rendering" below (D15).
+**In RGCE.** The HUD text blocks, and the times panel that holds two of them, set `ClipToBounds="False"`. Each text is centred on its sprite cell, and a measured correction lifts the ink to the cell centre (D15).
 
 ### M9. Responsive text scale does not follow the UI scale
 
@@ -162,6 +165,13 @@ Verified in the editor discovery and in the per-screen editor captures (`scripts
 ## Race HUD text rendering (D15)
 
 > These measurements describe the HUD of the XAML migration. The HUD was doubled afterwards, with its font sizes (plan `ai-agent/tasks/rgce-hud-shadows-start-tasks.md`, T1.1).
+>
+> Since then, the texts no longer keep the code-built positions: the author asked for them to be centred in their containers. Each text is now centred on the empty area of its sprite cell, measured in `ingame.png`:
+> - the time column (x 113 to 341) of each times row;
+> - the track-name header body;
+> - the rank cell and the time cell of each best-times row.
+>
+> A bottom padding of about twice the drop measured in M8 lifts the ink to the cell centre. The times are the exception: their line box is too tall for that, so their line is placed from its top instead. Measured on captures at 1920×1080, 1600×900, 1440×810 and 1280×720, every text's ink centre is within 2 px of its cell centre, vertically and horizontally. The ink measured is that of the digits and capital letters; a descender, such as the g of "Beginner", hangs below.
 
 The HUD texts were drawn by `DrawShadowedText`; they are now bold shadowed `TextBlock`s (offset 1,1, colour `rgba(0,0,0,191)`, the old values). The measurements below are text ink boxes compared with `references-579e1d7`, in 1920×1080 at UI scale 1, on the race-finished capture; the race HUD capture gives the same sizes and offsets.
 
@@ -180,7 +190,7 @@ The HUD texts were drawn by `DrawShadowedText`; they are now bold shadowed `Text
   - laps panel 4.0/3.7/2.8 and tachometer 2.1, from the race scenery seen through the panels (plan O4);
   - race-finished panel 0.00.
 - **Whole image.** `race-hud` 0.53/0.51/0.48 and `race-finished` 0.49/0.47/0.44, under the 2.0 threshold.
-- **Removing the offset** would take either a text block that draws at its layout position like a draw transaction, or an offset compensation per font size. RGCE does neither, since D15 accepts the difference.
+- **Removing the offset** would take either a text block that draws at its layout position like a draw transaction, or an offset compensation per font size. The HUD measured here accepted the difference; the centred HUD now compensates per font size (note above).
 
 ## Post Screen Effects (D14)
 
