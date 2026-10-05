@@ -27,8 +27,6 @@ internal sealed class RaceRuntimeUiCoordinator
 
     public void Update(GameTime gameTime)
     {
-        _ = gameTime;
-
         if (!TryResolveContext(out RuntimeRaceSession session, out RaceGameMode gameMode, out RacingPlayerController playerController))
         {
             ResetForCurrentWorld();
@@ -52,16 +50,19 @@ internal sealed class RaceRuntimeUiCoordinator
         if (gameMode.IsRaceFinished)
         {
             HidePauseScreen();
+            _game.RaceVibration.Stop("race finished");
             return;
         }
 
         if (gameMode.IsPaused)
         {
             ShowPauseScreen(session, viewId);
+            _game.RaceVibration.Stop("paused");
         }
         else
         {
             HidePauseScreen();
+            _game.RaceVibration.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
         }
     }
 
@@ -146,5 +147,6 @@ internal sealed class RaceRuntimeUiCoordinator
     private void TearDownTransientScreens()
     {
         HidePauseScreen();
+        _game.RaceVibration.Stop("left the race");
     }
 }

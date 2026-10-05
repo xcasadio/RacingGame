@@ -124,6 +124,7 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
 
         if (barrierContact.TouchedBarrier)
         {
+            RaceGamepadVibration.ReportPlayerBarrierContact(pawn, session, barrierContact.ImpactStrength);
             _speedUnitsPerSecond = ApplyBarrierSpeedPenalty(_speedUnitsPerSecond, trackPhysics, barrierContact.ImpactStrength, elapsedTime);
             nextMovementForward = ProjectDirectionAlongBarrier(nextMovementForward, barrierContact.BarrierNormal, nextSurface.Up, nextSurface.Forward);
         }

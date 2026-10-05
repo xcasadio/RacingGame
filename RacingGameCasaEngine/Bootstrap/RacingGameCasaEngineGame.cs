@@ -13,6 +13,7 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using RacingGameCasaEngine.GameFramework;
 using RacingGameCasaEngine.Persistence;
 using RacingGameCasaEngine.Worlds;
 using Color = Microsoft.Xna.Framework.Color;
@@ -69,6 +70,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         FrontEndOptionsPersistence.Load(_frontEndOptionsFileName, _frontEndFlow.State);
         _raceWorldBinder = new RuntimeRaceWorldBinder(this);
         RaceSession = new RuntimeRaceSession();
+        RaceVibration = new RaceGamepadVibration(this, () => _frontEndFlow.State.EnableVibration);
 
         if (launchOptions.ValidateFrontEndNavigation)
         {
@@ -115,6 +117,9 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     public Texture2D? RaceHudTexture { get; private set; }
 
     internal RuntimeRaceSession RaceSession { get; }
+
+    /// <summary>Gamepad vibration on guard-rail hits (Gamepad Vibration option).</summary>
+    internal RaceGamepadVibration RaceVibration { get; }
 
     internal void SyncOptionsState(RaceFrontEndState state)
     {

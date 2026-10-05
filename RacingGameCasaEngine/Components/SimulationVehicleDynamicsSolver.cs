@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.Entities;
+using RacingGameCasaEngine.GameFramework;
 using RacingGameCasaEngine.Gameplay;
 using RacingGameCasaEngine.Worlds;
 
@@ -85,6 +86,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
         float totalBrakeOrRollingForce = 0f;
         int groundedWheelCount = 0;
         bool touchedGuardRail = false;
+        float guardRailImpactStrength = 0f;
 
         for (int index = 0; index < context.WheelDefinitions.Length; index++)
         {
@@ -130,7 +132,15 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             float suspensionForce = Math.Max(0f, (compression * tuning.SuspensionSpringStrength) + (compressionVelocity * tuning.SuspensionDamperStrength));
             float staticLoad = context.Chassis.Mass * 9.81f * definition.StaticLoadRatio;
             float wheelLoad = staticLoad + suspensionForce;
-            touchedGuardRail |= Math.Abs(sample.LateralOffset) > Math.Max(0f, sample.HalfWidth - context.TrackPhysics.GuardRailInset);
+            if (Math.Abs(sample.LateralOffset) > Math.Max(0f, sample.HalfWidth - context.TrackPhysics.GuardRailInset))
+            {
+                touchedGuardRail = true;
+
+                // Impact strength as the arcade solver measures it: |car forward . rail normal|, normal toward the road.
+                Vector3 barrierNormal = VehicleDynamicsMath.NormalizeOrFallback(sample.LateralOffset >= 0f ? -sample.Right : sample.Right, sample.Right);
+                Vector3 surfaceForward = VehicleDynamicsMath.ProjectDirectionOntoSurface(baseForward, sample.Up, sample.Forward);
+                guardRailImpactStrength = Math.Max(guardRailImpactStrength, Math.Clamp(Math.Abs(Vector3.Dot(surfaceForward, barrierNormal)), 0f, 1f));
+            }
 
             Vector3 wheelForward = VehicleDynamicsMath.ProjectDirectionOntoSurface(baseForward, sample.Up, sample.Forward);
             if (definition.CanSteer)
@@ -244,6 +254,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
 
         if (touchedGuardRail)
         {
+            RaceGamepadVibration.ReportPlayerBarrierContact(context.Pawn, context.Session, guardRailImpactStrength);
             context.Chassis.LinearVelocity *= MathF.Pow(context.TrackPhysics.EdgeSpeedRetainFactor, Math.Clamp(context.ElapsedTime * 60f, 0f, 8f));
         }
 

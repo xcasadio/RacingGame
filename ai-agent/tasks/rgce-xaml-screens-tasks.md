@@ -445,7 +445,7 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 > - **Code** : `RaceWorldFactory.CreateRaceWorld` règle `world.EnvironmentSettings.Shadows.Enabled` et le `CastShadows` de la seule lumière `Light.Key` d'après `RaceFrontEndState.EnableShadows`. Les réglages sont relus à chaque image (`RenderPipeline.cs:139`), et la passe d'ombres prend la première lumière directionnelle qui en projette (`ShadowPass.cs:213-224`).
 > - **Build et jeu** : `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, aucun avertissement ; `--capture-track-audit`, ombres activées, code 0, 21 captures, aucun avertissement.
 > - **Option cochée** (fichier d'options de l'utilisateur, défaut) : run `ui-run-20261005-174540`. `race-hud` à 6,46/6,59/6,23, `race-finished` à 4,51/4,75/4,82 et `pause` à 2,12/2,16/2,04 contre `references-579e1d7`. Ombres visibles sur la planche : voiture et structures sur la route.
-> - **Option décochée** : `EnableShadows` mis à `false` le temps d'un run, dans `%LOCALAPPDATA%\CasaEngine\RacingGameCasaEngineront-end-options.json`, puis le fichier restauré à l'identique (même SHA-1). Run `ui-run-20261005-174621` : `race-hud` à 0,53, `pause` à 0,17 et `race-finished` à 0,49, exactement les valeurs de T3.2. La scène est donc identique à celle d'avant.
+> - **Option décochée** : `EnableShadows` mis à `false` le temps d'un run, dans `%LOCALAPPDATA%\CasaEngine\RacingGameCasaEngine\front-end-options.json`, puis le fichier restauré à l'identique (même SHA-1). Run `ui-run-20261005-174621` : `race-hud` à 0,53, `pause` à 0,17 et `race-finished` à 0,49, exactement les valeurs de T3.2. La scène est donc identique à celle d'avant.
 > - **Nouvelles références** : le rendu par défaut change. Le run `ui-run-20261005-174540`, capturé sur l'arbre de travail dont le contenu est celui de ce commit, est copié en `references-<SHA court>` ; le SHA est noté sous T4.2.
 > - **Qualité des ombres** : l'ombre portée sur la route est crénelée, avec les valeurs par défaut du moteur (carte de 1024, distance de 100). D11 ne prévoit aucun réglage fin (O6).
 
@@ -458,7 +458,23 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
   - nouvelles références de course notées ici, car le rendu par défaut change.
 - Commit : `feat(racing-casa): drive race shadows from the Shadows option`
 
-### ⏳ T4.2 — Option « Gamepad Vibration »
+### 🧪 T4.2 — Option « Gamepad Vibration »
+
+> Validation (2026-10-05) :
+> - **Code** : `GameFramework/RaceGamepadVibration.cs` porte la règle de `CarPhysics.cs` :
+>   - choc rasant si `ImpactStrength` < √2/2, à 0,35 pendant 0,25 s ; choc frontal à 0,85 pendant 0,40 s ;
+>   - rien si l'option est décochée ;
+>   - manette du joueur local par `GamePadManager.GetGamePad(ControllerId).SetVibration` ;
+>   - décompte en course et arrêt à expiration, en pause, en fin de course et à la sortie de course, par `RaceRuntimeUiCoordinator`.
+> - **Règle legacy, détail** : comme dans `CarPhysics.ApplyVibration`, chaque image en contact applique sa propre intensité et garde la plus longue des deux durées. D13 résumait « prolongée si la nouvelle est plus forte » ; c'est le code legacy qui est porté.
+> - **Écart au plan, corrigé** : la voiture du joueur ne porte que `VehicleDynamicsComponent` (`RacingCarPawn.cs:79`), qui choisit `ArcadeVehicleDynamicsSolver` (Arcade) ou `SimulationVehicleDynamicsSolver` (Simulation). `ArcadeCarMovementComponent`, cité par le plan, n'est instancié nulle part : il n'est pas modifié. Le solveur Simulation détecte le contact roue par roue sans calculer d'impact ; il mesure désormais le même `|avant · normale|` que le solveur Arcade, sur les roues en contact.
+> - **Build et jeu** : `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, aucun avertissement ; `--capture-track-audit` code 0, aucun avertissement (sa course ne touche aucune glissière).
+> - **Journal de trace** de `--capture-car-profile-audit` (fichier d'options sauvegardé puis vérifié inchangé) : 6 chocs rasants tracés, chacun arrêté « left the race ».
+>   - Arcade : impacts 0,15, 0,10 et 0,19 ;
+>   - Simulation : impacts 0,50, 0,49 et 0,46 ;
+>   - intensité 0,35, durée 0,25 s ; aucun choc frontal dans cet audit.
+> - **Références de T4.1** : `references-55304bb` (ombres activées), dans `%LOCALAPPDATA%\CasaEngine\RacingGameCasaEngine\Screenshots`.
+> - 🧪 Reste à vérifier par l'auteur : ressenti à la manette (choc rasant, choc frontal), arrêt en pause et en fin de course, rien quand l'option est décochée.
 
 - Objectif : D13, portage de la règle legacy.
 - Fichiers :
