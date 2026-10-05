@@ -15,7 +15,7 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
 const int CellSize = 212;
-// Inside each cell: the face core, clear of the 10 px rim and the 10 px inner bevel (face spans 11..200).
+// Inside each cell: the face core, clear of the 10 px rim (1..10) and the 10 px inner bevel (11..20); the face spans 21..190.
 const int FaceStart = 22;
 const int FaceEnd = 189;
 // Coverage below this is the face itself (gradient noise), not glyph ink.

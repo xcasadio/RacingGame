@@ -8,7 +8,8 @@ namespace RacingGameCasaEngine.UI.ViewModels;
 /// orange ring of the selected button) sized from RacingGame's 212x212 button art, its opacity and its label. Set by
 /// <see cref="RaceMainMenuViewModel.Update"/>; the button sits in a slot of the row whose top is the active button's top.
 /// The plain values (<see cref="Size"/>, <see cref="Top"/>, <see cref="Rim"/>, <see cref="Radius"/>,
-/// <see cref="LabelGap"/>, <see cref="IsSelected"/>) are the ones design-time data sets; the others derive from them.
+/// <see cref="LabelGap"/>, <see cref="SlotHeight"/>, <see cref="IsSelected"/>) are the ones design-time data sets; the
+/// others derive from them.
 /// </summary>
 public sealed class RaceMainMenuButtonViewModel : RaceViewModelBase
 {

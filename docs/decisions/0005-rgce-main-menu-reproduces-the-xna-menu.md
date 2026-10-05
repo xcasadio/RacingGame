@@ -1,6 +1,6 @@
 # ADR-0005: RacingGameCasaEngine's main menu reproduces the original XNA menu with MGUI brushes
 
-- **Status**: Accepted
+- **Status**: Superseded by ADR-0006
 - **Date**: 2026-10-05
 - **Source**: this chantier: `ai-agent/tasks/rgce-main-menu-xna-look-tasks.md`, decisions D1 to D5 and proposals P2 to P5 (author answers and plan approval, 2026-10-05)
 

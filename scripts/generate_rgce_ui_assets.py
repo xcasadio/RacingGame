@@ -1,7 +1,7 @@
 """Generate the UI image assets of RacingGameCasaEngine: one .sprite per atlas rectangle used by the screens, the
 .texture wrappers they reference, and their catalogue entries in Content/AssetInfos.json.
 
-The rectangles are those the code-built screens used (RacingGameCasaEngine/UI/LegacyMenuUiAtlas.cs,
+The rectangles are those the code-built screens used (their atlas helper, removed since, and
 Screens/RaceHudScreen.cs), plus the main menu's label rectangles of RacingGame's UIRenderer and its icon glyphs, which
 scripts/MenuIconExtractor writes to Content/UI/Sprites/Ui.Menu.Glyphs.png. A sprite chain is png entry <- .texture
 (texture_asset_id) <- .sprite (sprite_sheet_asset_id, location), as in CasaEngine's RPGDemo (Screens/MainHUD).

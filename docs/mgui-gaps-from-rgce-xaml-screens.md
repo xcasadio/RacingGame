@@ -1,17 +1,17 @@
 # MGUI and CasaEngine gaps met by the RacingGameCasaEngine XAML screens
 
 - **Date**: 2026-10-05
-- **Source**: plan `ai-agent/tasks/rgce-xaml-screens-tasks.md`, tasks T1.2 to T3.2 (validation notes), decisions D6, D14, D15 and open point O5; [ADR-0001](decisions/0001-rgce-screens-as-casaengine-screen-assets.md) and [ADR-0002](decisions/0002-rgce-content-is-a-casaengine-editor-project.md).
-- **Scope**: only what the migration of the nine RacingGameCasaEngine (RGCE) screens actually hit. Each entry gives the evidence in the CasaEngine submodule (`CasaEngine/`, MGUI in `CasaEngine/MGUI/`), what RGCE does instead, and the related entry of the engine's own audit `CasaEngine/ai-agent/audits/mgui-gaps-from-xaml-screens.md` when there is one. Nothing here was changed in the submodules (D8).
+- **Source**: plan `ai-agent/tasks/rgce-xaml-screens-tasks.md`, tasks T1.2 to T3.2 (validation notes), decisions D6, D14, D15 and open point O5; [ADR-0001](decisions/0001-rgce-screens-as-casaengine-screen-assets.md) and [ADR-0002](decisions/0002-rgce-content-is-a-casaengine-editor-project.md). M13 to M15: plan `ai-agent/tasks/rgce-main-menu-xna-look-tasks.md` and [ADR-0006](decisions/0006-rgce-main-menu-as-delivered.md).
+- **Scope**: only what the migration of the nine RacingGameCasaEngine (RGCE) screens, and the later rework of the main menu (M13 to M15), actually hit. Each entry gives the evidence in the CasaEngine submodule (`CasaEngine/`, MGUI in `CasaEngine/MGUI/`), what RGCE does instead, and the related entry of the engine's own audit `CasaEngine/ai-agent/audits/mgui-gaps-from-xaml-screens.md` when there is one. Nothing here was changed in the submodules (D8).
 
 ## Summary
 
 | Id | Gap | Met in | RGCE workaround |
 |---|---|---|---|
-| M1 | Visual states cannot target border thickness, border colour or text colour | all menu screens | per-frame restyle in code |
-| M2 | Focus does not restyle the focused element's children or siblings | MainMenu, band buttons | per-frame restyle in code |
+| M1 | Visual states cannot target border thickness, border colour or text colour | all menu screens but the main menu | per-frame restyle in code |
+| M2 | Focus does not restyle the focused element's children or siblings | band buttons | per-frame restyle in code |
 | M3 | No event attributes in XAML | every button | `AddCommandHandler` in `OnWindowLoaded` |
-| M4 | `Image` has no source rectangle | every atlas image | 29 generated `.sprite` assets |
+| M4 | `Image` has no source rectangle | every atlas image | 34 generated `.sprite` assets |
 | M5 | No indexer in binding paths, no proven collection binding | Help, Highscores, CarSelection, RaceHud | fixed slots bound to flat or nested properties |
 | M6 | `RenderTransform.Rotation` has no bindable attribute | RaceHud needle | `TargetPathOverride=RenderTransform.Rotation` on `RenderTransformTranslation` |
 | M7 | XAML `Background` sets only two brush slots; no colour-to-brush conversion | swatches, all `Background` attributes | whole brush bound by `TargetPathOverride=BackgroundBrush` |
@@ -20,6 +20,9 @@
 | M10 | An `Image` with an empty `SourceName` asks the catalogue for it | RaceHud digit slots | collapsed slots keep a valid sprite name |
 | M11 | `ScrollViewer` has no `AllowClickDragScrolling` attribute | Help, Highscores, Options | none needed (default matches) |
 | M12 | The runtime never calls `LoadDefaultResources`; screens are never disposed | every screen | `RaceXamlScreenBase` |
+| M13 | No rounded border with a gradient | MainMenu button bevel | concentric banded bands of solid docked borders |
+| M14 | Banded border bands are truncated to whole pixels | MainMenu button bevel | the button's gradient background shows through the remainder |
+| M15 | The focused state is shown only in keyboard or pad navigation | MainMenu selection | selection owned by the screen; buttons not focusable |
 | E1 | The editor preview is not run-time faithful | every screen | design size on full-screen windows; code-only states verified at run time |
 | E2 | Design-time data cannot give an XNA `Color` | CarSelection | colours as XAML colour strings |
 | E3 | The editor automation command line needs an entity and can hang | editor verification | anchor entity; bounded wait in the capture script |
@@ -31,7 +34,7 @@
 
 **Evidence.** A visual-state setter resolves its path through the animation-target registry (`MGUI/MGUI.Core/UI/Animation/States/UIVisualState.cs:148-149, 212`). The registered targets are opacity, render transform, render scale, margin, padding, min height, preferred sizes, background overlay and gradients, border highlight progress, scroll offsets and a few control values (`UIBuiltInAnimationTargets.cs`, `UIExtraAnimationTargets.cs`). `BorderThickness`, the `BorderBrush` colour and a text block's `Foreground` are not among them.
 
-**In RGCE.** The code-built menus changed exactly these on hover, focus and selection. The main-menu icon buttons change border brush, face and inner backgrounds, and the label colour and opacity. Band buttons change border colour, thickness and label colour. Menu text buttons change border, thickness and opacity. The track selection changes frame border colour, thickness and label colour, and the car selection changes the swatch border. D6 keeps the exact look, so every screen finds these elements by name and restyles them every frame with the functions kept in `RacingGameCasaEngine/UI/LegacyMenuUiTheme.cs`.
+**In RGCE.** The code-built menus changed exactly these on hover, focus and selection. Band buttons change border colour, thickness and label colour. Menu text buttons change border, thickness and opacity. The track selection changes frame border colour, thickness and label colour, and the car selection changes the swatch border. D6 keeps the exact look, so every screen finds these elements by name and restyles them every frame with the functions kept in `RacingGameCasaEngine/UI/LegacyMenuUiTheme.cs`. The main menu no longer does: its look follows the original XNA menu and is bound to its view model (ADR-0006).
 
 **Would remove the workaround.** Registered targets for border thickness, border colour and text foreground, usable by XAML visual states.
 
@@ -39,7 +42,7 @@
 
 **Evidence.** An element shows its focused state only when it is itself the keyboard focus handler (`MGUI/MGUI.Core/UI/MGElement.cs:3969-3971`).
 
-**In RGCE.** A main-menu entry is a button whose face, two inner borders and label (a sibling) change when the button is focused or hovered. Band buttons recolour their label child. This is also part of the per-frame restyle of M1.
+**In RGCE.** Band buttons recolour their label child, as part of the per-frame restyle of M1. The main menu had the same need (face, inner borders and a sibling label following the button) and now binds its selected look to its view model instead (ADR-0006).
 
 **Would remove the workaround.** A way for a child or a named sibling to follow another element's visual state.
 
@@ -53,7 +56,7 @@
 
 **Evidence.** `Image.SourceName` resolves only `sprite` and `anim2d` assets (`CasaEngine/Framework/UI/Backend/MonoGame/Assets/CasaUIAssetProvider.cs:129-157`). There is no attribute to crop a texture.
 
-**In RGCE.** Every atlas rectangle the code-built screens drew became a `.sprite` asset (29 sprites over 3 `.texture` assets). They are generated by `scripts/generate_rgce_ui_assets.py` from the rectangles of the old code.
+**In RGCE.** Every atlas rectangle the screens draw is a `.sprite` asset (34 sprites over 4 `.texture` assets), generated by `scripts/generate_rgce_ui_assets.py`: the rectangles of the old code, the main-menu labels of RacingGame's `UIRenderer`, and the main-menu icon glyphs, which `scripts/MenuIconExtractor` extracts from `buttons.png` onto a transparent image.
 
 ### M5. No indexer in binding paths, no proven collection binding
 
@@ -125,6 +128,36 @@ The screens check that the catalogues still fit the slots. Slot counts are coupl
 - `ScreenStack` never calls `Dispose` on a screen (`CasaEngine/Framework/UI/ScreenStack.cs:79-107`), and `XamlUIScreenBase.Dispose` is what takes a screen's bindings out of MGUI's static registry.
 
 **In RGCE.** `RacingGameCasaEngine/Screens/RaceXamlScreenBase.cs` loads the default resources once before the first screen, and disposes the screen in `Hide`, which `ScreenStack` calls only on pop or removal.
+
+### M13. No rounded border with a gradient
+
+**Evidence.**
+- A border brush whose fill is not solid draws rectangular strips on a rounded shape, so its corners are square and not clipped to the rounded silhouette (`MGUI/MGUI.Core/UI/Brushes/BorderBrushes/MGUniformBorderBrush.cs:103-107`).
+- A docked border (one fill per side) keeps rounded corners only when its four sides are solid colours (`MGDockedBorderBrush.cs:204-214`).
+- Fills, on the other hand, follow rounded shapes with a four-corner gradient (`MGUI/MGUI.Core/UI/Brushes/FillBrushes/MGGradientFillBrush.cs:63-91`).
+
+**In RGCE.** The original menu buttons have a 10-pixel inner bevel that ramps from dark at the rim to the face colour, darker at the bottom than at the top. The main menu draws it as four concentric bands of a `BandedBorderBrush`, each a docked border with one solid colour per side, sampled from the art. The result is a ramp in four steps (2 pixels each at 1920×1080, 1 pixel at 1280×720, see M14) instead of a continuous one.
+- Pitfall met on the way: the bevel is an empty `Border` inside each button. With the button's default content alignment, that border collapses to twice its thickness at the centre of the button and draws as a small disc. The buttons therefore set `HorizontalContentAlignment` and `VerticalContentAlignment` to `Stretch`.
+
+**Would remove the workaround.** A border brush that draws a gradient along a rounded ring, from its outer edge to its inner edge.
+
+### M14. Banded border bands are truncated to whole pixels
+
+**Evidence.** Each band of a `BandedBorderBrush` takes `(int)(total thickness × its weight / total weight)` pixels. The remainder is not drawn (`MGUI/MGUI.Core/UI/Brushes/BorderBrushes/MGBandedBorderBrush.cs:104-128`, the rounded-shape path).
+
+**In RGCE.** The main-menu bevel is as thick as the rim, 9 or 11 pixels at 1920×1080, so its four equal bands draw 8 pixels. Each button's own background is the face gradient, so the undrawn pixels show the face colour instead of a gap.
+
+**Would remove the workaround.** Distributing the remainder over the bands.
+
+### M15. The focused state is shown only in keyboard or pad navigation
+
+**Evidence.** An element shows its focused state only when it has the keyboard focus and the desktop's active input mode is not the pointer (`MGUI/MGUI.Core/UI/MGElement.cs:3969-3971`, `MGDesktop.cs:457`). The mode starts as the pointer and changes only on input (`MGDesktop.cs:183-193`), so a button focused by code when a screen opens is not drawn as focused, and moving the mouse hides the focused state again.
+
+**In RGCE.** The original main menu always shows its selected button. `RacingGameCasaEngine/Screens/MainMenuScreen.cs` owns the selection instead of MGUI's focus.
+- The keyboard, the pad and the mouse hover move the selection, and the screen binds the selected look to its view model.
+- The buttons are not focusable, so MGUI's own arrow-key navigation does not move a second selection.
+
+**Would remove the workaround.** An option to show the focused state whatever the input mode, or a selection model that a screen can drive.
 
 ## CasaEngine editor
 

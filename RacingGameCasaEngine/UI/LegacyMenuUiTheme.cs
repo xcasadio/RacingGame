@@ -8,7 +8,7 @@ namespace RacingGameCasaEngine.UI;
 /// <summary>
 /// Hover, focus and selection looks of the menu screens' buttons, applied in code every frame (RGCE ADR-0001: MGUI XAML
 /// visual states cannot express them, see docs/mgui-gaps-from-rgce-xaml-screens.md). The buttons themselves are XAML.
-/// The main menu is not restyled here: its view model drives its look (ADR-0005).
+/// The main menu is not restyled here: its view model drives its look (ADR-0006).
 /// </summary>
 internal static class LegacyMenuUiTheme
 {

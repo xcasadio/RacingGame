@@ -33,7 +33,7 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
   - bande : `RenderBlackBar(280, 192)` (`MainMenu.cs:248`), texel `BlackBarGfxRect` (99, 999) tiré sur toute la largeur, teinte blanche à 0,85 (`UIRenderer.cs:584-590`). Le texel est rgba(0,0,0,205), donc la bande est noire à 0,683 d'opacité, de 43,75 % à 73,75 % de la hauteur ;
   - boutons carrés, de hauteur 108 unités non sélectionnés et 132 sélectionné, écart 14 en largeur (`MainMenu.cs:28-31`). La rangée est centrée en x ; le haut des boutons non sélectionnés est à `YToRes(316)`, et le sélectionné grandit autour du même centre (`MainMenu.cs:251-269`) ;
   - dessin (`MainMenu.cs:271-284`) :
-    - le non sélectionné est tracé avec la teinte (192,192,192,192) : `buttons.png` est importé en alpha prémultiplié (`RacingGame/Content/Content.mgcb:1606`), donc environ 75 % de luminosité et d'opacité ;
+    - le non sélectionné est tracé avec la teinte (192,192,192,192) : `buttons.png` est importé en alpha prémultiplié (`RacingGame/Content/Content.mgcb:1607`), donc environ 75 % de luminosité et d'opacité ;
     - le sélectionné est en blanc, avec par-dessus le sprite d'anneau `MenuButtonSelectionGfxRect` (636, 240, 212, 212) ;
     - le libellé du seul bouton sélectionné est un sprite de `buttons.png`, `YToRes(5)` sous le bouton, à la largeur du bouton et à la hauteur bouton × 24/212 ;
   - animation : la taille de chaque bouton passe de l'une à l'autre en 0,5 s (`MainMenu.cs:120-123`, `InterpolateRect` `:223-236`) ;
@@ -41,14 +41,14 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
 - **Art de `buttons.png`** (mesuré, `RacingGame/Content/Textures/buttons.png`) :
   - cellules de bouton de 212×212, partie visible de 1 à 210 ;
   - rebord plat gris 193 (#C1C1C1) de 10 px, rayon extérieur d'environ 38,5 px (18 %) ;
-  - biseau intérieur de 10 px allant du sombre (59 à 95 selon le côté) à la couleur de la face ;
+  - biseau intérieur de 10 px allant du sombre (87 en haut, 70 sur les côtés, 55 en bas, mesuré à x ou y = 106) à la couleur de la face ;
   - face en dégradé vertical #F8F8F8 → #A0A0A0, plate en horizontal ;
   - icône noire pure, centrée ;
   - anneau de sélection plat #FF9C00 de 10 px, même empreinte que le rebord ;
   - libellés blancs sur fond transparent : `MenuText*GfxRect` (`UIRenderer.cs:39-43`, « START RACE », « HIGHSCORES », « OPTIONS », « HELP », « QUIT »).
 - **Menu actuel de RGCE** :
   - `Content/UI/Screens/MainMenu/MainMenu.xaml` :
-    - bande `Border` de fond rgba(0,0,0,132), marge haute 315, hauteur 216, en pixels fixes : aucun `UseResponsiveLayout`, donc juste seulement en 1920×1080 ;
+    - bande `Border` de fond rgba(0,0,0,132), marge haute 315, hauteur 216, en pixels fixes : aucun `UseResponsiveLayout`. Ce sont les proportions d'origine en 1280×720, donc juste à cette seule résolution ;
     - 5 boutons de 105×105 en couleurs plates imbriquées, libellés sous chaque bouton ;
     - en 1920×1080, la bande couvre le bas du logo.
   - `Screens/MainMenuScreen.cs:61-70` : chaque image, `LegacyMenuUiTheme.ApplyMainMenuButtonState` restyle un bouton « actif » quand il a le focus ou est survolé (D6 du plan précédent).
@@ -57,7 +57,7 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
 - **MGUI** (sous-module, à ne pas modifier) :
   - dégradé de remplissage à 4 coins, `MGGradientFillBrush`, y compris sur une forme arrondie (`MGGradientFillBrush.cs:63-91`). En XAML, 4 couleurs « H|H|B|B » donnent un dégradé vertical ; 2 couleurs donnent un dégradé diagonal (`XAML/Brushes.cs:118-144`) ;
   - pas de bordure arrondie en dégradé : un remplissage non plein sur une bordure arrondie retombe en bandes rectangulaires (`MGUniformBorderBrush.cs:103-107`) ;
-  - bandes concentriques pleines possibles (`MGBandedBorderBrush`), avec épaisseur tronquée à l'entier (`MGBandedBorderBrush.cs:92-96`) ;
+  - bandes concentriques pleines possibles (`MGBandedBorderBrush`), avec épaisseur tronquée à l'entier (`MGBandedBorderBrush.cs:104-128` pour une forme arrondie) ;
   - pas de contour de focus ; un bouton peut recevoir en code n'importe quelle brosse de bordure (`MGButton.cs:38-53`).
 - **Validation existante** :
   - `--smoke-frontend` ;
@@ -193,7 +193,7 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
 >   - mise en page : `RaceMainMenuViewModel.Update` calcule chaque image, en pixels de l'écran, les formules de l'original (`CalcRectangle`, `CalcRectangleCenteredWithGivenHeight`, `XToRes`, `YToRes`, arrondi au pair), au lieu de la mise à l'échelle responsive de MGUI proposée en P2. Le résultat est exact à toute résolution, y compris le mélange largeur/hauteur de l'original en 16:10, et le logo garde son calcul ;
 >   - l'anneau orange, l'opacité de 0,75 et le libellé sont déjà dessinés, liés au view model, Play étant sélectionné ; T2.2 rend la sélection dynamique.
 > - Dessin (`MainMenu.xaml`), proportionnel à chaque bouton :
->   - face en dégradé vertical sur le fond du `Button` (255 → 147, soit #F8F8F8 → #A0A0A0 prolongé aux bords) ;
+>   - face en dégradé vertical sur le fond du `Button` (255 → 147, que MGUI dessine à l'intérieur du rebord : environ 250 en haut de la face et 152 en bas, contre #F8F8F8 → #A0A0A0 dans l'art, soit 8 niveaux plus sombre en bas) ;
 >   - rebord #C1C1C1 de 10/212 ;
 >   - biseau en 4 bandes concentriques (`BandedBorderBrush`) de bordures ancrées pleines, une couleur par côté, mesurées dans l'art (plus sombres en bas) ;
 >   - glyphe `Ui.Menu.Glyph*` étiré sur le bouton ;
@@ -213,7 +213,7 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
 ### 🧪 T2.2 — Sélection, anneau, animation et libellé
 
 - Objectif : D2, D3 et P4.
-- Fichiers : `Screens/MainMenuScreen.cs`, `UI/LegacyMenuUiTheme.cs` (`ApplyMainMenuButtonState`), `RacingGameCasaEngine.UI/ViewModels/RaceMainMenuViewModel.cs`, `MainMenu.xaml`.
+- Fichiers : `Screens/MainMenuScreen.cs`, `RacingGameCasaEngine.UI/ViewModels/RaceMainMenuViewModel.cs`, `Bootstrap/RaceFrontEndState.cs`, `Bootstrap/RaceFrontEndFlow.cs` (`ApplyMainMenuButtonState` est déjà retiré en T2.1).
 - Validation :
   - build 0 erreur, smoke code 0 ;
   - capture : Play sélectionné dès l'ouverture, avec anneau, taille de 223, libellé « START RACE », autres à 0,75 ;
@@ -224,12 +224,12 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
 
 > Validation (2026-10-05) :
 > - Code : `MainMenuScreen` gère la sélection comme le `MainMenu.Update` d'origine.
->   - Gauche/droite au clavier, au D-pad ou au stick gauche (seuil 0,5), en boucle ; un pas à l'appui, puis un tous les 250 ms tant que la direction est tenue.
+>   - Gauche/droite au clavier, au D-pad ou au stick gauche, en boucle ; un pas à l'appui, puis, la direction tenue, un 1er pas répété au bout d'environ 0,5 s et un tous les 250 ms ensuite, comme l'original. Le seuil du stick est de 0,5, alors que l'original utilisait 0,75 (`git show 4f840a3^:RacingGame.Shared/GameLogic/Input.cs:732, 745`) : écart relevé par la vérification de T3.1, reporté.
 >   - La souris sélectionne au survol, une fois qu'elle a bougé depuis le dernier pas au clavier ou à la manette. Les deltas sont testés en valeur absolue : le `MouseManager.HasMoved` de CasaEngine ne compte que les mouvements vers la droite ou le bas.
 >   - Espace, Entrée ou A activent le sélectionné, un clic le bouton cliqué.
 >   - Les boutons ne prennent plus le focus de MGUI, pour que sa navigation aux flèches ne s'ajoute pas.
 >   - La 1re image après l'ouverture ignore l'activation, la touche qui a ouvert le menu pouvant être encore « juste pressée ».
->   - La sélection est gardée en mémoire dans `RaceFrontEndState.SelectedMainMenuButton`, sans être enregistrée, donc le menu rouvre sur le dernier bouton, comme l'original, dont le menu restait sous les autres écrans.
+>   - Écart au plan (P4, D3 : « Play à l'ouverture ») : la sélection est gardée en mémoire dans `RaceFrontEndState.SelectedMainMenuButton`, sans être enregistrée. Play est sélectionné à la 1re ouverture, et le menu rouvre ensuite sur le dernier bouton, comme l'original, dont le menu restait sous les autres écrans. Consigné dans l'ADR-0006.
 >   - `RaceMainMenuViewModel.Reset` ouvre le menu sur ce bouton déjà agrandi ; `Update` anime les tailles à 2 par seconde (0,5 s).
 > - `dotnet build RacingGame.slnx` : 0 erreur, 0 avertissement. `--smoke-frontend` et `--capture-ui-screens` : code 0, aucun avertissement.
 > - Captures contre le run de T2.1 : 0,00 sur les 10 états, Play sélectionné à l'ouverture comme avant.
@@ -242,7 +242,42 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
 
 ## Phase 3 — Clôture
 
-### ⏳ T3.1 — Validation globale, documentation et rapport de fin
+### 🧪 T3.1 — Validation globale, documentation et rapport de fin
+
+> Validation (2026-10-05) :
+> - Références de T2.2 : `references-32d0422` (run de T2.2, identique à celui de T2.1 au pixel près).
+> - **Build** : `dotnet build RacingGame.slnx --no-incremental` sans avertissement dans les projets RGCE ; 0 erreur.
+> - **Jeu** : `--smoke-frontend`, `--verify-legacy-import-profile`, `--capture-track-audit` et `--capture-ui-screens` donnent le code 0, sans `[Warning]` ni `[Error]`.
+> - **Captures** : contre `references-32d0422`, `main-menu` et tous les états à 0,00, hors les écarts de survol de la souris réelle (`help` 0,18, `track-selection` 0,03, curseur au centre de l'écran).
+> - **Correctif trouvé par la validation globale** : avec le curseur réel sur le bouton Options, MGUI l'éclaircissait d'environ 5 à 10 niveaux au survol, ce que l'original ne faisait pas. Les boutons ont maintenant une `BackgroundFocusedColor` transparente ; capture suivante à 0,00, curseur au même endroit. MGUI assombrit encore de 6 % un bouton tenu enfoncé.
+> - **Sous-module** : aucun chemin `CasaEngine/` dans les commits du chantier ; `git -C CasaEngine status --porcelain` vide.
+> - **Réglages de l'auteur** inchangés (même SHA-1).
+> - **Doc** : `docs/mgui-gaps-from-rgce-xaml-screens.md` (M1 et M2 mis à jour, nouveaux M13, M14, M15, comptes de M4) ; ADR-0006 remplace ADR-0005 (Superseded).
+> - **Vérification indépendante** (workflow de 3 angles) :
+>   - pixels : CONFIRMED ; géométrie exacte (0 px) sur 9 captures, couleur de la bande, anneau, glyphes (IoU 0,96-0,99) et libellés conformes ;
+>   - code et comportement : CONFIRMED ; formules, animation, répétition, règle de la souris conformes au `MainMenu.Update` d'origine ;
+>   - doc : REFUTED par un P2, corrigé :
+>     - l'ADR-0005 disait le biseau uniforme ;
+>     - P3/P4 corrigés : réouverture sur le dernier bouton non consignée, menu d'avant « juste en 1920×1080 » (c'était 1280×720), dégradé décrit comme couvrant tout le bouton, M4 périmé, citations décalées, O1 périmé.
+>   - Passe de clôture de la doc sur l'état final (relecteur neuf) : **CONFIRMED**, les 13 points corrigés sans nouvelle affirmation fausse. Ses deux remarques (A1 : l'ADR-0006 ne relevait pas l'erreur « 1920×1080 » de l'ADR-0005 ; A2 : le chiffre de survol) sont corrigées.
+> - P3/P4 reportés (règle : un résultat confirmé n'est pas modifié pour eux) :
+>   - glyphes des boutons non sélectionnés gris foncé (≈ 35-41) au lieu de presque noirs (≈ 8-13), l'opacité de 0,75 s'appliquant à chaque couche ;
+>   - liseré clair de 1 px entre le rebord et le biseau des boutons non sélectionnés (le rebord du bouton est dessiné 1 px plus fin que son épaisseur) ;
+>   - bas de la face 8 niveaux plus sombre que l'art ;
+>   - seuil du stick 0,5 au lieu de 0,75 ;
+>   - clic au relâchement au lieu de l'appui ;
+>   - bords arrondis sans anticrénelage ;
+>   - empreinte de 1 px plus large que la partie visible du sprite d'origine (marge transparente de 1 px).
+> - 🧪 Reste la vérification manuelle par l'auteur (liste « Validation globale »).
+>
+> Rapport de fin :
+> - **Menu** : bande et boutons aux formules du menu XNA, au pixel près à toute résolution. Boutons dessinés avec les brosses de MGUI : face en dégradé, rebord, biseau par côté, glyphe extrait de l'art, anneau orange. Sélection fidèle : agrandissement en 0,5 s, autres atténués, libellé sous le sélectionné, clavier, manette et survol.
+> - **Outils** : `scripts/MenuIconExtractor` (glyphes transparents, déterministe) ; générateur d'assets étendu (glyphes, libellés) ; anciens `Ui.Menu.Icon*` retirés.
+> - **Décisions** : ADR-0006 (remplace ADR-0005).
+> - **Points ouverts pour l'auteur** :
+>   - les P3/P4 reportés ci-dessus ;
+>   - comportements d'origine hors périmètre (Échap/Retour, retour au splash, son) ;
+>   - `MouseManager.HasMoved` de CasaEngine ne compte que les mouvements vers la droite ou le bas : tâche séparée proposée.
 
 - Objectif :
   - validation globale ;
@@ -260,12 +295,13 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
-| O1 | Le biseau d'origine n'est pas uniforme : environ 95 en haut, 70 sur les côtés, 59 en bas. MGUI n'a pas de bordure arrondie en dégradé, donc l'approximation par bandes pleines concentriques sera uniforme autour du bouton. L'écart est noté sur la planche. | T2.1 |
+| O1 | **Résolu en T2.1.** Le biseau d'origine n'est pas uniforme : 87 en haut, 70 sur les côtés, 55 en bas. Les bandes concentriques gardent une couleur par côté (bordures ancrées pleines) ; seul le dégradé continu manque, remplacé par 4 marches (M13, M14). | T2.1 |
 
 ## Hors périmètre
 
 - Bouton et écran Crédits (D1).
 - La teinte chaude et le flou lumineux du shader de post-traitement du menu d'origine (`PostScreenMenu.fx`) : l'option Post Screen Effects reste sans effet dans RGCE (D14 du plan des écrans XAML).
 - Les autres écrans de menu et leurs boutons.
+- Les autres comportements du `MainMenu.Update` d'origine : Échap ou Retour pour quitter, retour au splash après 60 s d'inactivité, son « Highlight » à chaque pas. Le menu de RGCE ne les avait pas avant ce chantier.
 - Toute modification de CasaEngine ou de MGUI (D5).
 - Push, merge, PR.
