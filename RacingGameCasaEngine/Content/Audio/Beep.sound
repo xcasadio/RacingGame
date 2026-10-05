@@ -1,0 +1,10 @@
+{
+  "id": "20455536-7110-4f1c-af88-0016d0d764ac",
+  "name": "Sound.Beep",
+  "audio_file_asset_id": "eb1f9b58-decf-4a36-b868-75446495b8e4",
+  "volume": 1.0,
+  "pitch": 0.0,
+  "is_looped": false,
+  "bus_name": "Sfx",
+  "is_streaming": false
+}

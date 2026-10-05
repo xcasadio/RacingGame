@@ -33,6 +33,9 @@
     <None Update="Content\UI\**\*.design.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
+    <None Update="Content\Audio\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Content\Worlds\*.world">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

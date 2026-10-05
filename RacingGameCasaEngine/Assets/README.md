@@ -24,6 +24,15 @@ Runtime assets are resolved from `RacingGameCasaEngine/Content`.
 - Keep bootstrap assets minimal until the race world composition is stable.
 - Prefer adding game-level loaders or data files in `RacingGameCasaEngine` instead of extending `CasaEngine` for racing-specific needs.
 
+## Sound effects
+
+Sound effects play through CasaEngine's audio service ([ADR-0003](../../docs/decisions/0003-rgce-sound-effects-through-casaengine-audio.md)).
+
+- Add a sound in `Content/Audio/`: a copy of the RacingGame `.wav`, and a `.sound` asset on the `Sfx` bus that references it.
+- Catalogue both in `AssetInfos.json`: `Sound.<Name>` for the `.sound` (`asset_type` `sound`), `Sound.<Name>Wave` for the `.wav` (`asset_type` `wav`).
+- Play it with `AudioService.PlaySound`. Its volume follows the Sound Volume option, which sets `SoundEffect.MasterVolume`, applied by MonoGame to every sound instance CasaEngine plays.
+- Current sounds: `Sound.Beep` and `Sound.Bleep`, played by the race start light (`GameFramework/RaceStartLight.cs`).
+
 ## CasaEngine editor project
 
 `Content/` is also a CasaEngine editor project ([ADR-0002](../../docs/decisions/0002-rgce-content-is-a-casaengine-editor-project.md)). The game itself does not read the project file.

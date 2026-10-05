@@ -22,6 +22,14 @@ public sealed class RaceFlowCoordinatorComponent : EntityComponent
         return new RaceFlowCoordinatorComponent();
     }
 
+    /// <summary>Gives back the start light's sounds with the race world.</summary>
+    public override void Detach()
+    {
+        _startLight?.Dispose();
+        _startLight = null;
+        base.Detach();
+    }
+
     public override void Update(float elapsedTime)
     {
         if (Owner?.World?.Game is not RacingGameCasaEngineGame game)
@@ -45,7 +53,7 @@ public sealed class RaceFlowCoordinatorComponent : EntityComponent
         HandlePauseToggle(game, session.GameMode, session.PlayerController);
 
         session.GameMode.UpdateCountdown(elapsedTime);
-        _startLight?.Show(RaceStartLight.GetColor(session.GameMode.CountdownSecondsRemaining));
+        _startLight?.Update(session.GameMode.CountdownSecondsRemaining);
         bool canDrive = !session.IsDebugCameraEnabled
             && session.GameMode.CountdownSecondsRemaining <= 0f
             && !session.GameMode.IsPaused

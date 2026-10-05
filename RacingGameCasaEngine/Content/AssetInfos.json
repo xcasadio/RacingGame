@@ -287,6 +287,30 @@
       "name": "Screen.RaceHud",
       "file_name": "UI/Screens/RaceHud/RaceHud.uiscreen",
       "asset_type": "uiscreen"
+    },
+    {
+      "id": "eb1f9b58-decf-4a36-b868-75446495b8e4",
+      "name": "Sound.BeepWave",
+      "file_name": "Audio/Beep.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "20455536-7110-4f1c-af88-0016d0d764ac",
+      "name": "Sound.Beep",
+      "file_name": "Audio/Beep.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "cf148ac0-967e-4267-9ffd-b09b7743c973",
+      "name": "Sound.BleepWave",
+      "file_name": "Audio/Bleep.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "753c7a85-6936-401d-85b2-328c72f39cfc",
+      "name": "Sound.Bleep",
+      "file_name": "Audio/Bleep.sound",
+      "asset_type": "sound"
     }
   ]
 }

@@ -211,7 +211,7 @@ Découverte en lecture seule (deux workflows de découverte avec contre-vérific
 > - Sonde (copie dans le scratchpad, validateur de captures modifié dans la copie seulement) : feu rouge à 1,5 s du départ, jaune à 0,5 s, vert après le départ. À 2,5 s, la caméra d'intro, vue de côté, ne montre pas le feu.
 > - 🧪 Reste : départ observé en jeu par l'auteur.
 
-### ⏳ T2.2 — Sons « Beep » et « Bleep »
+### 🧪 T2.2 — Sons « Beep » et « Bleep »
 
 - Objectif : D3, partie sonore, selon P4.
 - Fichiers :
@@ -229,6 +229,23 @@ Découverte en lecture seule (deux workflows de découverte avec contre-vérific
   - journal : 2 « Beep » puis 1 « Bleep » par course, et l'état de l'audio (disponible ou non) noté ;
   - 🧪 sons entendus par l'auteur, volume réglé par l'option.
 - Commit : `feat(racing-casa): play the start light sounds`
+
+> Validation (2026-10-05) :
+> - Option Sound Volume : rien à brancher.
+>   - Le backend audio de CasaEngine joue chaque voix par une `SoundEffectInstance` (`CasaEngine/CasaEngine/Framework/Audio/Backends/MonoGameAudioBackend.cs:415, 426`).
+>   - MonoGame applique `SoundEffect.MasterVolume` à toutes ces instances : « the master volume scale applied to all SoundEffectInstances » (https://docs.monogame.net/api/Microsoft.Xna.Framework.Audio.SoundEffect.html).
+>   - L'option règle déjà `SoundEffect.MasterVolume` (`Bootstrap/RacingGameCasaEngineGame.cs:143`).
+> - Contenu :
+>   - `Content/Audio/Beep.wav` et `Bleep.wav` : copies de `RacingGame/Content/Audio/Waves/`, même SHA-1 ;
+>   - `Beep.sound` et `Bleep.sound` : format des `.sound` de `CasaEngine.Demos`, bus `Sfx` ;
+>   - 4 entrées au catalogue (`Sound.Beep`, `Sound.BeepWave`, `Sound.Bleep`, `Sound.BleepWave`), qui en compte maintenant 52 ;
+>   - copie de `Content\Audio\*.*` à la sortie du build.
+> - Code : `RaceStartLight` suit maintenant les signaux de `ReplaceStartLightObject`. À 2 s du départ : rouge et « Beep » ; à 1 s : jaune et « Beep » ; au départ : vert et « Bleep ». Les sons passent par `AudioService.PlaySound`, et leurs handles sont rendus au détachement du coordinateur.
+> - Doc : section « Sound effects » dans `RacingGameCasaEngine/Assets/README.md`.
+> - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE ; les 4 fichiers audio sont copiés dans `bin/.../Content/Audio`.
+> - `--smoke-frontend`, `--capture-track-audit` et `--capture-ui-screens` : code 0, journaux sans `[Warning]` ni `[Error]`. Chaque course trace « Start light: red, beep played (audio available) », « yellow, beep played », puis « green, bleep played » : 1 course pour le smoke, 3 pour l'audit, 1 pour les captures. Les `.sound` sont chargés au début de la course, les `.wav` au premier son.
+> - `--capture-ui-screens` contre `references-70fee31` : états de course à 0,00 ; `help` 0,18 et `track-selection` 0,03, mêmes écarts qu'en T2.1, localisés sous la souris immobile.
+> - 🧪 Reste : sons entendus par l'auteur, et volume réglé par l'option Sound Volume.
 
 ## Phase 3 — Ombres
 
