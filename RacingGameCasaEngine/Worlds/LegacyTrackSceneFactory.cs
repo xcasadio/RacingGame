@@ -1,3 +1,4 @@
+using System.Text;
 using System.Xml.Serialization;
 using CasaEngine.Core.Log;
 using CasaEngine.Engine;
@@ -766,10 +767,18 @@ internal static partial class LegacyTrackSceneFactory
 
     private static Random CreateDeterministicTrackRandom(string trackName)
     {
-        var seed = new HashCode();
-        seed.Add(trackName, StringComparer.OrdinalIgnoreCase);
-        seed.Add("LegacyTrackSceneFactory.Helpers");
-        return new Random(seed.ToHashCode());
+        // System.HashCode is randomized per process, so the seed uses a stable FNV-1a hash instead:
+        // the same track must get the same scenery on every launch.
+        const uint FnvOffsetBasis = 2166136261u;
+        const uint FnvPrime = 16777619u;
+
+        uint hash = FnvOffsetBasis;
+        foreach (byte value in Encoding.UTF8.GetBytes($"{trackName.ToUpperInvariant()}|LegacyTrackSceneFactory.Helpers"))
+        {
+            hash = unchecked((hash ^ value) * FnvPrime);
+        }
+
+        return new Random(unchecked((int)hash));
     }
 
     private static float NextFloat(Random random, float min, float max)
