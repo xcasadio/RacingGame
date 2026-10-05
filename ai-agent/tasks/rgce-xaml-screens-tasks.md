@@ -1,7 +1,7 @@
 # Plan agent IA — Écrans MGUI de RacingGameCasaEngine en assets `.uiscreen` liés à des view models
 
 Plan d'exécution du chantier « modifier les écrans MGUI pour qu'ils utilisent un fichier XAML » (demande de l'auteur, 2026-10-05).
-Les décisions D1 → D17 ci-dessous ont été arbitrées avec l'auteur le 2026-10-05 : **ce plan les applique, il ne les rediscute pas**.
+Les décisions D1 → D20 ci-dessous ont été arbitrées avec l'auteur le 2026-10-05 (D18 → D20 à la fin de la découverte de la phase 5) : **ce plan les applique, il ne les rediscute pas**.
 
 Ce fichier doit être mis à jour pendant le travail : l'icône au début de chaque tâche indique son statut courant.
 
@@ -53,6 +53,21 @@ Ce que le chantier ne livre pas est dans « Hors périmètre ».
   - fenêtre plein écran par `ScreenHorizontalAlignment/ScreenVerticalAlignment="Stretch"`.
 - Validateurs RGCE (`--smoke-frontend`, `--capture-track-audit`, …) : ils ne touchent aucun membre d'écran ni élément MGUI. Ils n'exigent que les noms d'état, `RaceFrontEndFlow.*ForAutomation` et un `RaceFrontEndState` partagé et modifiable (`Bootstrap/FrontEndNavigationSmokeValidator.cs:77-197`). Aucun ne clique sur un bouton.
 - Aucun projet de test pour RGCE dans `RacingGame.slnx`.
+- Éditeur CasaEngine (découverte en lecture seule du 2026-10-05, sous-module `f8629e05`) :
+  - un projet est un fichier `.json` quelconque ; son dossier devient la racine du projet, où `AssetInfos.json` est lu. Cinq clés sont obligatoires : `WindowTitle`, `ProjectName`, `FirstScreenName`, `FirstWorldLoaded`, `GameplayDllName` (`CasaEngine/CasaEngine/Framework/Configuration/Project/ProjectSettingsHelper.cs:10-55`). Ouverture en ligne de commande par `--project <chemin absolu>` (`CasaEngine/CasaEngine.Editor/EditorAutomationOptions.cs:73-76`) ;
+  - `GameplayDllName` est résolu depuis la racine du projet. L'assembly est copiée (dll, pdb, deps.json) sous `%TEMP%\casaeditor-scripts\<guid>\`, chargée dans un contexte de chargement séparé et enregistrée dans `ElementFactory` avant toute recherche d'`IPlugin` (non obligatoire) (`AssemblyManager.cs:15-35`, `EditorScriptAssemblyService.cs:32-53`) ;
+  - données de conception : `design_time_data_file` du `.uiscreen` désigne un JSON `{"view_model_type": "<nom simple>", "values": {...}}`. Le type est cherché par nom simple, sans tenir compte de la casse, d'abord dans les assemblies de l'éditeur : il doit être public, avoir un constructeur public sans paramètre, et son nom ne doit pas exister ailleurs. Les valeurs sont appliquées par `JsonConvert.PopulateObject`. Une erreur s'affiche dans la ligne d'état de l'aperçu, sans exception (`UIScreenDesignTimeDataLoader.cs:53-191`, `ElementFactory.cs:19-112`) ;
+  - `FirstWorldLoaded` doit être égal, caractère pour caractère, au `file_name` d'un `.world` catalogué et chargeable, sinon l'éditeur s'arrête peu après l'ouverture (`GameManager.cs:98-121`) ;
+  - l'automatisation CLI (`--open-asset`, `--screenshot-out`, `--set-screen-property <Nom>:<Prop>=<Valeur>`, `--save-project`) n'avance que si le monde de démarrage contient au moins une entité (`GameEditor.cs:7754-7768`). Son fichier de diagnostics ne reprend pas les avertissements `Logs.*` ;
+  - l'aperçu n'est pas fidèle à l'exécution :
+    - analyse en mode Compatibility et non Strict ;
+    - éléments renommés `_cse_<guid>` ;
+    - `theme_name` et `preview_resolution` ignorés ;
+    - police JetBrainsMono de l'éditeur ;
+    - code (`OnWindowLoaded`, restylage) jamais exécuté (`UIScreenPreviewBuilder.cs:35-173`, `UIScreenPreviewPanel.cs:219-239`) ;
+  - File > Save réécrit le monde courant, le fichier projet (jeu de clés fixe) et `AssetInfos.json` (`GameEditor.cs:2278-2304`). New Project sur un dossier existant écrase son `AssetInfos.json` (`EditorProjectAuthoringService.cs:72-119`) ;
+  - l'éditeur compilé du sous-module (`CasaEngine/CasaEngine.Editor/bin/Debug/net9.0-windows/CasaEngine.Editor.exe`) date du 2026-04-17, avant les données de conception (ADR-0038 du moteur, 2026-09-24) ;
+  - `Textures/background.png`, `buttons.png` et `ingame.png` et les 3 `Tracks/*.Track` catalogués n'existent que dans `RacingGame/Content`, liés au build par le csproj (`RacingGameCasaEngine.csproj:37-42`). Les 142 textures liées pèsent 199 Mo, sans LFS ; les TGA, DDS, CombiModel et `LandscapeHeights.data` ne sont pas catalogués (`jq` sur `AssetInfos.json`).
 
 ## Décisions verrouillées
 
@@ -75,12 +90,15 @@ Ce que le chantier ne livre pas est dans « Hors périmètre ».
 | D15 | Ex-O3 accepté : le HUD XAML peut rendre ses textes un peu différemment de `DrawShadowedText`, à condition d'un rapport chiffré de ces différences (captures, écarts) (auteur, 2026-10-05). |
 | D16 | Ex-P14 : créer le projet CasaEngine complet de RGCE pour que l'éditeur CasaEngine ouvre son contenu et prévisualise et édite les écrans, avec données de conception (auteur, 2026-10-05). |
 | D17 | Exécution en mode AUTO : toutes les tâches enchaînées sans demander, arrêt seulement sur ⚠️ Blocked ; jamais de push (auteur, 2026-10-05). |
+| D18 | Racine du projet éditeur : `RacingGameCasaEngine/Content`. Les seuls fichiers catalogués encore liés depuis `RacingGame/Content` y sont copiés (3 PNG d'interface, 3 `.Track`, 1,4 Mo) et leurs liens retirés. Le reste du contenu lié (TGA, DDS, CombiModel, `LandscapeHeights.data`, 199 Mo) reste lié (auteur, 2026-10-05). |
+| D19 | View models dans une bibliothèque dédiée `RacingGameCasaEngine.UI` (Library), référencée par l'exe et ajoutée à `RacingGame.slnx`. Une cible après build copie son dll et son pdb à la racine du projet éditeur, fichiers ignorés par git (modèle RPGDemo et Alundra). `GameplayDllName` nomme ce dll (auteur, 2026-10-05). |
+| D20 | Vérification dans l'éditeur par sa CLI d'automatisation :<br>- éditeur recompilé depuis le sous-module : seules les sorties `bin/obj`, ignorées, sont écrites ;<br>- monde `.world` minimal avec une entité vide, exigée par l'automatisation ;<br>- une capture par écran ;<br>- contrôle de la ligne d'état « Design-time data » (auteur, 2026-10-05). |
 
 ## Points à valider (propositions de l'agent)
 
 | Réf | Proposition |
 |---|---|
-| P1 | **View models** : une classe par écran dans RGCE (`RacingGameCasaEngine/UI/ViewModels/`), dérivée de `MGUI.Shared.Helpers.ViewModelBase`, setters gardés par comparaison (règle ADR-0038 : notifier seulement ce qui change). `RaceFrontEndState` reste un objet simple partagé (les validateurs le modifient directement) ; chaque écran rafraîchit son view model depuis l'état ou la session dans `Update`. Options : les liaisons à double sens écrivent dans le view model, qui écrit immédiatement dans `RaceFrontEndState` (même sémantique qu'aujourd'hui) ; l'application des réglages reste au bouton Back. |
+| P1 | **View models** (révisé par D19) :<br>- une classe par écran dans `RacingGameCasaEngine.UI/ViewModels/`, dérivée de `MGUI.Shared.Helpers.ViewModelBase`, setters gardés par comparaison (règle ADR-0038 : notifier seulement ce qui change) ;<br>- chaque classe est publique, scellée, avec un constructeur public sans paramètre. Elle ne dépend ni du jeu, ni du GPU, ni du dossier `Content` d'exécution, car l'éditeur l'instancie ;<br>- noms préfixés `Race` et terminés par `ViewModel` : aucun type de l'éditeur ne doit porter le même nom simple, or le sous-module n'a que `BoundImagesViewModel`, `RenderTransformBindingViewModel` et `ViewModelBase` (`rg`) ;<br>- `RaceFrontEndState` reste un objet simple partagé dans l'exe (les validateurs le modifient directement) ; chaque écran rafraîchit son view model depuis l'état ou la session dans `Update` ;<br>- Options : l'écran écoute `PropertyChanged` du view model et écrit aussitôt dans `RaceFrontEndState` (même sémantique qu'aujourd'hui) ; l'application des réglages reste au bouton Back. |
 | P2 | **Actions** : modèle RPGDemo, `FindControl<MGButton>(nom).AddCommandHandler(...)` dans `OnWindowLoaded`, qui appelle les délégués actuels ; pas de `CommandName` (enregistrement au niveau du bureau partagé, doublons interdits). Le focus initial reste un `Focus()` en code dans `Show()`, comme aujourd'hui. |
 | P3 | **Base commune** `RaceXamlScreenBase : XamlUIScreenBase` (`Screens/`) : appel de `Desktop.LoadDefaultResources()` avant le chargement si la texture `CheckMark_64x64` manque (comme `RaceUiTheme.cs:27-32`), `Dispose()` dans `Hide()` (écrans à usage unique, recréés à chaque transition), affectation de `WindowDataContext`. |
 | P4 | **Décor des menus** (fond et logo) : fenêtre unique par écran (`XamlUIScreenBase` n'a qu'une fenêtre), fond et logo en `Image` non cliquables au fond de l'`OverlayPanel`. Rectangle du logo (référence 1024×640, proportionnel à la fenêtre) et rebond (formule actuelle) calculés à chaque image par un `MenuDecorationViewModel` partagé et liés à `Margin`/`Width`/`Height` du logo, pour garder la parité. |
@@ -93,7 +111,7 @@ Ce que le chantier ne livre pas est dans « Hors périmètre ».
 | P11 | **Rapport MGUI** (D6) : `docs/mgui-gaps-from-rgce-xaml-screens.md`, en anglais. Chaque manque rencontré y figure avec preuve et effet sur RGCE : épaisseur de bordure hors états visuels, focus non propagé, absence d'événements, pas de rectangle source, rotation absente des correspondances de binding, collections, `LoadDefaultResources`, libération des écrans, `UIResponsiveSettings` code seulement, etc. Chaque manque y est relié aux audits existants du moteur quand ils existent. |
 | P12 | **ADR** : la décision « écrans RGCE = assets `.uiscreen` liés à des view models » est consignée dans `docs/decisions/` avec le skill `adr` (le dossier n'existe pas encore). |
 | P13 | **Nettoyage** : une fois les 9 écrans migrés, suppression du code devenu mort : `RaceFrontEndScreenBase`, fabriques de `LegacyMenuUiTheme` et `RaceUiTheme`, `LegacyMenuUiAtlas` (rectangles repris par le script), propriétés et handles `MenuBackgroundTexture`/`MenuButtonsTexture` si plus utilisés. Les fonctions d'état visuel gardées par D6 restent. |
-| P14 | **Éditeur CasaEngine** : tranché par D16 (projet complet, phase 5). |
+| P14 | **Éditeur CasaEngine** : tranché par D16 (projet complet, phase 5), précisé par D18 → D20. |
 
 ## Règles d'exécution pour l'agent
 
@@ -129,6 +147,7 @@ Ce que le chantier ne livre pas est dans « Hors périmètre ».
 - `RacingGameCasaEngine.exe --smoke-frontend`, `--verify-legacy-import-profile` et `--capture-track-audit` : code 0, journaux sans `[Warning]` ni `[Error]`.
 - Aucune construction d'arbre MGUI restante dans `Screens/` (garde `rg -n "new MG(Window|StackPanel|Button|TextBlock|Border|Image|OverlayPanel|ScrollViewer)" RacingGameCasaEngine/Screens RacingGameCasaEngine/UI` vide, hors exceptions notées).
 - `--capture-ui-screens` puis `scripts/UiCaptureCompare` contre les références de T0.2 : 10 états, écart ≤ 2,0 par canal et planches contrôlées (P10).
+- Éditeur (D16, D20) : `scripts/capture_editor_screen.ps1` sur chacun des 9 `.uiscreen` : code 0, aperçu avec images et données de conception, ligne d'état sans « Design-time data: ».
 - Passe `verifier` indépendante sur le résultat final.
 - Vérification manuelle par l'auteur :
   - clics sur tous les boutons ;
@@ -245,9 +264,12 @@ Ce que le chantier ne livre pas est dans « Hors périmètre ».
 
 ## Phase 2 — Écrans de menu
 
-Chaque tâche de cette phase :
+Prérequis : T5.1 et T5.2 (ordre d'exécution, voir la phase 5).
+
+Chaque tâche de cette phase, et de la phase 3 :
 - crée `Content/UI/Screens/<Nom>/<Nom>.uiscreen` + `.xaml` et l'entrée de catalogue ;
-- crée le view model de l'écran (P1) ;
+- crée le view model de l'écran dans `RacingGameCasaEngine.UI/ViewModels/` (P1 révisé par D19) ;
+- crée les données de conception `Content/UI/Screens/<Nom>/<Nom>.design.json` : `view_model_type` (nom simple du view model), `values` reprenant l'état de la capture de référence. Elles sont référencées par `design_time_data_file` dans le `.uiscreen` et non copiées dans la sortie du build (règle de T5.2) ;
 - réécrit l'écran sur `RaceXamlScreenBase` : actions (P2), restylage par image des éléments nommés (D6), décor lié (P4) ;
 - met à jour la fabrique de `RaceFrontEndFlow`.
 
@@ -255,6 +277,7 @@ Validation commune :
 - build 0 erreur ;
 - `--smoke-frontend` code 0, aucun avertissement ;
 - `--capture-ui-screens` puis `UiCaptureCompare` contre les références de T0.2 : l'écran migré à ≤ 2,0 par canal (zones animées jugées à l'œil) et planche contrôlée ; les autres états sans régression ;
+- éditeur (D20) : `scripts/capture_editor_screen.ps1` sur le `.uiscreen` de l'écran : code 0, aperçu avec les images et les valeurs de conception, ligne d'état sans « Design-time data: ». Ce qui ne vit qu'en code (restylage, focus, rotation appliquée par code) n'est pas attendu dans l'aperçu. Un run qui échoue ou expire compte comme un cycle (règle des 3 cycles) ;
 - 🧪 tant que les clics et la navigation au clavier n'ont pas été vérifiés par l'auteur.
 
 Retour arrière commun : avant commit, suppression des fichiers créés par la tâche et `git restore` des fichiers modifiés ; après, `git revert`.
@@ -281,7 +304,7 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 
 ### ⏳ T2.5 — CarSelection
 
-- Objectif : résumé, 4 statistiques (barres de progression liées), 11 pastilles de couleur, flèches, aperçu 3D lié (P8) et libéré.
+- Objectif : résumé, 4 statistiques (barres de progression liées), 11 pastilles de couleur, flèches, aperçu 3D lié (P8) et libéré. Dans l'éditeur, l'aperçu 3D reste vide : `MGTextureData` ne peut pas venir du JSON de conception, son premier membre étant une interface (`CasaEngine/MGUI/MGUI.Core/UI/MGTextureData.cs:11`).
 - Commit : `feat(racing-casa): load the car selection from a XAML screen asset`
 
 ### ⏳ T2.6 — Options
@@ -311,6 +334,7 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
   - build 0 erreur ;
   - `--smoke-frontend` et `--capture-track-audit` code 0, aucun avertissement ;
   - captures en course et en fin de course comparées aux références ;
+  - éditeur : `scripts/capture_editor_screen.ps1` sur le `.uiscreen` du HUD (validation commune de la phase 2) ;
   - 🧪 pour la conduite réelle (aiguille, vitesse, rapport) par l'auteur.
 - Commit : `feat(racing-casa): load the race HUD from a XAML screen asset`
 
@@ -344,7 +368,100 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 
 ## Phase 5 — Projet CasaEngine pour l'éditeur
 
-> Détaillée à la fin de la découverte en cours (fichier projet, monde `.world`, assembly des view models, données de conception, vérification d'ouverture). Les tâches T5.x sont ajoutées ici avant T2.1, premier écran doté d'un view model, car l'emplacement des view models en dépend (T1.2 n'en crée aucun : le Splash n'a pas de valeur dynamique).
+> **Ordre d'exécution** : T5.1 puis T5.2 sont faites juste après T1.2, avant T2.1, premier écran doté d'un view model, car l'emplacement des view models en dépend (D19). La numérotation des phases est gardée pour ne pas renuméroter les tâches déjà notées.
+
+### ⏳ T5.1 — Contenu catalogué dans le dossier du projet
+
+- Objectif : D18, tout fichier catalogué dans `Content/AssetInfos.json` existe physiquement sous `RacingGameCasaEngine/Content`, racine du projet éditeur. Le build produit exactement le même dossier `Content` qu'avant.
+- Fichiers :
+  - `RacingGameCasaEngine/Content/Textures/background.png`, `buttons.png`, `ingame.png` : copies octet pour octet de `RacingGame/Content/Textures/` ;
+  - `RacingGameCasaEngine/Content/Tracks/TrackBeginner.Track`, `TrackAdvanced.Track`, `TrackExpert.Track` : copies de `RacingGame/Content/*.Track` ;
+  - `RacingGameCasaEngine/RacingGameCasaEngine.csproj`.
+- Étapes :
+  1. Construire `RacingGameCasaEngine.csproj` avant modification dans un dossier de sortie neuf du scratchpad (`-o`). Relever la liste et le SHA-1 de chaque fichier de son `Content`.
+  2. Copier les 6 fichiers.
+  3. csproj :
+     - ajouter un `Exclude` des 3 PNG sur le lien `..\RacingGame\Content\Textures\*.*` ; la règle existante `Content\Textures\*.png` copie les nouveaux fichiers ;
+     - remplacer le lien `..\RacingGame\Content\*.Track` par `None Update="Content\Tracks\*.Track"` en `PreserveNewest`.
+  4. Reconstruire dans un second dossier de sortie neuf et comparer.
+- Validation :
+  - `dotnet build RacingGame.slnx` 0 erreur ;
+  - `Content` des deux sorties neuves : même liste de fichiers et même SHA-1 pour chacun ;
+  - SHA-1 des 6 copies égal à celui des originaux de `RacingGame/Content` ;
+  - `--smoke-frontend` code 0, aucun avertissement.
+- Retour arrière : avant commit, suppression des 6 copies et `git restore` du csproj ; après, `git revert`.
+- Commit : `chore(racing-casa): keep catalogued content files in the game content folder`
+
+### ⏳ T5.2 — Projet CasaEngine de l'éditeur
+
+- Objectif : D16, D19, D20. L'éditeur CasaEngine recompilé depuis le sous-module :
+  - ouvre `RacingGameCasaEngine/Content/RacingGameCasaEngine.json` ;
+  - charge l'assembly des view models ;
+  - prévisualise un écran avec ses images ;
+  - enregistre une édition d'écran sans rien changer d'autre que la propriété éditée.
+- Fichiers :
+  - `RacingGameCasaEngine.UI/RacingGameCasaEngine.UI.csproj` :
+    - Library `net9.0-windows`, `Nullable` et `ImplicitUsings` comme RGCE ;
+    - référence de projet `CasaEngine/MGUI/MGUI.Shared` (`ViewModelBase`) ;
+    - cible après build qui copie `RacingGameCasaEngine.UI.dll` et `.pdb` dans `RacingGameCasaEngine/Content/` par la tâche MSBuild `Copy`, au lieu du `copy /y` de RPGDemo ;
+    - aucun type tant qu'aucun écran n'a de view model (T2.1 crée le premier) ;
+  - `RacingGame.slnx` (projet ajouté) ; `RacingGameCasaEngine/RacingGameCasaEngine.csproj` (référence de projet) ;
+  - `RacingGameCasaEngine/Content/RacingGameCasaEngine.json` : exactement les 13 clés qu'écrit File > Save (`ProjectSettingsHelper.cs:57-102`) :
+    - `WindowTitle` et `ProjectName` à `RacingGameCasaEngine` (`Program.cs:13`, `RacingGameCasaEngineGame.cs:161`) ;
+    - `FirstScreenName` à `""` ;
+    - `AllowUserResizing`, `IsFixedTimeStep` et `IsMouseVisible` à `true`, comme `RacingGameCasaEngineGame.cs:162-164` ;
+    - `FirstWorldLoaded` à `Worlds/Editor.world` ;
+    - `GameplayDllName` à `RacingGameCasaEngine.UI.dll` ;
+    - `ExternalToolsDirectory` à `ExternalTools` ;
+    - `DebugIsFullScreen` à `false`, `DebugWidth` à `1024`, `DebugHeight` à `768`, `VSyncEnabled` à `true` (valeurs par défaut de `ProjectSettings.cs`) ;
+    - pas de `GameplayCsprojName` : pas de recompilation au Play, aucun `CasaEngine.EnginePath.props` écrit ;
+  - `RacingGameCasaEngine/Content/Worlds/Editor.world` : monde sans script (`script_class_name` null, précédent `CasaEngine/Projects/EmptyProject/DefaultWorld.world`) avec une entité en ligne vide, `EditorAutomationAnchor` (`root_component` null, `components` vide, précédent `CasaEngine/CasaEngine.Tests/Common/ObjectBaseGuidConstructorTests.cs:82-101`) ;
+  - `RacingGameCasaEngine/Content/AssetInfos.json` : entrée du monde, `file_name` identique à `FirstWorldLoaded` ;
+  - `RacingGameCasaEngine/RacingGameCasaEngine.csproj` :
+    - copie de `Content\Worlds\*.world`, pour que tout fichier catalogué existe aussi dans la sortie ;
+    - `Content\UI\**\*.design.json` non copiés (`CopyToOutputDirectory` à `Never`) ;
+  - `.gitignore` : dll et pdb copiés, `RacingGameCasaEngine/Content/.casaeditor/` (état de l'éditeur, `GameEditor.cs:2459-2481`) ;
+  - `scripts/capture_editor_screen.ps1` :
+    - lance `CasaEngine.Editor.exe` sur un `.uiscreen` avec `--project <absolu>`, `--open-asset`, `--entity-index 0`, `--capture-delay`, `--diagnostics-out` et `--screenshot-out`, plus en option `--set-screen-property` et `--save-project` ;
+    - prend en option la racine du projet, pour travailler sur une copie ;
+    - s'exécute avec un répertoire courant temporaire ;
+    - attend la sortie de l'éditeur au plus `-TimeoutSeconds`, 120 par défaut. L'automatisation peut en effet tourner sans fin, sans capture ni exception :
+      - monde sans entité (`GameEditor.cs:7762-7767`) ;
+      - `--open-asset` raté suivi de `--set-screen-property` (`GameEditor.cs:7092-7093`, `6464-6469`, `7210-7215`) ;
+    - à l'expiration, il arrête le seul processus d'éditeur qu'il a lancé, affiche le chemin des diagnostics et sort en code 2 ;
+    - échoue (code 1) dans les cas suivants :
+      - code de sortie de l'éditeur ≠ 0 ;
+      - fichier `--diagnostics-out` absent ;
+      - ce fichier commence par « CasaEngine Editor automation failure », en-tête que `Program.cs:18-31` y écrit à la place de `editor-automation-error.txt` quand `--diagnostics-out` est donné ;
+      - ce fichier contient « [Automation] Unable to open asset » (`GameEditor.cs:7092-7093`) ;
+      - capture `<nom>-final.png` absente ;
+    - affiche les chemins de la capture et des diagnostics ;
+  - `RacingGameCasaEngine/Assets/README.md` : section « CasaEngine editor project », avec :
+    - ouverture, recompilation de l'éditeur, script ;
+    - limites de l'aperçu (état vérifié) ;
+    - effets de File > Save ;
+    - interdiction de New Project sur ce dossier.
+- Étapes :
+  1. Recompiler l'éditeur : `dotnet build CasaEngine/CasaEngine.Editor.MonoGame.sln -c Debug`. Contrôler que `git -C CasaEngine status --short` est vide.
+  2. Créer la bibliothèque, le fichier projet, le monde, l'entrée de catalogue, les règles, le `.gitignore` et le script.
+  3. Écrire la documentation.
+- Validation :
+  - `dotnet build RacingGame.slnx` 0 erreur ; dll et pdb présents dans `RacingGameCasaEngine/Content/`, ignorés par git ;
+  - `--smoke-frontend` code 0, aucun avertissement ; le catalogue chargé par le jeu compte une entrée de plus ;
+  - `scripts/capture_editor_screen.ps1` sur `UI/Screens/Splash/Splash.uiscreen` :
+    - code 0, diagnostics présents et sans en-tête d'échec ni « Unable to open asset » ;
+    - la capture montre l'aperçu du Splash avec le fond `Ui.Menu.SplashBackground` et le bouton ;
+    - une copie de `RacingGameCasaEngine.UI.dll` apparaît sous `%TEMP%\casaeditor-scripts\` pendant le run (assembly chargée) ;
+  - édition, sur une copie de `RacingGameCasaEngine/Content` dans le scratchpad : `--set-screen-property btnContinue:Padding=20,12,20,12 --save-project` ;
+    - diagnostics : propriété mise à jour ;
+    - diff du `.xaml` limité à cet attribut ;
+    - `AssetInfos.json` réécrit : mêmes entrées (`jq` trié par `id`), différences de format notées dans la documentation ;
+    - fichier projet et monde réécrits : identiques sémantiquement (`jq -S`) ; sinon, le fichier commité prend la forme écrite par l'éditeur, pour qu'un Save ultérieur ne le change plus, et l'écart est noté ;
+  - cas négatif, sur une copie de `RacingGameCasaEngine/Content` dans le scratchpad : `--open-asset` vers un `.uiscreen` absent, avec `--set-screen-property`. Le script se termine dans le délai, avec un code ≠ 0, et aucun processus `CasaEngine.Editor` lancé par lui ne reste actif ;
+  - `git status` après les runs : aucun fichier suivi modifié, rien de nouveau hors `.serena/` et `log.txt` ; `git -C CasaEngine status --short` vide.
+- Budget : un run du script qui échoue ou expire compte comme un cycle de correction et de validation (règle des 3 cycles).
+- Retour arrière : avant commit, suppression des fichiers créés et `git restore` des fichiers modifiés ; après, `git revert`. L'éditeur recompilé reste dans les sorties ignorées du sous-module.
+- Commit : `feat(racing-casa): open the game content as a CasaEngine editor project`
 
 ## Phase 6 — Nettoyage, rapports et clôture
 
@@ -362,7 +479,8 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 - Objectif :
   - `docs/mgui-gaps-from-rgce-xaml-screens.md` (P11), à partir des contournements effectivement faits pendant T1.2 → T3.2 ;
   - section chiffrée sur le rendu des textes du HUD XAML comparé à `DrawShadowedText` (D15) ;
-  - absence d'effet de « Post Screen Effects » et la raison (D14).
+  - absence d'effet de « Post Screen Effects » et la raison (D14) ;
+  - écarts entre l'aperçu de l'éditeur et l'exécution rencontrés sur les 9 écrans (O5).
 - Commit : `docs(racing-casa): report MGUI gaps met by the XAML screens`
 
 ### ⏳ T6.3 — Validation globale et rapport de fin
@@ -382,10 +500,12 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 | O2 | **Tranché (D11 → D14).** Options sans effet (`PostEffects`, `Shadows`, `HighDetail`, `Vibration`). | T2.6, T4.1, T4.2, T6.2 |
 | O3 | **Tranché (D15).** Rendu des textes du HUD (`DrawShadowedText` contre `TextBlock`). | T3.2, T6.2 |
 | O4 | Bruit de décor dans les états de course : `CreateDeterministicTrackRandom` (`Worlds/LegacyTrackSceneFactory.cs:767-773`) amorce son `Random` avec `System.HashCode`, aléatoire d'un processus à l'autre ; le choix des panneaux (`Track.Scenery.Banner*`) change donc à chaque lancement. Écart observé jusqu'à 1,40 sur `race-hud` entre deux runs, HUD identique. Bug antérieur, hors périmètre : signalé à l'auteur dans une tâche séparée. Les états de course sont jugés sur la planche, en ignorant le décor. | T1.2 → T3.2 |
+| O5 | Aperçu de l'éditeur non fidèle à l'exécution (état vérifié, « Éditeur CasaEngine »). Ces écarts sont dans le moteur (D8) : ils sont notés écran par écran et rapportés en T6.2, jamais contournés. | T5.2 → T3.2, T6.2 |
 
 ## Hors périmètre
 
 - Le jeu legacy (`RacingGame`, `RacingGame.Shared`) (D1).
 - Toute modification de CasaEngine ou de MGUI (D8).
 - Un projet de test RGCE (P10).
+- La copie du contenu lié non catalogué : TGA, DDS, CombiModel, `LandscapeHeights.data` (D18).
 - Push, merge, PR.
