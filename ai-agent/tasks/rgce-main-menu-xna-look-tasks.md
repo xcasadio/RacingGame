@@ -210,7 +210,7 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
 > - Éditeur : `capture_editor_screen.ps1` sur `MainMenu.uiscreen` code 0, diagnostics sans erreur, aperçu avec les données de conception de 1280×720.
 > - Réglages de l'auteur inchangés (même SHA-1).
 
-### ⏳ T2.2 — Sélection, anneau, animation et libellé
+### 🧪 T2.2 — Sélection, anneau, animation et libellé
 
 - Objectif : D2, D3 et P4.
 - Fichiers : `Screens/MainMenuScreen.cs`, `UI/LegacyMenuUiTheme.cs` (`ApplyMainMenuButtonState`), `RacingGameCasaEngine.UI/ViewModels/RaceMainMenuViewModel.cs`, `MainMenu.xaml`.
@@ -221,6 +221,24 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
   - mesures de l'anneau et du libellé ;
   - 🧪 navigation et animation par l'auteur.
 - Commit : `feat(racing-casa): select main menu buttons like the original`
+
+> Validation (2026-10-05) :
+> - Code : `MainMenuScreen` gère la sélection comme le `MainMenu.Update` d'origine.
+>   - Gauche/droite au clavier, au D-pad ou au stick gauche (seuil 0,5), en boucle ; un pas à l'appui, puis un tous les 250 ms tant que la direction est tenue.
+>   - La souris sélectionne au survol, une fois qu'elle a bougé depuis le dernier pas au clavier ou à la manette. Les deltas sont testés en valeur absolue : le `MouseManager.HasMoved` de CasaEngine ne compte que les mouvements vers la droite ou le bas.
+>   - Espace, Entrée ou A activent le sélectionné, un clic le bouton cliqué.
+>   - Les boutons ne prennent plus le focus de MGUI, pour que sa navigation aux flèches ne s'ajoute pas.
+>   - La 1re image après l'ouverture ignore l'activation, la touche qui a ouvert le menu pouvant être encore « juste pressée ».
+>   - La sélection est gardée en mémoire dans `RaceFrontEndState.SelectedMainMenuButton`, sans être enregistrée, donc le menu rouvre sur le dernier bouton, comme l'original, dont le menu restait sous les autres écrans.
+>   - `RaceMainMenuViewModel.Reset` ouvre le menu sur ce bouton déjà agrandi ; `Update` anime les tailles à 2 par seconde (0,5 s).
+> - `dotnet build RacingGame.slnx` : 0 erreur, 0 avertissement. `--smoke-frontend` et `--capture-ui-screens` : code 0, aucun avertissement.
+> - Captures contre le run de T2.1 : 0,00 sur les 10 états, Play sélectionné à l'ouverture comme avant.
+> - Sonde (sélection initiale lue dans une variable d'environnement, copie dans le scratchpad) :
+>   - menu ouvert sur chacun des boutons 1 à 4 ;
+>   - mesures contre les formules d'origine : écart maximal 0 px pour les 5 états en 1920×1080, et pour Options en 1280×720 ;
+>   - planche : anneau, agrandissement et libellé du bon bouton (START RACE, HIGHSCORES, OPTIONS, HELP, QUIT), les autres atténués.
+> - Réglages de l'auteur inchangés.
+> - 🧪 Reste, faute d'entrée simulée permise : navigation au clavier, à la manette et à la souris, répétition, animation et activation, par l'auteur.
 
 ## Phase 3 — Clôture
 

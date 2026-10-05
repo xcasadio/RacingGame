@@ -117,6 +117,16 @@ public sealed class RaceMainMenuViewModel : RaceViewModelBase
         set => SetProperty(ref _buttonSpacing, value);
     }
 
+    /// <summary>Selects <paramref name="selectedIndex"/> at once, already grown, as when the menu opens.</summary>
+    public void Reset(int selectedIndex)
+    {
+        SelectedIndex = selectedIndex;
+        for (int i = 0; i < ButtonCount; i++)
+        {
+            _sizeFactors[i] = i == _selectedIndex ? 1f : 0f;
+        }
+    }
+
     /// <summary>Lays the band and the buttons out for the viewport, and advances the size animation.</summary>
     public void Update(int viewportWidth, int viewportHeight, double elapsedSeconds)
     {

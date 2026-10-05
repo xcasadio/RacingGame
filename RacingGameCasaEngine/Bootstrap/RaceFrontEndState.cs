@@ -8,6 +8,9 @@ internal sealed class RaceFrontEndState
 
     public int SelectedTrackIndex { get; set; }
 
+    /// <summary>The main menu's selected button, kept while the game runs (not saved), so the menu reopens on it.</summary>
+    public int SelectedMainMenuButton { get; set; }
+
     public string PlayerName { get; set; } = "Player One";
 
     public int SelectedResolutionIndex { get; set; } = 1;
