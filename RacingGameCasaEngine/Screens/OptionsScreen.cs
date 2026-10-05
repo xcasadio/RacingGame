@@ -13,7 +13,7 @@ namespace RacingGameCasaEngine.Screens;
 /// <summary>
 /// Options, loaded from the <c>Screen.Options</c> screen asset (Content/UI/Screens/Options). The form is bound two ways to
 /// <see cref="RaceOptionsViewModel"/>: a change in the form is written to <see cref="RaceFrontEndState"/> at once, and the
-/// fields follow the state every frame. The settings are applied by the Back button.
+/// fields follow the state every frame. The settings are applied and saved by the Back button.
 /// </summary>
 internal sealed class OptionsScreen : RaceXamlScreenBase
 {
@@ -99,6 +99,7 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
     private void ApplyAndClose()
     {
         _game.ApplyFrontEndOptions(_state);
+        _game.SaveFrontEndOptions(_state);
         _back();
     }
 

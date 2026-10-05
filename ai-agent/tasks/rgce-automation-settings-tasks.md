@@ -131,7 +131,7 @@ Découverte en lecture seule dans la session principale. Les fichiers:ligne renv
 - Commit : `docs(racing-casa): plan automation runs that leave the user settings untouched`
 - Note de validation : plan relu par un `plan-verifier` (READY), approuvé par l'auteur, mode AUTO (2026-10-05). ADR-0004 écrite et indexée ; liens de `ai-agent/README.md` et `docs/decisions/README.md` vérifiés.
 
-### ⏳ T0.2 — Sous-module du worktree et build de départ
+### ✅ T0.2 — Sous-module du worktree et build de départ
 
 - Objectif : pouvoir builder et lancer RGCE depuis ce worktree (P3). Aucun fichier suivi n'est touché, donc pas de commit.
 - Étapes :
@@ -140,12 +140,13 @@ Découverte en lecture seule dans la session principale. Les fichiers:ligne renv
   3. `dotnet build RacingGame.slnx` sur `8f14af9` + T0.1 : 0 erreur. Relever le chemin de `RacingGameCasaEngine.exe`.
 - Validation : sous-modules aux commits attendus ; build 0 erreur. `.git/config` est inchangé : même SHA-1 avant et après.
 - Commit : aucun. La note de validation entre dans le commit de T1.1.
+- Note de validation : sous-modules initialisés depuis les dépôts locaux du checkout principal, sans réseau (P3). `git submodule status --recursive` donne `f8629e0`, `d3e0cd1` et `9c0da03`, sans `+` ni `-`. SHA-1 de `.git/config` inchangé (`cd5477ef…`). `dotnet build RacingGame.slnx` sur `31f7f83` : 0 erreur ; 469 avertissements, tous dans des projets non touchés (RacingGame legacy, CasaEngine, MGUI, PipelineExtension, Shared), aucun dans RGCE. Exécutable : `RacingGameCasaEngine/bin/Debug/net9.0-windows/RacingGameCasaEngine.exe`.
 
 ---
 
 ## Phase 1 — Code
 
-### ⏳ T1.1 — Enregistrer les réglages au seul bouton Retour d'Options
+### 🧪 T1.1 — Enregistrer les réglages au seul bouton Retour d'Options
 
 - Objectif : D1, par le découpage P1.
 - Fichiers : `RacingGameCasaEngine/Bootstrap/RacingGameCasaEngineGame.cs`, `RacingGameCasaEngine/Screens/OptionsScreen.cs`.
@@ -162,6 +163,13 @@ Découverte en lecture seule dans la session principale. Les fichiers:ligne renv
   - SHA-1 et dates inchangés.
   - 🧪 pour le chemin d'enregistrement du jeu normal (P5).
 - Commit : `fix(racing-casa): save the user settings only from the Options screen`
+- Note de validation (2026-10-05) :
+  - `rg` : `SaveDisplaySettings(` et `FrontEndOptionsPersistence.Save` n'ont plus qu'un appelant, `SaveFrontEndOptions` (`RacingGameCasaEngineGame.cs:155-159`), lui-même appelé par `OptionsScreen.ApplyAndClose` seulement.
+  - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE.
+  - `--smoke-frontend`, deux runs (`racinggame-casaengine-37084.log` et `-67864.log`) : code 0, aucun `[Warning]` ni `[Error]`, ligne `Smoke validation: Verified applied resolution on MainMenu` présente, course démarrée et terminée.
+  - SHA-1 (`18eafcb4…`, `cdf4b801…`) et dates des deux fichiers identiques avant et après chaque run. Les deux runs sont donc partis de la même résolution enregistrée.
+  - Constat hors session : entre la lecture de 21:02 et le premier run, les deux fichiers ont été réécrits à 21:34:37, avec le même contenu (même SHA-1). Cela s'est passé avant tout lancement du jeu par cette session : c'est probablement un run d'une autre session ou de l'auteur, sur un exécutable sans ce correctif.
+  - 🧪 restant : le chemin d'enregistrement du jeu normal (bouton Retour d'Options), à vérifier par l'auteur (P5).
 
 ### ⏳ T1.2 — Garder 1920×1080 pendant toute la capture UI
 

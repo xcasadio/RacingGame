@@ -137,8 +137,6 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         }
 
         ApplyDisplaySettings(new DisplaySettings(width, height, state.IsFullscreen, state.EnableVSync));
-        SaveDisplaySettings(_displaySettingsFileName);
-        FrontEndOptionsPersistence.Save(_frontEndOptionsFileName, state);
 
         SoundEffect.MasterVolume = state.SoundVolume / 100f;
         MediaPlayer.Volume = state.MusicVolume / 100f;
@@ -148,6 +146,16 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
             view.ShowDebugOverlay = state.ShowFps;
             view.Invalidate();
         }
+    }
+
+    /// <summary>
+    /// Saves the applied display settings and the front-end options to the user settings files. Only the Options screen
+    /// calls it, when the player leaves it (ADR-0004): world loads and the automation modes apply the options without saving them.
+    /// </summary>
+    internal void SaveFrontEndOptions(RaceFrontEndState state)
+    {
+        SaveDisplaySettings(_displaySettingsFileName);
+        FrontEndOptionsPersistence.Save(_frontEndOptionsFileName, state);
     }
 
     protected override void Initialize()
