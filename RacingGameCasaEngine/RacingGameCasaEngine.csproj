@@ -23,9 +23,17 @@
     <ProjectReference Include="..\CasaEngine\CasaEngine\CasaEngine.csproj" />
     <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Core\MGUI.Core.csproj" />
     <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Shared\MGUI.Shared.csproj" />
+    <ProjectReference Include="..\RacingGameCasaEngine.UI\RacingGameCasaEngine.UI.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Content\UI\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <!-- Design-time data is read by the CasaEngine editor only (ADR-0002). -->
+    <None Update="Content\UI\**\*.design.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Worlds\*.world">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Content\AssetInfos.json">

@@ -1,5 +1,5 @@
 <Window xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core"
-        ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
+        Width="1280" Height="720" ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
         Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
   <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">

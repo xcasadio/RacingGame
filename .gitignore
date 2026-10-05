@@ -256,3 +256,7 @@ paket-files/
 
 .vs/
 .vscode/
+# CasaEngine editor project of RacingGameCasaEngine (ADR-0002): view-model assembly copied after build, editor state
+RacingGameCasaEngine/Content/RacingGameCasaEngine.UI.dll
+RacingGameCasaEngine/Content/RacingGameCasaEngine.UI.pdb
+RacingGameCasaEngine/Content/.casaeditor/

@@ -267,7 +267,7 @@ Ce que le chantier ne livre pas est dans « Hors périmètre ».
 Prérequis : T5.1 et T5.2 (ordre d'exécution, voir la phase 5).
 
 Chaque tâche de cette phase, et de la phase 3 :
-- crée `Content/UI/Screens/<Nom>/<Nom>.uiscreen` + `.xaml` et l'entrée de catalogue ;
+- crée `Content/UI/Screens/<Nom>/<Nom>.uiscreen` + `.xaml` et l'entrée de catalogue. Une fenêtre plein écran en `Stretch` déclare aussi la taille de conception `Width="1280" Height="720"`, sans effet en jeu (T5.2) ;
 - crée le view model de l'écran dans `RacingGameCasaEngine.UI/ViewModels/` (P1 révisé par D19) ;
 - crée les données de conception `Content/UI/Screens/<Nom>/<Nom>.design.json` : `view_model_type` (nom simple du view model), `values` reprenant l'état de la capture de référence. Elles sont référencées par `design_time_data_file` dans le `.uiscreen` et non copiées dans la sortie du build (règle de T5.2) ;
 - réécrit l'écran sur `RaceXamlScreenBase` : actions (P2), restylage par image des éléments nommés (D6), décor lié (P4) ;
@@ -394,7 +394,31 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 - Retour arrière : avant commit, suppression des 6 copies et `git restore` du csproj ; après, `git revert`.
 - Commit : `chore(racing-casa): keep catalogued content files in the game content folder`
 
-### ⏳ T5.2 — Projet CasaEngine de l'éditeur
+### ✅ T5.2 — Projet CasaEngine de l'éditeur
+
+> Validation (2026-10-05) :
+> - **Éditeur** recompilé depuis le sous-module : 0 erreur, `git -C CasaEngine status --short` vide avant et après.
+> - **Build et jeu** :
+>   - `dotnet build RacingGame.slnx` : 0 erreur ; `RacingGameCasaEngine.UI.dll` et `.pdb` copiés dans `Content/`, ignorés par git ;
+>   - `--smoke-frontend` : code 0, aucun avertissement, catalogue de 40 assets (une entrée de plus) ;
+>   - `--capture-ui-screens` contre `references-579e1d7` : 0,00 sur les 10 états, 0,01 sur `race-hud`.
+> - **Taille de conception** : le 1er run du script sur le Splash montrait le fond, mais pas le panneau. Pour une racine `Window`, l'aperçu prend le XAML tel quel (`UIScreenPreviewBuilder.cs:117-120`) et dimensionne donc la fenêtre selon son contenu ; le panneau centré tombait hors de la zone visible. Le Splash déclare désormais la taille de conception `Width="1280" Height="720"`, comme les écrans de RPGDemo. En jeu, le placement `Stretch` remplace cette taille à chaque mise à jour (`MGWindow.cs:246-289`), d'où le 0,00 ci-dessus. Convention ajoutée à la phase 2.
+> - **Script** `capture_editor_screen.ps1`, run sur le Splash :
+>   - code 0, diagnostics sans échec (`Opened asset`, `Screenshot saved`) ;
+>   - la capture montre fond, panneau, titre, texte et bouton Continue, coupé par le bas de la zone à 100 % ;
+>   - entité `EditorAutomationAnchor` sélectionnée ; panneau `panel_ui_screen_df45eb24…`, identifiant du catalogue ;
+>   - `RacingGameCasaEngine.UI.dll` et `.pdb` copiés deux fois sous `%TEMP%\casaeditor-scripts\`, le projet étant chargé deux fois en automatisation.
+> - **Édition**, sur une copie (`--set-screen-property btnContinue:Padding=20,12,20,12 --save-project`) :
+>   - propriété mise à jour, écran enregistré ;
+>   - XAML : seule la balise ouvrante du bouton change, réécrite sur une ligne avec le nouveau `Padding` (comportement documenté du moteur) ;
+>   - `AssetInfos.json` : identique octet pour octet ;
+>   - fichier projet : identique selon `jq -S`, mais format différent ;
+>   - monde : l'éditeur ajoute les politiques d'entité, `"root_component": "null"` et l'environnement par défaut.
+>   
+>   Le fichier projet et le monde commités sont donc ceux écrits par l'éditeur (CRLF, sans saut de ligne final). Un 2e aller-retour sur une copie neuve ne modifie plus que le XAML.
+> - **Cas négatif**, sur une copie (`--open-asset UI/Screens/Missing/Missing.uiscreen`, `--set-screen-property`, `-TimeoutSeconds 45`) : délai expiré à 45 s, code 2, aucun processus `CasaEngine.Editor` restant, copie inchangée.
+> - **Cycles** : 1 sur 3, consommé par le 1er run du script, en échec. Sous Windows PowerShell 5.1, `$PSScriptRoot` est vide dans les valeurs par défaut de `param` : chemins par défaut désormais résolus après ce bloc.
+> - **Arbre** : `git status` sans fichier inattendu ; `.casaeditor/` créé par les runs, ignoré.
 
 - Objectif : D16, D19, D20. L'éditeur CasaEngine recompilé depuis le sous-module :
   - ouvre `RacingGameCasaEngine/Content/RacingGameCasaEngine.json` ;
@@ -438,6 +462,7 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
       - ce fichier contient « [Automation] Unable to open asset » (`GameEditor.cs:7092-7093`) ;
       - capture `<nom>-final.png` absente ;
     - affiche les chemins de la capture et des diagnostics ;
+  - `RacingGameCasaEngine/Content/UI/Screens/Splash/Splash.xaml` : taille de conception `Width="1280" Height="720"` (ajout en cours de tâche, voir la validation) ;
   - `RacingGameCasaEngine/Assets/README.md` : section « CasaEngine editor project », avec :
     - ouverture, recompilation de l'éditeur, script ;
     - limites de l'aperçu (état vérifié) ;
@@ -502,7 +527,7 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 | O2 | **Tranché (D11 → D14).** Options sans effet (`PostEffects`, `Shadows`, `HighDetail`, `Vibration`). | T2.6, T4.1, T4.2, T6.2 |
 | O3 | **Tranché (D15).** Rendu des textes du HUD (`DrawShadowedText` contre `TextBlock`). | T3.2, T6.2 |
 | O4 | Bruit de décor dans les états de course : `CreateDeterministicTrackRandom` (`Worlds/LegacyTrackSceneFactory.cs:767-773`) amorce son `Random` avec `System.HashCode`, aléatoire d'un processus à l'autre ; le choix des panneaux (`Track.Scenery.Banner*`) change donc à chaque lancement. Écart observé jusqu'à 1,40 sur `race-hud` entre deux runs, HUD identique. Bug antérieur, hors périmètre : signalé à l'auteur dans une tâche séparée. Les états de course sont jugés sur la planche, en ignorant le décor. | T1.2 → T3.2 |
-| O5 | Aperçu de l'éditeur non fidèle à l'exécution (état vérifié, « Éditeur CasaEngine »). Ces écarts sont dans le moteur (D8) : ils sont notés écran par écran et rapportés en T6.2, jamais contournés. | T5.2 → T3.2, T6.2 |
+| O5 | Aperçu de l'éditeur non fidèle à l'exécution (état vérifié, « Éditeur CasaEngine »). Constaté en T5.2 : une fenêtre `Stretch` sans taille y prend la taille de son contenu, d'où la taille de conception. Ces écarts sont dans le moteur (D8) : ils sont notés écran par écran et rapportés en T6.2, jamais contournés. | T5.2 → T3.2, T6.2 |
 
 ## Hors périmètre
 

@@ -233,6 +233,12 @@
       "name": "Screen.Splash",
       "file_name": "UI/Screens/Splash/Splash.uiscreen",
       "asset_type": "uiscreen"
+    },
+    {
+      "id": "2a5e6cdb-cf9b-41ba-909a-d9e9823085c8",
+      "name": "Editor",
+      "file_name": "Worlds/Editor.world",
+      "asset_type": "world"
     }
   ]
 }

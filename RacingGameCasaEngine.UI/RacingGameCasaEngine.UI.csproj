@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>RacingGameCasaEngine.UI</RootNamespace>
+    <AssemblyName>RacingGameCasaEngine.UI</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Shared\MGUI.Shared.csproj" />
+  </ItemGroup>
+  <!-- The CasaEngine editor loads this assembly from the editor project root (GameplayDllName of
+       RacingGameCasaEngine/Content/RacingGameCasaEngine.json) to build design-time view models (ADR-0002). -->
+  <Target Name="CopyToEditorProjectRoot" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath);$(TargetDir)$(TargetName).pdb"
+          DestinationFolder="$(MSBuildProjectDirectory)\..\RacingGameCasaEngine\Content"
+          SkipUnchangedFiles="true" />
+  </Target>
+</Project>

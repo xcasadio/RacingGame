@@ -1,0 +1,15 @@
+{
+  "WindowTitle": "RacingGameCasaEngine",
+  "ProjectName": "RacingGameCasaEngine",
+  "FirstScreenName": "",
+  "AllowUserResizing": true,
+  "IsFixedTimeStep": true,
+  "IsMouseVisible": true,
+  "FirstWorldLoaded": "Worlds/Editor.world",
+  "GameplayDllName": "RacingGameCasaEngine.UI.dll",
+  "ExternalToolsDirectory": "ExternalTools",
+  "DebugIsFullScreen": false,
+  "DebugHeight": 768,
+  "DebugWidth": 1024,
+  "VSyncEnabled": true
+}
