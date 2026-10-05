@@ -29,9 +29,11 @@ public static class RaceWorldFactory
     // EnvironmentLightingResolver.CreateLegacyLighting). CasaEngine now lights a world only through its
     // LightComponents (CasaEngine 604c2fbea). Each old color is a gray level: it becomes the intensity of a white
     // light, so the shader receives the same values (ForwardLightBinder multiplies both colors by the intensity).
+    private const string KeyLightName = "Light.Key";
+
     private static readonly (string Name, Vector3 Direction, float Intensity, bool HasSpecular)[] LegacyDirectionalLights =
     [
-        ("Light.Key", new Vector3(-0.5265408f, -0.5735765f, -0.6275069f), 0.92f, true),
+        (KeyLightName, new Vector3(-0.5265408f, -0.5735765f, -0.6275069f), 0.92f, true),
         ("Light.Fill", new Vector3(0.7198464f, 0.3420201f, 0.6040227f), 0.71f, false),
         ("Light.Back", new Vector3(0.4545195f, -0.7660444f, 0.4545195f), 0.36f, true),
     ];
@@ -88,7 +90,9 @@ public static class RaceWorldFactory
         world.AddEntity(CreateCameraEntity(enableChaseCamera: true));
         world.AddEntity(CreateRaceRootEntity(trackScene.PhysicsProfile));
 
-        foreach (Entity entity in CreateLegacyLightEntities())
+        // The Shadows option: the race world renders shadow maps, cast by its key light.
+        world.EnvironmentSettings.Shadows.Enabled = state.EnableShadows;
+        foreach (Entity entity in CreateLegacyLightEntities(keyLightCastsShadows: state.EnableShadows))
         {
             world.AddEntity(entity);
         }
@@ -135,7 +139,7 @@ public static class RaceWorldFactory
         return cameraEntity;
     }
 
-    private static IEnumerable<Entity> CreateLegacyLightEntities()
+    private static IEnumerable<Entity> CreateLegacyLightEntities(bool keyLightCastsShadows)
     {
         foreach (var light in LegacyDirectionalLights)
         {
@@ -149,7 +153,7 @@ public static class RaceWorldFactory
                     Color = Color.White,
                     SpecularColor = light.HasSpecular ? Color.White : Color.Black,
                     Intensity = light.Intensity,
-                    CastShadows = false,
+                    CastShadows = keyLightCastsShadows && light.Name == KeyLightName,
                 },
             };
             entity.ApplyExplicitPolicies(EntityPolicySet.StaticDecoration);

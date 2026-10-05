@@ -439,7 +439,15 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 
 ## Phase 4 — Options de jeu effectives
 
-### ⏳ T4.1 — Option « Shadows »
+### ✅ T4.1 — Option « Shadows »
+
+> Validation (2026-10-05) :
+> - **Code** : `RaceWorldFactory.CreateRaceWorld` règle `world.EnvironmentSettings.Shadows.Enabled` et le `CastShadows` de la seule lumière `Light.Key` d'après `RaceFrontEndState.EnableShadows`. Les réglages sont relus à chaque image (`RenderPipeline.cs:139`), et la passe d'ombres prend la première lumière directionnelle qui en projette (`ShadowPass.cs:213-224`).
+> - **Build et jeu** : `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, aucun avertissement ; `--capture-track-audit`, ombres activées, code 0, 21 captures, aucun avertissement.
+> - **Option cochée** (fichier d'options de l'utilisateur, défaut) : run `ui-run-20261005-174540`. `race-hud` à 6,46/6,59/6,23, `race-finished` à 4,51/4,75/4,82 et `pause` à 2,12/2,16/2,04 contre `references-579e1d7`. Ombres visibles sur la planche : voiture et structures sur la route.
+> - **Option décochée** : `EnableShadows` mis à `false` le temps d'un run, dans `%LOCALAPPDATA%\CasaEngine\RacingGameCasaEngineront-end-options.json`, puis le fichier restauré à l'identique (même SHA-1). Run `ui-run-20261005-174621` : `race-hud` à 0,53, `pause` à 0,17 et `race-finished` à 0,49, exactement les valeurs de T3.2. La scène est donc identique à celle d'avant.
+> - **Nouvelles références** : le rendu par défaut change. Le run `ui-run-20261005-174540`, capturé sur l'arbre de travail dont le contenu est celui de ce commit, est copié en `references-<SHA court>` ; le SHA est noté sous T4.2.
+> - **Qualité des ombres** : l'ombre portée sur la route est crénelée, avec les valeurs par défaut du moteur (carte de 1024, distance de 100). D11 ne prévoit aucun réglage fin (O6).
 
 - Objectif : D11, ombres du monde de course pilotées par `RaceFrontEndState.EnableShadows`.
 - Fichiers : `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs` (lumière principale `Light.Key`, `ShadowSettings` du monde), lecture de l'état à la création du monde de course.
@@ -627,6 +635,7 @@ Retour arrière commun : avant commit, suppression des fichiers créés par la t
 | O3 | **Tranché (D15).** Rendu des textes du HUD (`DrawShadowedText` contre `TextBlock`). | T3.2, T6.2 |
 | O4 | Bruit de décor dans les états de course : `CreateDeterministicTrackRandom` (`Worlds/LegacyTrackSceneFactory.cs:767-773`) amorce son `Random` avec `System.HashCode`, aléatoire d'un processus à l'autre ; le choix des panneaux (`Track.Scenery.Banner*`) change donc à chaque lancement. Écart observé jusqu'à 1,40 sur `race-hud` entre deux runs, HUD identique. Bug antérieur, hors périmètre : signalé à l'auteur dans une tâche séparée. Les états de course sont jugés sur la planche, en ignorant le décor. | T1.2 → T3.2 |
 | O5 | Aperçu de l'éditeur non fidèle à l'exécution (état vérifié, « Éditeur CasaEngine »). Constaté en T5.2 : une fenêtre `Stretch` sans taille y prend la taille de son contenu, d'où la taille de conception. Ces écarts sont dans le moteur (D8) : ils sont notés écran par écran et rapportés en T6.2, jamais contournés. | T5.2 → T3.2, T6.2 |
+| O6 | Ombres de course crénelées avec les réglages par défaut du moteur (`ShadowSettings` : résolution 1024, distance 100). Un réglage fin (résolution, distance, biais) est une décision de l'auteur, hors D11. | T4.1, rapport final |
 
 ## Hors périmètre
 
