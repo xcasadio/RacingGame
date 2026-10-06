@@ -13,19 +13,24 @@ internal static class RaceFrontEndCatalog
     public static IReadOnlyList<CarDefinition> Cars { get; } =
         CreateCars(CarProfiles);
 
+    /// <summary>
+    /// The car colours of the author's capture of the original game's car selection (ADR-0008): a hue ring from orange
+    /// to gold, the median of each colour square of the capture. The repository's RacingGame code had White, Yellow,
+    /// Blue, Purple, Red, Green, Teal, Gray, Chocolate, MonoGameOrange and SeaGreen instead.
+    /// </summary>
     public static IReadOnlyList<ColorOption> CarColors { get; } =
     [
-        new("White", Color.White),
-        new("Yellow", Color.Yellow),
-        new("Blue", Color.Blue),
-        new("Purple", Color.Purple),
-        new("Red", Color.Red),
-        new("Green", Color.Green),
-        new("Teal", Color.Teal),
-        new("Gray", Color.Gray),
-        new("Chocolate", Color.Chocolate),
-        new("Orange", Color.Orange),
-        new("Sea Green", Color.SeaGreen),
+        new("Orange", new Color(254, 94, 0)),
+        new("Red", new Color(255, 29, 58)),
+        new("Pink", new Color(255, 34, 171)),
+        new("Purple", new Color(180, 28, 250)),
+        new("Indigo", new Color(66, 29, 255)),
+        new("Blue", new Color(0, 107, 255)),
+        new("Cyan", new Color(0, 188, 210)),
+        new("Spring Green", new Color(0, 221, 104)),
+        new("Green", new Color(44, 222, 2)),
+        new("Lime", new Color(155, 233, 0)),
+        new("Gold", new Color(252, 181, 1)),
     ];
 
     public static IReadOnlyList<TrackDefinition> Tracks { get; } =
@@ -83,13 +88,12 @@ internal static class RaceFrontEndCatalog
     private static IReadOnlyList<CarDefinition> CreateCars(IReadOnlyList<CarPerformanceProfile> profiles)
     {
         return profiles
-            .Select(profile => new CarDefinition(
+            .Select((profile, index) => new CarDefinition(
                 profile.Name,
                 profile.Summary,
                 profile.AccentColor,
                 profile,
-                BuildStatLabels(profile),
-                BuildSelectionStats(profile, profiles)))
+                OriginalCarSelection.CreateBars(index)))
             .ToArray();
     }
 
@@ -273,75 +277,6 @@ internal static class RaceFrontEndCatalog
             simulation);
     }
 
-    private static IReadOnlyList<string> BuildStatLabels(CarPerformanceProfile profile)
-    {
-        return
-        [
-            $"Max Speed: {profile.TargetTopSpeedMph:0} mph",
-            $"Acceleration: {profile.LegacyMaxAccelerationPerSecond:0.0} m/s^2",
-            $"Mass: {profile.LegacyMassKilograms:0} kg",
-            $"Handling: {BuildHandlingDescriptor(profile)}",
-        ];
-    }
-
-    private static IReadOnlyList<CarSelectionDisplayStat> BuildSelectionStats(CarPerformanceProfile profile, IReadOnlyList<CarPerformanceProfile> profiles)
-    {
-        return
-        [
-            new CarSelectionDisplayStat($"Max Speed: {profile.TargetTopSpeedMph:0} mph", NormalizeMetric(profiles, profile, static entry => entry.TargetTopSpeedMph)),
-            new CarSelectionDisplayStat($"Acceleration: {profile.LegacyMaxAccelerationPerSecond:0.0} m/s^2", NormalizeMetric(profiles, profile, static entry => entry.LegacyMaxAccelerationPerSecond)),
-            new CarSelectionDisplayStat($"Mass: {profile.LegacyMassKilograms:0} kg", NormalizeMetric(profiles, profile, static entry => entry.LegacyMassKilograms)),
-            new CarSelectionDisplayStat($"Handling: {BuildHandlingDescriptor(profile)}", NormalizeMetric(profiles, profile, ComputeHandlingScore)),
-        ];
-    }
-
-    private static float ComputeHandlingScore(CarPerformanceProfile profile)
-    {
-        float normalizedGrip = profile.Simulation.LateralGrip / Math.Max(1f, profile.Simulation.ChassisMass);
-        float steeringScale = profile.Arcade.TurnRateRadiansPerSecond / Math.Max(0.01f, profile.Arcade.MaxForwardSpeedUnitsPerSecond);
-        return (normalizedGrip * 220f) + (steeringScale * 9f);
-    }
-
-    private static string BuildHandlingDescriptor(CarPerformanceProfile profile)
-    {
-        float handlingScore = ComputeHandlingScore(profile);
-        if (handlingScore >= 1.12f)
-        {
-            return "Agile";
-        }
-
-        if (handlingScore >= 0.94f)
-        {
-            return "Balanced";
-        }
-
-        return "Stable";
-    }
-
-    private static float NormalizeMetric(
-        IReadOnlyList<CarPerformanceProfile> profiles,
-        CarPerformanceProfile profile,
-        Func<CarPerformanceProfile, float> selector)
-    {
-        float minValue = float.MaxValue;
-        float maxValue = float.MinValue;
-        float currentValue = selector(profile);
-
-        for (int index = 0; index < profiles.Count; index++)
-        {
-            float candidateValue = selector(profiles[index]);
-            minValue = Math.Min(minValue, candidateValue);
-            maxValue = Math.Max(maxValue, candidateValue);
-        }
-
-        if (maxValue - minValue <= 0.0001f)
-        {
-            return 50f;
-        }
-
-        return ((currentValue - minValue) / (maxValue - minValue)) * 100f;
-    }
-
     private static VehicleTransmissionDefinition CreateTransmissionDefinitionAlignedToSimulationTopSpeed(
         float targetTopSpeedMph,
         IReadOnlyList<VehicleWheelDefinition> wheelDefinitions,
@@ -408,10 +343,48 @@ internal sealed record CarDefinition(
     string Summary,
     Color AccentColor,
     CarPerformanceProfile PerformanceProfile,
-    IReadOnlyList<string> Stats,
-    IReadOnlyList<CarSelectionDisplayStat> SelectionStats);
+    CarSelectionBars SelectionBars);
 
-internal readonly record struct CarSelectionDisplayStat(string Label, float FillPercent);
+/// <summary>
+/// What RacingGame's car selection showed for a car: its top speed in mph and its six property bar values, where 1 is a
+/// bar of 192 units of the 1024-unit layout (values can go past 1).
+/// </summary>
+internal sealed record CarSelectionBars(int MaxSpeedMph, float MaxSpeed, float Acceleration, float Mass, float Braking, float Friction, float Engine);
+
+/// <summary>
+/// RacingGame's car selection figures (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/CarSelection.cs:19-53,
+/// 229-245</c>) and the CarPhysics constants they use (<c>GameLogic/CarPhysics.cs:24, 38-39, 49, 92-94</c>), computed in
+/// float as there. They are what the screen shows; the race keeps the catalogue's car profiles.
+/// </summary>
+internal static class OriginalCarSelection
+{
+    private const float MeterPerSecToMph = 1.609344f * ((60.0f * 60.0f) / 1000.0f);
+    private const float MphToMeterPerSec = 1.0f / MeterPerSecToMph;
+    private const float DefaultMaxSpeed = 275.0f * MphToMeterPerSec;
+    private const float DefaultCarMass = 1000;
+    private const float DefaultMaxAccelerationPerSec = 2.5f;
+
+    private static readonly float[] CarTypeMaxSpeed = [DefaultMaxSpeed * 1.05f, DefaultMaxSpeed, DefaultMaxSpeed * 0.88f];
+    private static readonly float[] CarTypeMass = [DefaultCarMass * 1.015f, DefaultCarMass * 1.175f, DefaultCarMass * 0.875f];
+    private static readonly float[] CarTypeMaxAcceleration = [DefaultMaxAccelerationPerSec * 0.85f, DefaultMaxAccelerationPerSec * 1.2f, DefaultMaxAccelerationPerSec];
+
+    public static CarSelectionBars CreateBars(int carIndex)
+    {
+        int car = Math.Clamp(carIndex, 0, CarTypeMaxSpeed.Length - 1);
+        float maxSpeed = -1.5f + 2.45f * (CarTypeMaxSpeed[car] / DefaultMaxSpeed);
+        float acceleration = -1.25f + 1.85f * (CarTypeMaxAcceleration[car] / DefaultMaxAccelerationPerSec);
+        float mass = -0.65f + 1.5f * (CarTypeMass[car] / DefaultCarMass);
+        float braking = -0.2f + acceleration - mass + maxSpeed;
+        float friction = -1 + (1 / mass + maxSpeed / 5);
+        float engine = -0.2f + 0.5f * (maxSpeed / mass + acceleration - maxSpeed * 5 + 5);
+        if (engine > 0.95f)
+        {
+            engine = 0.95f;
+        }
+
+        return new CarSelectionBars((int)(CarTypeMaxSpeed[car] / MphToMeterPerSec), maxSpeed, acceleration, mass, braking, friction, engine);
+    }
+}
 
 internal sealed record ColorOption(string Name, Color Value);
 

@@ -7,25 +7,224 @@
       "LogoWidth": 755,
       "LogoHeight": 246
     },
-    "Summary": "Car 1\nLong gearing and the highest top speed in the roster.",
-    "Stat0Label": "Max Speed: 288 mph",
-    "Stat0Fill": 100.0,
-    "Stat1Label": "Acceleration: 4.0 m/s^2",
-    "Stat1Fill": 0.0,
-    "Stat2Label": "Mass: 1015 kg",
-    "Stat2Fill": 46.7,
-    "Stat3Label": "Handling: Agile",
-    "Stat3Fill": 24.2,
-    "Swatch0Color": "rgba(255,255,255,255)",
-    "Swatch1Color": "rgba(255,255,0,255)",
-    "Swatch2Color": "rgba(0,0,255,255)",
-    "Swatch3Color": "rgba(128,0,128,255)",
-    "Swatch4Color": "rgba(255,0,0,255)",
-    "Swatch5Color": "rgba(0,128,0,255)",
-    "Swatch6Color": "rgba(0,128,128,255)",
-    "Swatch7Color": "rgba(128,128,128,255)",
-    "Swatch8Color": "rgba(210,105,30,255)",
-    "Swatch9Color": "rgba(255,165,0,255)",
-    "Swatch10Color": "rgba(46,139,87,255)"
+    "BandTopPixels": 191,
+    "BandHeightPixels": 439,
+    "Header": {
+      "Left": 8,
+      "Top": 11,
+      "Width": 410,
+      "Height": 60
+    },
+    "ColorLabel": {
+      "Left": 106,
+      "Top": 573
+    },
+    "Stat0": {
+      "Label": "Max Speed: 288mph",
+      "Text": {
+        "Left": 958,
+        "Top": 211
+      },
+      "Bar": {
+        "Left": 958,
+        "Top": 247,
+        "Width": 256,
+        "Height": 7
+      }
+    },
+    "Stat1": {
+      "Label": "Acceleration:",
+      "Text": {
+        "Left": 958,
+        "Top": 261
+      },
+      "Bar": {
+        "Left": 958,
+        "Top": 297,
+        "Width": 76,
+        "Height": 7
+      }
+    },
+    "Stat2": {
+      "Label": "Car Mass:",
+      "Text": {
+        "Left": 958,
+        "Top": 312
+      },
+      "Bar": {
+        "Left": 958,
+        "Top": 348,
+        "Width": 209,
+        "Height": 7
+      }
+    },
+    "Stat3": {
+      "Label": "Braking:",
+      "Text": {
+        "Left": 958,
+        "Top": 374
+      },
+      "Bar": {
+        "Left": 958,
+        "Top": 410,
+        "Width": 76,
+        "Height": 7
+      }
+    },
+    "Stat4": {
+      "Label": "Friction:",
+      "Text": {
+        "Left": 958,
+        "Top": 436
+      },
+      "Bar": {
+        "Left": 958,
+        "Top": 472,
+        "Width": 86,
+        "Height": 7
+      }
+    },
+    "Stat5": {
+      "Label": "Engine:",
+      "Text": {
+        "Left": 958,
+        "Top": 498
+      },
+      "Bar": {
+        "Left": 958,
+        "Top": 534,
+        "Width": 94,
+        "Height": 7
+      }
+    },
+    "Swatch0": {
+      "ColorText": "rgba(254,94,0,255)",
+      "Rect": {
+        "Left": 305,
+        "Top": 556,
+        "Width": 72,
+        "Height": 65
+      }
+    },
+    "Swatch1": {
+      "ColorText": "rgba(255,29,58,255)",
+      "Rect": {
+        "Left": 375,
+        "Top": 562,
+        "Width": 58,
+        "Height": 52
+      }
+    },
+    "Swatch2": {
+      "ColorText": "rgba(255,34,171,255)",
+      "Rect": {
+        "Left": 438,
+        "Top": 562,
+        "Width": 58,
+        "Height": 52
+      }
+    },
+    "Swatch3": {
+      "ColorText": "rgba(180,28,250,255)",
+      "Rect": {
+        "Left": 500,
+        "Top": 562,
+        "Width": 58,
+        "Height": 52
+      }
+    },
+    "Swatch4": {
+      "ColorText": "rgba(66,29,255,255)",
+      "Rect": {
+        "Left": 562,
+        "Top": 562,
+        "Width": 58,
+        "Height": 52
+      }
+    },
+    "Swatch5": {
+      "ColorText": "rgba(0,107,255,255)",
+      "Rect": {
+        "Left": 625,
+        "Top": 562,
+        "Width": 58,
+        "Height": 52
+      }
+    },
+    "Swatch6": {
+      "ColorText": "rgba(0,188,210,255)",
+      "Rect": {
+        "Left": 688,
+        "Top": 562,
+        "Width": 58,
+        "Height": 52
+      }
+    },
+    "Swatch7": {
+      "ColorText": "rgba(0,221,104,255)",
+      "Rect": {
+        "Left": 750,
+        "Top": 562,
+        "Width": 58,
+        "Height": 52
+      }
+    },
+    "Swatch8": {
+      "ColorText": "rgba(44,222,2,255)",
+      "Rect": {
+        "Left": 812,
+        "Top": 562,
+        "Width": 58,
+        "Height": 52
+      }
+    },
+    "Swatch9": {
+      "ColorText": "rgba(155,233,0,255)",
+      "Rect": {
+        "Left": 875,
+        "Top": 562,
+        "Width": 58,
+        "Height": 52
+      }
+    },
+    "Swatch10": {
+      "ColorText": "rgba(252,181,1,255)",
+      "Rect": {
+        "Left": 938,
+        "Top": 562,
+        "Width": 58,
+        "Height": 52
+      }
+    },
+    "LeftArrow": {
+      "Left": 349,
+      "Top": 450,
+      "Width": 66,
+      "Height": 44
+    },
+    "RightArrow": {
+      "Left": 864,
+      "Top": 450,
+      "Width": 66,
+      "Height": 44
+    },
+    "SelectButton": {
+      "Left": 932,
+      "Top": 633,
+      "Width": 124,
+      "Height": 54
+    },
+    "BackButton": {
+      "Left": 1094,
+      "Top": 633,
+      "Width": 124,
+      "Height": 54
+    },
+    "Preview": {
+      "Left": 390,
+      "Top": 214,
+      "Width": 500,
+      "Height": 338
+    }
   }
 }

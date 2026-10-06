@@ -328,7 +328,7 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 
 ## Phase 3 — Sélection de voiture, partie 2D
 
-### ⏳ T3.1 — Mise en page, palette, entrées et sons
+### 🧪 T3.1 — Mise en page, palette, entrées et sons
 
 - Objectif : P5 et P6, avec l'aperçu actuel gardé provisoirement, sans cadre, en attendant la phase 4.
 - Fichiers :
@@ -354,6 +354,36 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
   - éditeur ;
   - 🧪 entrées et sons.
 - Commit : `feat(racing-casa): lay the car selection out like the original`
+
+> Validation (2026-10-06) :
+> - **Palette** remesurée (médiane du milieu de chaque case de la capture) : #FE5E00, #FF1D3A, #FF22AB, #B41CFA, #421DFF, #006BFF, #00BCD2, #00DD68, #2CDE02, #9BE900, #FCB501, dans `RaceFrontEndCatalog.CarColors`.
+> - **Barres** : `OriginalCarSelection.CreateBars` reprend les tableaux et formules d'origine en float. Mesuré en 1920×1080, une sonde choisissant la voiture :
+>   - voiture 1 : 288 mph, barres de 384, 114, 313, 114, 129 et 141 px ;
+>   - voiture 2 : 275 mph, barres de 341, 349, 399, 218, 32 et 300 px ;
+>   - voiture 3 : 242 mph, barres de 234, 216, 238, 141, 231 et 341 px ;
+>   - largeurs égales à `XToRes((int)(192·v))` au pixel près.
+>
+>   L'ancien libellé, les barres min-max, « Handling » et le résumé disparaissent de l'écran ; `CarDefinition` porte `SelectionBars` à la place de `Stats` et `SelectionStats`.
+> - **Mise en page** (`RaceCarSelectionViewModel`, rectangles `RaceScreenRectViewModel`, lignes `RaceCarStatViewModel`, cases `RaceCarSwatchViewModel` teintées par liaison de `TextureColor`) :
+>   - en 1920×1080 : bande y 287 → 945 ; intérieur de la case 3 x 758 → 822, y 851 → 909 ; barres à x 1436, y 370, 446, 521, 614, 707, 800 ; tout est égal aux formules ;
+>   - texte « Max Speed » à l'encre y 321 : cellule de glyphe en 316 = `YToRes(190) − YToRes1050(5)`, encre à la ligne 5 de la cellule comme dans `GameFont.png` ;
+>   - en 1280×720 et 1024×768 (sonde de taille) : bande, première barre et case 3 égales aux formules, à 1 px d'antialiasing près.
+> - **Superposition** sur la capture de l'auteur en 1024×768 (`carsel-overlay-1024x768.png` du scratchpad) : en-tête, logo, six lignes et barres, cases, flèches et boutons A/B tombent dessus. Restent : la case sélectionnée (la capture montre la 2e), la pastille web (D6) et le carrousel (phase 4).
+> - **Textes GameFont** : en 1024×768, MGUI coupait « Max Speed: 288mph » sur deux lignes (`WrapText` vient du thème), puis le rognait à la largeur restante de la fenêtre. D'où `WrapText="False"` et `ClipToBounds="False"` sur ces textes ; écart noté pour `docs/mgui-gaps-from-rgce-xaml-screens.md` en T5.1.
+> - **Flèche gauche** : `RenderTransform Scale="-1,1"` la dessine en miroir (O3 réglé ; le rastériseur de MGUI ne cache aucune face, `CasaMonoGameRenderInterop.cs:10`).
+> - **Entrées et sons** (`CarSelectionScreen`), comme l'original plus Entrée :
+>   - gauche → (n+1) % 3, droite → (n+2) % 3 ; haut et bas pour la couleur ;
+>   - zones de clic, bouton gauche maintenu sur une case ;
+>   - A, Espace, Entrée ou clic sur A → `ScreenClick` puis piste ; Échap, B, Back ou clic sur B → `ScreenBack` puis menu ;
+>   - `Highlight` à chaque changement et quand la souris entre dans une case ou un bouton A/B (`Input.MouseInBox` de l'original) ;
+>   - garde de première image.
+>
+>   Le bouton A ou B survolé grandit de `XToRes(16)`×`YToRes(9)` et reçoit le contour orange.
+> - **Aperçu provisoire** : l'ancien rendu d'une voiture, sans cadre, en attendant la phase 4. Il montre un rectangle sombre derrière la voiture : c'est l'alpha de la cible de rendu (O1).
+> - **Comparaison** avec le run de T2.1 (`ui-run-20261006-081420`) : seul `car-selection` change ; les états de course restent à 0,00 malgré la nouvelle couleur 0, puisque le moteur ne rend pas la teinte (P9, T4.1).
+> - `--smoke-frontend` code 0 sans avertissement ; build 0 erreur, aucun avertissement dans RGCE ; réglages restaurés à l'identique.
+> - **Éditeur** : `capture_editor_screen.ps1` sur `CarSelection.uiscreen`, code 0 sans erreur, avec les données de conception régénérées pour 1280×720. Le cadrage à 100 % ne montre que le haut de l'écran ; la police des textes dans l'éditeur n'est pas vérifiée (police tenue par le jeu seulement).
+> - 🧪 Reste pour l'auteur : chaque entrée, les sons, le survol des boutons A/B.
 
 ## Phase 4 — Carrousel 3D et peinture
 
@@ -434,7 +464,7 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 |---|---|---|
 | O1 | Alpha de la voiture dans une texture effacée en transparent : les shaders du moteur sortent l'alpha de la texture (le masque de peinture), alors que l'original forçait 1. La peinture P9 force l'alpha à 255 dans la texture ; l'essai de T4.2 confirme si cela suffit, verre compris. | T4.1, T4.2 |
 | O2 | **Réglé en T1.2.** Mise à l'échelle des textes GameFont : le `RenderTransform` non uniforme s'applique au texte. | T1.2 |
-| O3 | Miroir de la flèche gauche : `RenderTransform` d'échelle −1 en x. Si MGUI ne dessine pas une échelle négative, une image miroir est générée par un outil versionné, comme `MenuIconExtractor`. | T3.1 |
+| O3 | **Réglé en T3.1.** Miroir de la flèche gauche : le `RenderTransform` d'échelle −1 en x se dessine. | T3.1 |
 | O4 | Raison de la désactivation des reflets pour `NormalMapping.fx` (`RacingGameLegacyMaterialTuning.cs:94-99`, commits `6a4f898`, `8bbaae0`) non trouvée. Le reflet du plateau (P7) ne touche que la vue du carrousel ; en course, rien ne change. | T4.2 |
 
 ## Hors périmètre
