@@ -23,3 +23,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0007 | RacingGameCasaEngine's main menu reproduces the original XNA menu, with a continuous bevel | Accepted | 2026-10-06 |
 | ADR-0008 | RacingGameCasaEngine's title screen and car selection reproduce the original XNA screens as captured | Superseded by ADR-0009 | 2026-10-06 |
 | ADR-0009 | RacingGameCasaEngine's title screen and car selection reproduce the original XNA screens as captured, as delivered | Accepted | 2026-10-06 |
+| ADR-0010 | RacingGameCasaEngine's track selection reproduces the original XNA screen | Accepted | 2026-10-06 |
