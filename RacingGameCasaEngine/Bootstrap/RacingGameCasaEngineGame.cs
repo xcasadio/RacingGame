@@ -45,6 +45,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     private TextureCube? _raceSkyFallbackReflectionCube;
     private TextureCube? _raceSkySharedCube;
     private bool _raceSkySharedCubeLoadAttempted;
+    private IDisposable? _gameFontHold;
 
     internal RacingGameCasaEngineGame(EngineRuntimeContext runtimeContext, string displaySettingsFileName, string frontEndOptionsFileName, RaceLaunchOptions? launchOptions = null)
         : base(runtimeContext: runtimeContext)
@@ -170,8 +171,43 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
 
     protected override void LoadContentPrivate()
     {
+        HoldGameFont();
         World world = RaceWorldFactory.CreateFrontEndWorld();
         GameManager.SetWorldToLoad(world);
+    }
+
+    /// <summary>
+    /// Holds RacingGame's bitmap font (TextureFont, GameFont.png) for the game's life, so that XAML can name it as
+    /// <c>FontFamily="GameFont"</c> (CasaEngine ADR-0036; RGCE ADR-0008).
+    /// </summary>
+    private void HoldGameFont()
+    {
+        const string gameFontAssetName = "Font.GameFont";
+        if (AssetCatalog.Get(gameFontAssetName) is not { } assetInfo)
+        {
+            Logs.WriteWarning($"Bitmap font '{gameFontAssetName}' is not in AssetInfos.json.");
+            return;
+        }
+
+        try
+        {
+            _gameFontHold = UIFonts.Acquire(assetInfo.Id);
+        }
+        catch (Exception exception)
+        {
+            Logs.WriteWarning($"Bitmap font '{gameFontAssetName}' cannot be loaded. {exception.Message}");
+        }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _gameFontHold?.Dispose();
+            _gameFontHold = null;
+        }
+
+        base.Dispose(disposing);
     }
 
     private void OnWorldLoaded(object? sender, EventArgs e)

@@ -425,6 +425,18 @@
       "name": "Ui.CarSelection.StatBar",
       "file_name": "UI/Sprites/Ui.CarSelection.StatBar.sprite",
       "asset_type": "sprite"
+    },
+    {
+      "id": "edc6d11c-28a4-569a-b302-1648a29a993f",
+      "name": "Font.GameFontImage",
+      "file_name": "UI\\Fonts\\GameFont.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "f5bf1e63-6e50-5c46-b21a-343c2e32d613",
+      "name": "Font.GameFont",
+      "file_name": "UI\\Fonts\\GameFont.fnt",
+      "asset_type": "fnt"
     }
   ]
 }

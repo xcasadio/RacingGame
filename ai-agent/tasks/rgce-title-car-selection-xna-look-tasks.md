@@ -232,7 +232,7 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 > - `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, journal sans avertissement ; réglages restaurés à l'identique ;
 > - l'ouverture dans l'éditeur se vérifie en T2.1 et T3.1, quand les écrans utilisent ces sprites.
 
-### ⏳ T1.2 — Police GameFont
+### ✅ T1.2 — Police GameFont
 
 - Objectif : la police bitmap de l'original, utilisable en XAML par son nom de famille (D4).
 - Fichiers : `scripts/generate_rgce_gamefont.py` (nouveau, bibliothèque standard), `RacingGameCasaEngine/Content/UI/Fonts/GameFont.{fnt,png}`, `AssetInfos.json`, code de démarrage de RGCE qui tient la police (`game.UIFonts.Acquire`).
@@ -246,6 +246,17 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
   - sonde mesurée ;
   - si l'échelle au rendu ne s'applique pas au texte : écart mesuré, noté en M16 de `docs/mgui-gaps-from-rgce-xaml-screens.md`, et la tâche reste ✅ avec le texte à taille native.
 - Commit : `feat(racing-casa): add the original GameFont as a bitmap font`
+
+> Validation (2026-10-06) :
+> - `scripts/generate_rgce_gamefont.py` écrit `Content/UI/Fonts/GameFont.fnt` (95 glyphes de `TextureFont.CharRects`, lus en (x, y + 1, largeur, 36), avance = 4e champ) et copie `GameFont.png` ; seconde exécution sans changement.
+> - La page est cataloguée avec des `\` (`UI\Fonts\GameFont.png`), comme le chargeur de CasaEngine la cherche (`BitmapFontDescriptor.CatalogFileNameNextTo`). La police (`Font.GameFont`, type `fnt`) est tenue par le jeu dès `LoadContentPrivate`, libérée à sa destruction.
+> - Le décalage de 5 unités vers le haut de `TextureFont` (`SubRenderHeight`) est laissé à la mise en page des écrans (`yoffset` 0).
+> - Sonde (copie du scratchpad, textes sur l'écran titre, capture en 1920×1080) :
+>   - la police se charge (journal : `GameFont.fnt` puis `GameFont.png`) et s'affiche ;
+>   - à la taille native, la boîte de « Max Speed: 288mph » fait 297 px de large ;
+>   - avec un `RenderTransform` d'échelle (1920/1400, 1080/1050) et d'origine (0, 0), elle fait 405 px, la largeur de l'original (somme des avances `XToRes1400`, 405 px) ; hauteur de glyphe 37 px comme `YToRes1050(36)`.
+>   - O2 réglé : l'échelle au rendu s'applique au texte.
+> - `dotnet build RacingGame.slnx` 0 erreur, 0 avertissement.
 
 ### ⏳ T1.3 — Sons de menu
 
@@ -396,7 +407,7 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
 | O1 | Alpha de la voiture dans une texture effacée en transparent : les shaders du moteur sortent l'alpha de la texture (le masque de peinture), alors que l'original forçait 1. La peinture P9 force l'alpha à 255 dans la texture ; l'essai de T4.2 confirme si cela suffit, verre compris. | T4.1, T4.2 |
-| O2 | Mise à l'échelle des textes GameFont : `RenderTransform` non uniforme, à confirmer sur du texte. | T1.2 |
+| O2 | **Réglé en T1.2.** Mise à l'échelle des textes GameFont : le `RenderTransform` non uniforme s'applique au texte. | T1.2 |
 | O3 | Miroir de la flèche gauche : `RenderTransform` d'échelle −1 en x. Si MGUI ne dessine pas une échelle négative, une image miroir est générée par un outil versionné, comme `MenuIconExtractor`. | T3.1 |
 | O4 | Raison de la désactivation des reflets pour `NormalMapping.fx` (`RacingGameLegacyMaterialTuning.cs:94-99`, commits `6a4f898`, `8bbaae0`) non trouvée. Le reflet du plateau (P7) ne touche que la vue du carrousel ; en course, rien ne change. | T4.2 |
 
