@@ -1,0 +1,18 @@
+{
+  "view_model_type": "RaceTitleViewModel",
+  "values": {
+    "Decoration": {
+      "LogoLeft": 451,
+      "LogoTop": 40,
+      "LogoWidth": 755,
+      "LogoHeight": 246
+    },
+    "BandTopPixels": 394,
+    "BandHeightPixels": 69,
+    "PressStartLeft": 437,
+    "PressStartTop": 414,
+    "PressStartWidth": 407,
+    "PressStartHeight": 29,
+    "IsPressStartShown": true
+  }
+}

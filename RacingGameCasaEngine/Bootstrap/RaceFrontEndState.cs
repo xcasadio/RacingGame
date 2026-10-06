@@ -11,6 +11,13 @@ internal sealed class RaceFrontEndState
     /// <summary>The main menu's selected button, kept while the game runs (not saved), so the menu reopens on it.</summary>
     public int SelectedMainMenuButton { get; set; }
 
+    /// <summary>
+    /// Set by the UI capture automation (--capture-ui-screens): the screens' time-driven animations that would make two
+    /// runs differ (the title's blink, the car carousel's spin, the selection arrows' swing) hold a fixed pose (ADR-0008).
+    /// Not saved.
+    /// </summary>
+    public bool PinScreenAnimations { get; set; }
+
     public string PlayerName { get; set; } = "Player One";
 
     public int SelectedResolutionIndex { get; set; } = 1;

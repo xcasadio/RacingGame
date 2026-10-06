@@ -78,6 +78,7 @@ internal sealed class UiScreenCaptureValidator
             _flow.State.SelectedCarIndex = 0;
             _flow.State.SelectedCarColorIndex = 0;
             _flow.State.SelectedTrackIndex = 0;
+            _flow.State.PinScreenAnimations = true;
 
             DisplaySettings current = _game.GetDisplaySettings();
             _game.ApplyDisplaySettings(new DisplaySettings(CaptureWidth, CaptureHeight, false, current.IsVSyncEnabled), persistToProjectSettings: false);

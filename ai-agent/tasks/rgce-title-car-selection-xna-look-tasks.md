@@ -283,7 +283,7 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 
 ## Phase 2 — Écran titre
 
-### ⏳ T2.1 — Écran titre de la capture
+### 🧪 T2.1 — Écran titre de la capture
 
 - Objectif : P3 et P4.
 - Fichiers :
@@ -307,6 +307,24 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
   - éditeur ;
   - 🧪 entrées et son.
 - Commit : `feat(racing-casa): draw the title screen like the original`
+
+> Validation (2026-10-06) :
+> - `RaceTitleViewModel` : décoration, bande (0, 350, 1024, 61) et sprite Press START par `CalcRectangleCenteredWithGivenHeight(512, 380, 26, …)`, clignotement `(int)(t / 0,375) % 3 != 0`, figé visible sous capture (`RaceFrontEndState.PinScreenAnimations`, posé par `UiScreenCaptureValidator`). `Splash.xaml` : fond à 0,85, logo, bande, sprite ; plus de panneau ni de bouton ; données de conception `Splash.design.json` (1280×720).
+> - `SplashScreen` : clic gauche, Espace, Échap, Entrée, Start ou A (à l'appui) → son `ScreenBack` puis menu principal. Un clic ne déclenche pas de bouton du menu au relâchement : une commande MGUI exige l'appui sur le bouton (`MGButton.cs:194-219`).
+> - Fond noir hors course (`RacingGameCasaEngineGame.ConfigureCurrentWorldSky`).
+> - Mesures (`--capture-ui-screens`, et sonde de taille pour 1280×720 et 1024×768) :
+>   - 1920×1080 : bande y 591 → 694, texte x 658 → 1261, y 625 → 655, identiques aux formules ;
+>   - 1280×720 : bande y 394 → 463, texte x 441 → 838, y 418 → 437 (formules 441 → 839, 418 → 438, à 1 px d'antialiasing) ;
+>   - 1024×768, ramené au repère de la capture de l'auteur : bords de bande 488 et 573 (capture 488,7 et 574,2), texte x → 841, y 517 (capture x 346 → 840, y 517 → 543) ; superposition dans le scratchpad (`title-overlay-1024x768.png`).
+> - Écart visible avec la capture : son fond est flou et sépia (post-effet et scène 3D de l'original, hors périmètre) ; ici, le fond seul sur du noir. Press START reste jaune doré, comme le sprite d'origine.
+> - Comparaison avec `references-32d0422` (run `ui-run-20261006-081420`) :
+>   - `splash` change ;
+>   - `highscores`, `options`, `help`, `car-selection` et `track-selection` ne diffèrent que du bleu d'effacement d'avant : chaque pixel diffère de k × (99,147,234), k de 0 à 0,49, aucun pixel hors de cette droite ;
+>   - `main-menu` : idem par rapport au run de la correction du menu (`ui-run-20261006-070223`), les références datant d'avant elle ;
+>   - états de course à 0,00.
+> - `--smoke-frontend` code 0, sans avertissement ; build 0 erreur, aucun avertissement dans RGCE ; réglages restaurés à l'identique.
+> - Éditeur : `capture_editor_screen.ps1` sur `Splash.uiscreen`, code 0, sans erreur ; l'écran s'affiche avec ses données de conception.
+> - 🧪 Reste pour l'auteur : chaque entrée qui quitte le titre, le son `ScreenBack`, le clignotement.
 
 ## Phase 3 — Sélection de voiture, partie 2D
 

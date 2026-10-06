@@ -249,7 +249,9 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         }
 
         IViewRenderPipeline? pipeline = isRaceWorld ? GetOrCreateRaceSkyViewPipeline() : null;
-        Color clearColor = isRaceWorld ? RaceSkySystem.Settings.HorizonColor : Color.CornflowerBlue;
+        // The front end clears to black, as RacingGame did (BaseGame.BackgroundColor): the menu background is drawn at
+        // 0.85 opacity over it (ADR-0008).
+        Color clearColor = isRaceWorld ? RaceSkySystem.Settings.HorizonColor : Color.Black;
 
         foreach (RenderView view in GameManager.ViewManager.Views)
         {
