@@ -216,7 +216,7 @@ Découverte en lecture seule : workflow de 2 agents, chacun contre-vérifié par
 > - **Pointeur `CasaEngine`** : `d79ed16` → `7a44aba`, soit les 49 commits de `main` (`dd91efe`) plus le correctif. La branche moteur n'est pas poussée.
 > - 🧪 Reste pour l'auteur : les ombres en mouvement (route, rails, décor, voiture).
 
-### ⏳ T2.2 — Sol receveur seul
+### 🧪 T2.2 — Sol receveur seul
 
 - Objectif : D3, P6, P7.
 - Fichiers : `RacingGameCasaEngine/Worlds/LegacyTrackSceneFactory.cs`, `LegacyTrackSceneFactory.Terrain.cs`, et `RaceWorldFactory.cs` si P7 change le biais.
@@ -230,6 +230,19 @@ Découverte en lecture seule : workflow de 2 agents, chacun contre-vérifié par
   - captures : seuls les états de course changent ;
   - 🧪 par l'auteur.
 - Commit : `fix(racing-casa): let the ground only receive shadows, as RacingGame did`
+
+> Validation (2026-10-06) :
+> - **Code** :
+>   - `CreateStaticModelEntity` prend `castShadows` (vrai par défaut) ;
+>   - les deux entités `Track.Ground.*` (terrain et boîte de repli) le passent à faux, avec un renvoi à `Landscape.GenerateShadow` de l'original ;
+>   - `ShadowNormalBias` passe de 0,4 à 0,1 (P7), et son commentaire est mis à jour.
+> - **Sonde** (copie de RGCE : sol projeteur ou non, biais par variables d'environnement) avec `--capture-track-audit`, 21 vues par variante. Premier passage écarté : l'audit attend 250 ms de temps de jeu entre deux étapes, mais après une capture synchrone le jeu enchaîne des mises à jour de rattrapage sans rendu, et des vues sortaient décalées. Dans la sonde, l'audit attend en plus 5 rendus.
+>   - **Sol receveur seul** (biais 0,4 de part et d'autre) : les pixels changés ne font que s'éclaircir, de 0 à 1 295 926 selon la vue. Les grandes ombres anguleuses et sombres que le relief projetait sur lui-même disparaissent (départs Expert et Beginner, secteurs 20 et 50 d'Advanced, secteur 80 d'Expert).
+>   - **Biais**, sol receveur seul, 0,4 contre 0,1 : aucun pixel changé dans 14 vues sur 21, un seul dans une quinzième. Dans les autres vues, les ombres portées s'élargissent : bande d'ombre du rail, portique du feu de départ, ombre de la voiture. Aucune acné n'apparaît sur la route, les rails, le décor ni la voiture (planches recadrées, et course 1920×1080 où la carrosserie est identique au pixel près entre 0,4 et 0,1). La plus petite valeur testée, 0,1, est retenue.
+>   - Les deux runs de référence, identiques en réglages, diffèrent dans les 21 vues : la caméra de l'audit lit la vraie souris (`DebugFreeCameraComponent`). Les comparaisons utilisent le second, identique aux variantes dans les 9 vues sans ombre.
+> - **RGCE** : `dotnet build RacingGame.slnx` 0 erreur, aucun avertissement dans RGCE ; `--smoke-frontend` code 0 sans avertissement ; `--capture-track-audit` code 0, 21 captures, sans avertissement ; réglages restaurés à l'identique.
+> - **Captures** : deux runs `--capture-ui-screens` identiques entre eux (`ui-run-20261006-161956`, `-162016`) et identiques à la variante de sonde « sol receveur, biais 0,1 » dans les états de course. Contre le run de T2.1 (`ui-run-20261006-160704`), seuls les états de course changent : `race-hud` 6,8 %, `pause` 6,7 %, `race-finished` 14,2 %. Les collines ne sont plus assombries par leur propre ombre, et les ombres portées sont plus pleines.
+> - 🧪 Reste pour l'auteur : les ombres en course.
 
 ## Phase 3 — Clôture
 

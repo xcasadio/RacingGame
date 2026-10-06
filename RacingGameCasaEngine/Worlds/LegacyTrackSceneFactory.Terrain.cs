@@ -45,7 +45,8 @@ internal static partial class LegacyTrackSceneFactory
                 Scale = Vector3.One,
             };
 
-            return [CreateStaticModelEntity($"Track.Ground.{trackName}", groundModel, Matrix.Identity)];
+            // As in RacingGame, the landscape only receives shadows (Landscape.GenerateShadow).
+            return [CreateStaticModelEntity($"Track.Ground.{trackName}", groundModel, Matrix.Identity, castShadows: false)];
         }
 
         private static VertexPositionNormalTextureTangent[] BuildVertices(byte[] heights, Vector3 origin)

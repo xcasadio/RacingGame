@@ -407,7 +407,8 @@ internal static partial class LegacyTrackSceneFactory
         groundModel.Meshes[0].Material = CreateGroundMaterial(trackName, assetContentManager);
 
         Matrix transform = Matrix.CreateTranslation(new Vector3((minX + maxX) * 0.5f, minY, (minZ + maxZ) * 0.5f));
-        return CreateStaticModelEntity($"Track.Ground.{trackName}", groundModel, transform);
+        // As in RacingGame, the ground only receives shadows (Landscape.GenerateShadow).
+        return CreateStaticModelEntity($"Track.Ground.{trackName}", groundModel, transform, castShadows: false);
     }
 
     /// <summary>The start light's red, yellow and green models, loaded once (null for a missing one).</summary>
@@ -416,7 +417,7 @@ internal static partial class LegacyTrackSceneFactory
         return StartLightModelNames.Select(modelName => LoadLegacyModel(modelName, assetContentManager)).ToArray();
     }
 
-    private static Entity CreateStaticModelEntity(string name, StaticModel model, Matrix transform)
+    private static Entity CreateStaticModelEntity(string name, StaticModel model, Matrix transform, bool castShadows = true)
     {
         if (!transform.Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation))
         {
@@ -434,6 +435,7 @@ internal static partial class LegacyTrackSceneFactory
         var component = new StaticModelComponent
         {
             StaticModel = model,
+            CastShadows = castShadows,
         };
         component.LocalTransform.Position = translation;
         component.LocalTransform.Orientation = rotation;
