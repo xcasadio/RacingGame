@@ -57,15 +57,23 @@ SPRITES = [
     ("Ui.Track.Beginner", "Ui.Menu.ButtonsTexture", 0, 480, 212, 352),
     ("Ui.Track.Advanced", "Ui.Menu.ButtonsTexture", 212, 480, 212, 352),
     ("Ui.Track.Expert", "Ui.Menu.ButtonsTexture", 424, 480, 212, 352),
+    # Track selection (RacingGame's TrackSelection): the orange outline of the selected card (TrackButtonSelectionGfxRect)
+    # and the name under it (TrackText*GfxRect).
+    ("Ui.Track.Highlight", "Ui.Menu.ButtonsTexture", 636, 480, 212, 352),
+    ("Ui.Track.LabelBeginner", "Ui.Menu.ButtonsTexture", 0, 834, 212, 24),
+    ("Ui.Track.LabelAdvanced", "Ui.Menu.ButtonsTexture", 212, 834, 212, 24),
+    ("Ui.Track.LabelExpert", "Ui.Menu.ButtonsTexture", 424, 834, 212, 24),
     ("Ui.Button.Select", "Ui.Menu.ButtonsTexture", 0, 872, 212, 92),
     ("Ui.Button.Back", "Ui.Menu.ButtonsTexture", 212, 872, 212, 92),
     # Orange outline drawn over a hovered A or B button (UIRenderer BottomButtonSelectionGfxRect) and the car selection's
     # arrow (SelectionArrowGfxRect, pointing right).
     ("Ui.Button.Highlight", "Ui.Menu.ButtonsTexture", 424, 240, 212, 92),
     ("Ui.CarSelection.Arrow", "Ui.Menu.ButtonsTexture", 874, 426, 53, 39),
-    # headers.png (1024x512): "Press START to continue." (PressStartGfxRect) and "CHOOSE YOUR CAR" (HeaderChooseCarGfxRect).
+    # headers.png (1024x512): "Press START to continue." (PressStartGfxRect), "CHOOSE YOUR CAR" (HeaderChooseCarGfxRect) and
+    # "SELECT TRACK" (HeaderSelectTrackGfxRect).
     ("Ui.Title.PressStart", "Ui.Title.HeadersTexture", 2, 1, 631, 45),
     ("Ui.CarSelection.Header", "Ui.Title.HeadersTexture", 0, 212, 512, 100),
+    ("Ui.TrackSelection.Header", "Ui.Title.HeadersTexture", 0, 312, 512, 100),
     # ColorSelection.png (64x64): the colour square, tinted per colour; OptionsScreenWindows.png: the car property bar.
     ("Ui.CarSelection.Swatch", "Ui.CarSelection.ColorSelectionTexture", 0, 0, 64, 64),
     ("Ui.CarSelection.StatBar", "Ui.CarSelection.OptionsWindowsTexture", 372, 297, 472, 6),

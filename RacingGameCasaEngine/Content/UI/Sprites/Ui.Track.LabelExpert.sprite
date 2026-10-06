@@ -1,0 +1,17 @@
+{
+  "id": "839aa60d-369c-5d50-9d52-853d51a2d985",
+  "name": "Ui.Track.LabelExpert",
+  "sprite_sheet_asset_id": "0e470a8a-1582-5839-9a0c-96d2adc604eb",
+  "location": {
+    "x": 424,
+    "y": 834,
+    "w": 212,
+    "h": 24
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

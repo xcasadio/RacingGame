@@ -1,0 +1,17 @@
+{
+  "id": "c47a7f0b-202f-5f2f-976c-888e16285c1e",
+  "name": "Ui.Track.Highlight",
+  "sprite_sheet_asset_id": "0e470a8a-1582-5839-9a0c-96d2adc604eb",
+  "location": {
+    "x": 636,
+    "y": 480,
+    "w": 212,
+    "h": 352
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

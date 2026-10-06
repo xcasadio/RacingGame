@@ -473,6 +473,36 @@
       "name": "Sound.MenuScreenBack",
       "file_name": "Audio/menu_screenback.sound",
       "asset_type": "sound"
+    },
+    {
+      "id": "c47a7f0b-202f-5f2f-976c-888e16285c1e",
+      "name": "Ui.Track.Highlight",
+      "file_name": "UI/Sprites/Ui.Track.Highlight.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "e7d057bc-dd78-5a0c-b328-a93fb8a8bd81",
+      "name": "Ui.Track.LabelBeginner",
+      "file_name": "UI/Sprites/Ui.Track.LabelBeginner.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "50dbad0e-2ba3-5553-b680-728ff543506c",
+      "name": "Ui.Track.LabelAdvanced",
+      "file_name": "UI/Sprites/Ui.Track.LabelAdvanced.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "839aa60d-369c-5d50-9d52-853d51a2d985",
+      "name": "Ui.Track.LabelExpert",
+      "file_name": "UI/Sprites/Ui.Track.LabelExpert.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "7ff9b407-ae39-5e24-a5cd-e85aabb78fc1",
+      "name": "Ui.TrackSelection.Header",
+      "file_name": "UI/Sprites/Ui.TrackSelection.Header.sprite",
+      "asset_type": "sprite"
     }
   ]
 }

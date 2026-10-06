@@ -1,0 +1,17 @@
+{
+  "id": "7ff9b407-ae39-5e24-a5cd-e85aabb78fc1",
+  "name": "Ui.TrackSelection.Header",
+  "sprite_sheet_asset_id": "728e9aed-900e-5f1a-ac05-96efcd06a53c",
+  "location": {
+    "x": 0,
+    "y": 312,
+    "w": 512,
+    "h": 100
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

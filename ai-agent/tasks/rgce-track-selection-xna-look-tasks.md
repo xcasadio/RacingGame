@@ -164,7 +164,7 @@ Découverte en lecture seule (workflow de 3 agents, dont un contrôle croisé ad
 
 ## Phase 1 — Assets
 
-### ⏳ T1.1 — Sprites de la sélection de piste
+### ✅ T1.1 — Sprites de la sélection de piste
 
 - Objectif : les sprites qui manquent, catalogués.
 - Fichiers : `scripts/generate_rgce_ui_assets.py`, `RacingGameCasaEngine/Content/UI/Sprites/*`, `RacingGameCasaEngine/Content/AssetInfos.json`.
@@ -173,6 +173,12 @@ Découverte en lecture seule (workflow de 3 agents, dont un contrôle croisé ad
   2. Lancer le générateur deux fois : la seconde exécution ne change rien.
 - Validation : chaque sprite remonte à une image existante et tient dans l'image (contrôle par script) ; build ; `--smoke-frontend` code 0.
 - Commit : `feat(racing-casa): catalogue the track selection art of the original`
+
+> Validation (2026-10-06) :
+> - générateur : `Ui.Track.Highlight` (636, 480, 212, 352), `Ui.Track.LabelBeginner/Advanced/Expert` (0|212|424, 834, 212, 24) et `Ui.TrackSelection.Header` (0, 312, 512, 100) ; 45 sprites, catalogue à 84 entrées ; seconde exécution sans changement ;
+> - chaque nouveau sprite remonte à une image existante et tient dans l'image (contrôle par script) ;
+> - incident corrigé avant commit : une retouche de commentaire par numéro de ligne avait écrasé l'entrée `Ui.Button.Select`. Elle est rétablie ; le diff du catalogue ne contient que les 5 nouvelles entrées ;
+> - `dotnet build RacingGame.slnx` 0 erreur, aucun avertissement dans RGCE ; `--smoke-frontend` code 0 sans avertissement ; réglages restaurés à l'identique.
 
 ### ⏳ T1.2 — Son ButtonClick
 
