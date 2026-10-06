@@ -387,7 +387,7 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 
 ## Phase 4 — Carrousel 3D et peinture
 
-### ⏳ T4.1 — Peinture de la voiture
+### ✅ T4.1 — Peinture de la voiture
 
 - Objectif : P9.
 - Fichiers : `RacingGameCasaEngine/Components/LegacyCarVisualFactory.cs`, et ses appelants si la signature change (`LegacyCarVisualComponent.cs`, `CarSelectionPreviewRenderer.cs`).
@@ -402,6 +402,21 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
   - pas d'avertissement ;
   - temps de peinture d'une texture mesuré et noté.
 - Commit : `feat(racing-casa): paint the car with the original colour mask`
+
+> Validation (2026-10-06) :
+> - `LegacyCarVisualFactory` : un modèle par voiture (et non plus par voiture et par couleur). Une `CarPaint` par voiture décode la texture une fois et en fait deux textures :
+>   - la texture telle quelle, pour le caoutchouc et le chrome ;
+>   - la texture peinte `lerp(rgb, couleur, alpha)`, pour le matériau de peinture (`lack`), repeinte sur place (`SetData`) quand la couleur change.
+>
+>   `TintColor`, `TintStrength` et `TintMaskFromBaseAlpha` ne sont plus remplis.
+> - **Écart au plan, corrigé pendant la tâche** : P9 prévoyait l'alpha forcé à 255. Un premier essai l'a fait : la carrosserie entière devenait brillante en course, parce que le moteur multiplie le spéculaire par l'alpha (`Lighting.fxh:11`, `AddSpecular`). Le shader d'origine faisait de même (`NormalMapping.fx`, `bump * spec * specularColor * diffusePixel.a`). L'alpha, masque de peinture, est donc gardé. L'opacité dans la texture du carrousel (O1) se traitera en T4.2, par l'état de mélange des matériaux (`MaterialBase.BlendState`, lu par `RenderStateCache.cs:51`).
+> - **Comparaison** avec le run de T3.1 (`ui-run-20261006-082824`) :
+>   - seuls changent `race-hud` (1,18), `pause`, `race-finished` et `car-selection` ;
+>   - en course, seuls les pixels des bandes changent, du noir à l'orange de la couleur 0 (luminance moyenne avant : 14,8) ; l'ombrage de la carrosserie est identique.
+> - **Planche** (sonde choisissant voiture et couleur, capture de course, scratchpad `paint-sheet.png`) : voiture 1 en orange et en indigo (bandes et flammes peintes), voiture 2 en cyan, voiture 3 en vert citron (carrosserie entière, selon leur masque).
+> - **Temps de peinture d'une texture 2048×2048** : 62 à 69 ms (trace « Car paint »), une fois par changement de couleur et par voiture. 3 voitures font environ 200 ms au changement de couleur dans le carrousel ; à surveiller en T4.2.
+> - `--smoke-frontend` code 0 sans avertissement ; build 0 erreur, aucun avertissement dans RGCE ; réglages restaurés à l'identique.
+> - Les captures PNG gardent l'alpha du back buffer (nul sur la carrosserie hors masque) : à convertir en RGB avant tout redimensionnement.
 
 ### ⏳ T4.2 — Carrousel dans une vue du moteur
 
@@ -466,6 +481,7 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 | O2 | **Réglé en T1.2.** Mise à l'échelle des textes GameFont : le `RenderTransform` non uniforme s'applique au texte. | T1.2 |
 | O3 | **Réglé en T3.1.** Miroir de la flèche gauche : le `RenderTransform` d'échelle −1 en x se dessine. | T3.1 |
 | O4 | Raison de la désactivation des reflets pour `NormalMapping.fx` (`RacingGameLegacyMaterialTuning.cs:94-99`, commits `6a4f898`, `8bbaae0`) non trouvée. Le reflet du plateau (P7) ne touche que la vue du carrousel ; en course, rien ne change. | T4.2 |
+| O5 | L'ADR-0008 et P9 disent la texture peinte « alpha forcé à 255 » ; la livraison garde l'alpha (T4.1). Une ADR ne se réécrit pas : une ADR « telle que livrée » remplacera l'ADR-0008 en T5.1, avec les autres écarts de la livraison. | T5.1 |
 
 ## Hors périmètre
 

@@ -15,6 +15,14 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace RacingGameCasaEngine.Components;
 
+/// <summary>
+/// Builds RacingGame's car for the race and the car selection: one model per car type, from Car.gltf with the car's
+/// texture (RacerCar, RacerCar2, RacerCar3). The selected colour is painted into the texture as RacingGame's shader
+/// painted it (<c>NormalMapping.fx</c>, SpecularWithReflectionForCar20: <c>lerp(rgb, carHueColor, texture alpha)</c>),
+/// on the CPU since CasaEngine's shaders have no such tint (ADR-0008). The paint material samples the painted texture,
+/// the car's other materials the texture as it is. The texture's alpha, the paint mask, is kept: RacingGame's shader
+/// also scaled the specular by it, as CasaEngine's does.
+/// </summary>
 internal static class LegacyCarVisualFactory
 {
     private const string LegacyCarModelName = "Car";
@@ -30,7 +38,8 @@ internal static class LegacyCarVisualFactory
     private static readonly Texture2DLoader TextureLoader = new();
     private static readonly Dictionary<string, Texture2D?> TextureCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, TextureCube?> TextureCubeCache = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly Dictionary<CarVariantKey, StaticModel?> ConfiguredCarModelCache = new();
+    private static readonly Dictionary<int, StaticModel?> ConfiguredCarModelCache = new();
+    private static readonly Dictionary<int, CarPaint?> CarPaints = new();
     private static readonly object CacheLock = new();
 
     private static BoundingBox _cachedCarBounds;
@@ -46,14 +55,17 @@ internal static class LegacyCarVisualFactory
 
         int normalizedCarIndex = NormalizeModulo(selectedCarIndex, CarDiffuseTextureFileNames.Length);
         int normalizedColorIndex = NormalizeModulo(selectedCarColorIndex, Math.Max(1, RaceFrontEndCatalog.CarColors.Count));
-        var key = new CarVariantKey(normalizedCarIndex, normalizedColorIndex);
 
         lock (CacheLock)
         {
-            if (ConfiguredCarModelCache.TryGetValue(key, out StaticModel? cachedModel))
+            // Paint first: the materials of a new model take the car's textures as they are.
+            GetCarPaint(normalizedCarIndex, assetContentManager)?.Paint(normalizedColorIndex);
+            if (ConfiguredCarModelCache.TryGetValue(normalizedCarIndex, out StaticModel? cachedModel))
             {
                 return cachedModel;
             }
+
+            int key = normalizedCarIndex;
 
             string filePath = Path.Combine(GetProjectContentPath(), "Models", "Car.gltf");
             if (!File.Exists(filePath))
@@ -138,7 +150,7 @@ internal static class LegacyCarVisualFactory
     private static void ApplyImportedMaterials(
         StaticModel model,
         IReadOnlyList<StaticModelImportedMaterial> importedMaterials,
-        CarVariantKey key,
+        int carIndex,
         AssetContentManager assetContentManager)
     {
         foreach (StaticModelMesh mesh in model.Meshes)
@@ -148,7 +160,7 @@ internal static class LegacyCarVisualFactory
             if (mesh.MaterialIndex >= 0 && mesh.MaterialIndex < importedMaterials.Count)
             {
                 StaticModelImportedMaterial importedMaterial = importedMaterials[mesh.MaterialIndex];
-                material = CreateImportedRuntimeMaterial(LegacyCarModelName, importedMaterial, key, assetContentManager);
+                material = CreateImportedRuntimeMaterial(LegacyCarModelName, importedMaterial, carIndex, assetContentManager);
                 mesh.Material = material;
             }
 
@@ -162,13 +174,21 @@ internal static class LegacyCarVisualFactory
     private static LitDiffuseMaterial CreateImportedRuntimeMaterial(
         string modelName,
         StaticModelImportedMaterial importedMaterial,
-        CarVariantKey key,
+        int carIndex,
         AssetContentManager assetContentManager)
     {
         RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning(modelName, importedMaterial);
-        string? diffuseTexturePath = ResolveDiffuseTexturePath(importedMaterial, key.CarIndex);
         string? normalTexturePath = ResolveNormalTexturePath(importedMaterial);
-        Texture2D? diffuseTexture = LoadTexture(diffuseTexturePath, assetContentManager);
+        Texture2D? diffuseTexture;
+        if (UsesCarDiffuseTexture(importedMaterial.DiffuseTextureFilePath))
+        {
+            CarPaint? paint = GetCarPaint(carIndex, assetContentManager);
+            diffuseTexture = paint == null ? null : IsPaintMaterial(importedMaterial) ? paint.Painted : paint.Unpainted;
+        }
+        else
+        {
+            diffuseTexture = LoadTexture(importedMaterial.DiffuseTextureFilePath, assetContentManager);
+        }
         Texture2D? normalTexture = LoadTexture(normalTexturePath, assetContentManager);
         bool useSceneReflectionCube = tuning.EnableReflection
             && RaceSkySystem.ShouldUseSceneReflectionCube(importedMaterial.ReflectionTextureFilePath);
@@ -182,12 +202,11 @@ internal static class LegacyCarVisualFactory
         LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
         Vector3 specularColor = tuning.ApplySpecularColor(importedMaterial.SpecularColor);
         float specularPower = Math.Clamp(tuning.ApplySpecularPower(importedMaterial.SpecularPower), 2f, 48f);
-        (Vector3 tintColor, float tintStrength, float tintMaskFromBaseAlpha) = ResolveTintParameters(importedMaterial, key.ColorIndex);
         bool useLegacyCarReflectionBlend = UsesLegacyCarReflectionBlend(importedMaterial);
 
         return new LitDiffuseMaterial
         {
-            Name = $"{modelName}.{importedMaterial.DisplayName}.Car{key.CarIndex}.Color{key.ColorIndex}",
+            Name = $"{modelName}.{importedMaterial.DisplayName}.Car{carIndex}",
             BasColor = diffuseTexture,
             NormalMap = normalTexture,
             ReflectionCube = reflectionCube,
@@ -197,9 +216,6 @@ internal static class LegacyCarVisualFactory
             EmissiveColor = presentation.EmissiveColor,
             SpecularColor = specularColor,
             SpecularPower = specularPower,
-            TintColor = tintColor,
-            TintStrength = tintStrength,
-            TintMaskFromBaseAlpha = tintMaskFromBaseAlpha,
             ReflectionAddAmount = useLegacyCarReflectionBlend ? 0f : 1f,
             ReflectionMultiplyBase = useLegacyCarReflectionBlend ? LegacyCarReflectionMultiplyBase : 1f,
             ReflectionMultiplyFactor = useLegacyCarReflectionBlend ? LegacyCarReflectionMultiplyFactor : 0f,
@@ -210,20 +226,7 @@ internal static class LegacyCarVisualFactory
         };
     }
 
-    private static (Vector3 TintColor, float TintStrength, float TintMaskFromBaseAlpha) ResolveTintParameters(
-        StaticModelImportedMaterial importedMaterial,
-        int colorIndex)
-    {
-        if (!IsTintablePaintMaterial(importedMaterial) || colorIndex == 0 || RaceFrontEndCatalog.CarColors.Count == 0)
-        {
-            return (Vector3.One, 0f, 0f);
-        }
-
-        Color targetColor = RaceFrontEndCatalog.CarColors[NormalizeModulo(colorIndex, RaceFrontEndCatalog.CarColors.Count)].Value;
-        return (targetColor.ToVector3(), 1f, 1f);
-    }
-
-    private static bool IsTintablePaintMaterial(StaticModelImportedMaterial importedMaterial)
+    private static bool IsPaintMaterial(StaticModelImportedMaterial importedMaterial)
     {
         string displayName = importedMaterial.DisplayName;
         if (displayName.Contains("chrome", StringComparison.OrdinalIgnoreCase)
@@ -260,16 +263,6 @@ internal static class LegacyCarVisualFactory
         return !displayName.Contains("glass", StringComparison.OrdinalIgnoreCase)
             && !displayName.Contains("fenster", StringComparison.OrdinalIgnoreCase)
             && !displayName.Contains("gummi", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string? ResolveDiffuseTexturePath(StaticModelImportedMaterial importedMaterial, int carIndex)
-    {
-        if (!UsesCarDiffuseTexture(importedMaterial.DiffuseTextureFilePath))
-        {
-            return importedMaterial.DiffuseTextureFilePath;
-        }
-
-        return Path.Combine(GetProjectContentPath(), "Textures", CarDiffuseTextureFileNames[carIndex]);
     }
 
     private static string? ResolveNormalTexturePath(StaticModelImportedMaterial importedMaterial)
@@ -350,9 +343,7 @@ internal static class LegacyCarVisualFactory
 
         try
         {
-            Texture2D texture = UsesCarDiffuseTexture(normalizedPath)
-                ? LoadCarDiffuseTexture(normalizedPath, assetContentManager.GraphicsDevice)
-                : (Texture2D)TextureLoader.LoadAsset(normalizedPath, assetContentManager);
+            Texture2D texture = (Texture2D)TextureLoader.LoadAsset(normalizedPath, assetContentManager);
             TextureCache[normalizedPath] = texture;
             return texture;
         }
@@ -364,29 +355,27 @@ internal static class LegacyCarVisualFactory
         }
     }
 
-    private static Texture2D LoadCarDiffuseTexture(string texturePath, GraphicsDevice graphicsDevice)
+    // The car's paint, built on first use and kept for the game's life; null when the texture cannot be read.
+    private static CarPaint? GetCarPaint(int carIndex, AssetContentManager assetContentManager)
     {
-        using FileStream fileStream = File.OpenRead(texturePath);
-        ImageResult image = ImageResult.FromStream(fileStream, ColorComponents.RedGreenBlueAlpha);
-        var pixelData = new Color[image.Width * image.Height];
-
-        for (int pixelIndex = 0, dataIndex = 0; pixelIndex < pixelData.Length; pixelIndex++, dataIndex += 4)
+        if (CarPaints.TryGetValue(carIndex, out CarPaint? paint))
         {
-            byte red = image.Data[dataIndex];
-            byte green = image.Data[dataIndex + 1];
-            byte blue = image.Data[dataIndex + 2];
-            byte alpha = image.Data[dataIndex + 3];
-
-            pixelData[pixelIndex] = red == LegacyTextureColorKey.R
-                && green == LegacyTextureColorKey.G
-                && blue == LegacyTextureColorKey.B
-                ? LegacyTextureColorKey
-                : new Color(red, green, blue, alpha);
+            return paint;
         }
 
-        var texture = new Texture2D(graphicsDevice, image.Width, image.Height, false, SurfaceFormat.Color);
-        texture.SetData(pixelData);
-        return texture;
+        string texturePath = Path.Combine(GetProjectContentPath(), "Textures", CarDiffuseTextureFileNames[carIndex]);
+        try
+        {
+            paint = File.Exists(texturePath) ? CarPaint.Load(texturePath, assetContentManager.GraphicsDevice) : null;
+        }
+        catch (Exception ex)
+        {
+            Logs.WriteException(ex);
+            paint = null;
+        }
+
+        CarPaints[carIndex] = paint;
+        return paint;
     }
 
     private static TextureCube? LoadTextureCube(string? texturePath, AssetContentManager assetContentManager)
@@ -492,5 +481,85 @@ internal static class LegacyCarVisualFactory
             : throw new InvalidOperationException("EngineEnvironment.ProjectPath must be configured before loading race content.");
     }
 
-    private readonly record struct CarVariantKey(int CarIndex, int ColorIndex);
+    /// <summary>
+    /// A car texture decoded once, and two textures made from it: <see cref="Unpainted"/> (the texture as it is) and
+    /// <see cref="Painted"/> (the texture painted with the selected colour where its alpha says, alpha kept), repainted
+    /// in place when the colour changes. Magenta texels stay the transparent colour key, as when the texture was loaded
+    /// directly.
+    /// </summary>
+    private sealed class CarPaint
+    {
+        private readonly Color[] _source;
+        private readonly Color[] _painted;
+        private int _colorIndex = -1;
+
+        private CarPaint(Color[] source, Texture2D unpainted, Texture2D painted)
+        {
+            _source = source;
+            _painted = new Color[source.Length];
+            Unpainted = unpainted;
+            Painted = painted;
+        }
+
+        public Texture2D Unpainted { get; }
+
+        public Texture2D Painted { get; }
+
+        public static CarPaint Load(string texturePath, GraphicsDevice graphicsDevice)
+        {
+            using FileStream fileStream = File.OpenRead(texturePath);
+            ImageResult image = ImageResult.FromStream(fileStream, ColorComponents.RedGreenBlueAlpha);
+            var source = new Color[image.Width * image.Height];
+
+            for (int pixelIndex = 0, dataIndex = 0; pixelIndex < source.Length; pixelIndex++, dataIndex += 4)
+            {
+                byte red = image.Data[dataIndex];
+                byte green = image.Data[dataIndex + 1];
+                byte blue = image.Data[dataIndex + 2];
+                byte alpha = image.Data[dataIndex + 3];
+                bool isColorKey = red == LegacyTextureColorKey.R && green == LegacyTextureColorKey.G && blue == LegacyTextureColorKey.B;
+
+                source[pixelIndex] = isColorKey ? LegacyTextureColorKey : new Color(red, green, blue, alpha);
+            }
+
+            var unpainted = new Texture2D(graphicsDevice, image.Width, image.Height, false, SurfaceFormat.Color);
+            unpainted.SetData(source);
+            var painted = new Texture2D(graphicsDevice, image.Width, image.Height, false, SurfaceFormat.Color);
+            painted.SetData(source);
+            return new CarPaint(source, unpainted, painted);
+        }
+
+        /// <summary>Paints <see cref="Painted"/> with the catalogue colour <paramref name="colorIndex"/>, unless it already is.</summary>
+        public void Paint(int colorIndex)
+        {
+            if (colorIndex == _colorIndex || RaceFrontEndCatalog.CarColors.Count == 0)
+            {
+                return;
+            }
+
+            long started = System.Diagnostics.Stopwatch.GetTimestamp();
+            _colorIndex = colorIndex;
+            Color color = RaceFrontEndCatalog.CarColors[colorIndex].Value;
+            for (int i = 0; i < _source.Length; i++)
+            {
+                Color texel = _source[i];
+                if (texel == LegacyTextureColorKey)
+                {
+                    _painted[i] = texel;
+                    continue;
+                }
+
+                // lerp(rgb, colour, alpha), rounded.
+                int mask = texel.A;
+                _painted[i] = new Color(
+                    (byte)((texel.R * (255 - mask) + color.R * mask + 127) / 255),
+                    (byte)((texel.G * (255 - mask) + color.G * mask + 127) / 255),
+                    (byte)((texel.B * (255 - mask) + color.B * mask + 127) / 255),
+                    texel.A);
+            }
+
+            Painted.SetData(_painted);
+            Logs.WriteTrace($"Car paint: colour {colorIndex} painted in {System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds:0.0} ms");
+        }
+    }
 }
