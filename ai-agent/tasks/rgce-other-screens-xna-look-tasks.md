@@ -294,7 +294,7 @@ Découverte en lecture seule : workflow de 4 agents, chacun contre-vérifié par
 > - Réglages restaurés à l'identique après chaque run.
 > - 🧪 Reste pour l'auteur : onglets (clic, gauche/droite), sorties (Échap, B, Back, clic sous les lignes, BACK) et sons.
 
-### ⏳ T2.3 — Options
+### 🧪 T2.3 — Options
 
 - Objectif : P3, P6, P7, D2.
 - Fichiers :
@@ -312,6 +312,46 @@ Découverte en lecture seule : workflow de 4 agents, chacun contre-vérifié par
   - smoke : la résolution appliquée au retour au menu reste vérifiée ;
   - 🧪 chaque ligne, saisie du nom, volume en direct et enregistrement à chaque sortie, par l'auteur.
 - Commit : `feat(racing-casa): draw the Options screen like the original`
+
+> Validation (2026-10-06) :
+> - **Code** :
+>   - `RaceOptionsViewModel` place tout aux formules d'`Options.cs` : panneau, zones en `CalcRectangleKeep4To3` + `YToRes768(125)`, nom, poignées, flèche qui oscille, bouton BACK.
+>   - `Options.xaml` (généré) redessine les zones avec `TextureColor` : (15,15,15,230) sur les libellés de résolution et « High Detail », (255,156,0,160) sur une case active, (180,180,180,120) sur une pastille inactive. Il est suivi de ses données de conception en 1280×720.
+>   - `OptionsScreen` :
+>     - le nom se tape par `GameWindow.TextInput` (caractères 32 à 126, Retour arrière, 24 caractères) ;
+>     - 11 arrêts pour la flèche, qui part sur Sound comme l'original ;
+>     - Entrée ou A bascule ; gauche et droite changent la résolution ou un curseur de ±10 ;
+>     - un clic sur une option a priorité sur le curseur qu'elle chevauche ;
+>     - Highlight à l'entrée de chaque zone ; toute sortie passe par `ApplyAndClose`, avec ScreenBack.
+>   - `RacingGameCasaEngineGame.ApplyFrontEndVolumes` applique le volume en direct, sans la résolution ; `GetResolutionLabels` donne les libellés.
+>   - `LegacyMenuUiTheme` et `RaceMenuTextButtonViewModel`, devenus inutilisés, sont retirés.
+> - **Disposition des lignes ajoutées** (P6, validée sur capture), en unités de l'image :
+>   - la mesure des textes en GameFont montre que « Show FPS » (104,6 unités depuis x 382) chevauchait la pastille Vibration de la version modernisée (x 470), et qu'aucune rangée ne tient trois pastilles avec leur flèche ;
+>   - Driving Mode est donc une pastille « Simulation » en (616,182), sur la rangée GRAPHIC, et non en (670,262) comme proposé ;
+>   - Gamepad Vibration passe en (616,262), même colonne que « Shadow » ; Show FPS reste en (339,262) ;
+>   - Vertical Sync s'écrit centré dans la case High Detail, en ambre quand il est actif, comme le libellé de la résolution choisie.
+>   - Flèche : devant « RESOLUTION » (78,110), devant « GRAPHIC » pour Fullscreen (125,180), devant l'option ailleurs, et aux positions d'origine Line4/5/6 pour les curseurs.
+> - **Traits de la version modernisée reproduits** :
+>   - les libellés de résolution, écrits sur la base 1400, débordent de leurs cases ;
+>   - les caches (15,15,15,230) se voient légèrement en rectangles ;
+>   - la pastille Show FPS recouvre l'icône du haut-parleur de Sound.
+> - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE.
+> - `--smoke-frontend` : code 0 sans avertissement ; « Options -> MainMenu (apply resolution) » puis « Verified applied resolution on MainMenu ».
+> - Deux runs `--capture-ui-screens` identiques ; contre `references-19aa21f`, seuls `help`, `highscores` et `options` changent.
+> - **Mesures** (valeurs enregistrées : Sound 100, Sensitivity 60 ; sonde de taille pour 1280×720 et 1024×768) :
+>   - panneau : y 176 → 896, 117 → 597, 125 → 637, exacts ;
+>   - flèche et poignées : la partie orange du sprite tombe au pixel près où l'image de la flèche (874,426,53,39) et de la pastille (935,427,39,39) la place dans le rectangle calculé. En 1920×1080 : flèche (274,575,116,55), orange (281..378, 581..623) ; poignée Sound (1524,571,73,55), orange (1531..1587, 578..619) ; poignée Sensitivity (1188,778), orange dès x 1195 ;
+>   - la case Post Screen Effects teintée commence à x 636 (luminance 9 dedans, 21 à gauche), 424 et 339 ;
+>   - nom : plume (660,234), premier glyphe en x 663, haut 239 ; de même à 1 pixel près aux deux autres tailles.
+> - Éditeur : `capture_editor_screen.ps1` sur `Options.uiscreen`, code 0 sans erreur (aperçu limité par E1).
+> - Manques MGUI à jour : M1, M2, M5, M11, M15, M16 et M17.
+> - Réglages restaurés à l'identique après chaque run.
+> - 🧪 Reste pour l'auteur :
+>   - chaque ligne au clavier, à la manette et à la souris ;
+>   - la saisie du nom ;
+>   - le volume en direct ;
+>   - l'enregistrement à chaque sortie (Échap, B, Back, BACK) et la résolution appliquée au retour au menu ;
+>   - la disposition des lignes ajoutées.
 
 ## Phase 3 — Clôture
 

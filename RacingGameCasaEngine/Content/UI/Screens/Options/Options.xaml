@@ -3,6 +3,14 @@
         Width="1280" Height="720" ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
         Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
+  <!--
+    RacingGame's options screen (ADR-0013). RaceOptionsViewModel lays everything out in screen pixels with RacingGame's
+    formulas, every frame. As in RacingGame, the sprites are drawn first, then the texts (TextureFont.WriteAll ran last).
+    An area redrawn over the panel is tinted with TextureColor as RacingGame tinted it: (255,156,0,160) for an option
+    that is on, (15,15,15,230) to cover a baked label. The texts use RacingGame's GameFont at its native size;
+    OptionsScreen scales them at draw time as TextureFont did, and colours the resolution labels and Vertical Sync.
+    Nothing takes MGUI's focus: OptionsScreen reads the keyboard, the typed text, the mouse and the gamepad itself.
+  -->
   <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <!-- Menu decoration (RaceMenuDecorationViewModel): background, then the bouncing logo placed by the view model. -->
     <Image SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
@@ -10,111 +18,78 @@
     <Image SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Decoration.LogoMargin}"
            Width="{dataBinding:MGBinding Path=Decoration.LogoWidth}" Height="{dataBinding:MGBinding Path=Decoration.LogoHeight}" />
-    <!-- Band and scroll sizes follow the safe area and the UI scale (RaceOptionsViewModel.UpdateLayout). -->
-    <Border BorderThickness="0" BorderBrush="rgba(0,0,0,0)" Background="rgba(0,0,0,132)" Padding="32,20,32,20"
-            Margin="{dataBinding:MGBinding Path=BandMargin}" Height="{dataBinding:MGBinding Path=BandHeight}"
-            HorizontalAlignment="Stretch" VerticalAlignment="Top">
-      <StackPanel Orientation="Vertical" Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <TextBlock Text="Options" Foreground="rgb(255,156,0)" FontSize="26" UseResponsiveTextScale="True"
-                   HorizontalAlignment="Center" TextAlignment="Center" />
-        <ScrollViewer Width="{dataBinding:MGBinding Path=ScrollWidth}" Height="{dataBinding:MGBinding Path=ScrollHeight}"
-                      HorizontalAlignment="Center" VerticalAlignment="Center">
-          <!-- Form fields are bound two ways; the screen writes every change to the front-end state. -->
-          <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Top">
-            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="Player Name" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="220" />
-              <TextBox Name="txtPlayerName" Width="280" CharacterLimit="24" ShowCharacterCount="False"
-                       Text="{dataBinding:MGBinding Path=PlayerName, Mode=TwoWay}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="Resolution" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="220" />
-              <!-- The screen restyles these buttons every frame (current value, hover and focus). -->
-              <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Button Name="btnResolution0" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
-                        Background="rgba(0,0,0,24)" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                  <TextBlock Text="1280x720" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-                </Button>
-                <Button Name="btnResolution1" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
-                        Background="rgba(0,0,0,24)" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                  <TextBlock Text="1920x1080" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-                </Button>
-                <Button Name="btnResolution2" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
-                        Background="rgba(0,0,0,24)" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                  <TextBlock Text="2560x1440" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-                </Button>
-                <Button Name="btnResolution3" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
-                        Background="rgba(0,0,0,24)" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                  <TextBlock Text="3840x2160" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-                </Button>
-                <Button Name="btnResolution4" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
-                        Background="rgba(0,0,0,24)" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                  <TextBlock Text="Auto" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-                </Button>
-              </StackPanel>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="Driving Mode" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="220" />
-              <!-- The screen restyles these buttons every frame (current value, hover and focus). -->
-              <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Button Name="btnDrivingMode0" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
-                        Background="rgba(0,0,0,24)" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                  <TextBlock Text="Arcade" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-                </Button>
-                <Button Name="btnDrivingMode1" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
-                        Background="rgba(0,0,0,24)" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                  <TextBlock Text="Simulation" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-                </Button>
-              </StackPanel>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="Fullscreen" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="220" />
-              <CheckBox IsChecked="{dataBinding:MGBinding Path=IsFullscreen, Mode=TwoWay}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="Vertical Sync" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="220" />
-              <CheckBox IsChecked="{dataBinding:MGBinding Path=EnableVSync, Mode=TwoWay}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="Post Screen Effects" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="220" />
-              <CheckBox IsChecked="{dataBinding:MGBinding Path=EnablePostEffects, Mode=TwoWay}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="Shadows" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="220" />
-              <CheckBox IsChecked="{dataBinding:MGBinding Path=EnableShadows, Mode=TwoWay}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="Show FPS" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="220" />
-              <CheckBox IsChecked="{dataBinding:MGBinding Path=ShowFps, Mode=TwoWay}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="Gamepad Vibration" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="220" />
-              <CheckBox IsChecked="{dataBinding:MGBinding Path=EnableVibration, Mode=TwoWay}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="Sound Volume" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="220" />
-              <Slider Minimum="0" Maximum="100" Value="{dataBinding:MGBinding Path=SoundVolume, Mode=TwoWay}" Width="240" />
-              <TextBlock Text="{dataBinding:MGBinding Path=SoundVolumeText}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="56" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="Music Volume" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="220" />
-              <Slider Minimum="0" Maximum="100" Value="{dataBinding:MGBinding Path=MusicVolume, Mode=TwoWay}" Width="240" />
-              <TextBlock Text="{dataBinding:MGBinding Path=MusicVolumeText}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="56" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="Controller Sensitivity" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="220" />
-              <Slider Minimum="0" Maximum="100" Value="{dataBinding:MGBinding Path=ControllerSensitivity, Mode=TwoWay}" Width="240" />
-              <TextBlock Text="{dataBinding:MGBinding Path=ControllerSensitivityText}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="56" />
-            </StackPanel>
-          </StackPanel>
-        </ScrollViewer>
-        <!-- Size bound to the UI scale (RaceMenuTextButtonViewModel); the screen restyles the button every frame. -->
-        <Button Name="btnBack" BorderBrush="rgb(96,96,96)" BorderThickness="2" CornerRadius="16"
-                Padding="{dataBinding:MGBinding Path=BackButton.Padding}" MinWidth="{dataBinding:MGBinding Path=BackButton.MinWidth}"
-                MinHeight="{dataBinding:MGBinding Path=BackButton.MinHeight}" Height="{dataBinding:MGBinding Path=BackButton.Height}"
-                HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-          <TextBlock Text="Back" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-        </Button>
-      </StackPanel>
-    </Border>
+    <!-- "OPTIONS" header (headers.png HeaderOptionsGfxRect), then the panel (OptionsScreenWindows.png). -->
+    <Image SourceName="Ui.Options.Header" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Header.Margin}" Width="{dataBinding:MGBinding Path=Header.Width}" Height="{dataBinding:MGBinding Path=Header.Height}" />
+    <Image SourceName="Ui.Options.Panel" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Panel.Margin}" Width="{dataBinding:MGBinding Path=Panel.Width}" Height="{dataBinding:MGBinding Path=Panel.Height}" />
+    <!-- Resolution slots: the baked labels covered; RacingGameCasaEngine's labels are written below. -->
+    <Image SourceName="Ui.Options.Resolution0" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Resolution0.Margin}" Width="{dataBinding:MGBinding Path=Resolution0.Width}" Height="{dataBinding:MGBinding Path=Resolution0.Height}" TextureColor="rgba(15,15,15,230)" />
+    <Image SourceName="Ui.Options.Resolution1" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Resolution1.Margin}" Width="{dataBinding:MGBinding Path=Resolution1.Width}" Height="{dataBinding:MGBinding Path=Resolution1.Height}" TextureColor="rgba(15,15,15,230)" />
+    <Image SourceName="Ui.Options.Resolution2" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Resolution2.Margin}" Width="{dataBinding:MGBinding Path=Resolution2.Width}" Height="{dataBinding:MGBinding Path=Resolution2.Height}" TextureColor="rgba(15,15,15,230)" />
+    <Image SourceName="Ui.Options.Resolution3" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Resolution3.Margin}" Width="{dataBinding:MGBinding Path=Resolution3.Width}" Height="{dataBinding:MGBinding Path=Resolution3.Height}" TextureColor="rgba(15,15,15,230)" />
+    <Image SourceName="Ui.Options.Resolution4" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Resolution4.Margin}" Width="{dataBinding:MGBinding Path=Resolution4.Width}" Height="{dataBinding:MGBinding Path=Resolution4.Height}" TextureColor="rgba(15,15,15,230)" />
+    <!-- Graphics options, redrawn tinted while on; the High Detail slot covered, for Vertical Sync. -->
+    <Image SourceName="Ui.Options.Fullscreen" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Fullscreen.Margin}" Width="{dataBinding:MGBinding Path=Fullscreen.Width}" Height="{dataBinding:MGBinding Path=Fullscreen.Height}" TextureColor="rgba(255,156,0,160)" Visibility="{dataBinding:MGBinding Path=Fullscreen.HighlightVisibility}" />
+    <Image SourceName="Ui.Options.PostScreenEffects" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=PostScreenEffects.Margin}" Width="{dataBinding:MGBinding Path=PostScreenEffects.Width}" Height="{dataBinding:MGBinding Path=PostScreenEffects.Height}" TextureColor="rgba(255,156,0,160)" Visibility="{dataBinding:MGBinding Path=PostScreenEffects.HighlightVisibility}" />
+    <Image SourceName="Ui.Options.Shadows" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Shadows.Margin}" Width="{dataBinding:MGBinding Path=Shadows.Width}" Height="{dataBinding:MGBinding Path=Shadows.Height}" TextureColor="rgba(255,156,0,160)" Visibility="{dataBinding:MGBinding Path=Shadows.HighlightVisibility}" />
+    <Image SourceName="Ui.Options.HighDetail" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=VSyncCover.Margin}" Width="{dataBinding:MGBinding Path=VSyncCover.Width}" Height="{dataBinding:MGBinding Path=VSyncCover.Height}" TextureColor="rgba(15,15,15,230)" />
+    <!-- Round buttons (SelectionRadioButtonGfxRect): grey while off, orange while on. -->
+    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=DrivingModeButton.Margin}" Width="{dataBinding:MGBinding Path=DrivingModeButton.Width}" Height="{dataBinding:MGBinding Path=DrivingModeButton.Height}" TextureColor="rgba(180,180,180,120)" Visibility="{dataBinding:MGBinding Path=DrivingModeButton.Visibility}" />
+    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=DrivingModeButton.Margin}" Width="{dataBinding:MGBinding Path=DrivingModeButton.Width}" Height="{dataBinding:MGBinding Path=DrivingModeButton.Height}" TextureColor="rgba(255,156,0,160)" Visibility="{dataBinding:MGBinding Path=DrivingModeButton.HighlightVisibility}" />
+    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=ShowFpsButton.Margin}" Width="{dataBinding:MGBinding Path=ShowFpsButton.Width}" Height="{dataBinding:MGBinding Path=ShowFpsButton.Height}" TextureColor="rgba(180,180,180,120)" Visibility="{dataBinding:MGBinding Path=ShowFpsButton.Visibility}" />
+    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=ShowFpsButton.Margin}" Width="{dataBinding:MGBinding Path=ShowFpsButton.Width}" Height="{dataBinding:MGBinding Path=ShowFpsButton.Height}" TextureColor="rgba(255,156,0,160)" Visibility="{dataBinding:MGBinding Path=ShowFpsButton.HighlightVisibility}" />
+    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=VibrationButton.Margin}" Width="{dataBinding:MGBinding Path=VibrationButton.Width}" Height="{dataBinding:MGBinding Path=VibrationButton.Height}" TextureColor="rgba(180,180,180,120)" Visibility="{dataBinding:MGBinding Path=VibrationButton.Visibility}" />
+    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=VibrationButton.Margin}" Width="{dataBinding:MGBinding Path=VibrationButton.Width}" Height="{dataBinding:MGBinding Path=VibrationButton.Height}" TextureColor="rgba(255,156,0,160)" Visibility="{dataBinding:MGBinding Path=VibrationButton.HighlightVisibility}" />
+    <!-- Slider handles, then the selection arrow (SelectionArrowGfxRect). -->
+    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=SoundHandle.Margin}" Width="{dataBinding:MGBinding Path=SoundHandle.Width}" Height="{dataBinding:MGBinding Path=SoundHandle.Height}" />
+    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=MusicHandle.Margin}" Width="{dataBinding:MGBinding Path=MusicHandle.Width}" Height="{dataBinding:MGBinding Path=MusicHandle.Height}" />
+    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=SensitivityHandle.Margin}" Width="{dataBinding:MGBinding Path=SensitivityHandle.Width}" Height="{dataBinding:MGBinding Path=SensitivityHandle.Height}" />
+    <Image SourceName="Ui.CarSelection.Arrow" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Arrow.Margin}" Width="{dataBinding:MGBinding Path=Arrow.Width}" Height="{dataBinding:MGBinding Path=Arrow.Height}" />
+    <!-- B BACK, grown and outlined in orange while the mouse is over it. -->
+    <Image SourceName="Ui.Button.Back" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" />
+    <Image SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" Visibility="{dataBinding:MGBinding Path=BackButton.HighlightVisibility}" />
+    <!-- Texts, in GameFont at its native size, scaled at draw time by OptionsScreen. -->
+    <TextBlock Name="txtName" Text="{dataBinding:MGBinding Path=NameDisplay}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=NameText.Margin}" />
+    <TextBlock Name="txtResolution0" Text="{dataBinding:MGBinding Path=ResolutionLabel0}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ResolutionText0.Margin}" />
+    <TextBlock Name="txtResolution1" Text="{dataBinding:MGBinding Path=ResolutionLabel1}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ResolutionText1.Margin}" />
+    <TextBlock Name="txtResolution2" Text="{dataBinding:MGBinding Path=ResolutionLabel2}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ResolutionText2.Margin}" />
+    <TextBlock Name="txtResolution3" Text="{dataBinding:MGBinding Path=ResolutionLabel3}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ResolutionText3.Margin}" />
+    <TextBlock Name="txtResolution4" Text="{dataBinding:MGBinding Path=ResolutionLabel4}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ResolutionText4.Margin}" />
+    <TextBlock Name="txtVSync" Text="Vertical Sync" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=VSyncText.Margin}" />
+    <TextBlock Name="txtDrivingMode" Text="Simulation" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=DrivingModeText.Margin}" />
+    <TextBlock Name="txtShowFps" Text="Show FPS" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ShowFpsText.Margin}" />
+    <TextBlock Name="txtVibration" Text="Gamepad Vibration" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=VibrationText.Margin}" />
   </OverlayPanel>
 </Window>

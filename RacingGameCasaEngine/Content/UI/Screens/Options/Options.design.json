@@ -7,22 +7,195 @@
       "LogoWidth": 755,
       "LogoHeight": 246
     },
-    "BandTop": 24,
-    "BandHeight": 672,
-    "ScrollWidth": 1120,
-    "ScrollHeight": 526,
-    "PlayerName": "Player One",
-    "IsFullscreen": false,
-    "EnableVSync": true,
-    "EnablePostEffects": true,
-    "EnableShadows": true,
-    "ShowFps": false,
-    "EnableVibration": true,
-    "SoundVolume": 80.0,
-    "MusicVolume": 70.0,
-    "ControllerSensitivity": 60.0,
-    "SoundVolumeText": "80",
-    "MusicVolumeText": "70",
-    "ControllerSensitivityText": "60"
+    "Header": {
+      "Left": 8,
+      "Top": 11,
+      "Width": 410,
+      "Height": 60
+    },
+    "Panel": {
+      "Left": 0,
+      "Top": 117,
+      "Width": 1280,
+      "Height": 480
+    },
+    "NameDisplay": "Player One|",
+    "NameText": {
+      "Left": 440,
+      "Top": 156,
+      "Width": 0,
+      "Height": 0
+    },
+    "Resolution0": {
+      "Left": 424,
+      "Top": 222,
+      "Width": 122,
+      "Height": 30
+    },
+    "ResolutionLabel0": "1280x720",
+    "ResolutionText0": {
+      "Left": 418,
+      "Top": 223,
+      "Width": 0,
+      "Height": 0
+    },
+    "Resolution1": {
+      "Left": 568,
+      "Top": 222,
+      "Width": 122,
+      "Height": 30
+    },
+    "ResolutionLabel1": "1920x1080",
+    "ResolutionText1": {
+      "Left": 554,
+      "Top": 223,
+      "Width": 0,
+      "Height": 0
+    },
+    "Resolution2": {
+      "Left": 719,
+      "Top": 222,
+      "Width": 135,
+      "Height": 30
+    },
+    "ResolutionLabel2": "2560x1440",
+    "ResolutionText2": {
+      "Left": 711,
+      "Top": 223,
+      "Width": 0,
+      "Height": 0
+    },
+    "Resolution3": {
+      "Left": 880,
+      "Top": 222,
+      "Width": 145,
+      "Height": 30
+    },
+    "ResolutionLabel3": "3840x2160",
+    "ResolutionText3": {
+      "Left": 877,
+      "Top": 223,
+      "Width": 0,
+      "Height": 0
+    },
+    "Resolution4": {
+      "Left": 1048,
+      "Top": 222,
+      "Width": 86,
+      "Height": 30
+    },
+    "ResolutionLabel4": "Auto",
+    "ResolutionText4": {
+      "Left": 1060,
+      "Top": 223,
+      "Width": 0,
+      "Height": 0
+    },
+    "Fullscreen": {
+      "Left": 424,
+      "Top": 288,
+      "Width": 131,
+      "Height": 34,
+      "IsHighlighted": false
+    },
+    "PostScreenEffects": {
+      "Left": 424,
+      "Top": 329,
+      "Width": 258,
+      "Height": 34,
+      "IsHighlighted": true
+    },
+    "Shadows": {
+      "Left": 770,
+      "Top": 329,
+      "Width": 112,
+      "Height": 34,
+      "IsHighlighted": true
+    },
+    "VSyncCover": {
+      "Left": 980,
+      "Top": 329,
+      "Width": 150,
+      "Height": 34
+    },
+    "VSyncText": {
+      "Left": 967,
+      "Top": 332,
+      "Width": 0,
+      "Height": 0
+    },
+    "ShowFpsButton": {
+      "Left": 424,
+      "Top": 363,
+      "Width": 49,
+      "Height": 37,
+      "IsShown": true,
+      "IsHighlighted": false
+    },
+    "ShowFpsText": {
+      "Left": 478,
+      "Top": 364,
+      "Width": 0,
+      "Height": 0
+    },
+    "VibrationButton": {
+      "Left": 770,
+      "Top": 363,
+      "Width": 49,
+      "Height": 37,
+      "IsShown": false,
+      "IsHighlighted": true
+    },
+    "VibrationText": {
+      "Left": 824,
+      "Top": 364,
+      "Width": 0,
+      "Height": 0
+    },
+    "DrivingModeButton": {
+      "Left": 770,
+      "Top": 288,
+      "Width": 49,
+      "Height": 37,
+      "IsShown": true,
+      "IsHighlighted": false
+    },
+    "DrivingModeText": {
+      "Left": 824,
+      "Top": 289,
+      "Width": 0,
+      "Height": 0
+    },
+    "SoundHandle": {
+      "Left": 904,
+      "Top": 380,
+      "Width": 49,
+      "Height": 37
+    },
+    "MusicHandle": {
+      "Left": 848,
+      "Top": 449,
+      "Width": 49,
+      "Height": 37
+    },
+    "SensitivityHandle": {
+      "Left": 792,
+      "Top": 518,
+      "Width": 49,
+      "Height": 37
+    },
+    "Arrow": {
+      "Left": 182,
+      "Top": 383,
+      "Width": 78,
+      "Height": 37
+    },
+    "SelectedStop": 8,
+    "BackButton": {
+      "Left": 1094,
+      "Top": 633,
+      "Width": 124,
+      "Height": 54
+    }
   }
 }

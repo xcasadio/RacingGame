@@ -134,6 +134,16 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         state.MusicVolume = (int)Math.Round(Math.Clamp(MediaPlayer.Volume, 0f, 1f) * 100f);
     }
 
+    /// <summary>
+    /// Applies only the sound and music volumes, as RacingGame's Options screen did every frame while the player moved its
+    /// sliders (Sound.SetVolumes); the other options apply when the player leaves the screen (ADR-0013).
+    /// </summary>
+    internal void ApplyFrontEndVolumes(RaceFrontEndState state)
+    {
+        SoundEffect.MasterVolume = Math.Clamp(state.SoundVolume, 0, 100) / 100f;
+        MediaPlayer.Volume = Math.Clamp(state.MusicVolume, 0, 100) / 100f;
+    }
+
     internal void ApplyFrontEndOptions(RaceFrontEndState state)
     {
         state.SoundVolume = Math.Clamp(state.SoundVolume, 0, 100);
@@ -499,6 +509,9 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
             "CasaEngine",
             effectiveProjectName);
     }
+
+    /// <summary>The Options screen's resolution labels: the menu resolutions, then "Auto" (keep the current size).</summary>
+    internal static string[] GetResolutionLabels() => [.. MenuResolutions.Select(static r => $"{r.Width}x{r.Height}"), "Auto"];
 
     internal static int GetResolutionIndex(int width, int height)
     {

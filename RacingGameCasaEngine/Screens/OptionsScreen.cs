@@ -1,4 +1,4 @@
-using System.ComponentModel;
+using CasaEngine.Engine.Input;
 using CasaEngine.Framework.Assets;
 using CasaEngine.Framework.GUI;
 using MGUI.Core.UI;
@@ -7,27 +7,49 @@ using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.Components;
 using RacingGameCasaEngine.UI;
 using RacingGameCasaEngine.UI.ViewModels;
+using Color = Microsoft.Xna.Framework.Color;
+using Point = Microsoft.Xna.Framework.Point;
+using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace RacingGameCasaEngine.Screens;
 
 /// <summary>
-/// Options, loaded from the <c>Screen.Options</c> screen asset (Content/UI/Screens/Options). The form is bound two ways to
-/// <see cref="RaceOptionsViewModel"/>: a change in the form is written to <see cref="RaceFrontEndState"/> at once, and the
-/// fields follow the state every frame. The settings are applied and saved by the Back button.
+/// Options, loaded from the <c>Screen.Options</c> screen asset (Content/UI/Screens/Options), as RacingGame's (ADR-0013),
+/// with its input (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/Options.cs</c>, Update), extended to every row:
+/// <list type="bullet">
+/// <item>the typed text edits the player name (printable ASCII, the characters GameFont has; Backspace erases);</item>
+/// <item>Up and Down (keyboard, D-pad, left stick past 0.5) move the selection arrow over the rows, with Highlight;
+/// Left and Right change the resolution (ButtonClick) or move a slider by 10 (Highlight); Enter or A switch the
+/// selected option (ButtonClick);</item>
+/// <item>a click on a resolution or an option changes it (ButtonClick), a click on a slider sets it (Highlight);</item>
+/// <item>the Highlight sound plays when the mouse enters a resolution, an option, a slider or the B button;</item>
+/// <item>Escape, B, Back or a click on B BACK apply and save the settings and leave with ScreenBack.</item>
+/// </list>
+/// Every change goes to <see cref="RaceFrontEndState"/> at once; the volumes apply as they change, the other settings
+/// when the player leaves (ADR-0013). The screen plays ScreenClick when shown, as RacingGame did when it pushed a screen.
+/// Nothing takes MGUI's focus.
 /// </summary>
 internal sealed class OptionsScreen : RaceXamlScreenBase
 {
-    private const int ResolutionCount = 5;
-    private static readonly VehicleDrivingMode[] DrivingModes = [VehicleDrivingMode.Arcade, VehicleDrivingMode.Simulation];
+    private const float StickThreshold = 0.5f;
+    // The name text box this screen replaces took 24 characters.
+    private const int MaxNameLength = 24;
+    private const int SliderStep = 10;
 
     private readonly RacingGameCasaEngineGame _game;
     private readonly RaceFrontEndState _state;
     private readonly Action _back;
     private readonly RaceOptionsViewModel _viewModel = new();
-    private MGTextBox? _playerName;
-    private MGButton[] _resolutionButtons = [];
-    private MGButton[] _drivingModeButtons = [];
-    private MGButton? _backButton;
+    private readonly Func<string, float> _measure;
+    private MGTextBlock[] _texts = [];
+    private MGTextBlock[] _resolutionTexts = [];
+    private MGTextBlock? _vsyncText;
+    private bool _isReadingText;
+    // The first update after the screen opens takes no input: the key or click that opened it is still "just pressed".
+    private bool _acceptsInput;
+    private bool _isLeaving;
+    private Point _lastMouse = new(-1, -1);
+    private Vector2 _lastStick;
 
     public OptionsScreen(AssetContentManager assetContentManager, RacingGameCasaEngineGame game, RaceFrontEndState state, Action back)
         : base(assetContentManager, "Screen.Options")
@@ -35,6 +57,7 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
         _game = game;
         _state = state;
         _back = back;
+        _measure = game.MeasureGameFontText;
     }
 
     public override UILayer Layer => UILayer.Menu;
@@ -43,118 +66,297 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
 
     protected override void OnWindowLoaded(MGWindow window)
     {
-        var metrics = Root.Metrics;
-        _viewModel.UpdateLayout(metrics.SafeArea.Y, metrics.SafeArea.Width, metrics.SafeArea.Height, metrics.Scale);
-        _viewModel.BackButton.Update(metrics.Scale);
-        _viewModel.PlayerName = _state.PlayerName;
-        RefreshFromState();
+        string[] labels = RacingGameCasaEngineGame.GetResolutionLabels();
+        if (labels.Length != RaceOptionsViewModel.ResolutionCount)
+        {
+            throw new InvalidOperationException(
+                $"Options.xaml has {RaceOptionsViewModel.ResolutionCount} resolution slots; the game has {labels.Length} resolutions with Auto.");
+        }
+
+        _viewModel.ResolutionLabel0 = labels[0];
+        _viewModel.ResolutionLabel1 = labels[1];
+        _viewModel.ResolutionLabel2 = labels[2];
+        _viewModel.ResolutionLabel3 = labels[3];
+        _viewModel.ResolutionLabel4 = labels[4];
+
+        _resolutionTexts = new MGTextBlock[RaceOptionsViewModel.ResolutionCount];
+        for (int i = 0; i < _resolutionTexts.Length; i++)
+        {
+            _resolutionTexts[i] = FindControl<MGTextBlock>("txtResolution" + i);
+        }
+
+        _vsyncText = FindControl<MGTextBlock>("txtVSync");
+        _texts =
+        [
+            FindControl<MGTextBlock>("txtName"), .. _resolutionTexts, _vsyncText, FindControl<MGTextBlock>("txtDrivingMode"),
+            FindControl<MGTextBlock>("txtShowFps"), FindControl<MGTextBlock>("txtVibration"),
+        ];
+        foreach (MGTextBlock text in _texts)
+        {
+            text.RenderTransform.Origin = Vector2.Zero;
+        }
+
         window.WindowDataContext = _viewModel;
-        UpdateMenuDecoration(_viewModel.Decoration, 0.0);
-        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
-
-        _playerName = FindControl<MGTextBox>("txtPlayerName");
-
-        _resolutionButtons = new MGButton[ResolutionCount];
-        for (int i = 0; i < ResolutionCount; i++)
-        {
-            int resolutionIndex = i;
-            _resolutionButtons[i] = FindControl<MGButton>("btnResolution" + i);
-            _resolutionButtons[i].AddCommandHandler((_, _) => _state.SelectedResolutionIndex = resolutionIndex);
-            LegacyMenuUiTheme.ApplyBandButtonState(_resolutionButtons[i], false);
-        }
-
-        _drivingModeButtons = new MGButton[DrivingModes.Length];
-        for (int i = 0; i < DrivingModes.Length; i++)
-        {
-            VehicleDrivingMode drivingMode = DrivingModes[i];
-            _drivingModeButtons[i] = FindControl<MGButton>("btnDrivingMode" + i);
-            _drivingModeButtons[i].AddCommandHandler((_, _) => _state.SelectedDrivingMode = drivingMode);
-            LegacyMenuUiTheme.ApplyBandButtonState(_drivingModeButtons[i], false);
-        }
-
-        _backButton = FindControl<MGButton>("btnBack");
-        _backButton.AddCommandHandler((_, _) => ApplyAndClose());
-
-        RefreshButtonStates();
+        UpdateLayout(0.0);
     }
 
     public override void Show()
     {
-        _playerName?.Focus();
+        PlaySound(MenuSound.ScreenClick);
+        if (!_isReadingText)
+        {
+            _game.Window.TextInput += OnTextInput;
+            _isReadingText = true;
+        }
     }
 
     public override void Update(GameTime gameTime)
     {
-        UpdateMenuDecoration(_viewModel.Decoration, gameTime.TotalGameTime.TotalSeconds);
-        RefreshFromState();
-        RefreshButtonStates();
+        HandleInput();
+        if (_isLeaving)
+        {
+            return;
+        }
+
+        UpdateLayout(gameTime.TotalGameTime.TotalSeconds);
     }
 
     public override void Dispose()
     {
-        _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        StopReadingText();
         base.Dispose();
     }
 
+    // Input.HandleKeyboardInput: the typed characters edit the name.
+    private void OnTextInput(object? sender, TextInputEventArgs e)
+    {
+        if (!_acceptsInput || _isLeaving)
+        {
+            return;
+        }
+
+        string name = _state.PlayerName;
+        if (e.Key == XnaKeys.Back)
+        {
+            if (name.Length > 0)
+            {
+                _state.PlayerName = name[..^1];
+            }
+        }
+        else if (e.Character >= ' ' && e.Character <= '~' && name.Length < MaxNameLength)
+        {
+            _state.PlayerName = name + e.Character;
+        }
+    }
+
+    private void HandleInput()
+    {
+        KeyboardManager keyboard = _game.InputComponent.KeyboardManager;
+        MouseManager mouse = _game.InputComponent.MouseManager;
+        GamePad gamePad = _game.InputComponent.GamePadManager.GetGamePad(PlayerIndex.One);
+        Point position = mouse.Position;
+        Vector2 stick = gamePad.IsConnected ? new Vector2(gamePad.LeftStickX, gamePad.LeftStickY) : Vector2.Zero;
+
+        if (!_acceptsInput)
+        {
+            _acceptsInput = true;
+            _lastMouse = position;
+            _lastStick = stick;
+            return;
+        }
+
+        // Input.MouseInBox played Highlight whenever the mouse entered a box it tested.
+        int resolution = _viewModel.GetResolutionAt(position.X, position.Y);
+        int stop = _viewModel.GetStopAt(position.X, position.Y);
+        if ((resolution >= 0 && resolution != _viewModel.GetResolutionAt(_lastMouse.X, _lastMouse.Y))
+            || (stop >= 0 && stop != _viewModel.GetStopAt(_lastMouse.X, _lastMouse.Y))
+            || (_viewModel.IsOverBackButton(position.X, position.Y) && !_viewModel.IsOverBackButton(_lastMouse.X, _lastMouse.Y)))
+        {
+            PlaySound(MenuSound.Highlight);
+        }
+
+        _lastMouse = position;
+
+        bool click = mouse.LeftButtonJustPressed;
+        if (click && resolution >= 0)
+        {
+            PlaySound(MenuSound.ButtonClick);
+            _state.SelectedResolutionIndex = resolution;
+        }
+        else if (click && stop >= 0)
+        {
+            if (RaceOptionsViewModel.IsSlider(stop))
+            {
+                PlaySound(MenuSound.Highlight);
+                SetSlider(stop, _viewModel.GetSliderValueAt(stop, position.X));
+            }
+            else
+            {
+                PlaySound(MenuSound.ButtonClick);
+                Toggle(stop);
+            }
+        }
+
+        bool up = keyboard.IsKeyJustPressed(XnaKeys.Up)
+            || (gamePad.IsConnected && gamePad.DPadUpJustPressed)
+            || (stick.Y > StickThreshold && _lastStick.Y <= StickThreshold);
+        bool down = keyboard.IsKeyJustPressed(XnaKeys.Down)
+            || (gamePad.IsConnected && gamePad.DPadDownJustPressed)
+            || (stick.Y < -StickThreshold && _lastStick.Y >= -StickThreshold);
+        bool left = keyboard.IsKeyJustPressed(XnaKeys.Left)
+            || (gamePad.IsConnected && gamePad.DPadLeftJustPressed)
+            || (stick.X < -StickThreshold && _lastStick.X >= -StickThreshold);
+        bool right = keyboard.IsKeyJustPressed(XnaKeys.Right)
+            || (gamePad.IsConnected && gamePad.DPadRightJustPressed)
+            || (stick.X > StickThreshold && _lastStick.X <= StickThreshold);
+        _lastStick = stick;
+
+        int count = RaceOptionsViewModel.StopCount;
+        if (up)
+        {
+            PlaySound(MenuSound.Highlight);
+            _viewModel.SelectedStop = (_viewModel.SelectedStop + count - 1) % count;
+        }
+        else if (down)
+        {
+            PlaySound(MenuSound.Highlight);
+            _viewModel.SelectedStop = (_viewModel.SelectedStop + 1) % count;
+        }
+
+        int selected = _viewModel.SelectedStop;
+        if (left || right)
+        {
+            int direction = left ? -1 : 1;
+            if (selected == RaceOptionsViewModel.StopResolution)
+            {
+                PlaySound(MenuSound.ButtonClick);
+                int resolutions = RaceOptionsViewModel.ResolutionCount;
+                _state.SelectedResolutionIndex = (Math.Clamp(_state.SelectedResolutionIndex, 0, resolutions - 1) + direction + resolutions) % resolutions;
+            }
+            else if (RaceOptionsViewModel.IsSlider(selected))
+            {
+                PlaySound(MenuSound.Highlight);
+                SetSlider(selected, GetSlider(selected) + direction * SliderStep);
+            }
+        }
+
+        if ((keyboard.IsKeyJustPressed(XnaKeys.Enter) || (gamePad.IsConnected && gamePad.AJustPressed))
+            && selected != RaceOptionsViewModel.StopResolution && !RaceOptionsViewModel.IsSlider(selected))
+        {
+            PlaySound(MenuSound.ButtonClick);
+            Toggle(selected);
+        }
+
+        if (keyboard.IsKeyJustPressed(XnaKeys.Escape)
+            || (gamePad.IsConnected && (gamePad.BJustPressed || gamePad.BackJustPressed))
+            || (click && _viewModel.IsOverBackButton(position.X, position.Y)))
+        {
+            ApplyAndClose();
+        }
+    }
+
+    private void Toggle(int stop)
+    {
+        switch (stop)
+        {
+            case RaceOptionsViewModel.StopFullscreen: _state.IsFullscreen = !_state.IsFullscreen; break;
+            case RaceOptionsViewModel.StopDrivingMode:
+                _state.SelectedDrivingMode = _state.SelectedDrivingMode == VehicleDrivingMode.Simulation ? VehicleDrivingMode.Arcade : VehicleDrivingMode.Simulation;
+                break;
+            case RaceOptionsViewModel.StopPostEffects: _state.EnablePostEffects = !_state.EnablePostEffects; break;
+            case RaceOptionsViewModel.StopShadows: _state.EnableShadows = !_state.EnableShadows; break;
+            case RaceOptionsViewModel.StopVSync: _state.EnableVSync = !_state.EnableVSync; break;
+            case RaceOptionsViewModel.StopShowFps: _state.ShowFps = !_state.ShowFps; break;
+            case RaceOptionsViewModel.StopVibration: _state.EnableVibration = !_state.EnableVibration; break;
+        }
+    }
+
+    private int GetSlider(int stop) => stop switch
+    {
+        RaceOptionsViewModel.StopSound => _state.SoundVolume,
+        RaceOptionsViewModel.StopMusic => _state.MusicVolume,
+        _ => _state.ControllerSensitivity,
+    };
+
+    // A slider's value, 0 to 100; the volumes apply at once, as RacingGame's Sound.SetVolumes did every frame.
+    private void SetSlider(int stop, int value)
+    {
+        value = Math.Clamp(value, 0, 100);
+        switch (stop)
+        {
+            case RaceOptionsViewModel.StopSound: _state.SoundVolume = value; break;
+            case RaceOptionsViewModel.StopMusic: _state.MusicVolume = value; break;
+            case RaceOptionsViewModel.StopSensitivity: _state.ControllerSensitivity = value; break;
+        }
+
+        _game.ApplyFrontEndVolumes(_state);
+    }
+
+    // Every exit applies and saves the settings, as RacingGame's did (ADR-0013).
     private void ApplyAndClose()
     {
+        _isLeaving = true;
+        StopReadingText();
+        PlaySound(MenuSound.ScreenBack);
         _game.ApplyFrontEndOptions(_state);
         _game.SaveFrontEndOptions(_state);
         _back();
     }
 
-    // A change made in the form (two-way bindings) goes to the front-end state at once, as the code-built screen did.
-    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void StopReadingText()
     {
-        switch (e.PropertyName)
+        if (_isReadingText)
         {
-            case nameof(RaceOptionsViewModel.PlayerName): _state.PlayerName = _viewModel.PlayerName; break;
-            case nameof(RaceOptionsViewModel.IsFullscreen): _state.IsFullscreen = _viewModel.IsFullscreen; break;
-            case nameof(RaceOptionsViewModel.EnableVSync): _state.EnableVSync = _viewModel.EnableVSync; break;
-            case nameof(RaceOptionsViewModel.EnablePostEffects): _state.EnablePostEffects = _viewModel.EnablePostEffects; break;
-            case nameof(RaceOptionsViewModel.EnableShadows): _state.EnableShadows = _viewModel.EnableShadows; break;
-            case nameof(RaceOptionsViewModel.ShowFps): _state.ShowFps = _viewModel.ShowFps; break;
-            case nameof(RaceOptionsViewModel.EnableVibration): _state.EnableVibration = _viewModel.EnableVibration; break;
-            case nameof(RaceOptionsViewModel.SoundVolume): _state.SoundVolume = (int)Math.Round(_viewModel.SoundVolume); break;
-            case nameof(RaceOptionsViewModel.MusicVolume): _state.MusicVolume = (int)Math.Round(_viewModel.MusicVolume); break;
-            case nameof(RaceOptionsViewModel.ControllerSensitivity): _state.ControllerSensitivity = (int)Math.Round(_viewModel.ControllerSensitivity); break;
+            _game.Window.TextInput -= OnTextInput;
+            _isReadingText = false;
         }
     }
 
-    // The player name follows the text box only, as before; the other fields follow the state every frame.
-    private void RefreshFromState()
+    private void PlaySound(MenuSound sound) => _game.MenuSounds?.Play(sound);
+
+    // Lays the screen out for the viewport, the time, the mouse and the settings, then scales and colours the texts as
+    // RacingGame's TextureFont and Options.Render did.
+    private void UpdateLayout(double totalSeconds)
     {
-        _viewModel.IsFullscreen = _state.IsFullscreen;
-        _viewModel.EnableVSync = _state.EnableVSync;
-        _viewModel.EnablePostEffects = _state.EnablePostEffects;
-        _viewModel.EnableShadows = _state.EnableShadows;
-        _viewModel.ShowFps = _state.ShowFps;
-        _viewModel.EnableVibration = _state.EnableVibration;
-        _viewModel.SoundVolume = _state.SoundVolume;
-        _viewModel.MusicVolume = _state.MusicVolume;
-        _viewModel.ControllerSensitivity = _state.ControllerSensitivity;
-        _viewModel.SoundVolumeText = $"{_state.SoundVolume:0}";
-        _viewModel.MusicVolumeText = $"{_state.MusicVolume:0}";
-        _viewModel.ControllerSensitivityText = $"{_state.ControllerSensitivity:0}";
+        UpdateMenuDecoration(_viewModel.Decoration, totalSeconds);
+        Point mouse = _game.InputComponent.MouseManager.Position;
+        var values = new RaceOptionsValues(
+            _state.PlayerName,
+            _state.SelectedResolutionIndex,
+            _state.IsFullscreen,
+            _state.SelectedDrivingMode == VehicleDrivingMode.Simulation,
+            _state.EnablePostEffects,
+            _state.EnableShadows,
+            _state.EnableVSync,
+            _state.ShowFps,
+            _state.EnableVibration,
+            _state.SoundVolume,
+            _state.MusicVolume,
+            _state.ControllerSensitivity);
+        _viewModel.Update(Root.Metrics.ViewportSize.X, Root.Metrics.ViewportSize.Y, mouse.X, mouse.Y, totalSeconds, _state.PinScreenAnimations, values, _measure);
+
+        var scale = new Vector2(_viewModel.TextScaleX, _viewModel.TextScaleY);
+        foreach (MGTextBlock text in _texts)
+        {
+            text.RenderTransform.Scale = scale;
+        }
+
+        for (int i = 0; i < _resolutionTexts.Length; i++)
+        {
+            SetForeground(_resolutionTexts[i], _viewModel.ResolutionColors[i]);
+        }
+
+        if (_vsyncText != null)
+        {
+            SetForeground(_vsyncText, _viewModel.VSyncColor);
+        }
     }
 
-    private void RefreshButtonStates()
+    private static void SetForeground(MGTextBlock text, Color color)
     {
-        for (int i = 0; i < _resolutionButtons.Length; i++)
+        if (text.ActualForeground != color)
         {
-            bool isActive = _state.SelectedResolutionIndex == i || _resolutionButtons[i].VisualState.IsFocused || _resolutionButtons[i].IsHovered;
-            LegacyMenuUiTheme.ApplyBandButtonState(_resolutionButtons[i], isActive);
-        }
-
-        for (int i = 0; i < _drivingModeButtons.Length; i++)
-        {
-            bool isActive = _state.SelectedDrivingMode == DrivingModes[i] || _drivingModeButtons[i].VisualState.IsFocused || _drivingModeButtons[i].IsHovered;
-            LegacyMenuUiTheme.ApplyBandButtonState(_drivingModeButtons[i], isActive);
-        }
-
-        if (_backButton != null)
-        {
-            LegacyMenuUiTheme.ApplyMenuTextButtonState(_backButton, _backButton.VisualState.IsFocused || _backButton.IsHovered);
+            text.Foreground = new(color, color, color);
         }
     }
 }

@@ -8,23 +8,23 @@
 
 | Id | Gap | Met in | RGCE workaround |
 |---|---|---|---|
-| M1 | Visual states cannot target border thickness, border colour or text colour | Options, Help, Highscores | per-frame restyle in code |
-| M2 | Focus does not restyle the focused element's children or siblings | band buttons | per-frame restyle in code |
+| M1 | Visual states cannot target border thickness, border colour or text colour | Highscores and Options text colours | per-frame colour in code |
+| M2 | Focus does not restyle the focused element's children or siblings | no longer met (ADR-0013) | — |
 | M3 | No event attributes in XAML | every button | `AddCommandHandler` in `OnWindowLoaded` |
 | M4 | `Image` has no source rectangle | every atlas image | 60 generated `.sprite` assets |
-| M5 | No indexer in binding paths, no proven collection binding | Help, Highscores, CarSelection, RaceHud | fixed slots bound to flat or nested properties |
+| M5 | No indexer in binding paths, no proven collection binding | Highscores, CarSelection, Options, RaceHud | fixed slots bound to flat or nested properties |
 | M6 | `RenderTransform.Rotation` has no bindable attribute | RaceHud needle | `TargetPathOverride=RenderTransform.Rotation` on `RenderTransformTranslation` |
 | M7 | XAML `Background` sets only two brush slots; no colour-to-brush conversion | swatches, all `Background` attributes | whole brush bound by `TargetPathOverride=BackgroundBrush` |
 | M8 | `TextBlock` draws its text lower than a draw transaction does, and lower than its own line box | RaceHud texts | `ClipToBounds="False"`; texts centred on their cells with a measured correction (D15) |
 | M9 | Responsive text scale does not follow the UI scale | RaceHud texts | font sizes bound to values computed in code |
 | M10 | An `Image` with an empty `SourceName` asks the catalogue for it | RaceHud digit slots | collapsed slots keep a valid sprite name |
-| M11 | `ScrollViewer` has no `AllowClickDragScrolling` attribute | Help, Highscores, Options | none needed (default matches) |
+| M11 | `ScrollViewer` has no `AllowClickDragScrolling` attribute | no longer met (ADR-0013) | — |
 | M12 | The runtime never calls `LoadDefaultResources`; screens are never disposed | every screen | `RaceXamlScreenBase` |
 | M13 | No rounded border with a gradient | MainMenu button bevel | one 1-pixel band per pixel, each a solid docked border |
 | M14 | Banded border bands are truncated to whole pixels | MainMenu button bevel | one band per pixel |
-| M15 | The focused state is shown only in keyboard or pad navigation | MainMenu selection | selection owned by the screen; buttons not focusable |
-| M16 | A bitmap font is drawn at its own size, whatever the font size | CarSelection GameFont texts | scaled at draw time by `RenderTransform` |
-| M17 | `TextBlock` wraps by default and clips to its layout width | CarSelection GameFont texts | `WrapText="False"`, `ClipToBounds="False"` |
+| M15 | The focused state is shown only in keyboard or pad navigation | MainMenu selection, Options rows | selection owned by the screen; buttons not focusable |
+| M16 | A bitmap font is drawn at its own size, whatever the font size | CarSelection, Highscores and Options GameFont texts | scaled at draw time by `RenderTransform` |
+| M17 | `TextBlock` wraps by default and clips to its layout width | CarSelection, Highscores and Options GameFont texts | `WrapText="False"`, `ClipToBounds="False"` |
 | C1 | Screen changes walk the views without a copy and push each screen into every view's UI | CarSelection carousel view | the game owns the view, adds or enables it after its update, removes its UI |
 | C2 | `LitDiffuseMaterial`'s tint is never rendered | car colour, race and carousel | colour painted into the texture on the CPU |
 | C3 | Lit shaders write the texture's alpha to the target | carousel render target | a view pipeline sets alpha to 1 over drawn geometry |
@@ -41,7 +41,7 @@
 
 **Evidence.** A visual-state setter resolves its path through the animation-target registry (`MGUI/MGUI.Core/UI/Animation/States/UIVisualState.cs:148-149, 212`). The registered targets are opacity, render transform, render scale, margin, padding, min height, preferred sizes, background overlay and gradients, border highlight progress, scroll offsets and a few control values (`UIBuiltInAnimationTargets.cs`, `UIExtraAnimationTargets.cs`). `BorderThickness`, the `BorderBrush` colour and a text block's `Foreground` are not among them.
 
-**In RGCE.** The code-built menus changed exactly these on hover, focus and selection. Band buttons change border colour, thickness and label colour. Menu text buttons change border, thickness and opacity. The track selection changes frame border colour, thickness and label colour, and the car selection changes the swatch border. D6 keeps the exact look, so every screen finds these elements by name and restyles them every frame with the functions kept in `RacingGameCasaEngine/UI/LegacyMenuUiTheme.cs`. The main menu, the car selection and the track selection no longer do: their look follows the original XNA screens and is bound to their view models (ADR-0007, ADR-0009, ADR-0010).
+**In RGCE.** The code-built menus changed exactly these on hover, focus and selection. Band buttons change border colour, thickness and label colour. Menu text buttons change border, thickness and opacity. The track selection changes frame border colour, thickness and label colour, and the car selection changes the swatch border. D6 keeps the exact look, so every screen finds these elements by name and restyles them every frame with the functions kept in `RacingGameCasaEngine/UI/LegacyMenuUiTheme.cs`. The main menu, the car selection and the track selection no longer do: their look follows the original XNA screens and is bound to their view models (ADR-0007, ADR-0009, ADR-0010). Since ADR-0013, Highscores, Options and Help do not either, and `LegacyMenuUiTheme.cs` is removed. Only text colours remain: Highscores colours its tabs and lines, Options its resolution labels and Vertical Sync, by setting each text block's `Foreground` in code when it changes.
 
 **Would remove the workaround.** Registered targets for border thickness, border colour and text foreground, usable by XAML visual states.
 
@@ -49,7 +49,7 @@
 
 **Evidence.** An element shows its focused state only when it is itself the keyboard focus handler (`MGUI/MGUI.Core/UI/MGElement.cs:3969-3971`).
 
-**In RGCE.** Band buttons recolour their label child, as part of the per-frame restyle of M1. The main menu had the same need (face, inner borders and a sibling label following the button) and now binds its selected look to its view model instead (ADR-0007).
+**In RGCE.** Band buttons recolour their label child, as part of the per-frame restyle of M1. The main menu had the same need (face, inner borders and a sibling label following the button) and now binds its selected look to its view model instead (ADR-0007). Since ADR-0013 no screen has band buttons, so the gap is no longer met.
 
 **Would remove the workaround.** A way for a child or a named sibling to follow another element's visual state.
 
@@ -70,8 +70,8 @@
 **Evidence.** A binding path is resolved segment by segment as public property names (`MGUI/MGUI.Core/UI/DataBinding/DataBinding.cs:299-312`), so `Digits[0]` is not a path.
 
 **In RGCE.** Repeated content became fixed XAML slots bound to flat or nested properties:
-- Help: 6 sections × (title, 2 lines);
-- Highscores: 10 lines;
+- Highscores: 10 lines of rank, name and time, and 3 level tabs;
+- Options: 5 resolution slots and their labels;
 - CarSelection: 4 stats and 11 swatches;
 - TrackSelection: 3 tracks;
 - RaceHud: lap, speed and gear digits, 5 best times, 5 race-finished lines.
@@ -126,7 +126,7 @@ The screens check that the catalogues still fit the slots. Slot counts are coupl
 
 **Evidence.** The XAML `ScrollViewer` exposes scroll-bar visibilities and offsets only (`MGUI/MGUI.Core/UI/XAML/Controls.cs:2492-2511`).
 
-**In RGCE.** The code-built screens set it to `false`, which is already the default of `MGScrollViewer`, so nothing is needed today.
+**In RGCE.** The code-built screens set it to `false`, which is already the default of `MGScrollViewer`, so nothing was needed. Since ADR-0013 no screen has a `ScrollViewer`.
 
 ### M12. The runtime never calls `LoadDefaultResources`, and screens are never disposed
 
@@ -160,7 +160,7 @@ The screens check that the catalogues still fit the slots. Slot counts are coupl
 
 **Evidence.** An element shows its focused state only when it has the keyboard focus and the desktop's active input mode is not the pointer (`MGUI/MGUI.Core/UI/MGElement.cs:3969-3971`, `MGDesktop.cs:457`). The mode starts as the pointer and changes only on input (`MGDesktop.cs:183-193`), so a button focused by code when a screen opens is not drawn as focused, and moving the mouse hides the focused state again.
 
-**In RGCE.** The original main menu always shows its selected button. `RacingGameCasaEngine/Screens/MainMenuScreen.cs` owns the selection instead of MGUI's focus.
+**In RGCE.** The original main menu always shows its selected button. `RacingGameCasaEngine/Screens/MainMenuScreen.cs` owns the selection instead of MGUI's focus. So does `OptionsScreen.cs` for its selection arrow (ADR-0013).
 - The keyboard, the pad and the mouse hover move the selection, and the screen binds the selected look to its view model.
 - The buttons are not focusable, so MGUI's own arrow-key navigation does not move a second selection.
 
@@ -170,7 +170,7 @@ The screens check that the catalogues still fit the slots. Slot counts are coupl
 
 **Evidence.** A static (bitmap) font registered for a family is resolved with `exactScale: 1` whatever the requested size (`MGUI/MGUI.FontStashSharp/FontStashSharpTextEngine.cs:538-556`).
 
-**In RGCE.** RacingGame drew its GameFont texts stretched to the screen: glyph widths and advances by `XToRes1400`, heights by `YToRes1050` (`git show 4f840a3^:RacingGame.Shared/Graphics/TextureFont.cs:418-434`). `CarSelectionScreen` gives each GameFont text a `RenderTransform` of scale (width / 1400, height / 1050) with its origin at the top left, every frame. At 1920×1080, « Max Speed: 288mph » is then 405 px wide, as RacingGame's sum of advances.
+**In RGCE.** RacingGame drew its GameFont texts stretched to the screen: glyph widths and advances by `XToRes1400`, heights by `YToRes1050` (`git show 4f840a3^:RacingGame.Shared/Graphics/TextureFont.cs:418-434`). `CarSelectionScreen`, `HighscoresScreen` and `OptionsScreen` give each GameFont text a `RenderTransform` of scale (width / 1400, height / 1050) with its origin at the top left, every frame. At 1920×1080, « Max Speed: 288mph » is then 405 px wide, as RacingGame's sum of advances.
 
 **Would remove the workaround.** A size for bitmap fonts, or a non-uniform text scale.
 
