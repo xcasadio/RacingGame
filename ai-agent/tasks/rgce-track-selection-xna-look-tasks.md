@@ -245,7 +245,7 @@ Découverte en lecture seule (workflow de 3 agents, dont un contrôle croisé ad
 
 ## Phase 3 — Clôture
 
-### ⏳ T3.1 — Validation globale, documentation et rapport de fin
+### 🧪 T3.1 — Validation globale, documentation et rapport de fin
 
 - Objectif :
   - validation globale ;
@@ -255,6 +255,45 @@ Découverte en lecture seule (workflow de 3 agents, dont un contrôle croisé ad
   - rapport de fin et index.
 - Validation : liste « Validation globale ».
 - Commit : `docs(racing-casa): close the track selection plan`
+
+> Validation globale (2026-10-06) :
+> - `dotnet build RacingGame.slnx --no-incremental` : 0 erreur, aucun avertissement dans `RacingGameCasaEngine` ni `RacingGameCasaEngine.UI`.
+> - `--smoke-frontend` : code 0, journal sans `[Warning]` ni `[Error]` ; sa course reste sur Beginner (entités `Track.*.Beginner` au journal).
+> - `--capture-ui-screens` deux fois de suite (`ui-run-20261006-105305`, `ui-run-20261006-105326`) : 0,00 sur les 10 états.
+> - Contre `references-c0fdd87` :
+>   - `track-selection` change (37,69 / 33,33 / 28,43) ;
+>   - `options` 0,04 : 5 568 pixels sur le bouton 1920x1080. L'écran Options n'a pas changé (`git diff c0fdd87..HEAD` vide) et il se restyle au survol (`OptionsScreen.cs:145`) : la vraie souris était sur ce bouton pendant l'un des runs. Le vérificateur n'a pas cet écart contre `references-c0fdd87`, mais il le retrouve contre `references-5e6d95d` ;
+>   - les autres états sont à 0,00.
+> - Nouvelles références : `references-5e6d95d` (copie de `ui-run-20261006-105326`).
+> - Mesures et superposition : note de T2.1.
+> - Éditeur sans erreur : note de T2.1.
+> - Documentation : `docs/mgui-gaps-from-rgce-xaml-screens.md`, M1 (rencontré désormais par Options, Help et Highscores) et M4 (45 sprites sur 7 textures, ligne de synthèse comprise) ; aucun nouveau manque rencontré.
+> - **Vérification indépendante** (workflow, deux angles) :
+>   - fidélité au code d'origine, en lecture seule : CONFIRMED sur les 6 points ;
+>   - exécution et régressions : CONFIRMED sur les 5 points.
+>
+>   Leurs remarques :
+>   - P3 : la ligne de synthèse M4 disait encore 34 sprites. Corrigé dans ce commit ;
+>   - P4 : le test de position de la souris sur les cartes utilise les rectangles de l'image précédente (une image de retard pendant l'animation). Reporté ;
+>   - P4 : entre la validation et le chargement différé de la course, l'écran lit encore les entrées. Deux validations dans la même image pourraient relancer la course ; la sélection de voiture a le même schéma. Reporté ;
+>   - P4 : une vraie souris sur A ou B pendant la capture automatique change l'image, comme pour Options. Reporté.
+>
+> Rapport de fin :
+> - **Sélection de piste** :
+>   - en-tête « SELECT TRACK », bande et trois cartes aux formules de l'original (au pixel près en 1920×1080, 1280×720 et 1024×768, et sur la capture de l'auteur) ;
+>   - la carte choisie grandit en 0,5 s depuis la carte 1 à chaque ouverture, avec son contour orange et son libellé ; les autres sont atténuées ;
+>   - A et B avec leur contour au survol ;
+>   - entrées et sons de l'original (ButtonClick, Highlight, ScreenClick, ScreenBack), plus Entrée ;
+>   - Advanced par défaut.
+> - **Assets** : contour, trois libellés, en-tête ; son ButtonClick au volume de l'original.
+> - **Décision** : ADR-0010.
+> - **Écarts connus** (ADR-0010) :
+>   - retour au menu principal après la course (choix de l'auteur) ;
+>   - post-effet, scène 3D derrière les menus, curseur et pastille web non reproduits.
+> - **Points ouverts pour l'auteur** :
+>   - vérifications manuelles (T2.1 et T3.1 🧪, écoute de ButtonClick de T1.2) ;
+>   - les trois remarques P4 ci-dessus ;
+>   - ButtonClick n'est pas encore branché dans Options et Highscores (hors périmètre).
 
 ---
 
