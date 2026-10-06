@@ -437,6 +437,42 @@
       "name": "Font.GameFont",
       "file_name": "UI\\Fonts\\GameFont.fnt",
       "asset_type": "fnt"
+    },
+    {
+      "id": "acea79e6-0027-5375-b085-7a46fec99ebe",
+      "name": "Sound.MenuHighlightWave",
+      "file_name": "Audio/menu_highlight.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "3738dac7-f273-5422-ab1d-054839be9dd0",
+      "name": "Sound.MenuHighlight",
+      "file_name": "Audio/menu_highlight.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "dd9d3a84-e8b2-59af-b396-5f5818cdbc68",
+      "name": "Sound.MenuScreenClickWave",
+      "file_name": "Audio/menu_screenclick.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "445911b7-24c5-56d1-b224-fd95991e3a1c",
+      "name": "Sound.MenuScreenClick",
+      "file_name": "Audio/menu_screenclick.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "3059a67a-c94d-54be-aa84-8984e47b3115",
+      "name": "Sound.MenuScreenBackWave",
+      "file_name": "Audio/menu_screenback.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "ae93b42b-536b-5206-a692-d9155e99d9e6",
+      "name": "Sound.MenuScreenBack",
+      "file_name": "Audio/menu_screenback.sound",
+      "asset_type": "sound"
     }
   ]
 }

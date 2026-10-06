@@ -1,0 +1,10 @@
+{
+  "id": "ae93b42b-536b-5206-a692-d9155e99d9e6",
+  "name": "Sound.MenuScreenBack",
+  "audio_file_asset_id": "3059a67a-c94d-54be-aa84-8984e47b3115",
+  "volume": 0.891,
+  "pitch": 0.0,
+  "is_looped": false,
+  "bus_name": "Sfx",
+  "is_streaming": false
+}

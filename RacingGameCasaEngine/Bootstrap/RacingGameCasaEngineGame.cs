@@ -15,6 +15,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using RacingGameCasaEngine.GameFramework;
 using RacingGameCasaEngine.Persistence;
+using RacingGameCasaEngine.UI;
 using RacingGameCasaEngine.Worlds;
 using Color = Microsoft.Xna.Framework.Color;
 using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
@@ -46,6 +47,9 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     private TextureCube? _raceSkySharedCube;
     private bool _raceSkySharedCubeLoadAttempted;
     private IDisposable? _gameFontHold;
+
+    /// <summary>The menu sounds, held for the game's life (ADR-0008).</summary>
+    internal MenuSounds? MenuSounds { get; private set; }
 
     internal RacingGameCasaEngineGame(EngineRuntimeContext runtimeContext, string displaySettingsFileName, string frontEndOptionsFileName, RaceLaunchOptions? launchOptions = null)
         : base(runtimeContext: runtimeContext)
@@ -172,6 +176,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     protected override void LoadContentPrivate()
     {
         HoldGameFont();
+        MenuSounds = new MenuSounds(this);
         World world = RaceWorldFactory.CreateFrontEndWorld();
         GameManager.SetWorldToLoad(world);
     }
@@ -205,6 +210,8 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         {
             _gameFontHold?.Dispose();
             _gameFontHold = null;
+            MenuSounds?.Dispose();
+            MenuSounds = null;
         }
 
         base.Dispose(disposing);

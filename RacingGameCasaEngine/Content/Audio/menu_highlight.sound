@@ -1,0 +1,10 @@
+{
+  "id": "3738dac7-f273-5422-ab1d-054839be9dd0",
+  "name": "Sound.MenuHighlight",
+  "audio_file_asset_id": "acea79e6-0027-5375-b085-7a46fec99ebe",
+  "volume": 0.501,
+  "pitch": 0.0,
+  "is_looped": false,
+  "bus_name": "Sfx",
+  "is_streaming": false
+}

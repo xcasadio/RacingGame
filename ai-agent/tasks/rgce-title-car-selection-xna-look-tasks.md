@@ -258,7 +258,7 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 >   - O2 réglé : l'échelle au rendu s'applique au texte.
 > - `dotnet build RacingGame.slnx` 0 erreur, 0 avertissement.
 
-### ⏳ T1.3 — Sons de menu
+### ✅ T1.3 — Sons de menu
 
 - Objectif : `Highlight`, `ScreenClick` et `ScreenBack` jouables par l'`AudioService`, au volume des options (D5, ADR-0003).
 - Fichiers : `RacingGameCasaEngine/Content/Audio/menu_{highlight,screenclick,screenback}.wav` (copies), leurs `.sound`, `AssetInfos.json`, et le point d'accès que RGCE utilise déjà pour Beep et Bleep (à relire : `RaceStartLight.cs:20-21`).
@@ -272,6 +272,14 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
   - éditeur : les trois `.sound` se prévisualisent ;
   - 🧪 écoute par l'auteur.
 - Commit : `feat(racing-casa): add the original menu sounds`
+
+> Validation (2026-10-06) :
+> - Le lien entre son et fichier est lu dans le projet XACT, lisible en texte (`RacingGame/Content/Audio/RacingGame.xap`) : cue `Highlight` → son `menu_highlight`, `ScreenClick` → `menu_screenclick`, `ScreenBack` → `menu_screenback`.
+> - Volumes du projet XACT (centièmes de dB) convertis en volume linéaire des `.sound` : −600 → 0,501, 0 → 1,0, −100 → 0,891. Beep et Bleep (ADR-0003) étaient restés à 1,0 alors que l'original les jouait à −12 dB : écart signalé, non corrigé ici.
+> - `Content/Audio/menu_{highlight,screenclick,screenback}.{wav,sound}` et 6 entrées de catalogue (ids uuid5 du nom), bus `Sfx`.
+> - `UI/MenuSounds.cs` : tenus par le jeu (`RacingGameCasaEngineGame.MenuSounds`) pour toute sa vie, joués par l'`AudioService` avec une trace « played / not played ».
+> - `dotnet build RacingGame.slnx` 0 erreur, aucun avertissement dans RGCE ; `--smoke-frontend` code 0 sans avertissement, les trois `.sound` se chargent au démarrage ; réglages restaurés à l'identique.
+> - Lecture effective vérifiée en T2.1, au premier écran qui joue un son. 🧪 écoute par l'auteur ; la prévisualisation dans l'éditeur demande une manipulation de l'interface, non faite.
 
 ## Phase 2 — Écran titre
 
