@@ -246,7 +246,7 @@ Découverte en lecture seule : workflow de 2 agents, chacun contre-vérifié par
 
 ## Phase 3 — Clôture
 
-### ⏳ T3.1 — Validation globale, vérification indépendante et rapport
+### ✅ T3.1 — Validation globale, vérification indépendante et rapport
 
 - Objectif : « Validation globale », nouvelles références de capture, rapport de fin, index.
 - Fichiers :
@@ -255,6 +255,46 @@ Découverte en lecture seule : workflow de 2 agents, chacun contre-vérifié par
   - une note sous T1.3 de `rgce-title-car-selection-xna-look-tasks.md`.
 - Validation : liste « Validation globale ».
 - Commit : `docs(racing-casa): close the start beeps and shadow shimmer plan`
+
+> Validation globale (2026-10-06) :
+> - **Builds et tests** :
+>   - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE ;
+>   - `dotnet build CasaEngine.MonoGame.sln` : 0 erreur ;
+>   - `dotnet test CasaEngine.Tests/CasaEngine.Tests.csproj` : 2 457 réussis.
+> - **Runs** :
+>   - `--smoke-frontend` et `--capture-track-audit` : code 0, journaux sans `[Warning]` ni `[Error]` ;
+>   - deux runs `--capture-ui-screens` identiques entre eux ;
+>   - réglages de l'auteur restaurés à l'identique après chaque run.
+> - **Nouvelles références** : `references-15b13c0` (copie de `ui-run-20261006-162016`).
+> - **Sonde et démo** : le scintillement mesuré disparaît (note de T2.1).
+> - **Vérification indépendante** (`verifier`, contexte neuf) : **CONFIRMED** sur les 6 points.
+>   - Points vérifiés :
+>     - volumes −12 dB ;
+>     - correctif moteur, dont l'échec du test sans lui, vérifié par un recalcul indépendant ;
+>     - pointeur et 49 commits ;
+>     - sol receveur seul et biais 0,1, sans acné sur `race-hud` et `race-finished` ;
+>     - build, smoke, captures ;
+>     - notes du plan.
+>   - Il a refait la démo (115 pixels), la sonde, les captures et les chiffres de T2.1 et T2.2. Il n'a pas refait la grille d'audits des biais.
+>   - Ses remarques :
+>     - P4 : la capture `help` peut montrer le bouton Retour survolé (6 988 pixels) selon la position de la vraie souris, comme `options`. Sans lien avec ces commits ; reporté ;
+>     - P4 : dans son run de la sonde, un pixel au bord droit de l'écran (1909, 794), hors de la voiture, change de 18 niveaux pour les décalages de 0,25 à 1,25 texel. C'est un reflet qui dépend de l'œil, que la sonde déplace ; dans le run de T2.1, aucun. Noté, sans changement.
+> - **Plans précédents** :
+>   - `rgce-hud-shadows-start-tasks.md` : O1 traité, D1 remplacée en partie ;
+>   - `rgce-title-car-selection-xna-look-tasks.md` : écart de volume de Beep et Bleep réglé ;
+>   - index mis à jour.
+>
+> Rapport de fin :
+> - **Beep et Bleep** au volume de l'original, −12 dB (0,251).
+> - **Scintillement des ombres** : CasaEngine fait avancer la carte d'ombres par texels entiers (`7a44aba`, branche `chantier/shadow-texel-snapping`, avec test). Les bords des ombres statiques ne rampent plus quand la caméra bouge. Le pointeur du sous-module enregistre ce commit et les 49 commits de `main` qui le précèdent.
+> - **Sol receveur seul**, comme l'original. Les grandes ombres anguleuses que le relief projetait sur lui-même disparaissent. Le biais de normale passe à 0,1, et les ombres portées retrouvent leur largeur, sans acné.
+> - **Écarts connus** :
+>   - l'ombre d'un objet en mouvement, dont la voiture, change toujours de texel avec lui ;
+>   - l'élimination des objets hors champ avant l'ombre, les bords durs et la direction de la lumière restent tels quels (D4).
+> - **Points ouverts pour l'auteur** :
+>   - écoute des bips (T1.1), ombres en course (T2.1, T2.2) ;
+>   - push de la branche moteur `chantier/shadow-texel-snapping` (sinon le pointeur de RacingGame désigne un commit introuvable ailleurs que sur cette machine), puis son merge sur `main` du moteur ;
+>   - push de `remaster`.
 
 ---
 
