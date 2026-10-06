@@ -179,7 +179,7 @@ Découverte en lecture seule : workflow de 4 agents, chacun contre-vérifié par
 
 > Validation (2026-10-06) : relecture indépendante du plan (`plan-verifier`) READY ; plan approuvé par l'auteur, mode AUTO. ADR-0013 écrite ; ADR-0004 passée en « Superseded by ADR-0013 ».
 
-### ⏳ T0.2 — Pointeur CasaEngine à `19aa21f`
+### ✅ T0.2 — Pointeur CasaEngine à `19aa21f`
 
 - Objectif : D4.
 - Fichiers : le pointeur `CasaEngine`, ce plan.
@@ -190,6 +190,14 @@ Découverte en lecture seule : workflow de 4 agents, chacun contre-vérifié par
   - nouvelles références `references-<sha>`.
   - Si le build ou le smoke échoue à cause du moteur : ⚠️ Blocked, question à l'auteur.
 - Commit : `chore(racing-casa): move CasaEngine to 19aa21f`
+
+> Validation (2026-10-06) :
+> - Pointeur `CasaEngine` : `7a44aba` → `19aa21f`, le `main` du moteur poussé par l'auteur. Il contient `7a44aba` et 158 commits de plus.
+> - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE.
+> - `--smoke-frontend` : code 0, journal sans `[Warning]` ni `[Error]`.
+> - Deux runs `--capture-ui-screens` (`ui-run-20261006-203648`, `-203708`) identiques entre eux et à `references-15b13c0`, à quelques pixels 3D isolés près (au plus 11 sur `race-hud`), comme d'un run à l'autre.
+> - Réglages restaurés à l'identique.
+> - Nouvelles références : `references-19aa21f` (copie de `ui-run-20261006-203708`).
 
 ## Phase 1 — Assets
 
