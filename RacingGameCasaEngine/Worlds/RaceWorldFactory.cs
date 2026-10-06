@@ -178,7 +178,7 @@ public static class RaceWorldFactory
     }
 
     // A LightComponent shines along its Forward. Same as CasaEngine.Demos DemoSceneLightRig.CreateOrientationFromForward.
-    private static Quaternion CreateOrientationFromForward(Vector3 forward)
+    internal static Quaternion CreateOrientationFromForward(Vector3 forward)
     {
         forward = Vector3.Normalize(forward);
         float dot = Math.Clamp(Vector3.Dot(Vector3.Forward, forward), -1.0f, 1.0f);

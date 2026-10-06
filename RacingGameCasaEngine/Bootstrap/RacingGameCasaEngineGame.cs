@@ -47,9 +47,16 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     private TextureCube? _raceSkySharedCube;
     private bool _raceSkySharedCubeLoadAttempted;
     private IDisposable? _gameFontHold;
+    private CarSelectionCarousel? _carSelectionCarousel;
 
     /// <summary>The menu sounds, held for the game's life (ADR-0008).</summary>
     internal MenuSounds? MenuSounds { get; private set; }
+
+    /// <summary>
+    /// The car selection's 3D carousel, built when the car selection first asks for it and kept for the game's life; it
+    /// renders only while the car selection asks for it every frame (ADR-0008).
+    /// </summary>
+    internal CarSelectionCarousel CarSelectionCarousel => _carSelectionCarousel ??= new CarSelectionCarousel(this);
 
     internal RacingGameCasaEngineGame(EngineRuntimeContext runtimeContext, string displaySettingsFileName, string frontEndOptionsFileName, RaceLaunchOptions? launchOptions = null)
         : base(runtimeContext: runtimeContext)
@@ -212,6 +219,8 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
             _gameFontHold = null;
             MenuSounds?.Dispose();
             MenuSounds = null;
+            _carSelectionCarousel?.Dispose();
+            _carSelectionCarousel = null;
         }
 
         base.Dispose(disposing);
@@ -230,6 +239,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     protected override void Update(GameTime gameTime)
     {
         base.Update(gameTime);
+        _carSelectionCarousel?.UpdateView(gameTime);
         HandleRuntimeDebugHotkeys();
         _frontEndFlow.UpdateRuntimeRaceUi(gameTime);
     }
@@ -284,7 +294,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         return _raceSkyViewPipeline;
     }
 
-    private TextureCube GetOrCreateRaceSkyReflectionCube()
+    internal TextureCube GetOrCreateRaceSkyReflectionCube()
         => TryGetOrCreateRaceSkySharedCube()
             ?? (_raceSkyFallbackReflectionCube ??= ProceduralSkyCubeFactory.CreateReflectionCube(GraphicsDevice, RaceSkySystem.Settings));
 

@@ -36,7 +36,6 @@ internal sealed class CarSelectionScreen : RaceXamlScreenBase
     private readonly Action _back;
     private readonly RaceCarSelectionViewModel _viewModel = new();
     private MGTextBlock[] _texts = [];
-    private CarSelectionPreviewRenderer? _carPreviewRenderer;
     private int _shownCarIndex = -1;
     // The first update after the screen opens takes no key: the key that opened it is still "just pressed".
     private bool _acceptsInput;
@@ -67,8 +66,6 @@ internal sealed class CarSelectionScreen : RaceXamlScreenBase
                 $"CarSelection.xaml has {RaceCarSelectionViewModel.SwatchCount} colour squares; the catalogue has {colors.Count} colours.");
         }
 
-        _carPreviewRenderer = new CarSelectionPreviewRenderer(_game);
-        _viewModel.PreviewImage = _carPreviewRenderer.TextureData;
         for (int i = 0; i < colors.Count; i++)
         {
             _viewModel.Swatches[i].SetColor(colors[i].Value);
@@ -94,16 +91,12 @@ internal sealed class CarSelectionScreen : RaceXamlScreenBase
             return;
         }
 
-        _carPreviewRenderer?.Update(gameTime, _state.SelectedCarIndex, _state.SelectedCarColorIndex);
         RefreshSelection();
+        CarSelectionCarousel carousel = _game.CarSelectionCarousel;
+        carousel.Request(_state.SelectedCarIndex, _state.SelectedCarColorIndex, _state.PinScreenAnimations, _state.EnableShadows,
+            Root.Metrics.ViewportSize.X, Root.Metrics.ViewportSize.Y);
+        _viewModel.CarouselImage = carousel.TextureData;
         UpdateLayout(gameTime.TotalGameTime.TotalSeconds);
-    }
-
-    public override void Dispose()
-    {
-        base.Dispose();
-        _carPreviewRenderer?.Dispose();
-        _carPreviewRenderer = null;
     }
 
     private void HandleInput()

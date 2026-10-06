@@ -77,9 +77,10 @@
            Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" />
     <Image SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" Visibility="{dataBinding:MGBinding Path=BackButton.HighlightVisibility}" />
-    <!-- The cars, drawn over the sprites as RacingGame drew them after its UI sprites. -->
-    <Image Source="{dataBinding:MGBinding Path=PreviewImage}" Stretch="Uniform" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
-           Margin="{dataBinding:MGBinding Path=Preview.Margin}" Width="{dataBinding:MGBinding Path=Preview.Width}" Height="{dataBinding:MGBinding Path=Preview.Height}" />
+    <!-- The cars, drawn over the sprites as RacingGame drew them after its UI sprites: CarSelectionCarousel's render target,
+         as large as the screen. -->
+    <Image Source="{dataBinding:MGBinding Path=CarouselImage}" Stretch="Fill" IsHitTestVisible="False"
+           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
     <!-- Texts, in GameFont at its native size, scaled at draw time by CarSelectionScreen. -->
     <TextBlock Name="txtColorLabel" Text="Car Color: " FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ColorLabel.Margin}" />

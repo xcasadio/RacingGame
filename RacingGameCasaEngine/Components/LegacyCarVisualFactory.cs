@@ -489,14 +489,16 @@ internal static class LegacyCarVisualFactory
     /// </summary>
     private sealed class CarPaint
     {
+        // Rows painted per parallel chunk, and the paint buffer, shared by the cars: painting is done under CacheLock.
+        private const int ChunkLength = 1 << 16;
+        private static Color[] _painted = [];
+
         private readonly Color[] _source;
-        private readonly Color[] _painted;
         private int _colorIndex = -1;
 
         private CarPaint(Color[] source, Texture2D unpainted, Texture2D painted)
         {
             _source = source;
-            _painted = new Color[source.Length];
             Unpainted = unpainted;
             Painted = painted;
         }
@@ -540,25 +542,37 @@ internal static class LegacyCarVisualFactory
             long started = System.Diagnostics.Stopwatch.GetTimestamp();
             _colorIndex = colorIndex;
             Color color = RaceFrontEndCatalog.CarColors[colorIndex].Value;
-            for (int i = 0; i < _source.Length; i++)
+            if (_painted.Length < _source.Length)
             {
-                Color texel = _source[i];
-                if (texel == LegacyTextureColorKey)
-                {
-                    _painted[i] = texel;
-                    continue;
-                }
-
-                // lerp(rgb, colour, alpha), rounded.
-                int mask = texel.A;
-                _painted[i] = new Color(
-                    (byte)((texel.R * (255 - mask) + color.R * mask + 127) / 255),
-                    (byte)((texel.G * (255 - mask) + color.G * mask + 127) / 255),
-                    (byte)((texel.B * (255 - mask) + color.B * mask + 127) / 255),
-                    texel.A);
+                _painted = new Color[_source.Length];
             }
 
-            Painted.SetData(_painted);
+            Color[] source = _source;
+            Color[] painted = _painted;
+            int chunkCount = (source.Length + ChunkLength - 1) / ChunkLength;
+            System.Threading.Tasks.Parallel.For(0, chunkCount, chunk =>
+            {
+                int end = Math.Min(source.Length, (chunk + 1) * ChunkLength);
+                for (int i = chunk * ChunkLength; i < end; i++)
+                {
+                    Color texel = source[i];
+                    if (texel == LegacyTextureColorKey)
+                    {
+                        painted[i] = texel;
+                        continue;
+                    }
+
+                    // lerp(rgb, colour, alpha), rounded.
+                    int mask = texel.A;
+                    painted[i] = new Color(
+                        (byte)((texel.R * (255 - mask) + color.R * mask + 127) / 255),
+                        (byte)((texel.G * (255 - mask) + color.G * mask + 127) / 255),
+                        (byte)((texel.B * (255 - mask) + color.B * mask + 127) / 255),
+                        texel.A);
+                }
+            });
+
+            Painted.SetData(painted, 0, source.Length);
             Logs.WriteTrace($"Car paint: colour {colorIndex} painted in {System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds:0.0} ms");
         }
     }

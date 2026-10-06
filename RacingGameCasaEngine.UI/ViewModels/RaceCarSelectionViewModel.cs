@@ -68,7 +68,7 @@ public sealed class RaceCarSelectionViewModel : RaceViewModelBase
     private int _selectedColorIndex;
     private Rectangle _selectButtonRect;
     private Rectangle _backButtonRect;
-    private MGTextureData? _previewImage;
+    private MGTextureData? _carouselImage;
 
     public RaceCarSelectionViewModel()
     {
@@ -153,14 +153,11 @@ public sealed class RaceCarSelectionViewModel : RaceViewModelBase
     /// <summary>The B BACK button; highlighted (grown, with the orange outline) while the mouse is over it.</summary>
     public RaceScreenRectViewModel BackButton { get; } = new();
 
-    /// <summary>Where the car preview is shown, until the carousel replaces it.</summary>
-    public RaceScreenRectViewModel Preview { get; } = new();
-
-    /// <summary>The render target of the 3D car preview; set by the screen, absent at design time.</summary>
-    public MGTextureData? PreviewImage
+    /// <summary>The render target of the 3D car carousel, as large as the screen; set by the screen, absent at design time.</summary>
+    public MGTextureData? CarouselImage
     {
-        get => _previewImage;
-        set => SetProperty(ref _previewImage, value);
+        get => _carouselImage;
+        set => SetProperty(ref _carouselImage, value);
     }
 
     /// <summary>Horizontal draw scale of the GameFont texts (TextureFont's XToRes1400).</summary>
@@ -237,9 +234,6 @@ public sealed class RaceCarSelectionViewModel : RaceViewModelBase
         _selectButtonRect = new Rectangle(_viewportWidth - buttonWidth * 2 - XToRes(55 + 25), buttonTop, buttonWidth, buttonHeight);
         LayOutBottomButton(BackButton, _backButtonRect, mouseX, mouseY);
         LayOutBottomButton(SelectButton, _selectButtonRect, mouseX, mouseY);
-
-        Rectangle preview = CalcRectangle(312, 190, 400, 300);
-        Preview.Set(preview.X, preview.Y, preview.Width, preview.Height);
     }
 
     /// <summary>Whether the point is on the A button, as RacingGame tested it (before the hover growth).</summary>

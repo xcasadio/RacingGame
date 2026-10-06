@@ -418,7 +418,7 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 > - `--smoke-frontend` code 0 sans avertissement ; build 0 erreur, aucun avertissement dans RGCE ; réglages restaurés à l'identique.
 > - Les captures PNG gardent l'alpha du back buffer (nul sur la carrosserie hors masque) : à convertir en RGB avant tout redimensionnement.
 
-### ⏳ T4.2 — Carrousel dans une vue du moteur
+### 🧪 T4.2 — Carrousel dans une vue du moteur
 
 - Objectif : P7.
 - Fichiers : `RacingGameCasaEngine/UI/CarSelectionCarousel.cs` (nouveau), `CarSelectionScreen.cs`, `CarSelection.xaml`, suppression de `RacingGameCasaEngine/UI/CarSelectionPreviewRenderer.cs`.
@@ -443,6 +443,33 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
   - mémoire et durée d'image notées avant et après l'ouverture de l'écran ;
   - 🧪 rendu.
 - Commit : `feat(racing-casa): show the cars on a 3D carousel like the original`
+
+> Validation (2026-10-06) :
+> - **`UI/CarSelectionCarousel.cs`** : un monde à part, rendu par CasaEngine dans une cible de rendu de la taille de l'écran, montrée par une `Image` plein écran entre les sprites et les textes. Il contient :
+>   - 3 plateaux `CarSelectionPlate.gltf`, chargés sans la correction de repère des décors puisqu'ils sont déjà en Y vers le haut ;
+>   - 3 voitures de `LegacyCarVisualFactory` ;
+>   - la lumière de l'original ;
+>   - la caméra de l'original : champ vertical de 90°, proche 0,5, lointain 1750.
+>
+>   Le repère Z-haut de l'original devient Y-haut par (x, y, z) → (x, z, −y), une rotation : les nombres de l'original passent tels quels (caméra (0, 2,75, −10,45) vers (0, −1, 0), centre (1,5, 1, 0), rayon 5).
+> - **Mouvement** : rotation propre à 1/3,9 rad/s. Le carrousel rejoint la voiture choisie à 5 rad/s par le plus court chemin (`InterpolateRotation`) et part, comme l'original, de la voiture 1 à chaque ouverture. Tout est figé sous capture (P10).
+> - **Ombres** (option Ombres) : carte de 2048, boîte de 16 unités, seules les voitures projettent. **Reflet** : sur le seul matériau du plateau (`UseSceneReflectionCube`, apport 0,35, cube `SkyCubeMap` du jeu) ; la course ne change pas (O4).
+> - **O1 réglé** : `OpaqueGeometryAlphaViewPipeline` enveloppe le pipeline de la vue. Après le rendu, un quad plein écran à la profondeur 0,99999 n'écrit que l'alpha (1), là où la profondeur est plus proche : la voiture et le plateau sont opaques sur la bande, le fond reste transparent. Un état de mélange ne pouvait pas le faire : l'alpha obtenu dépend toujours de l'alpha source ou destination.
+> - **Cycle de vie**, après un premier essai qui plantait (« Collection was modified ») : `GameScreenManager.TransitionTo` parcourt les vues sans copie et pousse chaque écran dans l'interface de chaque vue. Une vue ne peut donc être ni ajoutée ni retirée par un écran. D'où :
+>   - le jeu possède le carrousel (`RacingGameCasaEngineGame.CarSelectionCarousel`, créé au premier besoin) ;
+>   - l'écran le demande à chaque mise à jour (`Request`) ;
+>   - le jeu crée, active ou désactive la vue après `base.Update` (`UpdateView`), la recrée après un chargement de monde (qui vide les vues), et lui retire son interface MGUI.
+> - **Peinture** : 3 voitures repeintes à chaque changement de couleur. Boucle parallèle et tampon partagé : 9 à 16 ms par voiture au lieu de 62 à 69 (trace « Car paint »).
+> - `CarSelectionPreviewRenderer` (BasicEffect) supprimé.
+> - **Mesures** :
+>   - `--capture-ui-screens` deux fois de suite : 0,00 sur les 10 états, carrousel compris ;
+>   - `--smoke-frontend` code 0 sans avertissement ; build 0 erreur, aucun avertissement dans RGCE ; réglages restaurés à l'identique ;
+>   - sonde « retour de course puis sélection » : la vue est recréée, l'écran est identique à la première ouverture au rebond du logo près ;
+>   - planche des 3 voitures devant (sonde voiture et couleur, `carousel-three.png`) : voiture 1 orange, voiture 2 violette, voiture 3 vert printemps, la case choisie agrandie ;
+>   - éditeur : `capture_editor_screen.ps1` sur `CarSelection.uiscreen`, code 0, sans erreur ;
+>   - mémoire du processus (sonde) : de l'aide à la sélection, mémoire de travail 312 → 411 Mio, mémoire privée 420 → 720 Mio (textures des voitures, cible de rendu, carte d'ombre). Durée d'image non mesurée (VSync et pas fixe la plafonnent à 60 images/s).
+> - **Cadrage** : celui du code, carrousel décalé à gauche ; en 16:9, la flèche gauche passe derrière le plateau avant. Calage sur la capture en T4.3.
+> - 🧪 Reste pour l'auteur : le rendu en mouvement (rotation, changement de voiture et de couleur), l'ombre, le reflet.
 
 ### ⏳ T4.3 — Calage sur la capture et flèches
 
@@ -477,10 +504,10 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
-| O1 | Alpha de la voiture dans une texture effacée en transparent : les shaders du moteur sortent l'alpha de la texture (le masque de peinture), alors que l'original forçait 1. La peinture P9 force l'alpha à 255 dans la texture ; l'essai de T4.2 confirme si cela suffit, verre compris. | T4.1, T4.2 |
+| O1 | **Réglé en T4.2** (passe d'alpha après le rendu de la vue). Alpha de la voiture dans une texture effacée en transparent : les shaders du moteur sortent l'alpha de la texture (le masque de peinture), alors que l'original forçait 1. La peinture P9 force l'alpha à 255 dans la texture ; l'essai de T4.2 confirme si cela suffit, verre compris. | T4.1, T4.2 |
 | O2 | **Réglé en T1.2.** Mise à l'échelle des textes GameFont : le `RenderTransform` non uniforme s'applique au texte. | T1.2 |
 | O3 | **Réglé en T3.1.** Miroir de la flèche gauche : le `RenderTransform` d'échelle −1 en x se dessine. | T3.1 |
-| O4 | Raison de la désactivation des reflets pour `NormalMapping.fx` (`RacingGameLegacyMaterialTuning.cs:94-99`, commits `6a4f898`, `8bbaae0`) non trouvée. Le reflet du plateau (P7) ne touche que la vue du carrousel ; en course, rien ne change. | T4.2 |
+| O4 | **Contourné en T4.2** : le reflet n'est activé que sur le matériau du plateau, propre au carrousel. Raison de la désactivation des reflets pour `NormalMapping.fx` (`RacingGameLegacyMaterialTuning.cs:94-99`, commits `6a4f898`, `8bbaae0`) non trouvée. Le reflet du plateau (P7) ne touche que la vue du carrousel ; en course, rien ne change. | T4.2 |
 | O5 | L'ADR-0008 et P9 disent la texture peinte « alpha forcé à 255 » ; la livraison garde l'alpha (T4.1). Une ADR ne se réécrit pas : une ADR « telle que livrée » remplacera l'ADR-0008 en T5.1, avec les autres écarts de la livraison. | T5.1 |
 
 ## Hors périmètre
