@@ -57,7 +57,7 @@ internal sealed class RaceFrontEndFlow
         screenManager.RegisterFactory(SplashStateName, () => new SplashScreen(_game.AssetContentManager, _game, _state, OpenMainMenu));
         screenManager.RegisterFactory(MainMenuStateName, () => new MainMenuScreen(_game.AssetContentManager, _game, _state, OpenCarSelection, OpenHighscores, OpenOptions, OpenHelp, RequestExit));
         screenManager.RegisterFactory(CarSelectionStateName, () => new CarSelectionScreen(_game.AssetContentManager, _game, _state, OpenTrackSelection, OpenMainMenu));
-        screenManager.RegisterFactory(TrackSelectionStateName, () => new TrackSelectionScreen(_game.AssetContentManager, _state, StartRace, OpenCarSelection));
+        screenManager.RegisterFactory(TrackSelectionStateName, () => new TrackSelectionScreen(_game.AssetContentManager, _game, _state, StartRace, OpenCarSelection));
         screenManager.RegisterFactory(OptionsStateName, () => new OptionsScreen(_game.AssetContentManager, _game, _state, OpenMainMenu));
         screenManager.RegisterFactory(HelpStateName, () => new HelpScreen(_game.AssetContentManager, OpenMainMenu));
         screenManager.RegisterFactory(HighscoresStateName, () => new HighscoresScreen(_game.AssetContentManager, OpenMainMenu));

@@ -6,7 +6,8 @@ internal sealed class RaceFrontEndState
 {
     public int SelectedCarIndex { get; set; }
 
-    public int SelectedTrackIndex { get; set; }
+    /// <summary>The selected track, Advanced at first as in RacingGame (TrackSelection.selectedButton; ADR-0010). Not saved.</summary>
+    public int SelectedTrackIndex { get; set; } = 1;
 
     /// <summary>The main menu's selected button, kept while the game runs (not saved), so the menu reopens on it.</summary>
     public int SelectedMainMenuButton { get; set; }

@@ -7,8 +7,71 @@
       "LogoWidth": 755,
       "LogoHeight": 246
     },
-    "Track0Name": "Beginner",
-    "Track1Name": "Advanced",
-    "Track2Name": "Expert"
+    "BandTopPixels": 248,
+    "BandHeightPixels": 315,
+    "Header": {
+      "Left": 8,
+      "Top": 11,
+      "Width": 410,
+      "Height": 60
+    },
+    "SelectedIndex": 1,
+    "Card0": {
+      "IsSelected": false,
+      "Rect": {
+        "Left": 405,
+        "Top": 290,
+        "Width": 121,
+        "Height": 201
+      },
+      "Label": {
+        "Left": 405,
+        "Top": 497,
+        "Width": 121,
+        "Height": 13
+      }
+    },
+    "Card1": {
+      "IsSelected": true,
+      "Rect": {
+        "Left": 566,
+        "Top": 268,
+        "Width": 148,
+        "Height": 246
+      },
+      "Label": {
+        "Left": 566,
+        "Top": 520,
+        "Width": 148,
+        "Height": 16
+      }
+    },
+    "Card2": {
+      "IsSelected": false,
+      "Rect": {
+        "Left": 754,
+        "Top": 290,
+        "Width": 121,
+        "Height": 201
+      },
+      "Label": {
+        "Left": 754,
+        "Top": 497,
+        "Width": 121,
+        "Height": 13
+      }
+    },
+    "SelectButton": {
+      "Left": 932,
+      "Top": 633,
+      "Width": 124,
+      "Height": 54
+    },
+    "BackButton": {
+      "Left": 1094,
+      "Top": 633,
+      "Width": 124,
+      "Height": 54
+    }
   }
 }

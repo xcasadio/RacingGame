@@ -74,6 +74,8 @@ internal sealed class FrontEndNavigationSmokeValidator
         switch (_step)
         {
             case ValidationStep.WaitForSplash when currentState == RaceFrontEndFlow.SplashStateName:
+                // The race of the sequence stays Beginner, the default before Advanced (ADR-0010).
+                _flow.State.SelectedTrackIndex = 0;
                 _flow.OpenMainMenuForAutomation();
                 Advance(ValidationStep.VisitHighscores, totalTime, "Splash -> MainMenu");
                 break;

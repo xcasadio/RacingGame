@@ -3,6 +3,11 @@
         Width="1280" Height="720" ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
         Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
+  <!--
+    RacingGame's track selection (ADR-0010). RaceTrackSelectionViewModel lays everything out in screen pixels with
+    RacingGame's formulas, every frame, and animates the cards' sizes. Nothing takes MGUI's focus: TrackSelectionScreen
+    reads the keyboard, the mouse and the gamepad itself.
+  -->
   <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <!-- Menu decoration (RaceMenuDecorationViewModel): background, then the bouncing logo placed by the view model. -->
     <Image SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
@@ -10,51 +15,39 @@
     <Image SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Decoration.LogoMargin}"
            Width="{dataBinding:MGBinding Path=Decoration.LogoWidth}" Height="{dataBinding:MGBinding Path=Decoration.LogoHeight}" />
-    <Border BorderThickness="0" BorderBrush="rgba(0,0,0,0)" Background="rgba(0,0,0,132)" Margin="0,248,0,0" Height="315" Padding="32,22,32,18"
-            HorizontalAlignment="Stretch" VerticalAlignment="Top">
-      <!-- Three fixed track slots; every frame, the screen restyles each track frame and label from the selected track. -->
-      <StackPanel Orientation="Horizontal" Spacing="48" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-          <Button Name="btnTrack0" Background="rgba(0,0,0,0)" BorderThickness="0" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Border Name="frameTrack0" BorderThickness="2" BorderBrush="rgba(255,255,255,70)" CornerRadius="18" Background="rgba(0,0,0,24)" Padding="0"
-                    Width="172" Height="286" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <Image SourceName="Ui.Track.Beginner" Stretch="Uniform" Width="168" Height="280" HorizontalAlignment="Center" VerticalAlignment="Center" />
-            </Border>
-          </Button>
-          <TextBlock Name="lblTrack0" Text="{dataBinding:MGBinding Path=Track0Name}" Foreground="White" FontSize="14" WrapText="True"
-                     UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-        </StackPanel>
-        <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-          <Button Name="btnTrack1" Background="rgba(0,0,0,0)" BorderThickness="0" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Border Name="frameTrack1" BorderThickness="2" BorderBrush="rgba(255,255,255,70)" CornerRadius="18" Background="rgba(0,0,0,24)" Padding="0"
-                    Width="172" Height="286" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <Image SourceName="Ui.Track.Advanced" Stretch="Uniform" Width="168" Height="280" HorizontalAlignment="Center" VerticalAlignment="Center" />
-            </Border>
-          </Button>
-          <TextBlock Name="lblTrack1" Text="{dataBinding:MGBinding Path=Track1Name}" Foreground="White" FontSize="14" WrapText="True"
-                     UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-        </StackPanel>
-        <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-          <Button Name="btnTrack2" Background="rgba(0,0,0,0)" BorderThickness="0" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Border Name="frameTrack2" BorderThickness="2" BorderBrush="rgba(255,255,255,70)" CornerRadius="18" Background="rgba(0,0,0,24)" Padding="0"
-                    Width="172" Height="286" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <Image SourceName="Ui.Track.Expert" Stretch="Uniform" Width="168" Height="280" HorizontalAlignment="Center" VerticalAlignment="Center" />
-            </Border>
-          </Button>
-          <TextBlock Name="lblTrack2" Text="{dataBinding:MGBinding Path=Track2Name}" Foreground="White" FontSize="14" WrapText="True"
-                     UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-        </StackPanel>
-      </StackPanel>
-    </Border>
-    <!-- A (select) and B (back) buttons; the screen dims each image when its button is neither focused nor hovered. -->
-    <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center"
-                ResponsiveAnchor="BottomRight" Offset="0,0,48,20">
-      <Button Name="btnSelect" Background="rgba(0,0,0,0)" BorderThickness="0" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Image Name="imgSelect" SourceName="Ui.Button.Select" Stretch="Uniform" Width="136" Height="60" HorizontalAlignment="Center" VerticalAlignment="Center" />
-      </Button>
-      <Button Name="btnBack" Background="rgba(0,0,0,0)" BorderThickness="0" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Image Name="imgBack" SourceName="Ui.Button.Back" Stretch="Uniform" Width="136" Height="60" HorizontalAlignment="Center" VerticalAlignment="Center" />
-      </Button>
-    </StackPanel>
+    <!-- Band: black at 0.683 opacity (the atlas texel's 205/255 drawn at 0.85), full width, over the logo's bottom. -->
+    <Border BorderThickness="0" Background="rgba(0,0,0,174)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Top"
+            Margin="{dataBinding:MGBinding Path=BandMargin}" Height="{dataBinding:MGBinding Path=BandHeightPixels}" />
+    <!-- "SELECT TRACK" header (headers.png HeaderSelectTrackGfxRect). -->
+    <Image SourceName="Ui.TrackSelection.Header" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Header.Margin}" Width="{dataBinding:MGBinding Path=Header.Width}" Height="{dataBinding:MGBinding Path=Header.Height}" />
+    <!-- Track cards: the card (dimmed unless selected), and for the selected one its orange outline and its name below. -->
+    <Image SourceName="Ui.Track.Beginner" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Card0.Rect.Margin}" Width="{dataBinding:MGBinding Path=Card0.Rect.Width}" Height="{dataBinding:MGBinding Path=Card0.Rect.Height}" Opacity="{dataBinding:MGBinding Path=Card0.Opacity}" />
+    <Image SourceName="Ui.Track.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Card0.Rect.Margin}" Width="{dataBinding:MGBinding Path=Card0.Rect.Width}" Height="{dataBinding:MGBinding Path=Card0.Rect.Height}" Visibility="{dataBinding:MGBinding Path=Card0.SelectedVisibility}" />
+    <Image SourceName="Ui.Track.LabelBeginner" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Card0.Label.Margin}" Width="{dataBinding:MGBinding Path=Card0.Label.Width}" Height="{dataBinding:MGBinding Path=Card0.Label.Height}" Visibility="{dataBinding:MGBinding Path=Card0.SelectedVisibility}" />
+    <Image SourceName="Ui.Track.Advanced" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Card1.Rect.Margin}" Width="{dataBinding:MGBinding Path=Card1.Rect.Width}" Height="{dataBinding:MGBinding Path=Card1.Rect.Height}" Opacity="{dataBinding:MGBinding Path=Card1.Opacity}" />
+    <Image SourceName="Ui.Track.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Card1.Rect.Margin}" Width="{dataBinding:MGBinding Path=Card1.Rect.Width}" Height="{dataBinding:MGBinding Path=Card1.Rect.Height}" Visibility="{dataBinding:MGBinding Path=Card1.SelectedVisibility}" />
+    <Image SourceName="Ui.Track.LabelAdvanced" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Card1.Label.Margin}" Width="{dataBinding:MGBinding Path=Card1.Label.Width}" Height="{dataBinding:MGBinding Path=Card1.Label.Height}" Visibility="{dataBinding:MGBinding Path=Card1.SelectedVisibility}" />
+    <Image SourceName="Ui.Track.Expert" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Card2.Rect.Margin}" Width="{dataBinding:MGBinding Path=Card2.Rect.Width}" Height="{dataBinding:MGBinding Path=Card2.Rect.Height}" Opacity="{dataBinding:MGBinding Path=Card2.Opacity}" />
+    <Image SourceName="Ui.Track.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Card2.Rect.Margin}" Width="{dataBinding:MGBinding Path=Card2.Rect.Width}" Height="{dataBinding:MGBinding Path=Card2.Rect.Height}" Visibility="{dataBinding:MGBinding Path=Card2.SelectedVisibility}" />
+    <Image SourceName="Ui.Track.LabelExpert" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Card2.Label.Margin}" Width="{dataBinding:MGBinding Path=Card2.Label.Width}" Height="{dataBinding:MGBinding Path=Card2.Label.Height}" Visibility="{dataBinding:MGBinding Path=Card2.SelectedVisibility}" />
+    <!-- A SELECT and B BACK, grown and outlined in orange while the mouse is over them. -->
+    <Image SourceName="Ui.Button.Select" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=SelectButton.Margin}" Width="{dataBinding:MGBinding Path=SelectButton.Width}" Height="{dataBinding:MGBinding Path=SelectButton.Height}" />
+    <Image SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=SelectButton.Margin}" Width="{dataBinding:MGBinding Path=SelectButton.Width}" Height="{dataBinding:MGBinding Path=SelectButton.Height}" Visibility="{dataBinding:MGBinding Path=SelectButton.HighlightVisibility}" />
+    <Image SourceName="Ui.Button.Back" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" />
+    <Image SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" Visibility="{dataBinding:MGBinding Path=BackButton.HighlightVisibility}" />
   </OverlayPanel>
 </Window>

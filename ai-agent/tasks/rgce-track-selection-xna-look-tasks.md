@@ -198,7 +198,7 @@ Découverte en lecture seule (workflow de 3 agents, dont un contrôle croisé ad
 
 ## Phase 2 — Écran
 
-### ⏳ T2.1 — Sélection de piste de l'original
+### 🧪 T2.1 — Sélection de piste de l'original
 
 - Objectif : P2 à P5.
 - Fichiers :
@@ -221,6 +221,27 @@ Découverte en lecture seule (workflow de 3 agents, dont un contrôle croisé ad
   - éditeur ;
   - 🧪 animation, entrées et sons.
 - Commit : `feat(racing-casa): draw the track selection like the original`
+
+> Validation (2026-10-06) :
+> - **View model** : `RaceTrackSelectionViewModel` et `RaceTrackCardViewModel`, sur les formules de `TrackSelection.Update/Render` :
+>   - hauteurs `132·352/212` et `108·352/212` × H/640, largeurs au rapport du sprite, interpolation de `MainMenu.InterpolateRect` ;
+>   - départ de la rangée au repos ; libellé `hauteur·24/352` ;
+>   - tailles {1, 0, 0} à l'ouverture (`Reset`), avancées de 2 par seconde, au repos sous capture ;
+>   - carte non sélectionnée à l'opacité 192/255.
+> - **XAML** : fond, logo, bande, en-tête `Ui.TrackSelection.Header`, puis pour chaque carte le sprite, le contour `Ui.Track.Highlight` et le libellé `Ui.Track.Label*` ; A/B et leurs contours. Rien ne capte la souris ni le focus. Données de conception en 1280×720 (Advanced).
+> - **Écran** : entrées et sons de P4, garde de première image, sortie unique. Le flux passe le jeu à l'écran. Advanced par défaut (`RaceFrontEndState.SelectedTrackIndex = 1`), Beginner fixé par le smoke. `LegacyMenuUiTheme.ApplySpriteButtonState` est retiré : plus aucun appelant.
+> - **Mesures** :
+>   - 1920×1080, Beginner (capture automatique) : bande y 371 → 843 ; cartes 2 et 3 en x 891 → 1070 et 1133 → 1312, y 436 → 735 ; contour x 608 → 828, y 402 → 769 ; glyphes « BEGINNER » x 664 → 773, y 784 → 800. Tout est égal aux formules : cartes (607, 401, 223×370), (890, 435, 182×302), (1132, 435, 182×302), libellé (607, 779, 223×25), au pixel transparent du bord des sprites près.
+>   - 1280×720 et 1024×768, Advanced (sonde) : bandes y 248 → 563 et 264 → 600, cartes et glyphes du libellé sur les formules.
+> - **Superposition** sur la capture de l'auteur : sonde en 1024×768, Advanced, cartes figées aux tailles de la capture (0,12 / 0,86 / 0), recalage `x_cap = 1,875·x − 12,5`, `y_cap = 2,25·y − 11,3` (`ts-overlay.png` du scratchpad). En-tête, cartes, contour, libellé « ADVANCED » et A/B coïncident, sans dédoublement.
+> - **Runs** :
+>   - deux `--capture-ui-screens` identiques (0,00) ;
+>   - contre `references-c0fdd87`, seul `track-selection` change ;
+>   - `--smoke-frontend` code 0 sans avertissement ;
+>   - build 0 erreur, aucun avertissement dans RGCE ;
+>   - réglages restaurés à l'identique.
+> - **Éditeur** : `capture_editor_screen.ps1` sur `TrackSelection.uiscreen`, code 0 sans erreur, Advanced sélectionnée selon les données de conception.
+> - 🧪 Reste pour l'auteur : l'animation d'ouverture et de changement, chaque entrée (survol, clic sur une carte, gauche et droite, A, Espace, Entrée, Échap, B), les sons (ButtonClick, Highlight, ScreenClick, ScreenBack), le départ sur la bonne piste.
 
 ## Phase 3 — Clôture
 

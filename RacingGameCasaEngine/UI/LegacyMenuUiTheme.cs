@@ -8,8 +8,8 @@ namespace RacingGameCasaEngine.UI;
 /// <summary>
 /// Hover, focus and selection looks of the menu screens' buttons, applied in code every frame (RGCE ADR-0001: MGUI XAML
 /// visual states cannot express them, see docs/mgui-gaps-from-rgce-xaml-screens.md). The buttons themselves are XAML.
-/// The main menu, the title screen and the car selection are not restyled here: their view models drive their look
-/// (ADR-0007, ADR-0009).
+/// The main menu, the title screen, the car selection and the track selection are not restyled here: their view models
+/// drive their look (ADR-0007, ADR-0009, ADR-0010).
 /// </summary>
 internal static class LegacyMenuUiTheme
 {
@@ -31,14 +31,6 @@ internal static class LegacyMenuUiTheme
         if (button.Content is MGTextBlock label)
         {
             label.Foreground = new(isActive ? AccentColor : PrimaryTextColor, isActive ? AccentColor : PrimaryTextColor, isActive ? AccentColor : PrimaryTextColor);
-        }
-    }
-
-    public static void ApplySpriteButtonState(MGButton button)
-    {
-        if (button.Tag is MGImage image)
-        {
-            image.Opacity = button.VisualState.IsFocused || button.IsHovered ? 1f : 0.92f;
         }
     }
 }
