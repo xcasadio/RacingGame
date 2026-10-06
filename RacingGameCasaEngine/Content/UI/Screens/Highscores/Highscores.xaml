@@ -3,6 +3,13 @@
         Width="1280" Height="720" ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
         Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
+  <!--
+    RacingGame's highscores screen (ADR-0013). RaceHighscoresViewModel lays everything out in screen pixels with
+    RacingGame's formulas, every frame. As in RacingGame, the sprites and the line are drawn first, then the texts
+    (TextureFont.WriteAll ran last). The texts use RacingGame's GameFont at its native size; HighscoresScreen scales them
+    at draw time as TextureFont did, and colours the tabs and lines. Nothing takes MGUI's focus: HighscoresScreen reads
+    the keyboard, the mouse and the gamepad itself.
+  -->
   <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <!-- Menu decoration (RaceMenuDecorationViewModel): background, then the bouncing logo placed by the view model. -->
     <Image SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
@@ -10,49 +17,87 @@
     <Image SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Decoration.LogoMargin}"
            Width="{dataBinding:MGBinding Path=Decoration.LogoWidth}" Height="{dataBinding:MGBinding Path=Decoration.LogoHeight}" />
-    <Border BorderThickness="0" BorderBrush="rgba(0,0,0,0)" Background="rgba(0,0,0,132)" Margin="0,165,0,0" Height="390" Padding="32,22,32,20"
-            HorizontalAlignment="Stretch" VerticalAlignment="Top">
-      <StackPanel Orientation="Vertical" Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <TextBlock Text="Highscores" Foreground="rgb(255,156,0)" FontSize="26" UseResponsiveTextScale="True"
-                   HorizontalAlignment="Center" TextAlignment="Center" />
-        <ScrollViewer Width="1040" Height="250" HorizontalAlignment="Center" VerticalAlignment="Center">
-          <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Top">
-            <!-- Level tabs: the screen restyles them every frame (selected level, hover and focus). -->
-            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <Button Name="tabBeginner" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
-                      Background="rgba(0,0,0,24)" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                <TextBlock Text="Beginner" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-              </Button>
-              <Button Name="tabAdvanced" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
-                      Background="rgba(0,0,0,24)" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                <TextBlock Text="Advanced" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-              </Button>
-              <Button Name="tabExpert" BorderBrush="rgba(255,255,255,70)" BorderThickness="2" CornerRadius="10" Padding="14,8,14,8"
-                      Background="rgba(0,0,0,24)" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                <TextBlock Text="Expert" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-              </Button>
-            </StackPanel>
-            <!-- Ten fixed board lines (RaceHighscoresViewModel.Entry0..9). -->
-            <TextBlock Text="{dataBinding:MGBinding Path=Entry0}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Entry1}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Entry2}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Entry3}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Entry4}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Entry5}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Entry6}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Entry7}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Entry8}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Entry9}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" Width="520" />
-          </StackPanel>
-        </ScrollViewer>
-        <!-- Size bound to the UI scale (RaceMenuTextButtonViewModel); the screen restyles the button every frame. -->
-        <Button Name="btnBack" BorderBrush="rgb(96,96,96)" BorderThickness="2" CornerRadius="16"
-                Padding="{dataBinding:MGBinding Path=BackButton.Padding}" MinWidth="{dataBinding:MGBinding Path=BackButton.MinWidth}"
-                MinHeight="{dataBinding:MGBinding Path=BackButton.MinHeight}" Height="{dataBinding:MGBinding Path=BackButton.Height}"
-                HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-          <TextBlock Text="Back" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-        </Button>
-      </StackPanel>
-    </Border>
+    <!-- Band: black at 0.683 opacity (the atlas texel's 205/255 drawn at 0.85), full width. -->
+    <Border BorderThickness="0" Background="rgba(0,0,0,174)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Top"
+            Margin="{dataBinding:MGBinding Path=BandMargin}" Height="{dataBinding:MGBinding Path=BandHeightPixels}" />
+    <!-- "HIGHSCORES" header (headers.png HeaderHighscoresGfxRect). -->
+    <Image SourceName="Ui.Highscores.Header" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Header.Margin}" Width="{dataBinding:MGBinding Path=Header.Width}" Height="{dataBinding:MGBinding Path=Header.Height}" />
+    <!-- The two one-pixel lines under the tabs, in RacingGame's colour (192,192,192,128) passed as it is. -->
+    <Border BorderThickness="0" Background="rgba(192,192,192,128)" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+            Margin="{dataBinding:MGBinding Path=Separator.Margin}" Width="{dataBinding:MGBinding Path=Separator.Width}" Height="{dataBinding:MGBinding Path=Separator.Height}" />
+    <!-- B BACK, grown and outlined in orange while the mouse is over it. -->
+    <Image SourceName="Ui.Button.Back" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" />
+    <Image SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" Visibility="{dataBinding:MGBinding Path=BackButton.HighlightVisibility}" />
+    <!-- Level tabs, coloured by the screen: yellow when selected, white under the mouse, light grey otherwise. -->
+    <TextBlock Name="txtTab0" Text="Beginner" FontFamily="GameFont" Foreground="rgb(211,211,211)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Tab0.Margin}" />
+    <TextBlock Name="txtTab1" Text="Advanced" FontFamily="GameFont" Foreground="rgb(211,211,211)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Tab1.Margin}" />
+    <TextBlock Name="txtTab2" Text="Expert" FontFamily="GameFont" Foreground="rgb(211,211,211)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Tab2.Margin}" />
+    <!-- Board lines: rank and name coloured by the screen (white under the mouse), the time always yellow. -->
+    <TextBlock Name="txtRank0" Text="{dataBinding:MGBinding Path=Row0.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row0.RankText.Margin}" />
+    <TextBlock Name="txtName0" Text="{dataBinding:MGBinding Path=Row0.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row0.NameText.Margin}" />
+    <TextBlock Name="txtTime0" Text="{dataBinding:MGBinding Path=Row0.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row0.TimeText.Margin}" />
+    <TextBlock Name="txtRank1" Text="{dataBinding:MGBinding Path=Row1.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row1.RankText.Margin}" />
+    <TextBlock Name="txtName1" Text="{dataBinding:MGBinding Path=Row1.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row1.NameText.Margin}" />
+    <TextBlock Name="txtTime1" Text="{dataBinding:MGBinding Path=Row1.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row1.TimeText.Margin}" />
+    <TextBlock Name="txtRank2" Text="{dataBinding:MGBinding Path=Row2.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row2.RankText.Margin}" />
+    <TextBlock Name="txtName2" Text="{dataBinding:MGBinding Path=Row2.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row2.NameText.Margin}" />
+    <TextBlock Name="txtTime2" Text="{dataBinding:MGBinding Path=Row2.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row2.TimeText.Margin}" />
+    <TextBlock Name="txtRank3" Text="{dataBinding:MGBinding Path=Row3.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row3.RankText.Margin}" />
+    <TextBlock Name="txtName3" Text="{dataBinding:MGBinding Path=Row3.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row3.NameText.Margin}" />
+    <TextBlock Name="txtTime3" Text="{dataBinding:MGBinding Path=Row3.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row3.TimeText.Margin}" />
+    <TextBlock Name="txtRank4" Text="{dataBinding:MGBinding Path=Row4.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row4.RankText.Margin}" />
+    <TextBlock Name="txtName4" Text="{dataBinding:MGBinding Path=Row4.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row4.NameText.Margin}" />
+    <TextBlock Name="txtTime4" Text="{dataBinding:MGBinding Path=Row4.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row4.TimeText.Margin}" />
+    <TextBlock Name="txtRank5" Text="{dataBinding:MGBinding Path=Row5.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row5.RankText.Margin}" />
+    <TextBlock Name="txtName5" Text="{dataBinding:MGBinding Path=Row5.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row5.NameText.Margin}" />
+    <TextBlock Name="txtTime5" Text="{dataBinding:MGBinding Path=Row5.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row5.TimeText.Margin}" />
+    <TextBlock Name="txtRank6" Text="{dataBinding:MGBinding Path=Row6.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row6.RankText.Margin}" />
+    <TextBlock Name="txtName6" Text="{dataBinding:MGBinding Path=Row6.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row6.NameText.Margin}" />
+    <TextBlock Name="txtTime6" Text="{dataBinding:MGBinding Path=Row6.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row6.TimeText.Margin}" />
+    <TextBlock Name="txtRank7" Text="{dataBinding:MGBinding Path=Row7.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row7.RankText.Margin}" />
+    <TextBlock Name="txtName7" Text="{dataBinding:MGBinding Path=Row7.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row7.NameText.Margin}" />
+    <TextBlock Name="txtTime7" Text="{dataBinding:MGBinding Path=Row7.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row7.TimeText.Margin}" />
+    <TextBlock Name="txtRank8" Text="{dataBinding:MGBinding Path=Row8.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row8.RankText.Margin}" />
+    <TextBlock Name="txtName8" Text="{dataBinding:MGBinding Path=Row8.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row8.NameText.Margin}" />
+    <TextBlock Name="txtTime8" Text="{dataBinding:MGBinding Path=Row8.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row8.TimeText.Margin}" />
+    <TextBlock Name="txtRank9" Text="{dataBinding:MGBinding Path=Row9.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row9.RankText.Margin}" />
+    <TextBlock Name="txtName9" Text="{dataBinding:MGBinding Path=Row9.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row9.NameText.Margin}" />
+    <TextBlock Name="txtTime9" Text="{dataBinding:MGBinding Path=Row9.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row9.TimeText.Margin}" />
   </OverlayPanel>
 </Window>

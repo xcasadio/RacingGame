@@ -47,6 +47,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     private TextureCube? _raceSkySharedCube;
     private bool _raceSkySharedCubeLoadAttempted;
     private IDisposable? _gameFontHold;
+    private AssetHandle<CasaEngine.Framework.Assets.Fonts.BitmapFont>? _gameFontMetrics;
     private CarSelectionCarousel? _carSelectionCarousel;
 
     /// <summary>The menu sounds, held for the game's life (ADR-0009).</summary>
@@ -204,6 +205,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         try
         {
             _gameFontHold = UIFonts.Acquire(assetInfo.Id);
+            _gameFontMetrics = AssetContentManager.Acquire<CasaEngine.Framework.Assets.Fonts.BitmapFont>(assetInfo.Id);
         }
         catch (Exception exception)
         {
@@ -211,12 +213,20 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         }
     }
 
+    /// <summary>
+    /// Width of <paramref name="text"/> in GameFont at its native size, as TextureFont.GetTextWidth before its XToRes1400;
+    /// 0 when the font is missing. The screens scale it as they scale their GameFont texts.
+    /// </summary>
+    internal float MeasureGameFontText(string text) => _gameFontMetrics?.Asset?.Font.MeasureString(text).X ?? 0f;
+
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
             _gameFontHold?.Dispose();
             _gameFontHold = null;
+            _gameFontMetrics?.Dispose();
+            _gameFontMetrics = null;
             MenuSounds?.Dispose();
             MenuSounds = null;
             _carSelectionCarousel?.Dispose();

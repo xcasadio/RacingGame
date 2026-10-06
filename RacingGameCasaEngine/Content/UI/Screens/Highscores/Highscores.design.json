@@ -7,15 +7,274 @@
       "LogoWidth": 755,
       "LogoHeight": 246
     },
-    "Entry0": " 1.  A. Vega             01:11.82",
-    "Entry1": " 2.  M. Ford             01:13.21",
-    "Entry2": " 3.  L. Stone            01:14.07",
-    "Entry3": " 4.  T. Park             01:14.93",
-    "Entry4": " 5.  N. Hart             01:15.42",
-    "Entry5": "",
-    "Entry6": "",
-    "Entry7": "",
-    "Entry8": "",
-    "Entry9": ""
+    "BandTopPixels": 180,
+    "BandHeightPixels": 380,
+    "Header": {
+      "Left": 8,
+      "Top": 11,
+      "Width": 410,
+      "Height": 60
+    },
+    "SelectedLevel": 1,
+    "Tab0": {
+      "Left": 371,
+      "Top": 202,
+      "Width": 0,
+      "Height": 0
+    },
+    "Tab1": {
+      "Left": 581,
+      "Top": 202,
+      "Width": 0,
+      "Height": 0
+    },
+    "Tab2": {
+      "Left": 809,
+      "Top": 202,
+      "Width": 0,
+      "Height": 0
+    },
+    "Separator": {
+      "Left": 375,
+      "Top": 234,
+      "Width": 522,
+      "Height": 2
+    },
+    "Row0": {
+      "Rank": "1.",
+      "Name": "J. Cruz",
+      "Time": "1:48.22",
+      "RankText": {
+        "Left": 375,
+        "Top": 245,
+        "Width": 0,
+        "Height": 0
+      },
+      "NameText": {
+        "Left": 438,
+        "Top": 245,
+        "Width": 0,
+        "Height": 0
+      },
+      "TimeText": {
+        "Left": 800,
+        "Top": 245,
+        "Width": 0,
+        "Height": 0
+      }
+    },
+    "Row1": {
+      "Rank": "2.",
+      "Name": "S. Bell",
+      "Time": "1:49.64",
+      "RankText": {
+        "Left": 375,
+        "Top": 275,
+        "Width": 0,
+        "Height": 0
+      },
+      "NameText": {
+        "Left": 438,
+        "Top": 275,
+        "Width": 0,
+        "Height": 0
+      },
+      "TimeText": {
+        "Left": 800,
+        "Top": 275,
+        "Width": 0,
+        "Height": 0
+      }
+    },
+    "Row2": {
+      "Rank": "3.",
+      "Name": "K. Hall",
+      "Time": "1:50.11",
+      "RankText": {
+        "Left": 375,
+        "Top": 305,
+        "Width": 0,
+        "Height": 0
+      },
+      "NameText": {
+        "Left": 438,
+        "Top": 305,
+        "Width": 0,
+        "Height": 0
+      },
+      "TimeText": {
+        "Left": 800,
+        "Top": 305,
+        "Width": 0,
+        "Height": 0
+      }
+    },
+    "Row3": {
+      "Rank": "4.",
+      "Name": "R. Dean",
+      "Time": "1:51.03",
+      "RankText": {
+        "Left": 375,
+        "Top": 335,
+        "Width": 0,
+        "Height": 0
+      },
+      "NameText": {
+        "Left": 438,
+        "Top": 335,
+        "Width": 0,
+        "Height": 0
+      },
+      "TimeText": {
+        "Left": 800,
+        "Top": 335,
+        "Width": 0,
+        "Height": 0
+      }
+    },
+    "Row4": {
+      "Rank": "5.",
+      "Name": "B. Holt",
+      "Time": "1:52.80",
+      "RankText": {
+        "Left": 375,
+        "Top": 365,
+        "Width": 0,
+        "Height": 0
+      },
+      "NameText": {
+        "Left": 438,
+        "Top": 365,
+        "Width": 0,
+        "Height": 0
+      },
+      "TimeText": {
+        "Left": 800,
+        "Top": 365,
+        "Width": 0,
+        "Height": 0
+      }
+    },
+    "Row5": {
+      "Rank": "",
+      "Name": "",
+      "Time": "",
+      "RankText": {
+        "Left": 375,
+        "Top": 395,
+        "Width": 0,
+        "Height": 0
+      },
+      "NameText": {
+        "Left": 438,
+        "Top": 395,
+        "Width": 0,
+        "Height": 0
+      },
+      "TimeText": {
+        "Left": 800,
+        "Top": 395,
+        "Width": 0,
+        "Height": 0
+      }
+    },
+    "Row6": {
+      "Rank": "",
+      "Name": "",
+      "Time": "",
+      "RankText": {
+        "Left": 375,
+        "Top": 425,
+        "Width": 0,
+        "Height": 0
+      },
+      "NameText": {
+        "Left": 438,
+        "Top": 425,
+        "Width": 0,
+        "Height": 0
+      },
+      "TimeText": {
+        "Left": 800,
+        "Top": 425,
+        "Width": 0,
+        "Height": 0
+      }
+    },
+    "Row7": {
+      "Rank": "",
+      "Name": "",
+      "Time": "",
+      "RankText": {
+        "Left": 375,
+        "Top": 455,
+        "Width": 0,
+        "Height": 0
+      },
+      "NameText": {
+        "Left": 438,
+        "Top": 455,
+        "Width": 0,
+        "Height": 0
+      },
+      "TimeText": {
+        "Left": 800,
+        "Top": 455,
+        "Width": 0,
+        "Height": 0
+      }
+    },
+    "Row8": {
+      "Rank": "",
+      "Name": "",
+      "Time": "",
+      "RankText": {
+        "Left": 375,
+        "Top": 485,
+        "Width": 0,
+        "Height": 0
+      },
+      "NameText": {
+        "Left": 438,
+        "Top": 485,
+        "Width": 0,
+        "Height": 0
+      },
+      "TimeText": {
+        "Left": 800,
+        "Top": 485,
+        "Width": 0,
+        "Height": 0
+      }
+    },
+    "Row9": {
+      "Rank": "",
+      "Name": "",
+      "Time": "",
+      "RankText": {
+        "Left": 375,
+        "Top": 515,
+        "Width": 0,
+        "Height": 0
+      },
+      "NameText": {
+        "Left": 438,
+        "Top": 515,
+        "Width": 0,
+        "Height": 0
+      },
+      "TimeText": {
+        "Left": 800,
+        "Top": 515,
+        "Width": 0,
+        "Height": 0
+      }
+    },
+    "BackButton": {
+      "Left": 1094,
+      "Top": 633,
+      "Width": 124,
+      "Height": 54
+    }
   }
 }

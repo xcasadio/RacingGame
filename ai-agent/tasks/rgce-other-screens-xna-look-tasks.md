@@ -256,7 +256,7 @@ Découverte en lecture seule : workflow de 4 agents, chacun contre-vérifié par
 > - Réglages restaurés à l'identique après chaque run.
 > - 🧪 Reste pour l'auteur : la fermeture par chaque entrée (Échap, B, Back, clic) et les sons.
 
-### ⏳ T2.2 — Highscores
+### 🧪 T2.2 — Highscores
 
 - Objectif : P3, P4, D3.
 - Fichiers : `RaceHighscoresViewModel.cs`, `Highscores.xaml`, `Highscores.design.json`, `HighscoresScreen.cs`, `RaceFrontEndFlow.cs`.
@@ -271,6 +271,28 @@ Découverte en lecture seule : workflow de 4 agents, chacun contre-vérifié par
   - ouverture sur Advanced ;
   - 🧪 onglets, sorties et sons par l'auteur.
 - Commit : `feat(racing-casa): draw the Highscores screen like the original`
+
+> Validation (2026-10-06) :
+> - **Code** :
+>   - `RaceHighscoresViewModel` : bande, en-tête, 3 onglets, ligne de séparation, 10 lignes de score (rang, nom, temps), bouton BACK, échelle des textes GameFont, couleurs.
+>   - `Highscores.xaml` (généré : 10 lignes de 3 textes) et ses données de conception en 1280×720.
+>   - `HighscoresScreen` :
+>     - entrées et sons de l'original ; le Highlight des lignes ne joue que sur les lignes remplies ;
+>     - couleurs des textes réglées par le code, MGUI ne liant pas `Foreground` (M7) ;
+>     - ouverture sur Advanced ; temps « 01:48.22 » affichés « 1:48.22 ».
+>   - `RacingGameCasaEngineGame.MeasureGameFontText` mesure un texte avec `BitmapFont.Font.MeasureString` (FontStashSharp), sur un handle de la police acquis par l'`AssetContentManager` ; la fin de la ligne de séparation en dépend.
+> - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE. `--smoke-frontend` : code 0 sans avertissement.
+> - Deux runs `--capture-ui-screens` identiques ; contre `references-19aa21f`, seuls `help` et `highscores` changent.
+> - **Mesures** (sonde de taille pour 1280×720 et 1024×768) :
+>   - bande : 1920×1080 y 270 → 840 ; 1280×720 y 180 → 560 ; 1024×768 y 192 → 598, exacts.
+>   - Lignes de séparation aux rangées exactes : 351-352, 234-235, 250-251. Leur couleur mesurée (201,199,197) sur fond (17,15,11) est celle de l'original : 0,753 + 0,498 × fond, la couleur passant telle quelle.
+>   - Onglet « Advanced » : début x 873, 582 et 466, pour les plumes à 872, 581 et 465. Premier temps : 1204, 803 et 642, pour 1200, 800 et 640. Les glyphes commencent de 0 à 2 unités de police à droite de la plume.
+>   - Haut des lettres à 1 pixel près de « cellule + 4/36 de cellule », la marge mesurée des glyphes de GameFont.
+>   - Bouton BACK identique au pixel près à celui de la sélection de piste, aux trois tailles.
+> - **Écart connu** : la ligne de séparation finit à x 1345, 897 et 718, contre 1347, 894 et 717 dans l'original. La largeur de « 5:67:89 » est mesurée sur la police mise à l'échelle, alors que l'original arrondissait l'avance de chaque glyphe (même limite que M16).
+> - Éditeur : `capture_editor_screen.ps1` sur `Highscores.uiscreen`, code 0 sans erreur. L'aperçu garde la police de l'éditeur et des textes non mis à l'échelle (E1).
+> - Réglages restaurés à l'identique après chaque run.
+> - 🧪 Reste pour l'auteur : onglets (clic, gauche/droite), sorties (Échap, B, Back, clic sous les lignes, BACK) et sons.
 
 ### ⏳ T2.3 — Options
 
