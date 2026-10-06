@@ -227,7 +227,7 @@ Découverte en lecture seule : workflow de 4 agents, chacun contre-vérifié par
 
 ## Phase 2 — Écrans
 
-### ⏳ T2.1 — Helper de mise en page et Help
+### 🧪 T2.1 — Helper de mise en page et Help
 
 - Objectif : P2, P3, P5, D1.
 - Fichiers : `RacingGameCasaEngine.UI/LegacyScreenLayout.cs` (nouveau), `RaceHelpViewModel.cs`, `Help.xaml`, `Help.design.json`, `HelpScreen.cs`, `RaceFrontEndFlow.cs`, `RaceFrontEndCatalog.cs` (sections retirées).
@@ -236,6 +236,25 @@ Découverte en lecture seule : workflow de 4 agents, chacun contre-vérifié par
   - en 1920×1080 : en-tête (12,16,614,90), panneau (0,176,1920,720), BACK (1639,951,187,81) ;
   - 🧪 fermeture et sons par l'auteur.
 - Commit : `feat(racing-casa): draw the Help screen like the original`
+
+> Validation (2026-10-06) :
+> - **Code** :
+>   - `LegacyScreenLayout` reprend `XToRes`, `YToRes`, `YToRes768`, `XToRes1400`, `YToRes1050`, `CalcRectangle`, `CalcRectangleKeep4To3`, `CalcRectangle1600` et `CalcRectangleCenteredWithGivenHeight` de `BaseGame.cs`, avec le même ordre de calcul en flottants. Il ajoute le bouton BACK et sa croissance au survol. Il est placé dans `RacingGameCasaEngine.UI/ViewModels/`, le seul dossier du projet, plutôt qu'à sa racine.
+>   - `RaceHelpViewModel` : en-tête, panneau, bouton BACK.
+>   - `Help.xaml` : décor, en-tête, panneau, BACK et son contour ; données de conception en 1280×720.
+>   - `HelpScreen` : ScreenClick à l'affichage, Highlight à l'entrée sur BACK, sortie par Échap, B, Back ou clic gauche avec ScreenBack, garde de première image, sans focus.
+>   - Les sections de texte, `HelpSection` et `RaceFrontEndCatalog.HelpSections` sont retirées ; la fabrique passe le jeu.
+> - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE.
+> - `--smoke-frontend` : code 0 sans avertissement ; le journal montre « Menu sound ScreenClick played » à l'ouverture de Help.
+> - Deux runs `--capture-ui-screens` identiques ; contre `references-19aa21f`, seul `help` change.
+> - **Mesures** : bords du panneau mesurés par la luminance des lignes ; bouton BACK comparé au pixel près à celui de la sélection de piste du même run.
+>   - 1920×1080 : panneau y 176 → 896, BACK identique en (1639,951,187,81).
+>   - 1280×720 : panneau y 117 → 597, BACK identique en (1094,633,124,54).
+>   - 1024×768 : panneau y 125 → 637, BACK identique en (840,675,134,58).
+>   - En-tête : sa partie claire mesurée en (36,25)–(263,90) en 1920×1080, dans le rectangle (12,16,614,90).
+> - Éditeur : `capture_editor_screen.ps1` sur `Help.uiscreen`, code 0 sans erreur, aperçu conforme.
+> - Réglages restaurés à l'identique après chaque run.
+> - 🧪 Reste pour l'auteur : la fermeture par chaque entrée (Échap, B, Back, clic) et les sons.
 
 ### ⏳ T2.2 — Highscores
 

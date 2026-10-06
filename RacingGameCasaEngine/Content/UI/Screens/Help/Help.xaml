@@ -3,6 +3,10 @@
         Width="1280" Height="720" ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
         Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
+  <!--
+    RacingGame's help screen (ADR-0013). RaceHelpViewModel lays everything out in screen pixels with RacingGame's
+    formulas, every frame. Nothing takes MGUI's focus: HelpScreen reads the keyboard, the mouse and the gamepad itself.
+  -->
   <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <!-- Menu decoration (RaceMenuDecorationViewModel): background, then the bouncing logo placed by the view model. -->
     <Image SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
@@ -10,42 +14,16 @@
     <Image SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Decoration.LogoMargin}"
            Width="{dataBinding:MGBinding Path=Decoration.LogoWidth}" Height="{dataBinding:MGBinding Path=Decoration.LogoHeight}" />
-    <Border BorderThickness="0" BorderBrush="rgba(0,0,0,0)" Background="rgba(0,0,0,132)" Margin="0,120,0,0" Height="480" Padding="32,22,32,18"
-            HorizontalAlignment="Stretch" VerticalAlignment="Top">
-      <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <TextBlock Text="Help" Foreground="rgb(255,156,0)" FontSize="26" UseResponsiveTextScale="True"
-                   HorizontalAlignment="Center" TextAlignment="Center" />
-        <ScrollViewer Width="900" Height="290">
-          <!-- Six fixed section slots (RaceHelpViewModel.Section0..5), filled from RaceFrontEndCatalog.HelpSections. -->
-          <StackPanel Orientation="Vertical" Spacing="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <TextBlock Text="{dataBinding:MGBinding Path=Section0.Title}" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section0.Line0}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section0.Line1}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section1.Title}" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section1.Line0}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section1.Line1}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section2.Title}" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section2.Line0}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section2.Line1}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section3.Title}" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section3.Line0}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section3.Line1}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section4.Title}" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section4.Line0}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section4.Line1}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section5.Title}" Foreground="rgb(255,156,0)" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section5.Line0}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-            <TextBlock Text="{dataBinding:MGBinding Path=Section5.Line1}" Foreground="White" FontSize="14" WrapText="True" UseResponsiveTextScale="True" />
-          </StackPanel>
-        </ScrollViewer>
-        <!-- Size bound to the UI scale (RaceMenuTextButtonViewModel); the screen restyles the button every frame. -->
-        <Button Name="btnBack" BorderBrush="rgb(96,96,96)" BorderThickness="2" CornerRadius="16"
-                Padding="{dataBinding:MGBinding Path=BackButton.Padding}" MinWidth="{dataBinding:MGBinding Path=BackButton.MinWidth}"
-                MinHeight="{dataBinding:MGBinding Path=BackButton.MinHeight}" Height="{dataBinding:MGBinding Path=BackButton.Height}"
-                HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-          <TextBlock Text="Back" Foreground="White" FontSize="15" UseResponsiveTextScale="True" HorizontalAlignment="Center" TextAlignment="Center" />
-        </Button>
-      </StackPanel>
-    </Border>
+    <!-- "HELP" header (headers.png HeaderHelpGfxRect). -->
+    <Image SourceName="Ui.Help.Header" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Header.Margin}" Width="{dataBinding:MGBinding Path=Header.Width}" Height="{dataBinding:MGBinding Path=Header.Height}" />
+    <!-- The help image (HelpScreenWindows.png): a dark panel with the controls, baked in. -->
+    <Image SourceName="Ui.Help.Panel" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=Panel.Margin}" Width="{dataBinding:MGBinding Path=Panel.Width}" Height="{dataBinding:MGBinding Path=Panel.Height}" />
+    <!-- B BACK, grown and outlined in orange while the mouse is over it. -->
+    <Image SourceName="Ui.Button.Back" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" />
+    <Image SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+           Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" Visibility="{dataBinding:MGBinding Path=BackButton.HighlightVisibility}" />
   </OverlayPanel>
 </Window>
