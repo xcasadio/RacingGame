@@ -97,7 +97,7 @@ Découverte en lecture seule : workflow de 2 agents, chacun contre-vérifié par
 - **Branches** (P1) : `remaster` pour RacingGame, `chantier/shadow-texel-snapping` pour CasaEngine. Jamais de commit sur `master` ni sur le `main` du moteur.
 - **Une seule tâche à la fois.** Avant de commencer une tâche, remplacer son icône `⏳` par `🚧`. À la fin, lancer la validation indiquée, remplacer l'icône par `✅`, `🧪` ou `⚠️`, ajouter une courte note de validation sous la tâche, puis **créer un commit dédié** qui inclut la mise à jour de ce fichier.
   - Exception : T2.1 a un commit dans chaque dépôt. La mise à jour du plan va dans le commit RacingGame.
-- **Commits** atomiques et compilables, message en anglais au format `type(area): summary`, terminé par `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Les commits RacingGame commencent par `cd /d/development/repo/RacingGame &&`, ceux du moteur par `cd /d/development/repo/RacingGame/CasaEngine &&`.
+- **Commits** atomiques et compilables, message en anglais au format `type(area): summary`, terminé par `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Les commits commencent par `cd D:/development/repo/RacingGame &&` (RacingGame) ou `cd D:/development/repo/RacingGame/CasaEngine &&` (moteur) : le hook de commit de l'auteur résout le dépôt par `git -C` sous PowerShell, qui ne lit pas les chemins `/d/...`.
 - **Ne jamais pousser**, dans aucun des deux dépôts.
 - **Ne rien inventer** : toute API, tout fichier, toute règle utilisée existe dans le dépôt, vient d'une réponse de l'auteur, ou d'une doc officielle citée (URL). Sinon : passer la tâche en ⚠️ Blocked, écrire la question dans « Points ouverts », et **s'arrêter**.
 - **Build obligatoire** avant ✅ dès que du code est touché : `dotnet build RacingGame.slnx` (0 erreur). Pour T2.1, s'y ajoutent `dotnet build CasaEngine.MonoGame.sln` et `dotnet test CasaEngine.Tests/CasaEngine.Tests.csproj`.
@@ -170,7 +170,7 @@ Découverte en lecture seule : workflow de 2 agents, chacun contre-vérifié par
 
 ## Phase 2 — Ombres
 
-### ⏳ T2.1 — Carte d'ombres alignée sur les texels (CasaEngine)
+### 🧪 T2.1 — Carte d'ombres alignée sur les texels (CasaEngine)
 
 - Objectif : D2, P2 à P5.
 - Fichiers :
@@ -195,6 +195,26 @@ Découverte en lecture seule : workflow de 2 agents, chacun contre-vérifié par
 - Commits :
   - CasaEngine : `fix(rendering): snap the directional shadow map to whole texels`
   - RacingGame : `chore(racing-casa): move CasaEngine to the shadow texel snapping fix`
+
+> Validation (2026-10-06) :
+> - **Moteur**, branche `chantier/shadow-texel-snapping`, commit `7a44aba` :
+>   - `BuildDirectionalShadowViewProjection` reçoit la résolution, devient `internal`, et arrondit `view.M41` et `view.M42` au multiple d'un texel ; ligne ajoutée aux « Limites V1 » de `docs/engine/light-component.md`.
+>   - `ShadowPassTexelSnappingTests` (7 cas), écrit avant le correctif : 4 échecs sans lui (les 3 cas « caméra au centre de la carte » passaient déjà), 7 réussites avec.
+>   - `dotnet test CasaEngine.Tests/CasaEngine.Tests.csproj` : 2 457 réussis, 0 échec (2 450 réussis sur `main` avant). `dotnet build CasaEngine.MonoGame.sln` : 0 erreur, aucun avertissement dans les fichiers touchés.
+>   - Démo `StaticShadowValidationDemo` capturée sans interaction : deux captures « avant » identiques ; « après », 115 pixels changent, tous au bord de l'ombre de la colonne de gauche (décalage unique de moins d'un demi-texel).
+> - **Sonde** (copie de RGCE, course en pause, vue fixe, ancre de la carte décalée de 0,25 à 2,5 texels). Pixels changés de plus de 16 niveaux hors de la voiture :
+>   - avant : 190, 397, 491, 341 et 495 (ombres des rails sur la route, ombre de la voiture) ;
+>   - après : 0 pour tous les décalages ;
+>   - sur la voiture, 1 à 72 pixels, les mêmes avant et après : ses reflets dépendent de la position de l'œil, que la sonde déplace avec l'ancre.
+>   - Premier essai écarté : la sonde attendait 20 mises à jour, mais l'encodage synchrone d'une capture fait enchaîner des mises à jour de rattrapage sans rendu. Elle attend désormais 5 rendus de la vue ; un décalage répété et le retour à 0 donnent alors 0 pixel changé.
+> - **RGCE** : `dotnet build RacingGame.slnx` 0 erreur, aucun avertissement dans RGCE ; `--smoke-frontend` code 0 sans avertissement ; deux runs `--capture-ui-screens` identiques entre eux (à quelques pixels 3D isolés près, comme avant) ; réglages restaurés à l'identique.
+> - **Captures** contre `references-504c603` :
+>   - `race-hud`, `pause` et `race-finished` : 1,5 à 1,6 % des pixels, aux bords d'ombre (la grille de la carte se décale une fois) ;
+>   - `car-selection` : 1 426 pixels, en liserés au bord des ombres des voitures sur les plateaux. Écart que la validation prévue n'annonçait pas : le carrousel a ses propres ombres (`CarSelectionCarousel.cs:104-107`) et profite du même alignement ;
+>   - `options` : 6 042 pixels sur le champ « Player One », l'écart de survol déjà connu de cette référence ;
+>   - les autres états sont identiques.
+> - **Pointeur `CasaEngine`** : `d79ed16` → `7a44aba`, soit les 49 commits de `main` (`dd91efe`) plus le correctif. La branche moteur n'est pas poussée.
+> - 🧪 Reste pour l'auteur : les ombres en mouvement (route, rails, décor, voiture).
 
 ### ⏳ T2.2 — Sol receveur seul
 
