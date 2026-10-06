@@ -70,7 +70,7 @@ Découverte en lecture seule (deux workflows de découverte avec contre-vérific
 
 | Réf | Décision |
 |---|---|
-| D1 | Ombres : « réglages seuls ». Tous les objets gardent leur ombre ; seuls `Resolution`, `MaxDistance`, `DepthBias` et `NormalBias` sont réglés, d'après des captures comparatives et une mesure du coût (auteur, 2026-10-05). **Remplacée en partie le 2026-10-06** par D3 de [rgce-start-beeps-shadow-shimmer-tasks.md](rgce-start-beeps-shadow-shimmer-tasks.md) : le sol ne projette plus d'ombre, comme dans l'original, et `NormalBias` passe à 0,1. |
+| D1 | Ombres : « réglages seuls ». Tous les objets gardent leur ombre ; seuls `Resolution`, `MaxDistance`, `DepthBias` et `NormalBias` sont réglés, d'après des captures comparatives et une mesure du coût (auteur, 2026-10-05). **Remplacée en partie le 2026-10-06** par D3 de [rgce-start-beeps-shadow-shimmer-tasks.md](archive/rgce-start-beeps-shadow-shimmer-tasks.md) : le sol ne projette plus d'ombre, comme dans l'original, et `NormalBias` passe à 0,1. |
 | D2 | HUD : ×2, marges au bord comprises (10 → 20 px), panneau de fin de course compris (largeur 420 → 840, polices doublées) (auteur, 2026-10-05). |
 | D3 | Départ : feu legacy animé (rouge, jaune, vert) et sons « Beep » / « Bleep », avec le volume des options ; pas de texte de décompte (auteur, 2026-10-05). |
 | D4 | CasaEngine et MGUI (sous-modules) ne sont pas modifiés (règle conservée des chantiers précédents). |
@@ -357,7 +357,7 @@ Découverte en lecture seule (deux workflows de découverte avec contre-vérific
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
-| O1 | **Traité le 2026-10-06** par T2.1 de [rgce-start-beeps-shadow-shimmer-tasks.md](rgce-start-beeps-shadow-shimmer-tasks.md) : la carte d'ombres avance par texels entiers (CasaEngine `7a44aba`). La carte d'ombres suit la caméra sans s'aligner sur les texels : son scintillement en mouvement ne se règle pas sans changer le moteur. Il est noté dans le rapport de fin s'il reste visible. | T3.1 |
+| O1 | **Traité le 2026-10-06** par T2.1 de [rgce-start-beeps-shadow-shimmer-tasks.md](archive/rgce-start-beeps-shadow-shimmer-tasks.md) : la carte d'ombres avance par texels entiers (CasaEngine `7a44aba`). La carte d'ombres suit la caméra sans s'aligner sur les texels : son scintillement en mouvement ne se règle pas sans changer le moteur. Il est noté dans le rapport de fin s'il reste visible. | T3.1 |
 
 ## Hors périmètre
 

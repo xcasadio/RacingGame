@@ -151,7 +151,7 @@ Découverte en lecture seule : workflow de 2 agents, chacun contre-vérifié par
 
 ## Phase 1 — Sons
 
-### 🧪 T1.1 — Beep et Bleep à −12 dB
+### ✅ T1.1 — Beep et Bleep à −12 dB
 
 - Objectif : D1.
 - Fichiers : `RacingGameCasaEngine/Content/Audio/Beep.sound`, `Bleep.sound`.
@@ -170,7 +170,7 @@ Découverte en lecture seule : workflow de 2 agents, chacun contre-vérifié par
 
 ## Phase 2 — Ombres
 
-### 🧪 T2.1 — Carte d'ombres alignée sur les texels (CasaEngine)
+### ✅ T2.1 — Carte d'ombres alignée sur les texels (CasaEngine)
 
 - Objectif : D2, P2 à P5.
 - Fichiers :
@@ -216,7 +216,7 @@ Découverte en lecture seule : workflow de 2 agents, chacun contre-vérifié par
 > - **Pointeur `CasaEngine`** : `d79ed16` → `7a44aba`, soit les 49 commits de `main` (`dd91efe`) plus le correctif. La branche moteur n'est pas poussée.
 > - 🧪 Reste pour l'auteur : les ombres en mouvement (route, rails, décor, voiture).
 
-### 🧪 T2.2 — Sol receveur seul
+### ✅ T2.2 — Sol receveur seul
 
 - Objectif : D3, P6, P7.
 - Fichiers : `RacingGameCasaEngine/Worlds/LegacyTrackSceneFactory.cs`, `LegacyTrackSceneFactory.Terrain.cs`, et `RaceWorldFactory.cs` si P7 change le biais.
@@ -295,6 +295,13 @@ Découverte en lecture seule : workflow de 2 agents, chacun contre-vérifié par
 >   - écoute des bips (T1.1), ombres en course (T2.1, T2.2) ;
 >   - push de la branche moteur `chantier/shadow-texel-snapping` (sinon le pointeur de RacingGame désigne un commit introuvable ailleurs que sur cette machine), puis son merge sur `main` du moteur ;
 >   - push de `remaster`.
+>
+> Suite (2026-10-06) :
+> - L'auteur a validé les vérifications manuelles (« tout est OK ») : écoute des bips, ombres en course. T1.1, T2.1 et T2.2 passent en ✅.
+> - Fusions en avance rapide, à sa demande, sans push :
+>   - CasaEngine : `chantier/shadow-texel-snapping` → `main` (`7a44aba`) ;
+>   - RacingGame : `remaster` → `master`.
+> - Plan rangé dans `ai-agent/tasks/archive/`.
 
 ---
 

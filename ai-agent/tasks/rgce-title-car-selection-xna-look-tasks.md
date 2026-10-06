@@ -549,7 +549,7 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 >   - pastille web, retour au titre après 60 s, scène 3D derrière les menus et curseur de l'original absents (D6 et hors périmètre).
 > - **Points ouverts pour l'auteur** :
 >   - vérifications manuelles (tâches 🧪 T2.1, T3.1, T4.2, T4.3 et T5.1, plus l'écoute des sons de T1.3) : rendu en mouvement, chaque entrée, les sons ;
->   - Beep et Bleep restent à volume 1,0 alors que l'original les jouait à −12 dB (relevé en T1.3, hors périmètre) ; **réglé le 2026-10-06** par T1.1 de [rgce-start-beeps-shadow-shimmer-tasks.md](rgce-start-beeps-shadow-shimmer-tasks.md), volume 0,251 ;
+>   - Beep et Bleep restent à volume 1,0 alors que l'original les jouait à −12 dB (relevé en T1.3, hors périmètre) ; **réglé le 2026-10-06** par T1.1 de [rgce-start-beeps-shadow-shimmer-tasks.md](archive/rgce-start-beeps-shadow-shimmer-tasks.md), volume 0,251 ;
 >   - la police des textes GameFont dans l'aperçu de l'éditeur n'est pas vérifiée (la police n'est tenue que par le jeu) ;
 >   - durée d'image du carrousel non mesurée.
 
