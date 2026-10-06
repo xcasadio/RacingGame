@@ -1,29 +1,22 @@
-# ADR-0010: RacingGameCasaEngine's track selection reproduces the original XNA screen
+# ADR-0011: RacingGameCasaEngine's track selection reproduces the original XNA screen, with cards growing around fixed centres
 
-- **Status**: Superseded by ADR-0011
+- **Status**: Accepted
 - **Date**: 2026-10-06
-- **Source**: this chantier: `ai-agent/tasks/rgce-track-selection-xna-look-tasks.md`, decisions D1 to D6 and proposals P2 to P7 (author answers and plan approval, 2026-10-06)
+- **Source**: the author's feedback of 2026-10-06 on the delivered track selection (plan `ai-agent/tasks/rgce-track-selection-xna-look-tasks.md`, phase 4, P9). It supersedes ADR-0010.
 
 ## Context
 
-- The author asked for the track selection to match the original game, as the title screen and the car selection now do (ADR-0009), and supplied a video capture of it.
-- Unlike those screens, the capture and the repository's original code (`git show 4f840a3^:RacingGame.Shared/GameScreens/TrackSelection.cs`) agree. Once the capture is mapped to the 1024×640 layout, the header, cards, outline, label, bar and A and B buttons fall on the code's formulas within one unit. The capture's other differences are post-processing and video overlays.
-- The original screen:
-  - draws the menu background, a black bar over (0, 220, 1024, 280), the "SELECT TRACK" header of `headers.png` and three track cards of `buttons.png`;
-  - draws the selected card in full with the orange outline sprite over it and its name sprite below; the others are dimmed to 0.753 opacity;
-  - grows the selected card from 108 to 132 units of width in 0.5 s, starting every opening from card 1 grown;
-  - has Advanced as its default track;
-  - uses Left and Right with a ButtonClick sound, mouse hover and click, A or Space to start and Escape, B or Back to go back;
-  - shows no text.
-- ADR-0001 keeps the visual-state look of the code-built screens; ADR-0007 and ADR-0009 replaced that rule for the main menu, the title screen and the car selection.
+- ADR-0010 recorded the track selection as a reproduction of the original screen, cards included: the original places each card after the previous one's current width (`git show 4f840a3^:RacingGame.Shared/GameScreens/TrackSelection.cs:79, 217`), so a card that grows pushes the next ones.
+- The author asked for the cards to keep their position and grow around their centre without disturbing the others.
+- An ADR is never rewritten, so this record restates ADR-0010 with that change.
 
 ## Decision
 
-- **Reference.** The track selection takes the original game as its reference, as ADR-0009 sets it out; here the capture and the code agree.
+- **Reference.** The track selection takes the original game as its reference, as ADR-0009 sets it out; here the capture and the code agree. One exception, at the author's request: the cards do not slide (see Layout).
 - **Layout.** A view model lays the screen out every frame in screen pixels with the original's 1024×640 formulas, rounding half to even:
   - the black bar at 0.683 opacity;
   - the header with RacingGame's 1600×1200 helper;
-  - each card sized from its height and the sprite's aspect, interpolated between the inactive and the active size, and placed in a row whose start is computed from the row's resting width;
+  - each card sized from its height and the sprite's aspect, interpolated between the inactive and the active size, and grown around a fixed centre: the centre it has in the original's resting row with the middle card selected (x 698, 960.5 and 1223 at 1920×1080), vertically as the original already did;
   - the outline and the label on the selected card, the label stretched to the card's width;
   - the A and B buttons as in the car selection.
   An unselected card is one image at 0.753 opacity.
@@ -42,6 +35,7 @@
 - `LegacyMenuUiTheme.ApplySpriteButtonState`, used only by the old track selection, is removed.
 - The ButtonClick sound is available to the other menus of the original that use it (Options, Highscores), which do not use it yet.
 - Known differences with the original:
+  - the cards keep fixed centres and grow around them, where the original slid them along the row as the selected card grew (`TrackSelection.cs:79`), at the author's request;
   - after a race RacingGameCasaEngine returns to the main menu, where the original returned to the track selection (author's choice);
   - the original's post-processing (warm tint, glow on the selected card), the 3D scene behind the menus, the original mouse cursor and the capture's web address pill are not reproduced, as for the other screens (ADR-0009).
 - The other screens keep the visual-state parity of ADR-0001.

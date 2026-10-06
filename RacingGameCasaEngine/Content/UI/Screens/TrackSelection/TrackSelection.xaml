@@ -4,7 +4,7 @@
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
         Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
   <!--
-    RacingGame's track selection (ADR-0010). RaceTrackSelectionViewModel lays everything out in screen pixels with
+    RacingGame's track selection (ADR-0011). RaceTrackSelectionViewModel lays everything out in screen pixels with
     RacingGame's formulas, every frame, and animates the cards' sizes. Nothing takes MGUI's focus: TrackSelectionScreen
     reads the keyboard, the mouse and the gamepad itself.
   -->

@@ -3,16 +3,17 @@ using Microsoft.Xna.Framework;
 namespace RacingGameCasaEngine.UI.ViewModels;
 
 /// <summary>
-/// Data context of <c>Screen.TrackSelection</c>, RacingGame's track selection (ADR-0010): the menu decoration, the black
+/// Data context of <c>Screen.TrackSelection</c>, RacingGame's track selection (ADR-0011): the menu decoration, the black
 /// band, the "SELECT TRACK" header, the three track cards and the A and B buttons, laid out every frame in screen pixels
 /// with RacingGame's formulas (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/TrackSelection.cs</c>, Update and
 /// Render; <c>Graphics/UIRenderer.cs</c>, RenderBlackBar and RenderBottomButtons; <c>Graphics/BaseGame.cs</c>, XToRes,
 /// YToRes, CalcRectangle, CalcRectangle1600 and CalcRectangleCenteredWithGivenHeight; <c>MainMenu.InterpolateRect</c>).
 /// <para/>
 /// A card is as high as 132 (selected) or 108 (other) units of width would make the 212x352 sprite, and as wide as that
-/// height gives at the sprite's aspect. Its size moves towards the selected or the other size at 2 per second. The row
-/// starts where its resting width would be centred, so the cards slide while they grow and shrink. Each opening starts
-/// from card 1 grown, as RacingGame's (<see cref="Reset"/>).
+/// height gives at the sprite's aspect. Its size moves towards the selected or the other size at 2 per second. Each card
+/// keeps the centre it has in RacingGame's resting row with the middle card selected and grows around it, at the author's
+/// request (ADR-0011); RacingGame slid the cards along the row instead (TrackSelection.cs:79). Each opening starts from
+/// card 1 grown, as RacingGame's (<see cref="Reset"/>).
 /// </summary>
 public sealed class RaceTrackSelectionViewModel : RaceViewModelBase
 {
@@ -45,6 +46,7 @@ public sealed class RaceTrackSelectionViewModel : RaceViewModelBase
     private const int BottomButtonCentreY = 587;
 
     private readonly float[] _sizeFactors = new float[CardCount];
+    private readonly float[] _cardCentres = new float[CardCount];
     private int _viewportWidth = (int)ReferenceWidth;
     private int _viewportHeight = (int)ReferenceHeight;
     private int _bandTopPixels;
@@ -139,8 +141,13 @@ public sealed class RaceTrackSelectionViewModel : RaceViewModelBase
         int inactiveWidth = Round(CardArtWidth * inactiveHeight / (float)CardArtHeight);
         int gap = XToRes(DistanceBetweenButtons);
         int totalWidth = activeWidth + 2 * inactiveWidth + 2 * gap;
-        int x = XToRes(512) - totalWidth / 2;
+        int rowLeft = XToRes(512) - totalWidth / 2;
         int rowTop = YToRes(RowTop);
+        // The cards' centres in the resting row with the middle card selected.
+        float middleLeft = rowLeft + inactiveWidth + gap;
+        _cardCentres[0] = rowLeft + inactiveWidth / 2f;
+        _cardCentres[1] = middleLeft + activeWidth / 2f;
+        _cardCentres[2] = middleLeft + activeWidth + gap + inactiveWidth / 2f;
 
         float step = (float)elapsedSeconds * AnimationSpeed;
         for (int i = 0; i < CardCount; i++)
@@ -156,11 +163,12 @@ public sealed class RaceTrackSelectionViewModel : RaceViewModelBase
             int height = (int)Math.Round(activeHeight * t + inactiveHeight * (1 - t));
             int top = rowTop - (height - inactiveHeight) / 2;
 
+            int left = (int)Math.Round(_cardCentres[i] - width / 2f);
+
             RaceTrackCardViewModel card = Cards[i];
-            card.Rect.Set(x, top, width, height);
-            card.Label.Set(x, top + height + YToRes(LabelGap), width, height * LabelArtHeight / CardArtHeight);
+            card.Rect.Set(left, top, width, height);
+            card.Label.Set(left, top + height + YToRes(LabelGap), width, height * LabelArtHeight / CardArtHeight);
             card.IsSelected = selected;
-            x += width + gap;
         }
 
         int buttonHeight = Round(BottomButtonHeight * HeightFactor);

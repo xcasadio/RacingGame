@@ -295,6 +295,64 @@ Découverte en lecture seule (workflow de 3 agents, dont un contrôle croisé ad
 >   - les trois remarques P4 ci-dessus ;
 >   - ButtonClick n'est pas encore branché dans Options et Highscores (hors périmètre).
 
+## Phase 4 — Retour de l'auteur (2026-10-06)
+
+Demande de l'auteur, avec une capture de la carte sélectionnée :
+- « il y a des pixels jaunes clair (ou blanc ?) au niveau des arrondis, c'est quoi ? » ;
+- « quand le bouton beginner s'agrandit il "pousse" les autres boutons vers la droite or les boutons doivent toujours garder leur position et s'agrandir selon leur centre sans perturber les autres ».
+
+État vérifié (2026-10-06) :
+- **Les pixels clairs** viennent de l'alpha non prémultiplié.
+  - MGUI dessine ses images en mélange prémultiplié (`BlendState.AlphaBlend` : `DrawSettings.cs:82`, `CasaMonoGameRenderInterop.cs:19-20`).
+  - CasaEngine charge les PNG sans les prémultiplier (`Texture2D.FromStream`, `Texture2DLoader.cs:12`), alors que l'original les prémultipliait à la compilation (`Content.mgcb:1607`, `PremultiplyAlpha=True`).
+  - Un pixel de bord semi-transparent ajoute donc sa couleur entière au lieu de la pondérer par son alpha. Au coin de la carte, le bord gris du sprite de carte (188, 188, 188, alpha 68) puis le bord orange du contour (248, 152, 0, alpha 68) donnent (255, 255, ~146) ; la capture mesure (255, 255, 162) en (641, 402).
+  - Toutes les images d'interface ont ce défaut sur leurs bords semi-transparents : logo, en-têtes, cartes, libellés, boutons, flèches, cases, HUD, page de la police GameFont. Les glyphes noirs du menu principal ne l'ont pas : noir × alpha = noir.
+  - Les PNG concernés (`Content/Textures/{background,buttons,ingame,headers,ColorSelection,OptionsScreenWindows}.png`, `Content/UI/Fonts/GameFont.png`) ne servent qu'aux `.texture` de l'interface et à la police (relevé du catalogue). `scripts/MenuIconExtractor` lit `buttons.png` en entrée.
+- **Le glissement des cartes** est celui du code d'origine : `xPos += thisRect.Width + gap` (`TrackSelection.cs:79`, `:217`). L'auteur demande des cartes à position fixe, qui grandissent autour de leur centre.
+
+| Réf | Proposition |
+|---|---|
+| P9 | **Centres fixes** : chaque carte garde le centre qu'elle a dans la rangée au repos avec Advanced sélectionnée (en 1920×1080, x 698, 960,5 et 1223) et grandit autour de lui, en x comme en y (`x = round(centre − w/2)`). Le libellé suit la carte. Écart voulu avec l'original, consigné dans l'**ADR-0011**, qui remplace l'ADR-0010. |
+| P10 | **Images d'interface prémultipliées** : un petit outil C# versionné, `scripts/UiTexturePremultiplier` (`System.Drawing`, comme `MenuIconExtractor`), écrit des copies prémultipliées, `rgb·a/255` arrondi et alpha inchangé, dans `Content/UI/Textures/`. Le générateur fait pointer les `.texture` de l'interface vers ces copies, et la page de la police GameFont est prémultipliée. Les PNG d'origine restent inchangés : l'extracteur de glyphes les lit toujours. Consigné dans l'**ADR-0012** et en C5 de `docs/mgui-gaps-from-rgce-xaml-screens.md`. Toutes les captures de menu changent légèrement aux bords ; les intérieurs opaques ne bougent pas. |
+
+### 🧪 T4.1 — Cartes à centre fixe
+
+- Objectif : P9.
+- Fichiers : `RacingGameCasaEngine.UI/ViewModels/RaceTrackSelectionViewModel.cs`, `TrackSelection.design.json` si les valeurs changent, `docs/decisions/0011-…`, `0010-…` (statut), `docs/decisions/README.md`.
+- Validation :
+  - build ;
+  - capture en 1920×1080, Beginner sélectionnée : carte 1 en x 586 (223 de large, centre 698) ; carte 2 en x 870 (182 de large, centre 960,5) ; carte 3 en x 1132, comme avec Advanced ;
+  - deux runs identiques ;
+  - sonde figeant l'animation à mi-course : les centres ne bougent pas ;
+  - 🧪 animation par l'auteur.
+- Commit : `fix(racing-casa): grow the track cards around fixed centres`
+
+> Validation (2026-10-06) :
+> - `RaceTrackSelectionViewModel` calcule les centres de la rangée au repos avec la carte du milieu sélectionnée, et place chaque carte en `round(centre − w/2)`. La hauteur était déjà centrée.
+> - Capture en 1920×1080, Beginner sélectionnée, mesurée sur la ligne y 450 (les bords arrondis réduisent les largeurs mesurées) : centres des cartes 697, 960,5 et 1222,5. La carte 3 est en x 1132 → 1313 comme avec Advanced ; avant, Beginner poussait les cartes 2 et 3 vers la droite.
+> - Sonde figeant les tailles à mi-animation (0,5 / 0,5 / 0) : centres 697,5, 960,5 et 1222,5, inchangés.
+> - Deux runs `--capture-ui-screens` identiques ; `--smoke-frontend` code 0 sans avertissement ; build 0 erreur, aucun avertissement dans RGCE ; réglages restaurés à l'identique.
+> - Avec Advanced au repos, la disposition est identique à l'original, et les données de conception ne changent pas.
+> - ADR-0011 remplace l'ADR-0010 ; les références du code pointent vers l'ADR-0011.
+> - 🧪 Reste pour l'auteur : l'animation.
+
+### ⏳ T4.2 — Images d'interface prémultipliées
+
+- Objectif : P10.
+- Fichiers : `scripts/UiTexturePremultiplier/*` (nouveau), `scripts/generate_rgce_ui_assets.py`, `scripts/generate_rgce_gamefont.py`, `RacingGameCasaEngine/Content/UI/Textures/*.png` (nouveaux), `Content/UI/Fonts/GameFont.png`, `AssetInfos.json`, `docs/decisions/0012-…`, `docs/decisions/README.md`, `docs/mgui-gaps-from-rgce-xaml-screens.md`.
+- Validation :
+  - outil déterministe (seconde exécution identique au bit près) ;
+  - les pixels opaques sont identiques à l'original, les semi-transparents valent `rgb·a/255` ;
+  - capture : au coin de la carte sélectionnée, plus de pixel plus clair que l'orange du contour, et les intérieurs opaques sont inchangés (comparaison masquée) sur tous les états ;
+  - smoke, deux runs identiques, éditeur ;
+  - 🧪 rendu par l'auteur.
+- Commit : `fix(racing-casa): premultiply the UI images as RacingGame did`
+
+### ⏳ T4.3 — Clôture du retour
+
+- Objectif : nouvelles références, passe de vérification indépendante, rapport, index.
+- Commit : `docs(racing-casa): close the track selection feedback`
+
 ---
 
 ## Points ouverts

@@ -13,7 +13,7 @@ namespace RacingGameCasaEngine.Screens;
 
 /// <summary>
 /// Track selection, loaded from the <c>Screen.TrackSelection</c> screen asset (Content/UI/Screens/TrackSelection), as
-/// RacingGame's (ADR-0010), with its input (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/TrackSelection.cs</c>,
+/// RacingGame's (ADR-0011), with its input (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/TrackSelection.cs</c>,
 /// Update):
 /// <list type="bullet">
 /// <item>Left and Right (keyboard, D-pad, left stick past 0.5) select the previous or next card, wrapping, with the
