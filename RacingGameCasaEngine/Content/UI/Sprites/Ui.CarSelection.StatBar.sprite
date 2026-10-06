@@ -1,0 +1,17 @@
+{
+  "id": "00aafc16-c6d1-51c9-a70f-9bc8efc65e90",
+  "name": "Ui.CarSelection.StatBar",
+  "sprite_sheet_asset_id": "8fbc280b-206d-5bf6-81c5-68e4e36cdcdc",
+  "location": {
+    "x": 372,
+    "y": 297,
+    "w": 472,
+    "h": 6
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

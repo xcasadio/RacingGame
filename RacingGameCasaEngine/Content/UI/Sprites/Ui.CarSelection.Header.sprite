@@ -1,0 +1,17 @@
+{
+  "id": "1ac2e696-b03f-51f1-b159-23f0e55e9f18",
+  "name": "Ui.CarSelection.Header",
+  "sprite_sheet_asset_id": "728e9aed-900e-5f1a-ac05-96efcd06a53c",
+  "location": {
+    "x": 0,
+    "y": 212,
+    "w": 512,
+    "h": 100
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

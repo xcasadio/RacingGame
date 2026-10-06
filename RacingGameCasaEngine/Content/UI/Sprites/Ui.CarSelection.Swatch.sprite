@@ -1,0 +1,17 @@
+{
+  "id": "f5d522e0-e374-5287-ae9d-8ea50fb04160",
+  "name": "Ui.CarSelection.Swatch",
+  "sprite_sheet_asset_id": "044d3f46-d7a0-5338-9483-2c3f1e1d5492",
+  "location": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

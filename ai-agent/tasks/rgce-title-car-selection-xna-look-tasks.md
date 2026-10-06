@@ -207,7 +207,7 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 
 ## Phase 1 — Assets
 
-### ⏳ T1.1 — Textures et sprites de l'original
+### ✅ T1.1 — Textures et sprites de l'original
 
 - Objectif : rendre disponibles, catalogués, les éléments d'art des deux écrans.
 - Fichiers : `RacingGameCasaEngine/Content/Textures/{headers,ColorSelection,OptionsScreenWindows}.png` (copies de `RacingGame/Content/Textures`), `RacingGameCasaEngine/RacingGameCasaEngine.csproj` (exclusion du lien pour ces fichiers, comme `ingame.png`), `scripts/generate_rgce_ui_assets.py`, `RacingGameCasaEngine/Content/UI/Sprites/*`, `RacingGameCasaEngine/Content/AssetInfos.json`.
@@ -224,6 +224,13 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
   - éditeur : les sprites s'ouvrent ;
   - `--smoke-frontend` code 0.
 - Commit : `feat(racing-casa): catalogue the title and car selection art of the original`
+
+> Validation (2026-10-06) :
+> - 3 PNG copiés, liens du csproj exclus : un seul fichier par nom à la sortie, identique à la source (`cmp`) ;
+> - générateur : 7 textures, 40 sprites ; seconde exécution sans changement ; catalogue à 71 entrées ;
+> - chaque nouveau sprite remonte à une image existante et son rectangle tient dans l'image (contrôle par script) ;
+> - `dotnet build RacingGame.slnx` 0 erreur ; `--smoke-frontend` code 0, journal sans avertissement ; réglages restaurés à l'identique ;
+> - l'ouverture dans l'éditeur se vérifie en T2.1 et T3.1, quand les écrans utilisent ces sprites.
 
 ### ⏳ T1.2 — Police GameFont
 

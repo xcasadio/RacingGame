@@ -1,0 +1,17 @@
+{
+  "id": "18245390-d206-5a91-b362-7737dff56d9a",
+  "name": "Ui.Title.PressStart",
+  "sprite_sheet_asset_id": "728e9aed-900e-5f1a-ac05-96efcd06a53c",
+  "location": {
+    "x": 2,
+    "y": 1,
+    "w": 631,
+    "h": 45
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

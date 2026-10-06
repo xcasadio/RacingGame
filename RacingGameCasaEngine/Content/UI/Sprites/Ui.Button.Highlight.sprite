@@ -1,0 +1,17 @@
+{
+  "id": "1a279f44-bb5f-5a92-810e-549baca12d7e",
+  "name": "Ui.Button.Highlight",
+  "sprite_sheet_asset_id": "0e470a8a-1582-5839-9a0c-96d2adc604eb",
+  "location": {
+    "x": 424,
+    "y": 240,
+    "w": 212,
+    "h": 92
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

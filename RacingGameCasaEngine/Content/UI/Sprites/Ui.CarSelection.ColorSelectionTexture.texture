@@ -1,0 +1,22 @@
+{
+  "id": "044d3f46-d7a0-5338-9483-2c3f1e1d5492",
+  "name": "Ui.CarSelection.ColorSelectionTexture",
+  "texture_asset_id": "d9db3b46-2e2f-53d8-be42-c425971b1ab9",
+  "sampler_state": {
+    "texture_filter": "Linear",
+    "address_u": "Clamp",
+    "address_v": "Clamp",
+    "address_w": "Clamp",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

@@ -29,6 +29,10 @@ TEXTURES = [
     ("Ui.Hud.IngameTexture", "Ui.Hud.IngameImage", "Textures/ingame.png"),
     # Main-menu icon glyphs on a transparent background, written by scripts/MenuIconExtractor from buttons.png.
     ("Ui.Menu.GlyphsTexture", "Ui.Menu.GlyphsImage", "UI/Sprites/Ui.Menu.Glyphs.png"),
+    # Title screen and car selection art of RacingGame (UIRenderer, CarSelection), copied from RacingGame/Content/Textures.
+    ("Ui.Title.HeadersTexture", "Ui.Title.HeadersImage", "Textures/headers.png"),
+    ("Ui.CarSelection.ColorSelectionTexture", "Ui.CarSelection.ColorSelectionImage", "Textures/ColorSelection.png"),
+    ("Ui.CarSelection.OptionsWindowsTexture", "Ui.CarSelection.OptionsWindowsImage", "Textures/OptionsScreenWindows.png"),
 ]
 
 # (sprite asset name, texture asset name, x, y, w, h)
@@ -55,6 +59,16 @@ SPRITES = [
     ("Ui.Track.Expert", "Ui.Menu.ButtonsTexture", 424, 480, 212, 352),
     ("Ui.Button.Select", "Ui.Menu.ButtonsTexture", 0, 872, 212, 92),
     ("Ui.Button.Back", "Ui.Menu.ButtonsTexture", 212, 872, 212, 92),
+    # Orange outline drawn over a hovered A or B button (UIRenderer BottomButtonSelectionGfxRect) and the car selection's
+    # arrow (SelectionArrowGfxRect, pointing right).
+    ("Ui.Button.Highlight", "Ui.Menu.ButtonsTexture", 424, 240, 212, 92),
+    ("Ui.CarSelection.Arrow", "Ui.Menu.ButtonsTexture", 874, 426, 53, 39),
+    # headers.png (1024x512): "Press START to continue." (PressStartGfxRect) and "CHOOSE YOUR CAR" (HeaderChooseCarGfxRect).
+    ("Ui.Title.PressStart", "Ui.Title.HeadersTexture", 2, 1, 631, 45),
+    ("Ui.CarSelection.Header", "Ui.Title.HeadersTexture", 0, 212, 512, 100),
+    # ColorSelection.png (64x64): the colour square, tinted per colour; OptionsScreenWindows.png: the car property bar.
+    ("Ui.CarSelection.Swatch", "Ui.CarSelection.ColorSelectionTexture", 0, 0, 64, 64),
+    ("Ui.CarSelection.StatBar", "Ui.CarSelection.OptionsWindowsTexture", 372, 297, 472, 6),
     # ingame.png (1024x512): race HUD panels, tachometer, needle and the 10 digit glyphs.
     ("Ui.Hud.Laps", "Ui.Hud.IngameTexture", 381, 132, 222, 160),
     ("Ui.Hud.Tacho", "Ui.Hud.IngameTexture", 0, 0, 343, 341),

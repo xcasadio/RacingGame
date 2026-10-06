@@ -353,6 +353,78 @@
       "name": "Ui.Menu.LabelQuit",
       "file_name": "UI/Sprites/Ui.Menu.LabelQuit.sprite",
       "asset_type": "sprite"
+    },
+    {
+      "id": "236bd928-b0b3-5ed7-b963-dbfd1be4f920",
+      "name": "Ui.Title.HeadersImage",
+      "file_name": "Textures/headers.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "d9db3b46-2e2f-53d8-be42-c425971b1ab9",
+      "name": "Ui.CarSelection.ColorSelectionImage",
+      "file_name": "Textures/ColorSelection.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "bc09e46a-d18f-5a32-a33c-b3be8b346aa7",
+      "name": "Ui.CarSelection.OptionsWindowsImage",
+      "file_name": "Textures/OptionsScreenWindows.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "728e9aed-900e-5f1a-ac05-96efcd06a53c",
+      "name": "Ui.Title.HeadersTexture",
+      "file_name": "UI/Sprites/Ui.Title.HeadersTexture.texture",
+      "asset_type": "texture"
+    },
+    {
+      "id": "044d3f46-d7a0-5338-9483-2c3f1e1d5492",
+      "name": "Ui.CarSelection.ColorSelectionTexture",
+      "file_name": "UI/Sprites/Ui.CarSelection.ColorSelectionTexture.texture",
+      "asset_type": "texture"
+    },
+    {
+      "id": "8fbc280b-206d-5bf6-81c5-68e4e36cdcdc",
+      "name": "Ui.CarSelection.OptionsWindowsTexture",
+      "file_name": "UI/Sprites/Ui.CarSelection.OptionsWindowsTexture.texture",
+      "asset_type": "texture"
+    },
+    {
+      "id": "1a279f44-bb5f-5a92-810e-549baca12d7e",
+      "name": "Ui.Button.Highlight",
+      "file_name": "UI/Sprites/Ui.Button.Highlight.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "6f5cd081-8e9b-5eea-8b6d-b75cabbce27b",
+      "name": "Ui.CarSelection.Arrow",
+      "file_name": "UI/Sprites/Ui.CarSelection.Arrow.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "18245390-d206-5a91-b362-7737dff56d9a",
+      "name": "Ui.Title.PressStart",
+      "file_name": "UI/Sprites/Ui.Title.PressStart.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "1ac2e696-b03f-51f1-b159-23f0e55e9f18",
+      "name": "Ui.CarSelection.Header",
+      "file_name": "UI/Sprites/Ui.CarSelection.Header.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "f5d522e0-e374-5287-ae9d-8ea50fb04160",
+      "name": "Ui.CarSelection.Swatch",
+      "file_name": "UI/Sprites/Ui.CarSelection.Swatch.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "00aafc16-c6d1-51c9-a70f-9bc8efc65e90",
+      "name": "Ui.CarSelection.StatBar",
+      "file_name": "UI/Sprites/Ui.CarSelection.StatBar.sprite",
+      "asset_type": "sprite"
     }
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "id": "6f5cd081-8e9b-5eea-8b6d-b75cabbce27b",
+  "name": "Ui.CarSelection.Arrow",
+  "sprite_sheet_asset_id": "0e470a8a-1582-5839-9a0c-96d2adc604eb",
+  "location": {
+    "x": 874,
+    "y": 426,
+    "w": 53,
+    "h": 39
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}
