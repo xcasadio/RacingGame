@@ -180,7 +180,7 @@ Découverte en lecture seule (workflow de 3 agents, dont un contrôle croisé ad
 > - incident corrigé avant commit : une retouche de commentaire par numéro de ligne avait écrasé l'entrée `Ui.Button.Select`. Elle est rétablie ; le diff du catalogue ne contient que les 5 nouvelles entrées ;
 > - `dotnet build RacingGame.slnx` 0 erreur, aucun avertissement dans RGCE ; `--smoke-frontend` code 0 sans avertissement ; réglages restaurés à l'identique.
 
-### ⏳ T1.2 — Son ButtonClick
+### ✅ T1.2 — Son ButtonClick
 
 - Objectif : P6.
 - Fichiers : `RacingGameCasaEngine/Content/Audio/menu_buttonclick.{wav,sound}`, `AssetInfos.json`, `RacingGameCasaEngine/UI/MenuSounds.cs`.
@@ -189,6 +189,12 @@ Découverte en lecture seule (workflow de 3 agents, dont un contrôle croisé ad
   - `--smoke-frontend` sans avertissement, le `.sound` se charge au démarrage (journal) ;
   - 🧪 écoute par l'auteur.
 - Commit : `feat(racing-casa): add the original ButtonClick menu sound`
+
+> Validation (2026-10-06) :
+> - `menu_buttonclick.wav` (16 bits, stéréo, 44,1 kHz, 0,44 s) copié. Le `.sound` est au volume 0,708, soit −300 centièmes de dB d'après `RacingGame.xap` (son `menu_buttonclick`, `Volume = -300`). Deux entrées de catalogue (ids uuid5 du nom), bus `Sfx`.
+> - `MenuSound.ButtonClick` et `Sound.MenuButtonClick` sont ajoutés à `MenuSounds`.
+> - `dotnet build RacingGame.slnx` 0 erreur, aucun avertissement dans RGCE ; `--smoke-frontend` code 0 sans avertissement, les quatre `.sound` se chargent au démarrage ; réglages restaurés à l'identique.
+> - 🧪 écoute par l'auteur, en T2.1 quand l'écran le joue.
 
 ## Phase 2 — Écran
 

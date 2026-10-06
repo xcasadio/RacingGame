@@ -503,6 +503,18 @@
       "name": "Ui.TrackSelection.Header",
       "file_name": "UI/Sprites/Ui.TrackSelection.Header.sprite",
       "asset_type": "sprite"
+    },
+    {
+      "id": "c364c032-d775-582b-9fa9-b51a1cb224d0",
+      "name": "Sound.MenuButtonClickWave",
+      "file_name": "Audio/menu_buttonclick.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "a6a5038f-2481-551b-b390-cbdd6d7ccd09",
+      "name": "Sound.MenuButtonClick",
+      "file_name": "Audio/menu_buttonclick.sound",
+      "asset_type": "sound"
     }
   ]
 }

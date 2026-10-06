@@ -17,6 +17,9 @@ internal enum MenuSound
 
     /// <summary>A screen closes (RacingGame's "ScreenBack" cue, menu_screenback.wav).</summary>
     ScreenBack,
+
+    /// <summary>A choice moves with the keys or the pad (RacingGame's "ButtonClick" cue, menu_buttonclick.wav).</summary>
+    ButtonClick,
 }
 
 /// <summary>
@@ -25,7 +28,7 @@ internal enum MenuSound
 /// </summary>
 internal sealed class MenuSounds : IDisposable
 {
-    private static readonly string[] SoundNames = ["Sound.MenuHighlight", "Sound.MenuScreenClick", "Sound.MenuScreenBack"];
+    private static readonly string[] SoundNames = ["Sound.MenuHighlight", "Sound.MenuScreenClick", "Sound.MenuScreenBack", "Sound.MenuButtonClick"];
 
     private readonly CasaEngineGame _game;
     private readonly AssetHandle<SoundAsset>?[] _sounds = new AssetHandle<SoundAsset>?[SoundNames.Length];

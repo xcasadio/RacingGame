@@ -1,0 +1,10 @@
+{
+  "id": "a6a5038f-2481-551b-b390-cbdd6d7ccd09",
+  "name": "Sound.MenuButtonClick",
+  "audio_file_asset_id": "c364c032-d775-582b-9fa9-b51a1cb224d0",
+  "volume": 0.708,
+  "pitch": 0.0,
+  "is_looped": false,
+  "bus_name": "Sfx",
+  "is_streaming": false
+}
