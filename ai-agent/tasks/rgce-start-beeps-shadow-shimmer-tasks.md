@@ -151,7 +151,7 @@ Découverte en lecture seule : workflow de 2 agents, chacun contre-vérifié par
 
 ## Phase 1 — Sons
 
-### ⏳ T1.1 — Beep et Bleep à −12 dB
+### 🧪 T1.1 — Beep et Bleep à −12 dB
 
 - Objectif : D1.
 - Fichiers : `RacingGameCasaEngine/Content/Audio/Beep.sound`, `Bleep.sound`.
@@ -161,6 +161,12 @@ Découverte en lecture seule : workflow de 2 agents, chacun contre-vérifié par
   - `--smoke-frontend` code 0 sans avertissement, et le journal montre les lignes « Start light: … played » ;
   - 🧪 écoute par l'auteur.
 - Commit : `fix(racing-casa): play Beep and Bleep at the original -12 dB`
+
+> Validation (2026-10-06) :
+> - `Beep.sound` et `Bleep.sound` à `"volume": 0.251` ; les copies de la sortie de build portent 0,251.
+> - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE.
+> - `--smoke-frontend` : code 0, journal sans `[Warning]` ni `[Error]` ; « Start light: red, beep played », « yellow, beep played », « green, bleep played » ; réglages restaurés à l'identique.
+> - 🧪 Reste pour l'auteur : l'écoute des bips au départ d'une course.
 
 ## Phase 2 — Ombres
 

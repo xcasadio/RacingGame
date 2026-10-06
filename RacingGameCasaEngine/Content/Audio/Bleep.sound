@@ -2,7 +2,7 @@
   "id": "753c7a85-6936-401d-85b2-328c72f39cfc",
   "name": "Sound.Bleep",
   "audio_file_asset_id": "cf148ac0-967e-4267-9ffd-b09b7743c973",
-  "volume": 1.0,
+  "volume": 0.251,
   "pitch": 0.0,
   "is_looped": false,
   "bus_name": "Sfx",
