@@ -11,7 +11,7 @@ namespace RacingGameCasaEngine.Screens;
 
 /// <summary>
 /// Main menu, loaded from the <c>Screen.MainMenu</c> screen asset (Content/UI/Screens/MainMenu), with the selection of
-/// RacingGame's XNA menu (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/MainMenu.cs</c>, Update; ADR-0006):
+/// RacingGame's XNA menu (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/MainMenu.cs</c>, Update; ADR-0007):
 /// <list type="bullet">
 /// <item>one button is always selected: the one of the last visit, Play at the first;</item>
 /// <item>Left and Right, on the keyboard, the D-pad or the left stick (past 0.5; RacingGame used 0.75), move the

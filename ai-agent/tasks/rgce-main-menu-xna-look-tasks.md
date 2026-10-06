@@ -279,6 +279,19 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
 >   - comportements d'origine hors périmètre (Échap/Retour, retour au splash, son) ;
 >   - `MouseManager.HasMoved` de CasaEngine ne compte que les mouvements vers la droite ou le bas : tâche séparée proposée. ✅ Réglé le 2026-10-06 : corrigé dans CasaEngine (`5882bb72c`, mergé dans `main` par `d79ed169b`), sous-module mis à jour, et `MainMenuScreen` utilise `HasMoved` à la place des deltas en valeur absolue.
 
+> Retour de l'auteur (2026-10-06) : corriger trois des écarts reportés (icônes grises des boutons non sélectionnés, bas de la face plus sombre que l'art, biseau en 4 marches).
+> - **Glyphes** : le glyphe sort de la couche atténuée et prend sa propre opacité, 0,93 pour un bouton non sélectionné. L'encre d'origine vaut 0,247 × U (U de 31 à 62 sur la bande, 44 en moyenne) ; ici, la face à 0,75 donne environ 165 au milieu, d'où 1 − 0,247 × 44 / 165 = 0,93. Encre mesurée : 10 (8 à 15 dans l'original), contre 35 à 41 avant.
+> - **Face** : dégradé 255 → 153, que MGUI dessine à l'intérieur du rebord ; il suit la droite de l'art. Mesuré en 1920×1080 : 249 en haut de la face et 159 en bas, contre 152 avant.
+> - **Biseau** : `RaceMainMenuButtonViewModel.BevelBrush` construit un `BandedBorderBrush` d'une bande de 1 px par pixel d'épaisseur, chacune une bordure ancrée avec la couleur de l'art interpolée par côté. Mesuré en 1920×1080 : haut 87, 109, 134 … 246 (art 87 … 246), côté 70 … 202 (identique), bas 55 … 157 (identique), puis la face.
+> - Validation :
+>   - build sans avertissement dans RGCE ;
+>   - `--smoke-frontend` et `--capture-ui-screens` : code 0, aucun avertissement ;
+>   - captures contre `references-32d0422` : seul `main-menu` change (0,46) ;
+>   - géométrie toujours au pixel près ;
+>   - éditeur sans erreur ;
+>   - réglages de l'auteur inchangés.
+> - Décision : ADR-0007 (remplace ADR-0006) ; M13 et M14 mis à jour.
+
 - Objectif :
   - validation globale ;
   - nouvelles références ;
@@ -295,7 +308,7 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
-| O1 | **Résolu en T2.1.** Le biseau d'origine n'est pas uniforme : 87 en haut, 70 sur les côtés, 55 en bas. Les bandes concentriques gardent une couleur par côté (bordures ancrées pleines) ; seul le dégradé continu manque, remplacé par 4 marches (M13, M14). | T2.1 |
+| O1 | **Résolu en T2.1.** Le biseau d'origine n'est pas uniforme : 87 en haut, 70 sur les côtés, 55 en bas. Les bandes concentriques gardent une couleur par côté (bordures ancrées pleines) ; seul le dégradé continu manque, remplacé par 4 marches (M13, M14). Depuis le 2026-10-06, une bande par pixel donne un dégradé continu (ADR-0007). | T2.1 |
 
 ## Hors périmètre
 

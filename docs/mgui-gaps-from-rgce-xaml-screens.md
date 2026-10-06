@@ -1,7 +1,7 @@
 # MGUI and CasaEngine gaps met by the RacingGameCasaEngine XAML screens
 
 - **Date**: 2026-10-05
-- **Source**: plan `ai-agent/tasks/rgce-xaml-screens-tasks.md`, tasks T1.2 to T3.2 (validation notes), decisions D6, D14, D15 and open point O5; [ADR-0001](decisions/0001-rgce-screens-as-casaengine-screen-assets.md) and [ADR-0002](decisions/0002-rgce-content-is-a-casaengine-editor-project.md). M13 to M15: plan `ai-agent/tasks/rgce-main-menu-xna-look-tasks.md` and [ADR-0006](decisions/0006-rgce-main-menu-as-delivered.md).
+- **Source**: plan `ai-agent/tasks/rgce-xaml-screens-tasks.md`, tasks T1.2 to T3.2 (validation notes), decisions D6, D14, D15 and open point O5; [ADR-0001](decisions/0001-rgce-screens-as-casaengine-screen-assets.md) and [ADR-0002](decisions/0002-rgce-content-is-a-casaengine-editor-project.md). M13 to M15: plan `ai-agent/tasks/rgce-main-menu-xna-look-tasks.md` and [ADR-0007](decisions/0007-rgce-main-menu-continuous-bevel.md).
 - **Scope**: only what the migration of the nine RacingGameCasaEngine (RGCE) screens, and the later rework of the main menu (M13 to M15), actually hit. Each entry gives the evidence in the CasaEngine submodule (`CasaEngine/`, MGUI in `CasaEngine/MGUI/`), what RGCE does instead, and the related entry of the engine's own audit `CasaEngine/ai-agent/audits/mgui-gaps-from-xaml-screens.md` when there is one. Nothing here was changed in the submodules (D8).
 
 ## Summary
@@ -20,8 +20,8 @@
 | M10 | An `Image` with an empty `SourceName` asks the catalogue for it | RaceHud digit slots | collapsed slots keep a valid sprite name |
 | M11 | `ScrollViewer` has no `AllowClickDragScrolling` attribute | Help, Highscores, Options | none needed (default matches) |
 | M12 | The runtime never calls `LoadDefaultResources`; screens are never disposed | every screen | `RaceXamlScreenBase` |
-| M13 | No rounded border with a gradient | MainMenu button bevel | concentric banded bands of solid docked borders |
-| M14 | Banded border bands are truncated to whole pixels | MainMenu button bevel | the button's gradient background shows through the remainder |
+| M13 | No rounded border with a gradient | MainMenu button bevel | one 1-pixel band per pixel, each a solid docked border |
+| M14 | Banded border bands are truncated to whole pixels | MainMenu button bevel | one band per pixel |
 | M15 | The focused state is shown only in keyboard or pad navigation | MainMenu selection | selection owned by the screen; buttons not focusable |
 | E1 | The editor preview is not run-time faithful | every screen | design size on full-screen windows; code-only states verified at run time |
 | E2 | Design-time data cannot give an XNA `Color` | CarSelection | colours as XAML colour strings |
@@ -34,7 +34,7 @@
 
 **Evidence.** A visual-state setter resolves its path through the animation-target registry (`MGUI/MGUI.Core/UI/Animation/States/UIVisualState.cs:148-149, 212`). The registered targets are opacity, render transform, render scale, margin, padding, min height, preferred sizes, background overlay and gradients, border highlight progress, scroll offsets and a few control values (`UIBuiltInAnimationTargets.cs`, `UIExtraAnimationTargets.cs`). `BorderThickness`, the `BorderBrush` colour and a text block's `Foreground` are not among them.
 
-**In RGCE.** The code-built menus changed exactly these on hover, focus and selection. Band buttons change border colour, thickness and label colour. Menu text buttons change border, thickness and opacity. The track selection changes frame border colour, thickness and label colour, and the car selection changes the swatch border. D6 keeps the exact look, so every screen finds these elements by name and restyles them every frame with the functions kept in `RacingGameCasaEngine/UI/LegacyMenuUiTheme.cs`. The main menu no longer does: its look follows the original XNA menu and is bound to its view model (ADR-0006).
+**In RGCE.** The code-built menus changed exactly these on hover, focus and selection. Band buttons change border colour, thickness and label colour. Menu text buttons change border, thickness and opacity. The track selection changes frame border colour, thickness and label colour, and the car selection changes the swatch border. D6 keeps the exact look, so every screen finds these elements by name and restyles them every frame with the functions kept in `RacingGameCasaEngine/UI/LegacyMenuUiTheme.cs`. The main menu no longer does: its look follows the original XNA menu and is bound to its view model (ADR-0007).
 
 **Would remove the workaround.** Registered targets for border thickness, border colour and text foreground, usable by XAML visual states.
 
@@ -42,7 +42,7 @@
 
 **Evidence.** An element shows its focused state only when it is itself the keyboard focus handler (`MGUI/MGUI.Core/UI/MGElement.cs:3969-3971`).
 
-**In RGCE.** Band buttons recolour their label child, as part of the per-frame restyle of M1. The main menu had the same need (face, inner borders and a sibling label following the button) and now binds its selected look to its view model instead (ADR-0006).
+**In RGCE.** Band buttons recolour their label child, as part of the per-frame restyle of M1. The main menu had the same need (face, inner borders and a sibling label following the button) and now binds its selected look to its view model instead (ADR-0007).
 
 **Would remove the workaround.** A way for a child or a named sibling to follow another element's visual state.
 
@@ -136,7 +136,7 @@ The screens check that the catalogues still fit the slots. Slot counts are coupl
 - A docked border (one fill per side) keeps rounded corners only when its four sides are solid colours (`MGDockedBorderBrush.cs:204-214`).
 - Fills, on the other hand, follow rounded shapes with a four-corner gradient (`MGUI/MGUI.Core/UI/Brushes/FillBrushes/MGGradientFillBrush.cs:63-91`).
 
-**In RGCE.** The original menu buttons have a 10-pixel inner bevel that ramps from dark at the rim to the face colour, darker at the bottom than at the top. The main menu draws it as four concentric bands of a `BandedBorderBrush`, each a docked border with one solid colour per side, sampled from the art. The result is a ramp in four steps (2 pixels each at 1920×1080, 1 pixel at 1280×720, see M14) instead of a continuous one.
+**In RGCE.** The original menu buttons have a 10-pixel inner bevel that ramps from dark at the rim to the face colour, darker at the bottom than at the top. The main menu draws it as a `BandedBorderBrush` with one 1-pixel band per pixel of the bevel's thickness, each a docked border with one solid colour per side, interpolated from the art's profile at that depth. `RaceMainMenuButtonViewModel.BevelBrush` builds one per thickness. The ramp is continuous at pixel resolution; only the corners blend the colours of two sides.
 - Pitfall met on the way: the bevel is an empty `Border` inside each button. With the button's default content alignment, that border collapses to twice its thickness at the centre of the button and draws as a small disc. The buttons therefore set `HorizontalContentAlignment` and `VerticalContentAlignment` to `Stretch`.
 
 **Would remove the workaround.** A border brush that draws a gradient along a rounded ring, from its outer edge to its inner edge.
@@ -145,7 +145,7 @@ The screens check that the catalogues still fit the slots. Slot counts are coupl
 
 **Evidence.** Each band of a `BandedBorderBrush` takes `(int)(total thickness × its weight / total weight)` pixels. The remainder is not drawn (`MGUI/MGUI.Core/UI/Brushes/BorderBrushes/MGBandedBorderBrush.cs:104-128`, the rounded-shape path).
 
-**In RGCE.** The main-menu bevel is as thick as the rim, 9 or 11 pixels at 1920×1080, so its four equal bands draw 8 pixels. Each button's own background is the face gradient, so the undrawn pixels show the face colour instead of a gap.
+**In RGCE.** The main-menu bevel has one band per pixel of its thickness, so each band's share is exactly one pixel. Where floating-point truncation would give a band 0 pixels (equal weights over 49 pixels), `BevelBrush` uses fewer bands.
 
 **Would remove the workaround.** Distributing the remainder over the bands.
 

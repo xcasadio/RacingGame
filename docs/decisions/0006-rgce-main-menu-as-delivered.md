@@ -1,6 +1,6 @@
 # ADR-0006: RacingGameCasaEngine's main menu reproduces the original XNA menu, as delivered
 
-- **Status**: Accepted
+- **Status**: Superseded by ADR-0007
 - **Date**: 2026-10-05
 - **Source**: this chantier: `ai-agent/tasks/rgce-main-menu-xna-look-tasks.md`, decisions D1 to D5, proposals P2 to P5, validation notes T2.1 and T2.2, and the independent verification of T3.1. It supersedes ADR-0005.
 

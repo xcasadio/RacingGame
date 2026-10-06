@@ -1,6 +1,6 @@
 # MenuIconExtractor
 
-Extracts the black icon glyphs of RacingGame's main-menu buttons from `buttons.png` onto a transparent background. RacingGameCasaEngine draws its main-menu buttons with MGUI brushes and lays these glyphs over them (plan `ai-agent/tasks/rgce-main-menu-xna-look-tasks.md`, P3; ADR-0006).
+Extracts the black icon glyphs of RacingGame's main-menu buttons from `buttons.png` onto a transparent background. RacingGameCasaEngine draws its main-menu buttons with MGUI brushes and lays these glyphs over them (plan `ai-agent/tasks/rgce-main-menu-xna-look-tasks.md`, P3; ADR-0007).
 
 ## Method
 

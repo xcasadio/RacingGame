@@ -4,20 +4,21 @@
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
         Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
   <!--
-    Main menu with the look of RacingGame's XNA menu (ADR-0006). RaceMainMenuViewModel lays the band and the buttons
+    Main menu with the look of RacingGame's XNA menu (ADR-0007). RaceMainMenuViewModel lays the band and the buttons
     out in screen pixels with the original's formulas, every frame.
     Each button is drawn with MGUI brushes from RacingGame's 212x212 button art (buttons.png):
-    - a face with a vertical grey gradient, the button's background (255 to 147, drawn inside the rim: about 250 at the
-      top of the face and 152 at its bottom, where the art goes from #F8F8F8 to #A0A0A0);
+    - a face with a vertical grey gradient, the button's background, which MGUI draws inside the rim: 255 to 153 there
+      puts the face on the art's line, #F9F9F9 at its top to #9F9F9F at its bottom;
     - a flat grey rim (#C1C1C1), 10/212 of the button;
     - an inner bevel as wide as the rim, from dark at the rim to the face colour. MGUI has no rounded gradient border,
-      so the bevel is four concentric bands, each with one solid colour per side, sampled from the art (darker at the
-      bottom than at the top);
+      so RaceMainMenuButtonViewModel.BevelBrush gives it one 1-pixel band per pixel, each a docked border with the art's
+      colour per side at that depth (darker at the bottom);
     - the black icon glyph of the art (Ui.Menu.Glyph*, a 212x212 frame stretched over the button);
     - for the selected button, the art's flat orange ring (#FF9C00) over the rim, and its label below.
-    The buttons other than the selected one are drawn at 0.75 opacity. Like the original's, a button takes no hover tint
-    (transparent BackgroundFocusedColor; without it a capture with the cursor over a button showed it about 5 to 10
-    levels lighter): the mouse shows by selecting the button under it. MGUI still darkens a held button by 6 %.
+    The buttons other than the selected one are drawn at 0.75 opacity, their glyph at its own opacity (GlyphOpacity) so
+    its ink stays as dark as the original's. Like the original's, a button takes no hover tint (transparent
+    BackgroundFocusedColor; without it a capture with the cursor over a button showed it about 5 to 10 levels lighter):
+    the mouse shows by selecting the button under it. MGUI still darkens a held button by 6 %.
   -->
   <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <!-- Menu decoration (RaceMenuDecorationViewModel): background, then the bouncing logo placed by the view model. -->
@@ -37,24 +38,18 @@
                       HorizontalAlignment="Left" VerticalAlignment="Top">
           <Button Name="btnPlay" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                   HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BackgroundFocusedColor="rgba(0,0,0,0)"
-                  Background="rgb(255,255,255)|rgb(255,255,255)|rgb(147,147,147)|rgb(147,147,147)" BorderBrush="rgb(193,193,193)"
+                  Background="rgb(255,255,255)|rgb(255,255,255)|rgb(153,153,153)|rgb(153,153,153)" BorderBrush="rgb(193,193,193)"
                   BorderThickness="{dataBinding:MGBinding Path=Play.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Play.CornerRadius}">
             <Border Name="facePlay" Background="rgba(0,0,0,0)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                    BorderThickness="{dataBinding:MGBinding Path=Play.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Play.BevelCornerRadius}">
-              <Border.BorderBrush>
-                <BandedBorderBrush>
-                  <BorderBand Brush="rgb(88,88,88)-rgb(112,112,112)-rgb(88,88,88)-rgb(72,72,72)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(138,138,138)-rgb(158,158,158)-rgb(138,138,138)-rgb(108,108,108)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(172,172,172)-rgb(199,199,199)-rgb(172,172,172)-rgb(134,134,134)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(197,197,197)-rgb(231,231,231)-rgb(197,197,197)-rgb(152,152,152)" ThicknessWeight="1" />
-                </BandedBorderBrush>
-              </Border.BorderBrush>
-            </Border>
+                    BorderThickness="{dataBinding:MGBinding Path=Play.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Play.BevelCornerRadius}"
+                    BorderBrush="{dataBinding:MGBinding Path=Play.BevelBrush}" />
           </Button>
-          <Image SourceName="Ui.Menu.GlyphPlay" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-          <Border Background="rgba(0,0,0,0)" BorderBrush="rgb(255,156,0)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                  BorderThickness="{dataBinding:MGBinding Path=Play.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Play.CornerRadius}" Visibility="{dataBinding:MGBinding Path=Play.RingVisibility}" />
         </OverlayPanel>
+        <Image SourceName="Ui.Menu.GlyphPlay" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+               Width="{dataBinding:MGBinding Path=Play.Size}" Height="{dataBinding:MGBinding Path=Play.Size}" Margin="{dataBinding:MGBinding Path=Play.Margin}" Opacity="{dataBinding:MGBinding Path=Play.GlyphOpacity}" />
+        <Border Background="rgba(0,0,0,0)" BorderBrush="rgb(255,156,0)" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+                Width="{dataBinding:MGBinding Path=Play.Size}" Height="{dataBinding:MGBinding Path=Play.Size}" Margin="{dataBinding:MGBinding Path=Play.Margin}"
+                BorderThickness="{dataBinding:MGBinding Path=Play.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Play.CornerRadius}" Visibility="{dataBinding:MGBinding Path=Play.RingVisibility}" />
         <Image Name="lblPlay" SourceName="Ui.Menu.LabelPlay" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
                Width="{dataBinding:MGBinding Path=Play.Size}" Height="{dataBinding:MGBinding Path=Play.LabelHeight}" Margin="{dataBinding:MGBinding Path=Play.LabelMargin}" Visibility="{dataBinding:MGBinding Path=Play.LabelVisibility}" />
       </OverlayPanel>
@@ -63,24 +58,18 @@
                       HorizontalAlignment="Left" VerticalAlignment="Top">
           <Button Name="btnHighscores" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                   HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BackgroundFocusedColor="rgba(0,0,0,0)"
-                  Background="rgb(255,255,255)|rgb(255,255,255)|rgb(147,147,147)|rgb(147,147,147)" BorderBrush="rgb(193,193,193)"
+                  Background="rgb(255,255,255)|rgb(255,255,255)|rgb(153,153,153)|rgb(153,153,153)" BorderBrush="rgb(193,193,193)"
                   BorderThickness="{dataBinding:MGBinding Path=Highscores.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Highscores.CornerRadius}">
             <Border Name="faceHighscores" Background="rgba(0,0,0,0)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                    BorderThickness="{dataBinding:MGBinding Path=Highscores.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Highscores.BevelCornerRadius}">
-              <Border.BorderBrush>
-                <BandedBorderBrush>
-                  <BorderBand Brush="rgb(88,88,88)-rgb(112,112,112)-rgb(88,88,88)-rgb(72,72,72)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(138,138,138)-rgb(158,158,158)-rgb(138,138,138)-rgb(108,108,108)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(172,172,172)-rgb(199,199,199)-rgb(172,172,172)-rgb(134,134,134)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(197,197,197)-rgb(231,231,231)-rgb(197,197,197)-rgb(152,152,152)" ThicknessWeight="1" />
-                </BandedBorderBrush>
-              </Border.BorderBrush>
-            </Border>
+                    BorderThickness="{dataBinding:MGBinding Path=Highscores.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Highscores.BevelCornerRadius}"
+                    BorderBrush="{dataBinding:MGBinding Path=Highscores.BevelBrush}" />
           </Button>
-          <Image SourceName="Ui.Menu.GlyphHighscores" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-          <Border Background="rgba(0,0,0,0)" BorderBrush="rgb(255,156,0)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                  BorderThickness="{dataBinding:MGBinding Path=Highscores.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Highscores.CornerRadius}" Visibility="{dataBinding:MGBinding Path=Highscores.RingVisibility}" />
         </OverlayPanel>
+        <Image SourceName="Ui.Menu.GlyphHighscores" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+               Width="{dataBinding:MGBinding Path=Highscores.Size}" Height="{dataBinding:MGBinding Path=Highscores.Size}" Margin="{dataBinding:MGBinding Path=Highscores.Margin}" Opacity="{dataBinding:MGBinding Path=Highscores.GlyphOpacity}" />
+        <Border Background="rgba(0,0,0,0)" BorderBrush="rgb(255,156,0)" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+                Width="{dataBinding:MGBinding Path=Highscores.Size}" Height="{dataBinding:MGBinding Path=Highscores.Size}" Margin="{dataBinding:MGBinding Path=Highscores.Margin}"
+                BorderThickness="{dataBinding:MGBinding Path=Highscores.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Highscores.CornerRadius}" Visibility="{dataBinding:MGBinding Path=Highscores.RingVisibility}" />
         <Image Name="lblHighscores" SourceName="Ui.Menu.LabelHighscores" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
                Width="{dataBinding:MGBinding Path=Highscores.Size}" Height="{dataBinding:MGBinding Path=Highscores.LabelHeight}" Margin="{dataBinding:MGBinding Path=Highscores.LabelMargin}" Visibility="{dataBinding:MGBinding Path=Highscores.LabelVisibility}" />
       </OverlayPanel>
@@ -89,24 +78,18 @@
                       HorizontalAlignment="Left" VerticalAlignment="Top">
           <Button Name="btnOptions" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                   HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BackgroundFocusedColor="rgba(0,0,0,0)"
-                  Background="rgb(255,255,255)|rgb(255,255,255)|rgb(147,147,147)|rgb(147,147,147)" BorderBrush="rgb(193,193,193)"
+                  Background="rgb(255,255,255)|rgb(255,255,255)|rgb(153,153,153)|rgb(153,153,153)" BorderBrush="rgb(193,193,193)"
                   BorderThickness="{dataBinding:MGBinding Path=Options.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Options.CornerRadius}">
             <Border Name="faceOptions" Background="rgba(0,0,0,0)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                    BorderThickness="{dataBinding:MGBinding Path=Options.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Options.BevelCornerRadius}">
-              <Border.BorderBrush>
-                <BandedBorderBrush>
-                  <BorderBand Brush="rgb(88,88,88)-rgb(112,112,112)-rgb(88,88,88)-rgb(72,72,72)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(138,138,138)-rgb(158,158,158)-rgb(138,138,138)-rgb(108,108,108)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(172,172,172)-rgb(199,199,199)-rgb(172,172,172)-rgb(134,134,134)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(197,197,197)-rgb(231,231,231)-rgb(197,197,197)-rgb(152,152,152)" ThicknessWeight="1" />
-                </BandedBorderBrush>
-              </Border.BorderBrush>
-            </Border>
+                    BorderThickness="{dataBinding:MGBinding Path=Options.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Options.BevelCornerRadius}"
+                    BorderBrush="{dataBinding:MGBinding Path=Options.BevelBrush}" />
           </Button>
-          <Image SourceName="Ui.Menu.GlyphOptions" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-          <Border Background="rgba(0,0,0,0)" BorderBrush="rgb(255,156,0)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                  BorderThickness="{dataBinding:MGBinding Path=Options.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Options.CornerRadius}" Visibility="{dataBinding:MGBinding Path=Options.RingVisibility}" />
         </OverlayPanel>
+        <Image SourceName="Ui.Menu.GlyphOptions" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+               Width="{dataBinding:MGBinding Path=Options.Size}" Height="{dataBinding:MGBinding Path=Options.Size}" Margin="{dataBinding:MGBinding Path=Options.Margin}" Opacity="{dataBinding:MGBinding Path=Options.GlyphOpacity}" />
+        <Border Background="rgba(0,0,0,0)" BorderBrush="rgb(255,156,0)" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+                Width="{dataBinding:MGBinding Path=Options.Size}" Height="{dataBinding:MGBinding Path=Options.Size}" Margin="{dataBinding:MGBinding Path=Options.Margin}"
+                BorderThickness="{dataBinding:MGBinding Path=Options.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Options.CornerRadius}" Visibility="{dataBinding:MGBinding Path=Options.RingVisibility}" />
         <Image Name="lblOptions" SourceName="Ui.Menu.LabelOptions" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
                Width="{dataBinding:MGBinding Path=Options.Size}" Height="{dataBinding:MGBinding Path=Options.LabelHeight}" Margin="{dataBinding:MGBinding Path=Options.LabelMargin}" Visibility="{dataBinding:MGBinding Path=Options.LabelVisibility}" />
       </OverlayPanel>
@@ -115,24 +98,18 @@
                       HorizontalAlignment="Left" VerticalAlignment="Top">
           <Button Name="btnHelp" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                   HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BackgroundFocusedColor="rgba(0,0,0,0)"
-                  Background="rgb(255,255,255)|rgb(255,255,255)|rgb(147,147,147)|rgb(147,147,147)" BorderBrush="rgb(193,193,193)"
+                  Background="rgb(255,255,255)|rgb(255,255,255)|rgb(153,153,153)|rgb(153,153,153)" BorderBrush="rgb(193,193,193)"
                   BorderThickness="{dataBinding:MGBinding Path=Help.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Help.CornerRadius}">
             <Border Name="faceHelp" Background="rgba(0,0,0,0)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                    BorderThickness="{dataBinding:MGBinding Path=Help.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Help.BevelCornerRadius}">
-              <Border.BorderBrush>
-                <BandedBorderBrush>
-                  <BorderBand Brush="rgb(88,88,88)-rgb(112,112,112)-rgb(88,88,88)-rgb(72,72,72)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(138,138,138)-rgb(158,158,158)-rgb(138,138,138)-rgb(108,108,108)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(172,172,172)-rgb(199,199,199)-rgb(172,172,172)-rgb(134,134,134)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(197,197,197)-rgb(231,231,231)-rgb(197,197,197)-rgb(152,152,152)" ThicknessWeight="1" />
-                </BandedBorderBrush>
-              </Border.BorderBrush>
-            </Border>
+                    BorderThickness="{dataBinding:MGBinding Path=Help.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Help.BevelCornerRadius}"
+                    BorderBrush="{dataBinding:MGBinding Path=Help.BevelBrush}" />
           </Button>
-          <Image SourceName="Ui.Menu.GlyphHelp" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-          <Border Background="rgba(0,0,0,0)" BorderBrush="rgb(255,156,0)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                  BorderThickness="{dataBinding:MGBinding Path=Help.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Help.CornerRadius}" Visibility="{dataBinding:MGBinding Path=Help.RingVisibility}" />
         </OverlayPanel>
+        <Image SourceName="Ui.Menu.GlyphHelp" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+               Width="{dataBinding:MGBinding Path=Help.Size}" Height="{dataBinding:MGBinding Path=Help.Size}" Margin="{dataBinding:MGBinding Path=Help.Margin}" Opacity="{dataBinding:MGBinding Path=Help.GlyphOpacity}" />
+        <Border Background="rgba(0,0,0,0)" BorderBrush="rgb(255,156,0)" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+                Width="{dataBinding:MGBinding Path=Help.Size}" Height="{dataBinding:MGBinding Path=Help.Size}" Margin="{dataBinding:MGBinding Path=Help.Margin}"
+                BorderThickness="{dataBinding:MGBinding Path=Help.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Help.CornerRadius}" Visibility="{dataBinding:MGBinding Path=Help.RingVisibility}" />
         <Image Name="lblHelp" SourceName="Ui.Menu.LabelHelp" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
                Width="{dataBinding:MGBinding Path=Help.Size}" Height="{dataBinding:MGBinding Path=Help.LabelHeight}" Margin="{dataBinding:MGBinding Path=Help.LabelMargin}" Visibility="{dataBinding:MGBinding Path=Help.LabelVisibility}" />
       </OverlayPanel>
@@ -141,24 +118,18 @@
                       HorizontalAlignment="Left" VerticalAlignment="Top">
           <Button Name="btnQuit" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                   HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BackgroundFocusedColor="rgba(0,0,0,0)"
-                  Background="rgb(255,255,255)|rgb(255,255,255)|rgb(147,147,147)|rgb(147,147,147)" BorderBrush="rgb(193,193,193)"
+                  Background="rgb(255,255,255)|rgb(255,255,255)|rgb(153,153,153)|rgb(153,153,153)" BorderBrush="rgb(193,193,193)"
                   BorderThickness="{dataBinding:MGBinding Path=Quit.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Quit.CornerRadius}">
             <Border Name="faceQuit" Background="rgba(0,0,0,0)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                    BorderThickness="{dataBinding:MGBinding Path=Quit.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Quit.BevelCornerRadius}">
-              <Border.BorderBrush>
-                <BandedBorderBrush>
-                  <BorderBand Brush="rgb(88,88,88)-rgb(112,112,112)-rgb(88,88,88)-rgb(72,72,72)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(138,138,138)-rgb(158,158,158)-rgb(138,138,138)-rgb(108,108,108)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(172,172,172)-rgb(199,199,199)-rgb(172,172,172)-rgb(134,134,134)" ThicknessWeight="1" />
-                  <BorderBand Brush="rgb(197,197,197)-rgb(231,231,231)-rgb(197,197,197)-rgb(152,152,152)" ThicknessWeight="1" />
-                </BandedBorderBrush>
-              </Border.BorderBrush>
-            </Border>
+                    BorderThickness="{dataBinding:MGBinding Path=Quit.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Quit.BevelCornerRadius}"
+                    BorderBrush="{dataBinding:MGBinding Path=Quit.BevelBrush}" />
           </Button>
-          <Image SourceName="Ui.Menu.GlyphQuit" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-          <Border Background="rgba(0,0,0,0)" BorderBrush="rgb(255,156,0)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                  BorderThickness="{dataBinding:MGBinding Path=Quit.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Quit.CornerRadius}" Visibility="{dataBinding:MGBinding Path=Quit.RingVisibility}" />
         </OverlayPanel>
+        <Image SourceName="Ui.Menu.GlyphQuit" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+               Width="{dataBinding:MGBinding Path=Quit.Size}" Height="{dataBinding:MGBinding Path=Quit.Size}" Margin="{dataBinding:MGBinding Path=Quit.Margin}" Opacity="{dataBinding:MGBinding Path=Quit.GlyphOpacity}" />
+        <Border Background="rgba(0,0,0,0)" BorderBrush="rgb(255,156,0)" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+                Width="{dataBinding:MGBinding Path=Quit.Size}" Height="{dataBinding:MGBinding Path=Quit.Size}" Margin="{dataBinding:MGBinding Path=Quit.Margin}"
+                BorderThickness="{dataBinding:MGBinding Path=Quit.RimThickness}" CornerRadius="{dataBinding:MGBinding Path=Quit.CornerRadius}" Visibility="{dataBinding:MGBinding Path=Quit.RingVisibility}" />
         <Image Name="lblQuit" SourceName="Ui.Menu.LabelQuit" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
                Width="{dataBinding:MGBinding Path=Quit.Size}" Height="{dataBinding:MGBinding Path=Quit.LabelHeight}" Margin="{dataBinding:MGBinding Path=Quit.LabelMargin}" Visibility="{dataBinding:MGBinding Path=Quit.LabelVisibility}" />
       </OverlayPanel>
