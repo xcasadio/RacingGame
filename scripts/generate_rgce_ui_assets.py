@@ -23,24 +23,30 @@ NAMESPACE = uuid.uuid5(uuid.NAMESPACE_URL, "racinggame-casaengine/ui-assets")
 SPRITE_FOLDER = "UI/Sprites"
 
 # Image entries the sprites are cut from: (texture asset name, existing png catalogue name or None, png file_name).
+# MGUI draws images with premultiplied blending, so the textures are the premultiplied copies that
+# scripts/UiTexturePremultiplier writes under UI/Textures from the copies of RacingGame's textures (ADR-0012).
 TEXTURES = [
-    ("Ui.Menu.BackgroundTexture", "MenuBackground", None),
-    ("Ui.Menu.ButtonsTexture", "MenuButtons", None),
-    ("Ui.Hud.IngameTexture", "Ui.Hud.IngameImage", "Textures/ingame.png"),
-    # Main-menu icon glyphs on a transparent background, written by scripts/MenuIconExtractor from buttons.png.
+    ("Ui.Menu.BackgroundTexture", "Ui.Menu.BackgroundImage", "UI/Textures/background.png"),
+    # The menu background itself stays the plain copy: drawn at 0.85 opacity over black, its straight colours keep the
+    # brightness the original reached with its 3D scene behind it, which RGCE does not draw (author's choice, ADR-0012).
+    ("Ui.Menu.BackgroundPlainTexture", "MenuBackground", None),
+    ("Ui.Menu.ButtonsTexture", "Ui.Menu.ButtonsImage", "UI/Textures/buttons.png"),
+    ("Ui.Hud.IngameTexture", "Ui.Hud.IngameImage", "UI/Textures/ingame.png"),
+    # Main-menu icon glyphs on a transparent background, written by scripts/MenuIconExtractor from buttons.png. They are
+    # black, so their premultiplied form is the same image.
     ("Ui.Menu.GlyphsTexture", "Ui.Menu.GlyphsImage", "UI/Sprites/Ui.Menu.Glyphs.png"),
-    # Title screen and car selection art of RacingGame (UIRenderer, CarSelection), copied from RacingGame/Content/Textures.
-    ("Ui.Title.HeadersTexture", "Ui.Title.HeadersImage", "Textures/headers.png"),
-    ("Ui.CarSelection.ColorSelectionTexture", "Ui.CarSelection.ColorSelectionImage", "Textures/ColorSelection.png"),
-    ("Ui.CarSelection.OptionsWindowsTexture", "Ui.CarSelection.OptionsWindowsImage", "Textures/OptionsScreenWindows.png"),
+    # Title screen and car selection art of RacingGame (UIRenderer, CarSelection).
+    ("Ui.Title.HeadersTexture", "Ui.Title.HeadersImage", "UI/Textures/headers.png"),
+    ("Ui.CarSelection.ColorSelectionTexture", "Ui.CarSelection.ColorSelectionImage", "UI/Textures/ColorSelection.png"),
+    ("Ui.CarSelection.OptionsWindowsTexture", "Ui.CarSelection.OptionsWindowsImage", "UI/Textures/OptionsScreenWindows.png"),
 ]
 
 # (sprite asset name, texture asset name, x, y, w, h)
 SPRITES = [
-    # background.png (1024x1024): menu background, logo, whole texture for the splash screen.
-    ("Ui.Menu.Background", "Ui.Menu.BackgroundTexture", 0, 0, 1024, 640),
+    # background.png (1024x1024): menu background and whole texture (plain), logo (premultiplied).
+    ("Ui.Menu.Background", "Ui.Menu.BackgroundPlainTexture", 0, 0, 1024, 640),
     ("Ui.Menu.Logo", "Ui.Menu.BackgroundTexture", 0, 649, 1024, 374),
-    ("Ui.Menu.SplashBackground", "Ui.Menu.BackgroundTexture", 0, 0, 1024, 1024),
+    ("Ui.Menu.SplashBackground", "Ui.Menu.BackgroundPlainTexture", 0, 0, 1024, 1024),
     # buttons.png (1024x1024): tracks, A/B buttons.
     # Main-menu icon glyphs (full 212x212 button frames, Ui.Menu.Glyphs.png) and the labels shown under the selected button
     # (buttons.png MenuText*GfxRect of RacingGame's UIRenderer).

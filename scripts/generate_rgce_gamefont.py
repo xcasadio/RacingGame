@@ -1,5 +1,7 @@
 """Generate RacingGame's GameFont as a CasaEngine bitmap font: a BMFont text file (Content/UI/Fonts/GameFont.fnt) next to
-a copy of RacingGame/Content/Textures/GameFont.png, and their catalogue entries in Content/AssetInfos.json.
+its page, Content/UI/Fonts/GameFont.png, and their catalogue entries in Content/AssetInfos.json. The page is RacingGame's
+GameFont.png premultiplied, written by scripts/UiTexturePremultiplier (ADR-0012), since MGUI draws with premultiplied
+blending.
 
 The glyphs are RacingGame's TextureFont.CharRects (git show 4f840a3^:RacingGame.Shared/Graphics/TextureFont.cs:41-144),
 characters 32 to 126. TextureFont draws each glyph from (x, y + 1, width, 36) of the 256x256 texture and advances by
@@ -15,12 +17,10 @@ Usage: python scripts/generate_rgce_gamefont.py [--catalog <AssetInfos.json>] [-
 import argparse
 import json
 import pathlib
-import shutil
 import uuid
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 NAMESPACE = uuid.uuid5(uuid.NAMESPACE_URL, "racinggame-casaengine/ui-assets")
-SOURCE_TEXTURE = REPO / "RacingGame" / "Content" / "Textures" / "GameFont.png"
 FONT_FOLDER = "UI/Fonts"
 FACE = "GameFont"
 FONT_HEIGHT = 36
@@ -86,9 +86,8 @@ def main():
 
     content = pathlib.Path(arguments.content)
     page = content / FONT_FOLDER / f"{FACE}.png"
-    page.parent.mkdir(parents=True, exist_ok=True)
-    if not page.exists() or page.read_bytes() != SOURCE_TEXTURE.read_bytes():
-        shutil.copyfile(SOURCE_TEXTURE, page)
+    if not page.exists():
+        raise SystemExit(f"{page} is missing: run scripts/UiTexturePremultiplier first")
     write_bytes(content / FONT_FOLDER / f"{FACE}.fnt", font_text())
 
     folder = FONT_FOLDER.replace("/", "\\")

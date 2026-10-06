@@ -25,3 +25,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0009 | RacingGameCasaEngine's title screen and car selection reproduce the original XNA screens as captured, as delivered | Accepted | 2026-10-06 |
 | ADR-0010 | RacingGameCasaEngine's track selection reproduces the original XNA screen | Superseded by ADR-0011 | 2026-10-06 |
 | ADR-0011 | RacingGameCasaEngine's track selection reproduces the original XNA screen, with cards growing around fixed centres | Accepted | 2026-10-06 |
+| ADR-0012 | RacingGameCasaEngine's UI images are premultiplied, except the menu background | Accepted | 2026-10-06 |

@@ -1,7 +1,7 @@
 {
   "id": "b2d8e9dc-31d8-5898-a4ce-f39b4bce47c3",
   "name": "Ui.Menu.BackgroundTexture",
-  "texture_asset_id": "0d1cc5aa-ac4d-4205-b16b-e5d77f98bd4b",
+  "texture_asset_id": "4cccf5ec-fc2d-51b6-920f-6ade27ba80fb",
   "sampler_state": {
     "texture_filter": "Linear",
     "address_u": "Clamp",

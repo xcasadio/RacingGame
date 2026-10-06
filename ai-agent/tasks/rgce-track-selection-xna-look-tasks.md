@@ -336,7 +336,7 @@ Demande de l'auteur, avec une capture de la carte sélectionnée :
 > - ADR-0011 remplace l'ADR-0010 ; les références du code pointent vers l'ADR-0011.
 > - 🧪 Reste pour l'auteur : l'animation.
 
-### ⏳ T4.2 — Images d'interface prémultipliées
+### 🧪 T4.2 — Images d'interface prémultipliées
 
 - Objectif : P10.
 - Fichiers : `scripts/UiTexturePremultiplier/*` (nouveau), `scripts/generate_rgce_ui_assets.py`, `scripts/generate_rgce_gamefont.py`, `RacingGameCasaEngine/Content/UI/Textures/*.png` (nouveaux), `Content/UI/Fonts/GameFont.png`, `AssetInfos.json`, `docs/decisions/0012-…`, `docs/decisions/README.md`, `docs/mgui-gaps-from-rgce-xaml-screens.md`.
@@ -347,6 +347,20 @@ Demande de l'auteur, avec une capture de la carte sélectionnée :
   - smoke, deux runs identiques, éditeur ;
   - 🧪 rendu par l'auteur.
 - Commit : `fix(racing-casa): premultiply the UI images as RacingGame did`
+
+> Validation (2026-10-06) :
+> - **Outil** `scripts/UiTexturePremultiplier` (C#, `System.Drawing`, sans paquet) : 7 copies écrites.
+>   - Contrôle par script contre les sources : alpha identique, pixels opaques identiques, tous les pixels égaux à `(c·a + 127) / 255`, écart maximal 0. Les blocs gamma et ICC des sources ne sont pas appliqués au chargement.
+>   - Seconde exécution identique au bit près.
+> - **Générateur** : les `.texture` de l'interface pointent vers `UI/Textures/*` ; le logo vient de la copie prémultipliée. Le générateur de la police ne copie plus la page ; il exige celle de l'outil.
+> - **Retour à l'auteur en cours de tâche** : tout prémultiplier assombrissait nettement le fond de tous les menus (70 % des pixels, 12 niveaux en moyenne). L'image de fond est semi-transparente à 80 % et l'original avait une scène 3D derrière. Planche avant/après envoyée ; l'auteur a choisi de garder le fond comme avant. `Ui.Menu.Background` et `Ui.Menu.SplashBackground` utilisent donc la nouvelle texture `Ui.Menu.BackgroundPlainTexture` (PNG d'origine, entrée `MenuBackground`).
+> - **Captures** (`ui-run-20261006-145419` et `ui-run-20261006-145440`, identiques entre elles), contre le run de T4.1 :
+>   - seuls les bords changent, moins de 0,3 % des pixels, toujours vers le plus sombre ;
+>   - le coin de la carte sélectionnée n'a plus de liseré clair (`corner-before-after.png`) ;
+>   - `options` a 6 042 pixels plus clairs sur le champ « Player One » : survol MGUI par la souris réelle, ce champ n'utilisant aucune des images touchées.
+> - `--smoke-frontend` code 0 sans avertissement ; build 0 erreur, aucun avertissement dans RGCE ; réglages restaurés à l'identique.
+> - ADR-0012, C5 de `docs/mgui-gaps-from-rgce-xaml-screens.md`, M4 à 8 textures.
+> - 🧪 Reste pour l'auteur : le rendu des bords sur les écrans.
 
 ### ⏳ T4.3 — Clôture du retour
 
