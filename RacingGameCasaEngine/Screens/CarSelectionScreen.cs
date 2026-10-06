@@ -230,7 +230,8 @@ internal sealed class CarSelectionScreen : RaceXamlScreenBase
     {
         UpdateMenuDecoration(_viewModel.Decoration, totalSeconds);
         Point mouse = _game.InputComponent.MouseManager.Position;
-        _viewModel.Update(Root.Metrics.ViewportSize.X, Root.Metrics.ViewportSize.Y, totalSeconds, _state.PinScreenAnimations, mouse.X, mouse.Y);
+        (int plateLeft, int plateRight) = _game.CarSelectionCarousel.FrontPlateEdges;
+        _viewModel.Update(Root.Metrics.ViewportSize.X, Root.Metrics.ViewportSize.Y, totalSeconds, _state.PinScreenAnimations, mouse.X, mouse.Y, plateLeft, plateRight);
 
         var scale = new Vector2(_viewModel.TextScaleX, _viewModel.TextScaleY);
         for (int i = 0; i < _texts.Length; i++)

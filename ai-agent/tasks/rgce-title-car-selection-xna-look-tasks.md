@@ -471,7 +471,7 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 > - **Cadrage** : celui du code, carrousel décalé à gauche ; en 16:9, la flèche gauche passe derrière le plateau avant. Calage sur la capture en T4.3.
 > - 🧪 Reste pour l'auteur : le rendu en mouvement (rotation, changement de voiture et de couleur), l'ombre, le reflet.
 
-### ⏳ T4.3 — Calage sur la capture et flèches
+### 🧪 T4.3 — Calage sur la capture et flèches
 
 - Objectif : P8.
 - Fichiers : `CarSelectionCarousel.cs`, le view model de la sélection.
@@ -487,6 +487,18 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
   - capture `car-selection` ;
   - 🧪 rendu par l'auteur.
 - Commit : `fix(racing-casa): fit the car carousel to the original capture`
+
+> Validation (2026-10-06) :
+> - **Relevés sur la capture** (pixels de `5.webp`) : plateau avant, bord gauche 368, bord droit 845, bas 698 ; centres des voitures arrière (430, 359) et (762, 358).
+> - **Calage** (`fit_carousel.py` du scratchpad) : projection de XNA (`CreateLookAt`, `CreatePerspectiveFieldOfView`), rendu en 1024×768 ramené au repère de la capture. La caméra d'origine est gardée ; seuls le centre et le rayon du carrousel sont ajustés.
+>   - Résultat : centre (−0,2, −0,3, 2,78) et rayon 6,74, contre (1,5, 1, 0) et 5 dans le code.
+>   - Écarts : plateau gauche +3,8, droit −4,0, bas +5,1 ; voiture arrière gauche +5,8 / −10,4 ; droite −4,9 / −9,4 pixels de capture (×0,85 en unités de 1024). Moyenne quadratique 6,7, dans les tolérances (±10 unités pour le plateau, ±15 pour les voitures arrière).
+>   - Avec les nombres du code, le bord gauche du plateau tombait 274 pixels trop à gauche.
+> - **Flèches** : sur la capture, elles sont centrées sur les bords gauche et droit du plateau avant. Le carrousel projette ces bords avec la caméra de sa vue (`FrontPlateEdges`), et le view model y centre les flèches, balancement compris. Les x de la capture (279 et 691) restent en secours tant que le carrousel n'est pas posé.
+> - **Superposition** sur la capture en 1024×768 (`fit-overlay.png` du scratchpad) : plateau avant, plateaux et voitures arrière et flèches tombent en place. Restent : l'orientation des voitures (la capture est prise en pleine rotation, la capture automatique fige la rotation) et les couleurs des voitures arrière (P7).
+> - **En 1920×1080 et 1280×720** (`fit-169.png`) : le champ vertical est gardé, le carrousel garde sa part de la hauteur et paraît plus étroit qu'en 4:3 ; les flèches restent sur les bords du plateau.
+> - **Comparaison** avec le run de T4.2 : seul `car-selection` change. `--smoke-frontend` code 0 sans avertissement ; build 0 erreur, aucun avertissement dans RGCE ; réglages restaurés à l'identique.
+> - 🧪 Reste pour l'auteur : le rendu, en mouvement.
 
 ## Phase 5 — Clôture
 

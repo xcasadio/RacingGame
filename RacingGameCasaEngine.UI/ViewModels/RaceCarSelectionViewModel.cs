@@ -40,7 +40,8 @@ public sealed class RaceCarSelectionViewModel : RaceViewModelBase
     private const int SwatchSize = 46;
     private const int SwatchGrowth = 6;
     // UIRenderer.SelectionArrowGfxRect (874, 426, 53, 39) of buttons.png. RacingGame's code put the arrows at x 35 and
-    // 1024 - 335 - 53; the capture shows them against the front platform, about 206 units each side of the centre.
+    // 1024 - 335 - 53; the capture shows them centred on the front plate's left and right edges (at x 279 and 691 of the
+    // 1024 layout there), so they follow the plate's projected edges, whatever the screen's aspect.
     private const int ArrowWidth = 53;
     private const int ArrowHeight = 39;
     private const int LeftArrowLeft = 279;
@@ -184,7 +185,9 @@ public sealed class RaceCarSelectionViewModel : RaceViewModelBase
     /// <param name="totalSeconds">The game's total time, as RacingGame's <c>BaseGame.TotalTime</c>, for the arrows' swing.</param>
     /// <param name="pinAnimations">Holds the arrows still, for the capture automation.</param>
     /// <param name="mouseX">The mouse position in screen pixels, to grow the A or B button under it.</param>
-    public void Update(int viewportWidth, int viewportHeight, double totalSeconds, bool pinAnimations, int mouseX, int mouseY)
+    /// <param name="plateLeft">The front plate's left edge on the screen, or -1 before the carousel is laid out.</param>
+    /// <param name="plateRight">The front plate's right edge on the screen, or -1 before the carousel is laid out.</param>
+    public void Update(int viewportWidth, int viewportHeight, double totalSeconds, bool pinAnimations, int mouseX, int mouseY, int plateLeft = -1, int plateRight = -1)
     {
         _viewportWidth = Math.Max(1, viewportWidth);
         _viewportHeight = Math.Max(1, viewportHeight);
@@ -224,6 +227,12 @@ public sealed class RaceCarSelectionViewModel : RaceViewModelBase
         int arrowTop = YToRes(300 + 60) + YToRes(120) / 3;
         Rectangle leftArrow = CalcRectangle(LeftArrowLeft, 250, ArrowWidth, ArrowHeight);
         Rectangle rightArrow = CalcRectangle(RightArrowLeft, 250, ArrowWidth, ArrowHeight);
+        if (plateLeft >= 0 && plateRight > plateLeft)
+        {
+            leftArrow.X = plateLeft - leftArrow.Width / 2;
+            rightArrow.X = plateRight - rightArrow.Width / 2;
+        }
+
         LeftArrow.Set(leftArrow.X + swing, arrowTop, leftArrow.Width, leftArrow.Height);
         RightArrow.Set(rightArrow.X - swing, arrowTop, rightArrow.Width, rightArrow.Height);
 

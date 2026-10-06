@@ -30,7 +30,9 @@ namespace RacingGameCasaEngine.UI;
 /// (0, 2.75, -10.45) looking at (0, -1, 0).
 /// <list type="bullet">
 /// <item>Car i and its plate: RotZ(t / 3.9) x T(0, 5, 0) x RotZ(-rotation + i x 2pi/3) x T(1.5, 0, 1), so every car spins
-/// on itself at 1/3.9 rad/s and the three sit 5 units from the carousel's centre, 120 degrees apart;</item>
+/// on itself at 1/3.9 rad/s and the three sit 5 units from the carousel's centre, 120 degrees apart. The author's capture
+/// of the original game shows another framing than this code, which wins (ADR-0008): with the same camera, the centre
+/// and the radius are fitted to the capture's front plate and rear cars (see <see cref="CarouselCentre"/>);</item>
 /// <item>the rotation chases the selected car's angle at 5 rad/s the shortest way, so the selected car comes to the
 /// front, nearest the camera;</item>
 /// <item>vertical field of view 90 degrees, near 0.5, far 1750.</item>
@@ -40,7 +42,7 @@ internal sealed class CarSelectionCarousel : IDisposable
 {
     private const string WorldName = "FrontEnd.CarSelectionCarousel";
     private const int CarCount = 3;
-    private const float CarouselRadius = 5f;
+    private const float CarouselRadius = 6.74f;
     private const float SpinPerSecond = 1f / 3.9f;
     private const float TurnPerSecond = 5f;
     private const float FieldOfView = MathHelper.PiOver2;
@@ -56,7 +58,11 @@ internal sealed class CarSelectionCarousel : IDisposable
     // RacingGame's plate (NormalMapping.fx, ReflectionSpecular) added a Fresnel-weighted sky reflection to its texture.
     private const float PlateReflectionAmount = 0.35f;
 
-    private static readonly Vector3 CarouselCentre = new(1.5f, 1f, 0f);
+    // Fitted to the author's capture at 4:3 (plan rgce-title-car-selection-xna-look-tasks.md, T4.3): front plate edges
+    // and bottom, rear car centres, within 6.7 capture pixels on average. RacingGame's code had (1.5, 1, 0) and 5.
+    private static readonly Vector3 CarouselCentre = new(-0.2f, -0.3f, 2.78f);
+    private const float PlateRadius = 2.778736f * 1.203175f;
+    private const float PlateThickness = 0.6103561f;
     private static readonly Vector3 CameraPosition = new(0f, 2.75f, -10.45f);
     private static readonly Vector3 CameraTarget = new(0f, -1f, 0f);
     // RacingGame's car selection light (CarSelection.PostUIRender: LensFlare.DefaultLightPos with z flipped), towards the
@@ -129,6 +135,12 @@ internal sealed class CarSelectionCarousel : IDisposable
 
     /// <summary>The carousel's image for an MGUI image, once rendered; it changes when the render target is recreated.</summary>
     public MGTextureData? TextureData => _textureData;
+
+    /// <summary>
+    /// The left and right edges of the front plate on the screen, in pixels, for the selection arrows; (-1, -1) until the
+    /// carousel has been laid out.
+    /// </summary>
+    public (int Left, int Right) FrontPlateEdges { get; private set; } = (-1, -1);
 
     /// <summary>
     /// Asks for the carousel this frame, for the selection and at the screen's size: the car selection calls it every
@@ -293,6 +305,30 @@ internal sealed class CarSelectionCarousel : IDisposable
         _camera.FieldOfView = FieldOfView;
         _camera.NearPlane = NearPlane;
         _camera.FarPlane = FarPlane;
+        FrontPlateEdges = ProjectFrontPlateEdges();
+    }
+
+    // The widest screen extent of the front plate's rim (top and bottom circles), with the camera of the view.
+    private (int Left, int Right) ProjectFrontPlateEdges()
+    {
+        Matrix viewProjection = _camera.ViewMatrix * _camera.ProjectionMatrix;
+        Vector3 centre = new Vector3(0f, 0f, -CarouselRadius) + CarouselCentre;
+        float left = float.MaxValue;
+        float right = float.MinValue;
+        for (int i = 0; i < 72; i++)
+        {
+            float angle = i * MathHelper.TwoPi / 72;
+            for (int level = 0; level < 2; level++)
+            {
+                Vector3 point = centre + new Vector3(PlateRadius * MathF.Cos(angle), -level * PlateThickness, PlateRadius * MathF.Sin(angle));
+                Vector4 clip = Vector4.Transform(new Vector4(point, 1f), viewProjection);
+                float x = (clip.X / clip.W + 1f) * 0.5f * _surfaceWidth;
+                left = Math.Min(left, x);
+                right = Math.Max(right, x);
+            }
+        }
+
+        return ((int)Math.Round(left), (int)Math.Round(right));
     }
 
     private StaticModelComponent AddModelEntity(string name, StaticModel? model)
