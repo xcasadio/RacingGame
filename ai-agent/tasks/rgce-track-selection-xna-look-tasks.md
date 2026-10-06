@@ -303,7 +303,7 @@ Demande de l'auteur, avec une capture de la carte sélectionnée :
 
 État vérifié (2026-10-06) :
 - **Les pixels clairs** viennent de l'alpha non prémultiplié.
-  - MGUI dessine ses images en mélange prémultiplié (`BlendState.AlphaBlend` : `DrawSettings.cs:82`, `CasaMonoGameRenderInterop.cs:19-20`).
+  - MGUI dessine ses images en mélange prémultiplié (`BlendState.AlphaBlend` : `DrawSettings.cs:82`, `CasaMonoGameRenderInterop.cs:21`).
   - CasaEngine charge les PNG sans les prémultiplier (`Texture2D.FromStream`, `Texture2DLoader.cs:12`), alors que l'original les prémultipliait à la compilation (`Content.mgcb:1607`, `PremultiplyAlpha=True`).
   - Un pixel de bord semi-transparent ajoute donc sa couleur entière au lieu de la pondérer par son alpha. Au coin de la carte, le bord gris du sprite de carte (188, 188, 188, alpha 68) puis le bord orange du contour (248, 152, 0, alpha 68) donnent (255, 255, ~146) ; la capture mesure (255, 255, 162) en (641, 402).
   - Toutes les images d'interface ont ce défaut sur leurs bords semi-transparents : logo, en-têtes, cartes, libellés, boutons, flèches, cases, HUD, page de la police GameFont. Les glyphes noirs du menu principal ne l'ont pas : noir × alpha = noir.
@@ -354,18 +354,47 @@ Demande de l'auteur, avec une capture de la carte sélectionnée :
 >   - Seconde exécution identique au bit près.
 > - **Générateur** : les `.texture` de l'interface pointent vers `UI/Textures/*` ; le logo vient de la copie prémultipliée. Le générateur de la police ne copie plus la page ; il exige celle de l'outil.
 > - **Retour à l'auteur en cours de tâche** : tout prémultiplier assombrissait nettement le fond de tous les menus (70 % des pixels, 12 niveaux en moyenne). L'image de fond est semi-transparente à 80 % et l'original avait une scène 3D derrière. Planche avant/après envoyée ; l'auteur a choisi de garder le fond comme avant. `Ui.Menu.Background` et `Ui.Menu.SplashBackground` utilisent donc la nouvelle texture `Ui.Menu.BackgroundPlainTexture` (PNG d'origine, entrée `MenuBackground`).
-> - **Captures** (`ui-run-20261006-145419` et `ui-run-20261006-145440`, identiques entre elles), contre le run de T4.1 :
->   - seuls les bords changent, moins de 0,3 % des pixels, toujours vers le plus sombre ;
+> - **Captures** (`ui-run-20261006-145419` et `ui-run-20261006-145440`, identiques entre elles), contre le run de T4.1 (`ui-run-20261006-114702`) :
+>   - menus : seuls les bords changent, moins de 0,3 % des pixels, toujours vers le plus sombre ;
+>   - `pause`, `race-hud` et `race-finished` : 1,23 à 1,27 % des pixels, sur tous les panneaux semi-transparents du HUD, plus sombres comme dans l'original. Chiffre corrigé en T4.3 : la première version de cette note et l'ADR-0012 disaient moins de 0,3 % partout ;
 >   - le coin de la carte sélectionnée n'a plus de liseré clair (`corner-before-after.png`) ;
 >   - `options` a 6 042 pixels plus clairs sur le champ « Player One » : survol MGUI par la souris réelle, ce champ n'utilisant aucune des images touchées.
 > - `--smoke-frontend` code 0 sans avertissement ; build 0 erreur, aucun avertissement dans RGCE ; réglages restaurés à l'identique.
 > - ADR-0012, C5 de `docs/mgui-gaps-from-rgce-xaml-screens.md`, M4 à 8 textures.
 > - 🧪 Reste pour l'auteur : le rendu des bords sur les écrans.
 
-### ⏳ T4.3 — Clôture du retour
+### ✅ T4.3 — Clôture du retour
 
 - Objectif : nouvelles références, passe de vérification indépendante, rapport, index.
 - Commit : `docs(racing-casa): close the track selection feedback`
+
+> Validation (2026-10-06) :
+> - Nouvelles références : `references-504c603` (copie de `ui-run-20261006-145440`).
+> - **Vérification indépendante** (workflow, deux angles) :
+>   - code et documentation, en lecture seule : CONFIRMED ;
+>   - exécution : CONFIRMED sur les 5 points :
+>     - build 0 erreur, aucun avertissement dans RGCE ; les images copiées à la compilation sont identiques à celles du dépôt ;
+>     - `--smoke-frontend` code 0, sans avertissement ni asset manquant ;
+>     - outil et générateurs relancés sur une copie : mêmes octets ;
+>     - deux runs de capture à 0,00 sur les 10 états ;
+>     - coins de la carte sélectionnée sans pixel plus clair que l'orange du contour ; centres des cartes 697, 960,5 et 1222,5 en 1920×1080 avec Beginner.
+>
+>   Leurs remarques :
+>   - P3 : l'ADR-0012 dit que les captures changent de moins de 0,3 % des pixels, aux bords. Remesuré contre `ui-run-20261006-114702` : vrai pour les menus, mais `pause`, `race-hud` et `race-finished` changent de 1,23 à 1,27 %, sur tous les panneaux semi-transparents du HUD. Le rendu est juste, l'original prémultipliait aussi. Note de T4.2 corrigée dans ce commit. L'ADR-0012 n'est pas réécrite (règle de `docs/decisions/README.md`) : point ouvert pour l'auteur ;
+>   - P4 : la citation `CasaMonoGameRenderInterop.cs:19-20` désigne `Default` et `Additive` ; la correspondance qu'utilise MGUI (`BlendType.AlphaBlend`, valeur par défaut de `DrawSettings`) est à la ligne 21. Corrigé en C5 et dans ce plan ; l'ADR-0012 garde l'ancienne citation, pour la même raison ;
+>   - P4 : dans un run de capture sur trois, la liste des meilleurs scores est dessinée environ 14 px plus haut (1,17 / 1,11 / 1,13). Aucun lien avec ces changements ; cause probable la vraie souris (molette ou survol), non prouvée. Reporté ;
+>   - P4 : 87 pixels anticrénelés du bord extérieur du contour orange dépassent son orange d'au plus 1,4 de luminance. C'est l'anticrénelage du contour lui-même, invisible, sans rapport avec l'ancien liseré (255, 255, 162). Rejeté.
+>
+> Rapport de fin :
+> - **Pixels clairs aux arrondis** : CasaEngine charge les PNG en alpha non prémultiplié, et MGUI les dessine en mélange prémultiplié ; les pixels de bord semi-transparents ajoutaient leur couleur entière. Les images d'interface sont maintenant prémultipliées par `scripts/UiTexturePremultiplier`, comme l'original le faisait à la compilation. Le fond des menus garde son image d'origine, au choix de l'auteur. ADR-0012.
+> - **Cartes poussées** : chaque carte garde le centre qu'elle a dans la rangée au repos et grandit autour de lui ; son libellé la suit. ADR-0011.
+> - **Écarts connus** :
+>   - avec Beginner ou Expert sélectionnée, les cartes ne glissent plus comme dans l'original (ADR-0011) ;
+>   - les pixels semi-transparents du fond des menus restent dessinés plus clairs que leur valeur prémultipliée (ADR-0012).
+> - **Points ouverts pour l'auteur** :
+>   - vérifications manuelles de T4.1 (animation) et T4.2 (bords sur les écrans) ;
+>   - correction de l'ADR-0012 (tableau « Points ouverts ») ;
+>   - le P4 reporté ci-dessus, en plus des trois de T3.1.
 
 ---
 
@@ -376,6 +405,7 @@ Demande de l'auteur, avec une capture de la carte sélectionnée :
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
 | — | Aucun à l'écriture du plan. | — |
+| — | L'ADR-0012 sous-estime l'écart des captures du HUD (1,23 à 1,27 %, pas moins de 0,3 %) et cite `CasaMonoGameRenderInterop.cs:19-20` au lieu de `:21`. Une ADR ne se réécrit pas : nouvelle ADR qui la remplace, ou correction laissée dans ce plan et en C5 ? Non bloquant. | T4.3 |
 
 ## Hors périmètre
 

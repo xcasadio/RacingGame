@@ -221,7 +221,7 @@ The screens check that the catalogues still fit the slots. Slot counts are coupl
 
 ### C5. UI images are drawn premultiplied but loaded with straight alpha
 
-**Evidence.** MGUI draws its images with `BlendState.AlphaBlend`, which expects premultiplied colours (`MGUI/MGUI.Shared/Rendering/DrawSettings.cs:82`, `Framework/UI/Backend/MonoGame/CasaMonoGameRenderInterop.cs:19-20`). CasaEngine loads a PNG with `Texture2D.FromStream` and does not premultiply it (`Framework/Assets/Loaders/Texture2DLoader.cs:12`). RacingGame premultiplied its textures at build time (`RacingGame/Content/Content.mgcb:1607`). A semi-transparent texel therefore adds its full colour: at the selected track card's corner the grey rim and the orange outline added up to (255, 255, ~162).
+**Evidence.** MGUI draws its images with `BlendState.AlphaBlend`, which expects premultiplied colours (`MGUI/MGUI.Shared/Rendering/DrawSettings.cs:82`, `Framework/UI/Backend/MonoGame/CasaMonoGameRenderInterop.cs:21`). CasaEngine loads a PNG with `Texture2D.FromStream` and does not premultiply it (`Framework/Assets/Loaders/Texture2DLoader.cs:12`). RacingGame premultiplied its textures at build time (`RacingGame/Content/Content.mgcb:1607`). A semi-transparent texel therefore adds its full colour: at the selected track card's corner the grey rim and the orange outline added up to (255, 255, ~162).
 
 **In RGCE.** `scripts/UiTexturePremultiplier` writes premultiplied copies of the UI atlases and of the GameFont page under `Content/UI/Textures/` and `Content/UI/Fonts/`, and the UI `.texture` assets use them. By the author's choice, the menu background keeps its plain copy, whose straight colours give the brightness the original reached with its 3D scene behind (ADR-0012).
 
