@@ -1,6 +1,6 @@
 # ADR-0004: RacingGameCasaEngine saves the user settings only when the player leaves the Options screen
 
-- **Status**: Accepted
+- **Status**: Superseded by ADR-0013
 - **Date**: 2026-10-05
 - **Source**: this chantier: `ai-agent/tasks/rgce-automation-settings-tasks.md`, decision D1 (author answers and plan approval, 2026-10-05)
 
