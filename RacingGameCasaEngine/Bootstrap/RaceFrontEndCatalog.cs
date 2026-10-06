@@ -14,7 +14,7 @@ internal static class RaceFrontEndCatalog
         CreateCars(CarProfiles);
 
     /// <summary>
-    /// The car colours of the author's capture of the original game's car selection (ADR-0008): a hue ring from orange
+    /// The car colours of the author's capture of the original game's car selection (ADR-0009): a hue ring from orange
     /// to gold, the median of each colour square of the capture. The repository's RacingGame code had White, Yellow,
     /// Blue, Purple, Red, Green, Teal, Gray, Chocolate, MonoGameOrange and SeaGreen instead.
     /// </summary>

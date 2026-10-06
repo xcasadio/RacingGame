@@ -12,7 +12,7 @@ namespace RacingGameCasaEngine.Screens;
 
 /// <summary>
 /// Title screen, loaded from the <c>Screen.Splash</c> screen asset (Content/UI/Screens/Splash), as in the author's capture
-/// of the original game (ADR-0008). As RacingGame's (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/SplashScreen.cs</c>,
+/// of the original game (ADR-0009). As RacingGame's (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/SplashScreen.cs</c>,
 /// Update), a left click anywhere, Space, Escape or the gamepad's Start leave it, with the ScreenBack sound
 /// (<c>RacingGameManager.Render</c>); Enter and A do too, as in the main menu.
 /// </summary>

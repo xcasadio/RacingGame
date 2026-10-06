@@ -4,7 +4,7 @@ using MonoGame.Extended;
 namespace RacingGameCasaEngine.UI.ViewModels;
 
 /// <summary>
-/// Data context of <c>Screen.Splash</c>, the title screen of the author's capture of the original game (ADR-0008): the
+/// Data context of <c>Screen.Splash</c>, the title screen of the author's capture of the original game (ADR-0009): the
 /// menu decoration, a black band across the middle and RacingGame's "Press START to continue." sprite, laid out every
 /// frame in screen pixels with RacingGame's 1024x640 formulas (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/
 /// SplashScreen.cs</c>, Render; <c>BaseGame.CalcRectangle</c> and <c>CalcRectangleCenteredWithGivenHeight</c>). The band

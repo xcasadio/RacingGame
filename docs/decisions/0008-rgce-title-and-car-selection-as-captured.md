@@ -1,6 +1,6 @@
 # ADR-0008: RacingGameCasaEngine's title screen and car selection reproduce the original XNA screens as captured
 
-- **Status**: Accepted
+- **Status**: Superseded by ADR-0009
 - **Date**: 2026-10-06
 - **Source**: this chantier: `ai-agent/tasks/rgce-title-car-selection-xna-look-tasks.md`, decisions D1 to D7 and proposals P2 to P10 (author answers and plan approval, 2026-10-06)
 

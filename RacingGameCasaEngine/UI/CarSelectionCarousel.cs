@@ -21,7 +21,7 @@ namespace RacingGameCasaEngine.UI;
 
 /// <summary>
 /// RacingGame's car selection carousel (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/CarSelection.cs</c>,
-/// PostUIRender; ADR-0008): the three cars, each on its CarSelectionPlate, rendered by CasaEngine in a world of their own,
+/// PostUIRender; ADR-0009): the three cars, each on its CarSelectionPlate, rendered by CasaEngine in a world of their own,
 /// through a view into a render target as large as the screen, which the car selection shows over its sprites.
 /// <para/>
 /// RacingGame's world had Z up; RGCE's has Y up. The conversion (x, y, z) -> (x, z, -y) is a rotation, under which the
@@ -31,7 +31,7 @@ namespace RacingGameCasaEngine.UI;
 /// <list type="bullet">
 /// <item>Car i and its plate: RotZ(t / 3.9) x T(0, 5, 0) x RotZ(-rotation + i x 2pi/3) x T(1.5, 0, 1), so every car spins
 /// on itself at 1/3.9 rad/s and the three sit 5 units from the carousel's centre, 120 degrees apart. The author's capture
-/// of the original game shows another framing than this code, which wins (ADR-0008): with the same camera, the centre
+/// of the original game shows another framing than this code, which wins (ADR-0009): with the same camera, the centre
 /// and the radius are fitted to the capture's front plate and rear cars (see <see cref="CarouselCentre"/>);</item>
 /// <item>the rotation chases the selected car's angle at 5 rad/s the shortest way, so the selected car comes to the
 /// front, nearest the camera;</item>

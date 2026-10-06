@@ -19,7 +19,7 @@ namespace RacingGameCasaEngine.Components;
 /// Builds RacingGame's car for the race and the car selection: one model per car type, from Car.gltf with the car's
 /// texture (RacerCar, RacerCar2, RacerCar3). The selected colour is painted into the texture as RacingGame's shader
 /// painted it (<c>NormalMapping.fx</c>, SpecularWithReflectionForCar20: <c>lerp(rgb, carHueColor, texture alpha)</c>),
-/// on the CPU since CasaEngine's shaders have no such tint (ADR-0008). The paint material samples the painted texture,
+/// on the CPU since CasaEngine's shaders have no such tint (ADR-0009). The paint material samples the painted texture,
 /// the car's other materials the texture as it is. The texture's alpha, the paint mask, is kept: RacingGame's shader
 /// also scaled the specular by it, as CasaEngine's does.
 /// </summary>

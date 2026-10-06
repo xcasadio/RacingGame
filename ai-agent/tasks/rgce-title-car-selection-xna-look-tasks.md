@@ -502,11 +502,56 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 
 ## Phase 5 — Clôture
 
-### ⏳ T5.1 — Validation globale, documentation et rapport de fin
+### 🧪 T5.1 — Validation globale, documentation et rapport de fin
 
 - Objectif : validation globale, nouvelles références, `docs/mgui-gaps-from-rgce-xaml-screens.md` (manques rencontrés), passe de vérification indépendante, rapport de fin et index.
 - Validation : liste « Validation globale ».
 - Commit : `docs(racing-casa): close the title and car selection plan`
+
+> Validation globale (2026-10-06) :
+> - `dotnet build RacingGame.slnx --no-incremental` : 0 erreur ; aucun avertissement dans `RacingGameCasaEngine` ni `RacingGameCasaEngine.UI` (les 124 avertissements viennent des sous-modules, de `RacingGame`, `RacingGame.Shared` et `RacingGame.PipelineExtension`).
+> - `--smoke-frontend` et `--capture-ui-screens` : code 0, journaux sans `[Warning]` ni `[Error]` ; réglages de l'auteur restaurés à l'identique à chaque run.
+> - Deux runs de capture successifs (`ui-run-20261006-090001`, `ui-run-20261006-090021`) : 0,00 sur les 10 états (P10).
+> - Contre `references-32d0422` :
+>   - `splash` (107/88/87) et `car-selection` (64/64/67) changent ;
+>   - `main-menu`, `highscores`, `options`, `help` et `track-selection` ne diffèrent que du bleu d'effacement d'avant : k × (99,147,234), vérifié en T2.1 ;
+>   - `race-hud` (1,18), `pause` et `race-finished` ne changent que par la peinture des bandes de la voiture (T4.1).
+> - Nouvelles références : `references-c0fdd87` (copie de `ui-run-20261006-090021`).
+> - Mesures et superpositions : notes de T2.1, T3.1 et T4.3 (1920×1080, 1280×720, 1024×768 sur les captures de l'auteur).
+> - Éditeur : `capture_editor_screen.ps1` sur `Splash.uiscreen` et `CarSelection.uiscreen`, code 0, sans erreur.
+> - Documentation :
+>   - `docs/mgui-gaps-from-rgce-xaml-screens.md` : M4 à 40 sprites sur 7 textures, M16 et M17 (police bitmap à taille fixe, retour à la ligne et rognage des textes), C1 à C4 (vues et transitions d'écran, teinte jamais rendue, alpha écrit par les shaders, page de police cherchée avec des `\`) ;
+>   - ADR-0009 « as delivered » remplace l'ADR-0008 (O5) ; les références du code pointent vers l'ADR-0009.
+> - Passe de vérification indépendante : CONFIRMED sur les 9 points (disposition, chiffres, entrées lues dans le code, carrousel, peinture, sous-modules intacts, build et runs, ADR-0009 et manques). Trois remarques P4, reportées sans modifier le code validé : A1, les preuves de build et d'exécution viennent du sous-module CasaEngine à `dd91efe` (pointeur de l'arbre de travail, changé hors de ce chantier) et non au `d79ed16` enregistré, les lignes du moteur citées étant identiques aux deux ; A2, la case choisie, agrandie, chevauche ses voisines d'environ 2 unités (5 px en 1920) et `GetSwatchAt` rend la première case trouvée là où l'original laissait gagner la dernière, d'où quelques pixels où le bouton maintenu ne change pas de case comme dans l'original ; A3, Start ne quitte le titre qu'à l'appui, quand l'original prenait Start maintenu, sans effet visible.
+>
+> Rapport de fin :
+> - **Écran titre** : fond et logo qui rebondit, bande à y 350, Press START qui clignote, au pixel près des formules ; sorties de l'original plus Entrée et A, son ScreenBack ; fond noir hors course.
+> - **Sélection** :
+>   - en-tête, six lignes aux chiffres et barres de l'original (288, 275, 242 mph) ;
+>   - palette de la capture, cases teintées, la choisie agrandie ;
+>   - flèches qui se balancent, centrées sur les bords du plateau ;
+>   - A et B avec leur contour au survol ;
+>   - textes en GameFont à l'échelle de l'original ;
+>   - entrées et sons de l'original, plus Entrée.
+> - **Carrousel** : trois voitures sur leurs plateaux, rendues par CasaEngine, qui tournent sur elles-mêmes, avec le carrousel qui amène la voiture choisie devant. Ombres (option Ombres), reflet des plateaux, cadrage calé sur la capture.
+> - **Peinture** : la couleur choisie se voit enfin en course, sur le seul masque de peinture.
+> - **Outils et assets** :
+>   - `scripts/generate_rgce_gamefont.py` (police bitmap) ;
+>   - générateur de sprites étendu ;
+>   - trois sons de menu ;
+>   - sondes de mesure dans le scratchpad, hors dépôt.
+> - **Décisions** : ADR-0008, puis ADR-0009 telle que livrée.
+> - **Écarts connus** (ADR-0009) :
+>   - post-effet de l'original non reproduit : texte doré et non crème, fond non flou ;
+>   - les trois voitures ont la même couleur ;
+>   - ombre plus dure ;
+>   - carrousel plus étroit en 16:9 qu'en 4:3 ;
+>   - pastille web, retour au titre après 60 s, scène 3D derrière les menus et curseur de l'original absents (D6 et hors périmètre).
+> - **Points ouverts pour l'auteur** :
+>   - vérifications manuelles (tâches 🧪 T2.1, T3.1, T4.2, T4.3 et T5.1, plus l'écoute des sons de T1.3) : rendu en mouvement, chaque entrée, les sons ;
+>   - Beep et Bleep restent à volume 1,0 alors que l'original les jouait à −12 dB (relevé en T1.3, hors périmètre) ;
+>   - la police des textes GameFont dans l'aperçu de l'éditeur n'est pas vérifiée (la police n'est tenue que par le jeu) ;
+>   - durée d'image du carrousel non mesurée.
 
 ---
 
@@ -520,7 +565,7 @@ Découverte en lecture seule (workflow de 4 agents), faits porteurs revérifiés
 | O2 | **Réglé en T1.2.** Mise à l'échelle des textes GameFont : le `RenderTransform` non uniforme s'applique au texte. | T1.2 |
 | O3 | **Réglé en T3.1.** Miroir de la flèche gauche : le `RenderTransform` d'échelle −1 en x se dessine. | T3.1 |
 | O4 | **Contourné en T4.2** : le reflet n'est activé que sur le matériau du plateau, propre au carrousel. Raison de la désactivation des reflets pour `NormalMapping.fx` (`RacingGameLegacyMaterialTuning.cs:94-99`, commits `6a4f898`, `8bbaae0`) non trouvée. Le reflet du plateau (P7) ne touche que la vue du carrousel ; en course, rien ne change. | T4.2 |
-| O5 | L'ADR-0008 et P9 disent la texture peinte « alpha forcé à 255 » ; la livraison garde l'alpha (T4.1). Une ADR ne se réécrit pas : une ADR « telle que livrée » remplacera l'ADR-0008 en T5.1, avec les autres écarts de la livraison. | T5.1 |
+| O5 | **Réglé en T5.1** (ADR-0009). L'ADR-0008 et P9 disent la texture peinte « alpha forcé à 255 » ; la livraison garde l'alpha (T4.1). Une ADR ne se réécrit pas : une ADR « telle que livrée » remplacera l'ADR-0008 en T5.1, avec les autres écarts de la livraison. | T5.1 |
 
 ## Hors périmètre
 

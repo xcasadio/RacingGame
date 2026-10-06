@@ -4,7 +4,7 @@
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
         Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
   <!--
-    Car selection of the author's capture of the original game (ADR-0008). RaceCarSelectionViewModel lays everything out
+    Car selection of the author's capture of the original game (ADR-0009). RaceCarSelectionViewModel lays everything out
     in screen pixels with RacingGame's formulas, every frame. As in RacingGame, the sprites are drawn first, then the cars,
     then the texts (TextureFont.WriteAll ran last). The texts use RacingGame's GameFont at its native size;
     CarSelectionScreen scales them at draw time as TextureFont did. Nothing takes MGUI's focus: CarSelectionScreen reads

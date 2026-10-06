@@ -4,7 +4,7 @@
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
         Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
   <!--
-    Title screen of the author's capture of the original game (ADR-0008). RaceTitleViewModel lays the band and the
+    Title screen of the author's capture of the original game (ADR-0009). RaceTitleViewModel lays the band and the
     "Press START to continue." sprite out in screen pixels with RacingGame's formulas, every frame, and blinks the sprite.
     The screen takes no focus: SplashScreen reads the keyboard, the mouse and the gamepad itself.
   -->

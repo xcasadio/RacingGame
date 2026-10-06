@@ -7,7 +7,7 @@ namespace RacingGameCasaEngine.UI;
 
 /// <summary>
 /// Renders a view with the default pipeline, then sets the alpha of its render target to 1 wherever geometry was drawn,
-/// so that an MGUI image can lay the view over the screen (ADR-0008, car selection carousel). CasaEngine's lit shaders
+/// so that an MGUI image can lay the view over the screen (ADR-0009, car selection carousel). CasaEngine's lit shaders
 /// write the texture alpha, which RacingGame's car texture uses as its paint mask, so the car came out see-through over
 /// a transparent clear. The pass draws one screen quad just in front of the far plane, writing alpha only, where the depth
 /// buffer holds something nearer.

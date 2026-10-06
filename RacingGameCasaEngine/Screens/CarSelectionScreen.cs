@@ -13,7 +13,7 @@ namespace RacingGameCasaEngine.Screens;
 
 /// <summary>
 /// Car selection, loaded from the <c>Screen.CarSelection</c> screen asset (Content/UI/Screens/CarSelection), as in the
-/// author's capture of the original game (ADR-0008), with RacingGame's input (<c>git show 4f840a3^:RacingGame.Shared/
+/// author's capture of the original game (ADR-0009), with RacingGame's input (<c>git show 4f840a3^:RacingGame.Shared/
 /// GameScreens/CarSelection.cs</c>, Update):
 /// <list type="bullet">
 /// <item>Left (keyboard, D-pad, left stick past 0.5, or a click in the right-hand zone) brings the next car to the front,

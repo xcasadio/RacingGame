@@ -49,12 +49,12 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     private IDisposable? _gameFontHold;
     private CarSelectionCarousel? _carSelectionCarousel;
 
-    /// <summary>The menu sounds, held for the game's life (ADR-0008).</summary>
+    /// <summary>The menu sounds, held for the game's life (ADR-0009).</summary>
     internal MenuSounds? MenuSounds { get; private set; }
 
     /// <summary>
     /// The car selection's 3D carousel, built when the car selection first asks for it and kept for the game's life; it
-    /// renders only while the car selection asks for it every frame (ADR-0008).
+    /// renders only while the car selection asks for it every frame (ADR-0009).
     /// </summary>
     internal CarSelectionCarousel CarSelectionCarousel => _carSelectionCarousel ??= new CarSelectionCarousel(this);
 
@@ -190,7 +190,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
 
     /// <summary>
     /// Holds RacingGame's bitmap font (TextureFont, GameFont.png) for the game's life, so that XAML can name it as
-    /// <c>FontFamily="GameFont"</c> (CasaEngine ADR-0036; RGCE ADR-0008).
+    /// <c>FontFamily="GameFont"</c> (CasaEngine ADR-0036; RGCE ADR-0009).
     /// </summary>
     private void HoldGameFont()
     {
@@ -260,7 +260,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
 
         IViewRenderPipeline? pipeline = isRaceWorld ? GetOrCreateRaceSkyViewPipeline() : null;
         // The front end clears to black, as RacingGame did (BaseGame.BackgroundColor): the menu background is drawn at
-        // 0.85 opacity over it (ADR-0008).
+        // 0.85 opacity over it (ADR-0009).
         Color clearColor = isRaceWorld ? RaceSkySystem.Settings.HorizonColor : Color.Black;
 
         foreach (RenderView view in GameManager.ViewManager.Views)

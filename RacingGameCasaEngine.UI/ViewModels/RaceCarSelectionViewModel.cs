@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 namespace RacingGameCasaEngine.UI.ViewModels;
 
 /// <summary>
-/// Data context of <c>Screen.CarSelection</c>, the car selection of the author's capture of the original game (ADR-0008):
+/// Data context of <c>Screen.CarSelection</c>, the car selection of the author's capture of the original game (ADR-0009):
 /// the menu decoration, the black band, the "CHOOSE YOUR CAR" header, the six property rows, the eleven colour squares,
 /// the two selection arrows and the A and B buttons, laid out every frame in screen pixels with RacingGame's formulas
 /// (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/CarSelection.cs</c>, Render; <c>Graphics/UIRenderer.cs</c>,
