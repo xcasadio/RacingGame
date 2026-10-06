@@ -1,0 +1,17 @@
+{
+  "id": "dd5efe9b-690d-552e-9c80-f02bbfb34e77",
+  "name": "Ui.Options.Resolution1",
+  "sprite_sheet_asset_id": "8fbc280b-206d-5bf6-81c5-68e4e36cdcdc",
+  "location": {
+    "x": 454,
+    "y": 112,
+    "w": 98,
+    "h": 32
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

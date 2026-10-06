@@ -45,7 +45,7 @@
     <None Include="..\CasaEngine\CasaEngine\Content\Fonts\tahoma.ttf" Link="Content\Fonts\tahoma.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\RacingGame\Content\Textures\*.*" Exclude="..\RacingGame\Content\Textures\background.png;..\RacingGame\Content\Textures\buttons.png;..\RacingGame\Content\Textures\ingame.png;..\RacingGame\Content\Textures\headers.png;..\RacingGame\Content\Textures\ColorSelection.png;..\RacingGame\Content\Textures\OptionsScreenWindows.png" Link="Content\Textures\%(Filename)%(Extension)">
+    <None Include="..\RacingGame\Content\Textures\*.*" Exclude="..\RacingGame\Content\Textures\background.png;..\RacingGame\Content\Textures\buttons.png;..\RacingGame\Content\Textures\ingame.png;..\RacingGame\Content\Textures\headers.png;..\RacingGame\Content\Textures\ColorSelection.png;..\RacingGame\Content\Textures\OptionsScreenWindows.png;..\RacingGame\Content\Textures\HelpScreenWindows.png" Link="Content\Textures\%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Content\Tracks\*.Track">

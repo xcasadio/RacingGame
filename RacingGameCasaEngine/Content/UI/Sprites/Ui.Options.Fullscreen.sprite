@@ -1,0 +1,17 @@
+{
+  "id": "440abd88-ce93-5239-bc4c-c3ee56bbca3e",
+  "name": "Ui.Options.Fullscreen",
+  "sprite_sheet_asset_id": "8fbc280b-206d-5bf6-81c5-68e4e36cdcdc",
+  "location": {
+    "x": 339,
+    "y": 182,
+    "w": 105,
+    "h": 36
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

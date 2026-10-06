@@ -201,7 +201,7 @@ Découverte en lecture seule : workflow de 4 agents, chacun contre-vérifié par
 
 ## Phase 1 — Assets
 
-### ⏳ T1.1 — Sprites et textures des trois écrans
+### ✅ T1.1 — Sprites et textures des trois écrans
 
 - Objectif : P8.
 - Fichiers : `RacingGameCasaEngine/Content/Textures/HelpScreenWindows.png` (copie), `scripts/UiTexturePremultiplier/{Program.cs,README.md}`, `RacingGameCasaEngine/Content/UI/Textures/HelpScreenWindows.png`, `RacingGameCasaEngine.csproj` (exclusion), `scripts/generate_rgce_ui_assets.py`, les `.texture`/`.sprite` générés, `AssetInfos.json`.
@@ -211,6 +211,19 @@ Découverte en lecture seule : workflow de 4 agents, chacun contre-vérifié par
   - `--smoke-frontend` sans asset manquant ; éditeur ;
   - captures inchangées (aucun écran ne les utilise encore).
 - Commit : `feat(racing-casa): add the Highscores, Options and Help sprites`
+
+> Validation (2026-10-06) :
+> - `HelpScreenWindows.png` copié de `RacingGame/Content/Textures/` (même blob `b938803`), ajouté à `UiTexturePremultiplier` (programme et README) et à l'exclusion du lien du csproj.
+> - Copie prémultipliée exacte : alpha identique, chaque canal égal à `(c·a + 127) / 255`, écart maximal 0. Une seconde exécution de l'outil réécrit les mêmes octets pour toutes les images.
+> - Générateur : 9 textures, 60 sprites (15 nouveaux), 77 entrées possédées ; le catalogue ne gagne que des entrées (102 lignes ajoutées, aucune retirée), et une seconde exécution ne change rien.
+>   - En-têtes `Ui.Options.Header` (512,212), `Ui.Help.Header` (512,312), `Ui.Highscores.Header` (0,412), tous de 512×100.
+>   - `Ui.Button.Radio` (935,427,39,39).
+>   - `Ui.Options.Panel`, ainsi que `Ui.Options.Resolution0` à `4`, `Fullscreen`, `PostScreenEffects`, `Shadows` et `HighDetail`, aux rectangles d'`Options.cs`.
+>   - `Ui.Help.PanelTexture` et `Ui.Help.Panel`.
+> - `dotnet build RacingGame.slnx` 0 erreur, aucun avertissement dans RGCE ; la sortie contient la nouvelle texture et les sprites.
+> - `--smoke-frontend` code 0 sans avertissement ; `--capture-ui-screens` identique à `references-19aa21f` (aucun écran ne les utilise encore) ; réglages restaurés à l'identique.
+> - Éditeur recompilé sur le moteur `19aa21f` (`CasaEngine.Editor.MonoGame.sln`, 0 erreur) ; `capture_editor_screen.ps1` sur `Help.uiscreen` : code 0, sans erreur.
+> - M4 de `docs/mgui-gaps-from-rgce-xaml-screens.md` : 60 sprites sur 9 textures.
 
 ## Phase 2 — Écrans
 

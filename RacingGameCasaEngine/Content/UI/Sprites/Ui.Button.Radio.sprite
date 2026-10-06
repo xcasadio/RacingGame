@@ -1,0 +1,17 @@
+{
+  "id": "ceea9dc6-4dad-50ae-9af3-00ef5a795e1f",
+  "name": "Ui.Button.Radio",
+  "sprite_sheet_asset_id": "0e470a8a-1582-5839-9a0c-96d2adc604eb",
+  "location": {
+    "x": 935,
+    "y": 427,
+    "w": 39,
+    "h": 39
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

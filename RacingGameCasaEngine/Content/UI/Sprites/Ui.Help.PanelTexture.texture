@@ -1,0 +1,22 @@
+{
+  "id": "43231df2-f8aa-5e3c-bbe5-aca24ef17a1f",
+  "name": "Ui.Help.PanelTexture",
+  "texture_asset_id": "9304a35f-487c-5b94-8c01-62b476afc24a",
+  "sampler_state": {
+    "texture_filter": "Linear",
+    "address_u": "Clamp",
+    "address_v": "Clamp",
+    "address_w": "Clamp",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

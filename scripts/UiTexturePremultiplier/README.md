@@ -12,6 +12,7 @@ Writes premultiplied-alpha copies of RacingGameCasaEngine's UI images (ADR-0012)
 | `RacingGameCasaEngine/Content/Textures/headers.png` | `RacingGameCasaEngine/Content/UI/Textures/headers.png` |
 | `RacingGameCasaEngine/Content/Textures/ColorSelection.png` | `RacingGameCasaEngine/Content/UI/Textures/ColorSelection.png` |
 | `RacingGameCasaEngine/Content/Textures/OptionsScreenWindows.png` | `RacingGameCasaEngine/Content/UI/Textures/OptionsScreenWindows.png` |
+| `RacingGameCasaEngine/Content/Textures/HelpScreenWindows.png` | `RacingGameCasaEngine/Content/UI/Textures/HelpScreenWindows.png` |
 | `RacingGame/Content/Textures/GameFont.png` | `RacingGameCasaEngine/Content/UI/Fonts/GameFont.png` |
 
 Each texel becomes (round(r·a/255), round(g·a/255), round(b·a/255), a): opaque texels keep their colour. The sources are left as they are.

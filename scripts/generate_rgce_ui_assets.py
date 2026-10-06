@@ -39,6 +39,8 @@ TEXTURES = [
     ("Ui.Title.HeadersTexture", "Ui.Title.HeadersImage", "UI/Textures/headers.png"),
     ("Ui.CarSelection.ColorSelectionTexture", "Ui.CarSelection.ColorSelectionImage", "UI/Textures/ColorSelection.png"),
     ("Ui.CarSelection.OptionsWindowsTexture", "Ui.CarSelection.OptionsWindowsImage", "UI/Textures/OptionsScreenWindows.png"),
+    # Help screen panel of RacingGame (Help.cs, helpScreen).
+    ("Ui.Help.PanelTexture", "Ui.Help.PanelImage", "UI/Textures/HelpScreenWindows.png"),
 ]
 
 # (sprite asset name, texture asset name, x, y, w, h)
@@ -75,14 +77,35 @@ SPRITES = [
     # arrow (SelectionArrowGfxRect, pointing right).
     ("Ui.Button.Highlight", "Ui.Menu.ButtonsTexture", 424, 240, 212, 92),
     ("Ui.CarSelection.Arrow", "Ui.Menu.ButtonsTexture", 874, 426, 53, 39),
+    # Round button of the Options screen: slider handle, Show FPS and vibration toggles (SelectionRadioButtonGfxRect).
+    ("Ui.Button.Radio", "Ui.Menu.ButtonsTexture", 935, 427, 39, 39),
     # headers.png (1024x512): "Press START to continue." (PressStartGfxRect), "CHOOSE YOUR CAR" (HeaderChooseCarGfxRect) and
     # "SELECT TRACK" (HeaderSelectTrackGfxRect).
     ("Ui.Title.PressStart", "Ui.Title.HeadersTexture", 2, 1, 631, 45),
     ("Ui.CarSelection.Header", "Ui.Title.HeadersTexture", 0, 212, 512, 100),
     ("Ui.TrackSelection.Header", "Ui.Title.HeadersTexture", 0, 312, 512, 100),
+    # "OPTIONS", "HELP" and "HIGHSCORES" (HeaderOptionsGfxRect, HeaderHelpGfxRect, HeaderHighscoresGfxRect).
+    ("Ui.Options.Header", "Ui.Title.HeadersTexture", 512, 212, 512, 100),
+    ("Ui.Help.Header", "Ui.Title.HeadersTexture", 512, 312, 512, 100),
+    ("Ui.Highscores.Header", "Ui.Title.HeadersTexture", 0, 412, 512, 100),
     # ColorSelection.png (64x64): the colour square, tinted per colour; OptionsScreenWindows.png: the car property bar.
     ("Ui.CarSelection.Swatch", "Ui.CarSelection.ColorSelectionTexture", 0, 0, 64, 64),
     ("Ui.CarSelection.StatBar", "Ui.CarSelection.OptionsWindowsTexture", 372, 297, 472, 6),
+    # The Options panel and the areas the Options screen redraws over it: the five resolution slots and the four graphics
+    # toggles (RacingGame's Options.cs, Resolution*GfxRect, FullscreenGfxRect, PostScreenEffectsGfxRect, ShadowsGfxRect,
+    # HighDetailGfxRect).
+    ("Ui.Options.Panel", "Ui.CarSelection.OptionsWindowsTexture", 0, 0, 1024, 512),
+    ("Ui.Options.Resolution0", "Ui.CarSelection.OptionsWindowsTexture", 339, 112, 98, 32),
+    ("Ui.Options.Resolution1", "Ui.CarSelection.OptionsWindowsTexture", 454, 112, 98, 32),
+    ("Ui.Options.Resolution2", "Ui.CarSelection.OptionsWindowsTexture", 575, 112, 108, 32),
+    ("Ui.Options.Resolution3", "Ui.CarSelection.OptionsWindowsTexture", 704, 112, 116, 32),
+    ("Ui.Options.Resolution4", "Ui.CarSelection.OptionsWindowsTexture", 838, 112, 69, 32),
+    ("Ui.Options.Fullscreen", "Ui.CarSelection.OptionsWindowsTexture", 339, 182, 105, 36),
+    ("Ui.Options.PostScreenEffects", "Ui.CarSelection.OptionsWindowsTexture", 339, 226, 206, 36),
+    ("Ui.Options.Shadows", "Ui.CarSelection.OptionsWindowsTexture", 616, 226, 90, 36),
+    ("Ui.Options.HighDetail", "Ui.CarSelection.OptionsWindowsTexture", 784, 226, 120, 36),
+    # HelpScreenWindows.png (1024x512): the whole Help panel.
+    ("Ui.Help.Panel", "Ui.Help.PanelTexture", 0, 0, 1024, 512),
     # ingame.png (1024x512): race HUD panels, tachometer, needle and the 10 digit glyphs.
     ("Ui.Hud.Laps", "Ui.Hud.IngameTexture", 381, 132, 222, 160),
     ("Ui.Hud.Tacho", "Ui.Hud.IngameTexture", 0, 0, 343, 341),

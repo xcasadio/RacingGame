@@ -1,0 +1,17 @@
+{
+  "id": "cf7a30d8-dc38-5246-bdcd-2b72ff6f28a7",
+  "name": "Ui.Options.Header",
+  "sprite_sheet_asset_id": "728e9aed-900e-5f1a-ac05-96efcd06a53c",
+  "location": {
+    "x": 512,
+    "y": 212,
+    "w": 512,
+    "h": 100
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

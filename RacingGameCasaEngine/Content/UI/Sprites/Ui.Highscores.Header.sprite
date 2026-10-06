@@ -1,0 +1,17 @@
+{
+  "id": "e2ed4492-17e7-5624-b8bc-bac8a9a62271",
+  "name": "Ui.Highscores.Header",
+  "sprite_sheet_asset_id": "728e9aed-900e-5f1a-ac05-96efcd06a53c",
+  "location": {
+    "x": 0,
+    "y": 412,
+    "w": 512,
+    "h": 100
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}

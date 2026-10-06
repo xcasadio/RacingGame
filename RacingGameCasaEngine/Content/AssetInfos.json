@@ -533,6 +533,108 @@
       "name": "Ui.Menu.BackgroundPlainTexture",
       "file_name": "UI/Sprites/Ui.Menu.BackgroundPlainTexture.texture",
       "asset_type": "texture"
+    },
+    {
+      "id": "9304a35f-487c-5b94-8c01-62b476afc24a",
+      "name": "Ui.Help.PanelImage",
+      "file_name": "UI/Textures/HelpScreenWindows.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "43231df2-f8aa-5e3c-bbe5-aca24ef17a1f",
+      "name": "Ui.Help.PanelTexture",
+      "file_name": "UI/Sprites/Ui.Help.PanelTexture.texture",
+      "asset_type": "texture"
+    },
+    {
+      "id": "ceea9dc6-4dad-50ae-9af3-00ef5a795e1f",
+      "name": "Ui.Button.Radio",
+      "file_name": "UI/Sprites/Ui.Button.Radio.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "cf7a30d8-dc38-5246-bdcd-2b72ff6f28a7",
+      "name": "Ui.Options.Header",
+      "file_name": "UI/Sprites/Ui.Options.Header.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "ae9f6024-d813-508e-8502-f7d282bbc4cc",
+      "name": "Ui.Help.Header",
+      "file_name": "UI/Sprites/Ui.Help.Header.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "e2ed4492-17e7-5624-b8bc-bac8a9a62271",
+      "name": "Ui.Highscores.Header",
+      "file_name": "UI/Sprites/Ui.Highscores.Header.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "b56defc5-1cd2-5153-bd36-54a5855ae8e9",
+      "name": "Ui.Options.Panel",
+      "file_name": "UI/Sprites/Ui.Options.Panel.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "960de76a-12fb-58a0-a45d-a966c66a1841",
+      "name": "Ui.Options.Resolution0",
+      "file_name": "UI/Sprites/Ui.Options.Resolution0.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "dd5efe9b-690d-552e-9c80-f02bbfb34e77",
+      "name": "Ui.Options.Resolution1",
+      "file_name": "UI/Sprites/Ui.Options.Resolution1.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "8fa130bb-6355-5c55-8edf-a97e620ddbe2",
+      "name": "Ui.Options.Resolution2",
+      "file_name": "UI/Sprites/Ui.Options.Resolution2.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "d6696101-9cf9-500e-abd5-d0b1d6f719c5",
+      "name": "Ui.Options.Resolution3",
+      "file_name": "UI/Sprites/Ui.Options.Resolution3.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "4cd6b501-eb12-587c-bafb-b27c9e1d1ae9",
+      "name": "Ui.Options.Resolution4",
+      "file_name": "UI/Sprites/Ui.Options.Resolution4.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "440abd88-ce93-5239-bc4c-c3ee56bbca3e",
+      "name": "Ui.Options.Fullscreen",
+      "file_name": "UI/Sprites/Ui.Options.Fullscreen.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "7e2b696d-3f23-5205-9d54-d5fd17a978f2",
+      "name": "Ui.Options.PostScreenEffects",
+      "file_name": "UI/Sprites/Ui.Options.PostScreenEffects.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "3ce14635-e919-50a8-855a-0ef53bbac3d2",
+      "name": "Ui.Options.Shadows",
+      "file_name": "UI/Sprites/Ui.Options.Shadows.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "1c1729ba-7a85-5bf1-b65e-52a5cd36a54c",
+      "name": "Ui.Options.HighDetail",
+      "file_name": "UI/Sprites/Ui.Options.HighDetail.sprite",
+      "asset_type": "sprite"
+    },
+    {
+      "id": "71030b32-2ab2-5675-9525-df25c0719c10",
+      "name": "Ui.Help.Panel",
+      "file_name": "UI/Sprites/Ui.Help.Panel.sprite",
+      "asset_type": "sprite"
     }
   ]
 }

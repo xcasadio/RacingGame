@@ -1,0 +1,17 @@
+{
+  "id": "3ce14635-e919-50a8-855a-0ef53bbac3d2",
+  "name": "Ui.Options.Shadows",
+  "sprite_sheet_asset_id": "8fbc280b-206d-5bf6-81c5-68e4e36cdcdc",
+  "location": {
+    "x": 616,
+    "y": 226,
+    "w": 90,
+    "h": 36
+  },
+  "hotspot": {
+    "x": 0,
+    "y": 0
+  },
+  "collisions": [],
+  "sockets": []
+}
