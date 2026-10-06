@@ -277,7 +277,7 @@ Découverte en lecture seule (workflow de 3 agents), faits porteurs revérifiés
 > - **Points ouverts pour l'auteur** :
 >   - les P3/P4 reportés ci-dessus ;
 >   - comportements d'origine hors périmètre (Échap/Retour, retour au splash, son) ;
->   - `MouseManager.HasMoved` de CasaEngine ne compte que les mouvements vers la droite ou le bas : tâche séparée proposée.
+>   - `MouseManager.HasMoved` de CasaEngine ne compte que les mouvements vers la droite ou le bas : tâche séparée proposée. ✅ Réglé le 2026-10-06 : corrigé dans CasaEngine (`5882bb72c`, mergé dans `main` par `d79ed169b`), sous-module mis à jour, et `MainMenuScreen` utilise `HasMoved` à la place des deltas en valeur absolue.
 
 - Objectif :
   - validation globale ;

@@ -87,7 +87,7 @@ internal sealed class MainMenuScreen : RaceXamlScreenBase
         MouseManager mouse = _game.InputComponent.MouseManager;
         GamePad gamePad = _game.InputComponent.GamePadManager.GetGamePad(PlayerIndex.One);
 
-        if (Math.Abs(mouse.DeltaX) > 1 || Math.Abs(mouse.DeltaY) > 1 || mouse.LeftButtonJustPressed)
+        if (mouse.HasMoved || mouse.LeftButtonJustPressed)
         {
             _ignoreMouse = false;
         }
