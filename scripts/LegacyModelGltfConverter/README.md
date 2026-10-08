@@ -23,6 +23,16 @@ Arguments: `<x models directory> <gltf output directory> <png output directory> 
 
 The exit code is `0` when every model converts; any error (unmatched material names, missing texture, non-decomposable node transform) is printed and gives exit code `1`.
 
+### Textures no model references
+
+```
+dotnet run --project scripts/LegacyModelGltfConverter -- --textures RacingGame/Content/Textures RacingGameCasaEngine/Content/Textures Road RoadNormal
+dotnet run --project scripts/LegacyModelGltfConverter -- --verify-textures RacingGame/Content/Textures RacingGameCasaEngine/Content/Textures
+```
+
+- `--textures <tga directory> <png directory> <texture name>...` converts each named `.tga` (the extension is optional) to a `.png` of the same base name, with the same lossless conversion as the model textures. Exit code `1` when a texture is not found.
+- `--verify-textures <tga directory> <png directory>` decodes every `.tga` and the `.png` of the same base name with StbImageSharp, the decoder of the game, as RGBA bytes, and compares them. It lists the pairs that differ (pixel count and first pixel) and the `.tga` without `.png`; exit code `1` when there is any.
+
 ## Output
 
 For each `<Name>.x`:

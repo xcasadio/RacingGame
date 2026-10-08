@@ -525,7 +525,7 @@ Faits relevés pour cette phase (2026-10-08) :
   - les 22 WAV et la table des repères XACT, dans `editor-disc2/wav_table.md` et `cue_table.md` du scratchpad ;
   - les volumes `.sound` existants, qui suivent `10^(dB/2000)`.
 
-### ⏳ T3.1 — `.gitattributes` et 29 TGA convertis en PNG
+### ✅ T3.1 — `.gitattributes` et 29 TGA convertis en PNG
 
 - **Objectif** : D8, et les 29 textures qui n'existent qu'en TGA rejoignent `Content/Textures` en PNG aux pixels identiques.
 - **Fichiers** :
@@ -541,6 +541,18 @@ Faits relevés pour cette phase (2026-10-08) :
   - contrôle négatif : un PNG modifié d'un pixel, copié dans le scratchpad, est signalé ;
   - `dotnet build` du convertisseur et de `RacingGame.slnx` : 0 erreur.
 - **Commit** : `feat(racing-casa): convert the remaining legacy TGA textures to PNG`
+
+> Validation (2026-10-08) :
+> - **`.gitattributes`** : `*.png`, `*.wav`, `*.dds`, `*.data`, `*.tga` et `*.bin` en `binary`.
+>   - `git add --renormalize .` a été lancé dans un index temporaire (`GIT_INDEX_FILE`), pour ne pas toucher l'index réel.
+>   - La même liste de 59 fichiers change avec ou sans le `.gitattributes`. Ce sont des sources `.cs` et `.csproj` déjà stockées en CRLF, sans rapport avec cette tâche, et aucune n'a une extension binaire : le fichier ne change la normalisation d'aucun fichier.
+> - **Convertisseur** :
+>   - `--textures` convertit les noms donnés par `LegacyTextureConverter.ConvertToPng`, la conversion des textures des modèles ;
+>   - `--verify-textures` décode chaque `.tga` et le `.png` de même nom par StbImageSharp en RGBA, compare les octets, puis liste les paires différentes (nombre de pixels, premier pixel) et les `.tga` sans `.png`. Code de sortie 1 s'il y en a.
+> - **Avant la conversion** : 129 `.tga`, 100 paires, 0 différence, 29 sans `.png`. Ce sont exactement les 29 de `tga29.md`.
+> - **Conversion** des 29, puis `--verify-textures RacingGame/Content/Textures RacingGameCasaEngine/Content/Textures` : 129 paires, 0 différence, 0 sans `.png`.
+> - **Contrôle négatif** : copie de `Road.png` dans le scratchpad, avec le pixel (10, 20) modifié. Le contrôle répond « Road: DIFFERENT 1 pixels differ, first at (10, 20) » et sort avec le code 1.
+> - **Build** : convertisseur et `RacingGame.slnx` à 0 erreur ; `--smoke-frontend` sort avec le code 0. Les 29 PNG sont copiés dans la sortie par la règle `Content\Textures\*.png`. Le jeu lit encore les `.tga` liés jusqu'à T3.5.
 
 ### ✅ T3.2 — Cubemaps, carte de hauteurs, CombiModel et images d'interface héritées
 

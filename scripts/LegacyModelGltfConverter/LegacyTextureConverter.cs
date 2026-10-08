@@ -13,11 +13,7 @@ internal static class LegacyTextureConverter
 {
     public static void ConvertToPng(string sourcePath, string destinationPath)
     {
-        ImageResult image;
-        using (var stream = File.OpenRead(sourcePath))
-        {
-            image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
-        }
+        ImageResult image = Decode(sourcePath);
 
         using var bitmap = new Bitmap(image.Width, image.Height, PixelFormat.Format32bppArgb);
         var rectangle = new Rectangle(0, 0, image.Width, image.Height);
@@ -48,5 +44,47 @@ internal static class LegacyTextureConverter
 
         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
         bitmap.Save(destinationPath, ImageFormat.Png);
+    }
+
+    /// <summary>
+    /// Decodes both images with StbImageSharp, the decoder of the game, as RGBA bytes and compares them.
+    /// Returns null when they are identical, otherwise a description of the first difference.
+    /// </summary>
+    public static string? Compare(string tgaPath, string pngPath)
+    {
+        ImageResult tga = Decode(tgaPath);
+        ImageResult png = Decode(pngPath);
+        if (tga.Width != png.Width || tga.Height != png.Height)
+        {
+            return $"size {tga.Width}x{tga.Height} against {png.Width}x{png.Height}";
+        }
+
+        int differentPixels = 0;
+        int firstDifference = -1;
+        for (int i = 0; i < tga.Data.Length; i += 4)
+        {
+            if (tga.Data[i] != png.Data[i] || tga.Data[i + 1] != png.Data[i + 1]
+                || tga.Data[i + 2] != png.Data[i + 2] || tga.Data[i + 3] != png.Data[i + 3])
+            {
+                differentPixels++;
+                if (firstDifference < 0)
+                {
+                    firstDifference = i / 4;
+                }
+            }
+        }
+
+        if (differentPixels == 0)
+        {
+            return null;
+        }
+
+        return $"{differentPixels} pixels differ, first at ({firstDifference % tga.Width}, {firstDifference / tga.Width})";
+    }
+
+    private static ImageResult Decode(string path)
+    {
+        using var stream = File.OpenRead(path);
+        return ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
     }
 }

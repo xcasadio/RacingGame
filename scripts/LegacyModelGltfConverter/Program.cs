@@ -16,8 +16,85 @@ using GltfNode = SharpGLTF.Schema2.Node;
 // - diffuse and normal textures of each material attached as external .png images;
 // - the legacy material metadata the old runtime importer used stored in the material extras.
 // Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]...
+// Texture modes, for the textures no model references:
+// - LegacyModelGltfConverter --textures <tga directory> <png directory> <texture name>...: converts each named .tga to .png;
+// - LegacyModelGltfConverter --verify-textures <tga directory> <png directory>: decodes every .tga and its .png of the same
+//   name, compares their RGBA bytes and lists the differences and the .tga without .png (exit code 1 if any).
 
 const string Usage = "Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]...";
+const string TexturesUsage = "Usage: LegacyModelGltfConverter --textures <tga directory> <png directory> <texture name>...";
+const string VerifyTexturesUsage = "Usage: LegacyModelGltfConverter --verify-textures <tga directory> <png directory>";
+
+if (args.Length > 0 && args[0] == "--textures")
+{
+    if (args.Length < 4)
+    {
+        Console.Error.WriteLine(TexturesUsage);
+        return 2;
+    }
+
+    string tgaDirectory = Path.GetFullPath(args[1]);
+    string pngOutputDirectory = Path.GetFullPath(args[2]);
+    int missing = 0;
+    for (int i = 3; i < args.Length; i++)
+    {
+        string name = Path.GetFileNameWithoutExtension(args[i]);
+        string tgaPath = Path.Combine(tgaDirectory, name + ".tga");
+        if (!File.Exists(tgaPath))
+        {
+            Console.WriteLine($"{name}.tga: ERROR not found in {tgaDirectory}");
+            missing++;
+            continue;
+        }
+
+        LegacyTextureConverter.ConvertToPng(tgaPath, Path.Combine(pngOutputDirectory, name + ".png"));
+        Console.WriteLine($"{name}.tga: converted to {name}.png");
+    }
+
+    Console.WriteLine($"{args.Length - 3} textures, {missing} not found.");
+    return missing == 0 ? 0 : 1;
+}
+
+if (args.Length > 0 && args[0] == "--verify-textures")
+{
+    if (args.Length != 3)
+    {
+        Console.Error.WriteLine(VerifyTexturesUsage);
+        return 2;
+    }
+
+    string tgaDirectory = Path.GetFullPath(args[1]);
+    string pngInputDirectory = Path.GetFullPath(args[2]);
+    string[] tgaFiles = Directory.GetFiles(tgaDirectory, "*.tga")
+        .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+        .ToArray();
+    int pairs = 0;
+    int different = 0;
+    int withoutPng = 0;
+    foreach (string tgaPath in tgaFiles)
+    {
+        string name = Path.GetFileNameWithoutExtension(tgaPath);
+        string pngPath = Path.Combine(pngInputDirectory, name + ".png");
+        if (!File.Exists(pngPath))
+        {
+            Console.WriteLine($"{name}: no .png");
+            withoutPng++;
+            continue;
+        }
+
+        pairs++;
+        string? difference = LegacyTextureConverter.Compare(tgaPath, pngPath);
+        if (difference != null)
+        {
+            Console.WriteLine($"{name}: DIFFERENT {difference}");
+            different++;
+        }
+    }
+
+    Console.WriteLine($"{tgaFiles.Length} .tga, {pairs} pairs, {different} different, {withoutPng} without .png.");
+    return different == 0 && withoutPng == 0 ? 0 : 1;
+}
+
 var positional = new List<string>();
 var skippedModels = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 for (int i = 0; i < args.Length; i++)

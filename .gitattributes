@@ -1,0 +1,8 @@
+# Binary content of the games: never converted, diffed or merged as text.
+# *.bin is the buffer of the glTF models of RacingGameCasaEngine/Content/Models.
+*.png binary
+*.wav binary
+*.dds binary
+*.data binary
+*.tga binary
+*.bin binary
