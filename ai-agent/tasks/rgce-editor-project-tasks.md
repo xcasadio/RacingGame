@@ -1280,7 +1280,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
 > - **Autres contrôles** : `dotnet build RacingGame.slnx` à 0 erreur ; `--smoke-frontend` à 0 ; audit dans le seuil de T4.1 (21 sur 21).
 > - **Non éprouvé sur des données réelles** : les enregistrements par `SubMesh` et la lecture des surcharges, que le jeu n'a pas encore.
 
-### ⏳ T5.2 — Moteur : fonctionnalités d'un matériau compilé ajustées au maillage (D3)
+### ✅ T5.2 — Moteur : fonctionnalités d'un matériau compilé ajustées au maillage (D3)
 
 - **Objectif** : un matériau compilé et un matériau construit en code de mêmes valeurs se dessinent avec les mêmes fonctionnalités sur le même maillage. C'est un défaut du moteur : un matériau catalogué avec carte de normales, posé sur un maillage sans tangentes, choisit une technique de carte de normales sans les données qu'elle demande.
 - **Fichiers**, dans CasaEngine, sur `chantier/rgce-editor-project` :
@@ -1300,6 +1300,29 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
   - un contrôle ponctuel de la fonction de l'exporteur, sur un matériau compilé avec carte de normales et un maillage sans tangentes : pas de `NormalMap` ;
   - `RacingGame.slnx` compile avec 0 erreur.
 - **Commit** : `fix(rendering): resolve compiled material features against the drawn mesh` dans CasaEngine, puis le pointeur dans RacingGame.
+
+> Validation (2026-10-08) :
+> - **CasaEngine `359a0a98b`** :
+>   - `RenderFeatureResolver.AdjustToMesh` porte la règle unique : `NormalMap` retiré sans tangentes ou en skinning ; `Skinned`, `Instanced` et `VertexColor` ajoutés. `Resolve` s'en sert ;
+>   - `ResolveForMesh(matériau, matériau compilé, maillage)` applique cette règle aux deux chemins ;
+>   - `StaticMeshRendererComponent` fixe `Features` par `ResolveForMesh` dans ses deux constructions d'éléments, avec ou sans `SubMesh` ;
+>   - `RenderItem.Features` rend la valeur fixée ;
+>   - **producteurs de `RenderItem`** : seul `StaticMeshRendererComponent` en construit. Le skinning passe par `ResolveSkinned` sans `RenderItem`, et le batch d'instances et les passes ne font que lire ;
+>   - `EffectiveShaderId` garde le même motif de propriété ; il ne dépend que du matériau, et ne touche pas ce défaut ;
+>   - tests : `RenderItemFeaturesTests` (6), et `RenderItemTests` mis à jour (son premier test affirmait l'ancien repli) ;
+>   - docs : `materials-sources-of-truth.md` et `materials-workflow.md` ;
+>   - les deux solutions compilent avec 0 erreur, et `CasaEngine.Tests` passe à 4 323 sur 4 323.
+> - **Pointeur** : `c2b68c4`.
+> - **Exporteur** : `CaptureRenderFeatures` fait la même recherche dans le cache que le rendu, puis appelle `RenderFeatureResolver.ResolveForMesh`. Un contrôle ponctuel par réflexion, sur un matériau compilé (`BasColorTexture` + `NormalMap`) injecté dans un `MaterialCache`, donne :
+>   - sans tangentes : `BasColorTexture` ;
+>   - avec tangentes : `BasColorTexture,NormalMap`.
+> - **Jeu** :
+>   - `RacingGame.slnx` compile avec 0 erreur ;
+>   - l'export contre `s5/scene-a.json` est identique, fonctionnalités comprises (1 074, 689, 2 156) ;
+>   - `--smoke-frontend` sort avec le code 0 ;
+>   - l'audit reste à 0,001 au plus.
+>   - Un premier lancement des captures d'interface a donné 0,27 (`track-selection`), 0,66 (`race-hud`) et 10,7 (`race-finished`), des états animés ou chronométrés. Le lancement suivant a donné 0,00 sur les 10 états.
+> - **Projet d'exemple** : aucun matériau de `Projects/SampleProject` n'a de carte de normales sur un maillage sans tangentes, donc rien n'y change. La capture de `Box.staticModel` est normale.
 
 ### ⏳ T5.3 — Recettes de matériaux séparées de leur construction
 

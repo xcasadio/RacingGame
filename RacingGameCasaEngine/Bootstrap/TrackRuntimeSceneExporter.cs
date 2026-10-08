@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using CasaEngine.Framework.Entities;
 using CasaEngine.Framework.Entities.Components;
 using CasaEngine.Framework.Materials;
+using CasaEngine.Framework.Materials.Compilation;
 using CasaEngine.Framework.Materials.Runtime;
 using CasaEngine.Framework.Rendering.Models;
 using CasaEngine.Framework.Rendering.Shaders;
@@ -254,13 +255,18 @@ internal static class TrackRuntimeSceneExporter
 
     /// <summary>
     /// The features StaticMeshRendererComponent puts on the render item: the compiled material's when its id is in
-    /// the compiled-material cache, otherwise RenderFeatureResolver.Resolve. Sorted flag names.
+    /// the compiled-material cache, adjusted to the mesh by the engine (RenderFeatureResolver.ResolveForMesh). Sorted flag names.
     /// </summary>
     private static List<string> CaptureRenderFeatures(MaterialBase material, StaticModelMesh mesh, MaterialCache? materialCache)
     {
-        ShaderFeature features = material.Id != Guid.Empty && materialCache != null && materialCache.TryGet(material.Id, out var compiledMaterial)
-            ? compiledMaterial.Features
-            : RenderFeatureResolver.Resolve(new RenderFeatureInput { Material = material, Mesh = mesh });
+        // Same lookup and same engine function as StaticMeshRendererComponent, so this records what is drawn.
+        CompiledMaterial? compiledMaterial = null;
+        if (material.Id != Guid.Empty && materialCache != null && materialCache.TryGet(material.Id, out var cached))
+        {
+            compiledMaterial = cached;
+        }
+
+        ShaderFeature features = RenderFeatureResolver.ResolveForMesh(material, compiledMaterial!, mesh);
 
         return Enum.GetValues<ShaderFeature>()
             .Where(flag => flag != ShaderFeature.None && features.HasFlag(flag))
