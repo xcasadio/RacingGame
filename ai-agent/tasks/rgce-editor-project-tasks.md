@@ -1130,7 +1130,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 >   - `dotnet build RacingGame.slnx` : 0 erreur, aucun code touché.
 > - **Limite relevée** : l'automatisation de l'éditeur ne sait pas cadrer la caméra 3D. C'est un manque de CasaEngine, hors de ce chantier.
 
-### ⏳ T4.7 — ADR, documentation et clôture de S4
+### ✅ T4.7 — ADR, documentation et clôture de S4
 
 - **Fichiers** :
   - `docs/decisions/0017-racinggame-gameplay-holds-the-game-code.md` : la DLL de jeu, `IRaceGameHost`, la voiture en entité, les générateurs et leurs enfants transitoires. Elle complète l'ADR-0015 sans la remplacer ;
@@ -1139,6 +1139,31 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
   - ce plan.
 - **Validation** : vérificateur indépendant de S4, CONFIRMED.
 - **Commit** : `docs(adr): record the game code and track generators in RacingGame.Gameplay`
+
+> Validation (2026-10-08) :
+> - **Documents** :
+>   - ADR-0017, avec son entrée dans l'index ;
+>   - `RacingGameCasaEngine/Assets/README.md` : section des générateurs (T4.6), origine des ids de piste, contenu de l'assembly de gameplay.
+> - **Vérificateur indépendant de S4 : CONFIRMED**, sans constat P0 à P2, à `792437b` avec ces documents :
+>   - **code** :
+>     - la DLL ne référence pas l'exe ;
+>     - `IRaceGameHost` est le seul accès au jeu ;
+>     - `RacingCarPawn` a disparu ;
+>     - 115 types de jeu, 0 collision ;
+>   - **A4 refait** : `RacingGame.slnx` recompilé. L'export apparie tout, et les 3 324 renommages sont tous des poteaux et des segments. L'audit reste à 0,001 au plus. Les captures d'interface sont à 0,00, les audits des voitures identiques, et le smoke et le profil d'import sortent avec le code 0 ;
+>   - **audit reproductible** : deux audits neufs sont à 0,000 entre eux. Le contrôle négatif est signalé par l'audit (18 vues sur 21) et par l'export (les 6 maillages de route) ;
+>   - **éditeur** : le monde de test s'ouvre avec le code 0. Deux enregistrements donnent les octets committés. Aucun enfant généré n'est écrit, et la physique garde ses ids. Un id inconnu donne un seul avertissement en 5 s d'images ;
+>   - **revue** :
+>     - aucune allocation par image ;
+>     - seuls les tampons des maillages procéduraux sont libérés ;
+>     - les enfants générés sont retirés à l'initialisation, à la reconstruction, au détachement et au clonage ;
+>     - la lecture `XDocument` est identique au bit près à celle de `XmlSerializer` sur les 13 fichiers ;
+>     - les déplacements de T4.2 à T4.5 ne changent rien hors de ce que disent leurs notes.
+> - **Avis P4 reportés**, sans retouche d'un candidat confirmé (règles de vérification) :
+>   - ADR-0017, Context, écrit « 5 of them reached the game through `World.Game as RacingGameCasaEngineGame` ». Il s'agit en fait de 4 composants, plus `RaceGamepadVibration`, qui recevait le jeu par son constructeur ;
+>   - ADR-0017, Consequences, écrit « Culling and shadow casting are decided per generator entity ». Seules les bornes de culling sont par entité ; le drapeau d'ombre est porté par chaque enfant généré.
+>   Une prochaine ADR sur ce sujet les corrigera.
+> - **Non vérifié en conditions réelles** : la reconstruction en direct après un réglage dans l'inspecteur, et la duplication d'une entité génératrice, faute d'automatisation ; le code a été relu. Le temps de chargement d'une course, qui calcule maintenant le tracé une fois par générateur et pour la physique, n'a pas été mesuré.
 
 ---
 

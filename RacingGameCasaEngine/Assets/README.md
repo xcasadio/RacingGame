@@ -52,7 +52,7 @@ Every game file the game reads lives under `Content` and has a catalogue entry (
 - Files:
   - project file `Content/RacingGameCasaEngine.json`;
   - start world `Content/Worlds/Editor.world`, with one empty entity, `EditorAutomationAnchor`, required by the editor automation;
-  - gameplay assembly `RacingGame.Gameplay` (view models, `Plugin`). Its build copies `RacingGame.Gameplay.dll` and `.pdb` into `Content/`; both files are git-ignored and named by `GameplayDllName`;
+  - gameplay assembly `RacingGame.Gameplay` (view models, `Plugin`, and since ADR-0017 the game code: components, the car, the race session, the track layout and generators). Its build copies `RacingGame.Gameplay.dll` and `.pdb` into `Content/`; both files are git-ignored and named by `GameplayDllName`;
   - `GameplayCsprojName` names `RacingGame.Gameplay.csproj`: before Play, the editor rebuilds and reloads the dll when its sources are newer. On project open it writes `RacingGame.Gameplay/CasaEngine.EnginePath.props`, machine-local and git-ignored.
 - Before opening:
   - build the editor from the submodule, `dotnet build CasaEngine/CasaEngine.Editor.MonoGame.sln -c Debug`, again after every submodule update;
@@ -89,7 +89,7 @@ The race track is not stored as meshes. Four components of `RacingGame.Gameplay`
 `RaceTrackPhysicsComponent` is not a generator: it computes the track profile that the car physics reads, from the same two ids.
 
 - Serialized settings:
-  - `track_asset_id`: the `.Track` asset (`Data` ids of `AssetInfos.json`, for example `TrackBeginnerData`);
+  - `track_asset_id`: the `.Track` asset, a `track` entry of `AssetInfos.json` (`TrackBeginnerData`, `TrackAdvancedData`, `TrackExpertData`);
   - `heightmap_asset_id`: the heightmap asset (`Data.LandscapeHeights`);
   - guard rail: `side` (`Left` or `Right`) and `holder_gap` (distance between posts, default 15);
   - columns: `columns_distance` (distance between columns, default 33).
