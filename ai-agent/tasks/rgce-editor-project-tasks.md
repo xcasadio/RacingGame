@@ -88,6 +88,7 @@ Découverte en lecture seule, en deux workflows. Le premier, de 4 agents, portai
 | D6 | Le décor aujourd'hui placé par tirage ou lu dans les `.Track` (palmiers, panneaux, bannières, lampadaires, objets et CombiModel) est **figé en entités** du monde par un export unique ; les poteaux de rail et les segments de colonnes restent générés par la route. |
 | D7 | `RacingGameCasaEngine.UI` est **renommé `RacingGame.Gameplay`** et devient la DLL de gameplay. |
 | D8 | Les nouveaux binaires vont dans git normalement, avec un `.gitattributes` qui marque png, wav, dds, data et tga comme binaires. |
+| D9 | Ajoutée le 2026-10-08, réponse de l'auteur sur O7 : le défaut de lecture des éléments `WidthHelper`, `RoadHelper` et `CombiObject` est corrigé **avant S6**. Le décor complet (palmiers, lanternes, tunnels, aides de largeur, contenu des CombiModel) entre dans le jeu, avec de nouvelles références de rendu, puis S6 le fige dans les mondes. |
 
 ## Points à valider avec ce plan
 
@@ -254,7 +255,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
   - les composants s'ouvrent dans l'éditeur sur un monde de test ;
   - un aller-retour d'enregistrement ne perd aucun champ.
 
-### S5 — Modèles, matériaux et textures en assets (détail en attente de l'auteur, O8)
+### S5 — Modèles, matériaux et textures en assets (détaillée en Phase 5)
 
 - **Résultat** : les 56 modèles sont des `.staticModel` avec leurs `.material` et `.texture` (P8), et le jeu les charge par le catalogue. Les règles de matériaux qui dépendaient des noms de fichiers ne s'appliquent plus à l'exécution : leurs valeurs sont dans les assets.
 - **Acceptation** :
@@ -1167,6 +1168,208 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 
 ---
 
+## Phase 5 — Modèles, matériaux et textures en assets (S5)
+
+> Relecture (2026-10-08) : quatre vérificateurs de plan. Les trois premiers ont rendu REVISE, avec 5, puis 1, puis 3 blocages : états de rendu nommés, transparence, conception de la voiture, surcharges absentes de l'export, ordre des contrôles, fonctionnalités de rendu des matériaux compilés, `RenderItem.Features`, matériau des sous-maillages. Après le troisième, la tranche a été mise en pause (O8). L'auteur a demandé une dernière relecture du brouillon corrigé, puis l'exécution. Le quatrième a rendu **READY**.
+
+Faits relevés pour cette phase (2026-10-08). Les sources sont :
+- deux découvertes en lecture seule (`s5-disc/` du scratchpad) ;
+- les fichiers relus en session ;
+- une relecture par un vérificateur de plan ;
+- les résultats de S4.
+
+- **Chargement actuel des modèles** : le jeu lit les glTF par chemin et construit les matériaux en code.
+  - **Décor, poteaux, segments et feux de départ** : `LegacyTrackSceneFactory.LoadLegacyModel` (`RacingGame.Gameplay/Track/LegacyTrackSceneFactory.cs:135-167`) lit le glTF par `LegacyGltfModelReader`, avec le profil RacingGame. Ensuite :
+    - `CreateImportedRuntimeMaterial` (`:449-484`) construit un `LitDiffuseMaterial` à partir de deux sources :
+      - les réglages `RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning`, choisis par nom de texture ;
+      - la présentation `LegacyImportedMaterialPresentationResolver` : file, coupure alpha, culling, ambiante et émissive (`CasaEngine/CasaEngine/Framework/Assets/Loaders/LegacyImportedMaterialPresentation.cs:12-36`).
+      Il y ajoute `SamplerState.AnisotropicWrap` et borne la puissance spéculaire entre 2 et 48 ;
+    - `ApplyFallbackMaterials` (`:567-585`) donne une couleur par mot-clé du nom aux maillages sans matériau ;
+    - `ApplyLegacyModelRootCorrection` (`:169-183`) ajoute une racine tournée de π/2 autour de X.
+  - **Voiture** : `LegacyCarVisualFactory` (`RacingGame.Gameplay/Components/LegacyCarVisualFactory.cs`).
+    - Un `StaticModel` est lu dans `Car.gltf` pour chaque indice de voiture, et mis en cache par indice (`:42,53-71`). Les trois voitures du carrousel sont à l'écran ensemble.
+    - Chaque matériau dont la texture diffuse est une texture de voiture (`RacerCar`, `RacerCar2`, `RacerCar3`, `:37`) reçoit la texture `Painted` ou `Unpainted` du `CarPaint` de son indice, selon des règles sur le nom affiché (`IsPaintMaterial`, `:230-248`).
+    - `CarPaint` décode le PNG par StbImageSharp et réécrit le magenta en couleur-clé (`:36,491-533`). Ses pixels ne sont donc pas ceux d'un `.texture` (`Texture2D.FromStream`).
+    - Autres règles propres à la voiture : réflexion, facteurs 0,85 et 0,75 (`UsesLegacyCarReflectionBlend`), carte de normales `RacerCarNormal` imposée, matériau de repli (`:175-228,305-324`). Pas de rotation de π/2.
+  - **Plateaux du carrousel** : `CarSelectionCarousel.LoadPlateModel` (`RacingGameCasaEngine/UI/CarSelectionCarousel.cs:345-388`), sans les réglages par nom, avec une réflexion de 0,35 et sans rotation.
+  - **Route, sol, terrain, rails et colonnes** : des matériaux écrits en code (`LegacyTrackSceneFactory.cs:402-427`, `.Terrain.cs:143-147`, `.GuardRails.cs:292-314`).
+  - **Caches** : un modèle de décor est chargé une fois par nom et partagé (`ModelCache`), une texture une fois par chemin (`TextureCache`).
+- **Ce qui change à l'exécution** :
+  - la peinture de la voiture, à chaque choix de couleur (`:62-63`) ;
+  - le feu de départ : `RaceStartLight` remplace le `StaticModel` de son composant à chaque signal, rouge, jaune puis vert (`RacingGame.Gameplay/GameFramework/RaceStartLight.cs:61-93`) ;
+  - le cube de réflexion de la scène, utilisé quand un modèle ne nomme aucun cube ou nomme `SkyCubeMap.dds` (`RacingGame.Gameplay/Race/RaceSkySystem.cs:23-28`).
+- **Moteur** :
+  - un `.material` de définition `lit-diffuse` porte :
+    - la file, l'état de rastérisation, l'échantillonneur, les états de mélange et de profondeur par leur nom, et les ombres (`CasaEngine/Projects/SampleProject/NewLitDiffuseMaterial.material`) ;
+    - `diffuse_color`, `ambient_color`, `emissive_color`, `specular_color`, `specular_power`, `alpha_cutoff` ;
+    - `base_color_texture` et `normal_texture` (ids de `.texture`), et `reflection_texture` (id de `dds`) ;
+    - `use_scene_reflection_cube` et les trois facteurs de réflexion ;
+  - `MaterialCompiler` en fait un `LitDiffuseMaterial` (`CasaEngine/CasaEngine/Framework/Materials/Compilation/MaterialCompiler.cs:285-354`). `TintColor` n'est pas réglable, et le jeu ne s'en sert pas ;
+  - **différence d'états** : le compilateur fixe toujours les états de mélange, de profondeur, de rastérisation et d'échantillonneur, par leur nom (`:350-353`), et un nom d'état ne peut pas être vide (`MaterialAsset.cs:19-22,357-371`). Les matériaux du jeu en laissent plusieurs à `null` :
+    - le mélange et la profondeur partout ;
+    - la rastérisation, sauf en CullNone ;
+    - l'échantillonneur des matériaux de repli.
+    - Le rendu traite `null` comme Opaque, Default, CullCounterClockwise et AnisotropicClamp (`CasaEngine/CasaEngine/Framework/Rendering/Draw/RenderStateCache.cs:51-54`) : l'image ne change pas. L'export, lui, écrit `null` (`RacingGameCasaEngine/Bootstrap/TrackRuntimeSceneExporter.cs:264-272`) ;
+  - **transparence** : hors file AlphaTest, un alpha diffus inférieur à 255 rend le matériau compilé transparent (`MaterialRenderStateResolver.cs:42-75`). Les 92 matériaux des 56 glTF ont tous un `legacyMaterial.diffuse` à 4 composantes, d'alpha 1,0. Les couleurs écrites en code sont à vérifier par T5.3 ;
+  - un `StaticModelComponent` qui porte `StaticModelAssetId` partage le modèle, compté, avec ses autres utilisateurs (`StaticModelComponent.cs:202-238`). `AssetContentManager.LoadCopy<T>(id)` donne une copie privée, hors cache (`AssetContentManager.cs:98-101`) ;
+  - le matériau d'un maillage vient de son `material_asset_id` (`StaticModelMaterialResolver.cs:11-57`). Les nœuds du modèle et leurs transforms deviennent des sous-composants (`StaticModelComponent.cs:240-275`), et les sous-maillages lisent le matériau du modèle au dessin ;
+  - un `.texture` lit son image par le même `Texture2D.FromStream` que le jeu (`Texture.cs:70-76`, `Texture2DLoader.cs:12`) ;
+  - **fonctionnalités de rendu** : pour un matériau dont l'id est dans le cache des matériaux compilés (`MaterialCache`), ce qui est le cas de tout matériau venu d'un `.material`, le rendu prend `CompiledMaterial.Features`. Celles-ci sont calculées sur le matériau seul (`MaterialCompiler.cs:66`, `StaticMeshRendererComponent.cs:276-290,450-466`). Un matériau construit en code n'a pas d'entrée dans ce cache, et passe par `RenderFeatureResolver.Resolve(matériau, maillage)`. Ce résolveur retire `NormalMap` quand le maillage n'a pas de tangentes, et ajoute `VertexColor` quand il a des couleurs de sommet (`RenderFeatureResolver.cs:35-46,139-152`).
+    - Aucun des 56 glTF n'a de tangentes, et environ 156 références `normalTexture` y figurent ; la voiture reçoit en plus `RacerCarNormal` imposé.
+    - Le jeu dessine donc aujourd'hui sans carte de normales, alors que des matériaux cuits l'activeraient. L'export actuel n'enregistre ni les fonctionnalités ni la technique ;
+    - la propriété `RenderItem.Features` rend toujours `CompiledMaterial.Features` quand un matériau compilé est attaché, quelle que soit la valeur fixée par le rendu (`Framework/Rendering/Draw/RenderItem.cs:75-79`). Les passes la lisent (`RenderPass.cs:77-79`, `InstanceBatcher.cs:113-115`, `RenderShaderSelector.cs:53`, `OpaqueAndTransparentPasses.cs:36,86`) ;
+  - **matériau dessiné** : le rendu prend, pour chaque sous-maillage (`SubMesh`, une plage d'indices), la surcharge de l'instance, puis `SubMesh.Material`, puis le matériau du maillage (`StaticMeshRendererComponent.cs:262-266`). À l'initialisation, `StaticModel` donne à chaque `SubMesh` son matériau résolu (`StaticModel.cs:79-85`). L'export actuel ne lit que le matériau du maillage (`TrackRuntimeSceneExporter.cs:152-155`) ;
+  - **surcharges par instance** : celles d'un `StaticModelComponent` ne prennent que des ids d'assets, et sont recalculées à chaque `InitializeWithWorld` (`StaticModelComponent.cs:154-185,263-265`). L'export lit `ModelMesh.Material` et ignore ces surcharges (`TrackRuntimeSceneExporter.cs:152-178`).
+- **Catalogue** : les PNG des textures 3D y sont nommés `Texture.<nom>`, de type `png` (S3). Rien ne les référence par id : le jeu les charge par chemin.
+
+### Prérequis, risques et arrêts de S5
+
+- **Prérequis** : S4 clos (vérificateur CONFIRMED). T5.2, une correction de CasaEngine, et son pointeur précèdent T5.3.
+- **Arrêts** :
+  - un écart inexpliqué de `compare_race_scene_exports.py`, avec la règle d'états de T5.1, met la tâche en ⚠️ Blocked. Cela vaut pour les sommets, les matrices, les valeurs de matériau, les fonctionnalités de rendu et les pixels de texture ;
+  - un audit des voitures qui diffère, ou une capture d'interface hors seuil, fait de même ;
+  - si T5.3 trouve un matériau hors AlphaTest avec un alpha diffus inférieur à 255, la tâche passe en ⚠️ Blocked. On choisit alors avec l'auteur une correction de CasaEngine ou une autre forme ;
+  - si `lit-diffuse` ne peut pas rendre une autre valeur que le jeu utilise, le manque se corrige dans CasaEngine, avec un pointeur ; s'il faut une décision, la tâche passe en ⚠️ Blocked.
+- **Risques** :
+  - **Arrondis** : l'enregistrement JSON des valeurs, que l'export compare au matériau d'exécution ;
+  - **Partage** : la peinture et le feu ne doivent rien modifier de visible dans un objet partagé ;
+  - **Noms courts** : le contrôle des noms repasse à chaque tâche qui ajoute des types.
+
+### ⏳ T5.1 — Comparaison des matériaux compilés
+
+- **Objectif** : comparer un matériau compilé à un matériau construit en code sur ce qui se voit à l'écran.
+- **Fichiers** :
+  - `scripts/compare_race_scene_exports.py` : une option `--effective-states`. Elle remplace un état `null` par celui que le rendu applique (`RenderStateCache.cs:51-54`) : mélange Opaque, profondeur Default, rastérisation CullCounterClockwise, échantillonneur AnisotropicClamp. Elle s'applique aux deux exports avant la comparaison ;
+  - `RacingGameCasaEngine/Bootstrap/TrackRuntimeSceneExporter.cs` :
+    - un enregistrement par `SubMesh` dessiné, ou par maillage quand il n'a pas de `SubMesh`, avec le matériau que le rendu prend, dans son ordre : la surcharge de l'instance, puis `SubMesh.Material`, puis le matériau du maillage ;
+    - il écrit aussi les fonctionnalités de rendu que le rendu applique : `CompiledMaterial.Features` du cache des matériaux compilés quand l'id du matériau y est, sinon `RenderFeatureResolver.Resolve(matériau, maillage)`. T5.2 remplace cette règle par l'API unique du moteur ;
+  - `compare_race_scene_exports.py` compare ces fonctionnalités avec les valeurs du matériau ;
+  - de nouvelles références, `artifacts/editor-project-baseline/s5/scene-a.json` et `-b.json`, sont prises avec ce code avant tout autre changement de S5. Les tâches suivantes se comparent à elles.
+- **Validation** :
+  - build à 0 erreur ;
+  - un nouvel export contre `s4/scene-a.json` : identique, avec et sans `--effective-states`, pour les maillages sans `SubMesh`, hors le nouveau champ des fonctionnalités. Les maillages à plusieurs `SubMesh` ont désormais un enregistrement par `SubMesh` ; la note en donne le nombre et vérifie que leurs matériaux sont ceux du maillage. Aujourd'hui, aucune surcharge n'existe ;
+  - `s5/scene-a.json` contre `s5/scene-b.json` : identiques, fonctionnalités comprises ;
+  - **contrôles négatifs** sur une copie de l'export, modifiée à la main :
+    - un `RasterizerState` passé de `null` à `CullNone` sur un matériau de décor est signalé, avec ou sans l'option ;
+    - un passage de `null` à `CullCounterClockwise` n'est plus signalé avec l'option ;
+    - un `NormalMap` ajouté aux fonctionnalités d'un maillage de décor est signalé ;
+    - un `SubMesh` dont le matériau diffère de celui de son maillage est signalé.
+- **Commit** : `test(racing-casa): compare cooked materials by the states they draw with`
+
+### ⏳ T5.2 — Moteur : fonctionnalités d'un matériau compilé ajustées au maillage (D3)
+
+- **Objectif** : un matériau compilé et un matériau construit en code de mêmes valeurs se dessinent avec les mêmes fonctionnalités sur le même maillage. C'est un défaut du moteur : un matériau catalogué avec carte de normales, posé sur un maillage sans tangentes, choisit une technique de carte de normales sans les données qu'elle demande.
+- **Fichiers**, dans CasaEngine, sur `chantier/rgce-editor-project` :
+  - `CasaEngine/Framework/Rendering/Shaders/RenderFeatureResolver.cs` : une API publique unique, qui ajuste des fonctionnalités à un maillage : `NormalMap` retiré sans tangentes, `VertexColor` ajouté avec des couleurs de sommet. `Resolve` l'utilise ;
+  - `CasaEngine/Framework/Application/Components/StaticMeshRendererComponent.cs` : les fonctionnalités d'un matériau compilé passent par cette API, et le résultat est fixé sur l'élément de rendu ;
+  - `CasaEngine/Framework/Rendering/Draw/RenderItem.cs` : `Features` rend la valeur fixée, et non plus `CompiledMaterial.Features`. Chaque endroit qui construit un `RenderItem` avec un matériau compilé fixe `Features` par la même règle ; la note les liste ;
+  - un test dans `CasaEngine.Tests` qui construit un `RenderItem` comme le rendu, avec un `CompiledMaterial` dont les fonctionnalités comprennent `NormalMap` :
+    - sur un maillage sans tangentes, `item.Features` n'a pas `NormalMap` ;
+    - avec tangentes, il le garde ;
+    - avec des couleurs de sommet, il a `VertexColor` ;
+  - côté RacingGame :
+    - le commit du pointeur `chore(casaengine): …` ;
+    - puis `test(racing-casa): export the features the renderer draws with`, qui fait passer `TrackRuntimeSceneExporter` par l'API du moteur, avant T5.3.
+- **Validation** :
+  - les deux solutions de CasaEngine compilent avec 0 erreur, et `CasaEngine.Tests` passe en entier ;
+  - un export de RacingGameCasaEngine contre `s5/scene-a.json` : identique, fonctionnalités comprises. Le jeu ne dessine encore aucun matériau catalogué ;
+  - un contrôle ponctuel de la fonction de l'exporteur, sur un matériau compilé avec carte de normales et un maillage sans tangentes : pas de `NormalMap` ;
+  - `RacingGame.slnx` compile avec 0 erreur.
+- **Commit** : `fix(rendering): resolve compiled material features against the drawn mesh` dans CasaEngine, puis le pointeur dans RacingGame.
+
+### ⏳ T5.3 — Recettes de matériaux séparées de leur construction
+
+- **Objectif** : les valeurs de chaque matériau sont calculées par une fonction pure, sans GPU, réutilisée par l'outil de cuisson (T5.4) et par le jeu tant qu'il charge encore les glTF. Aucun changement de rendu.
+- **Fichiers** :
+  - `RacingGame.Gameplay/Import/RaceMaterialRecipe.cs` : un enregistrement de toutes les valeurs d'un `LitDiffuseMaterial` du jeu. Il porte :
+    - les couleurs et la puissance ;
+    - les chemins des textures, et pour la voiture le rôle de la texture : peinte, non peinte, ou une autre texture ;
+    - la réflexion, la file, la coupure, la rastérisation, l'échantillonneur et les ombres ;
+  - les fonctions qui calculent ces valeurs à partir du matériau importé et du nom du modèle, pour chaque chemin : décor, voiture, plateau, repli, et matériaux de la piste écrits en code ;
+  - `LegacyTrackSceneFactory`, `LegacyCarVisualFactory` et `CarSelectionCarousel` construisent leurs matériaux à partir de ces recettes.
+- **Validation** :
+  - build à 0 erreur ;
+  - A4 : export contre `s5/scene-a.json` identique jusqu'aux noms, fonctionnalités comprises. Captures d'interface à 0,00, ce qui couvre le carrousel, et audits des voitures identiques ;
+  - **transparence** : une passe des recettes sur les 56 glTF et sur les matériaux écrits en code compte les recettes hors AlphaTest dont l'alpha diffus est inférieur à 255. La note donne ce nombre. S'il n'est pas nul, arrêt.
+- **Commit** : `refactor(racing-casa): compute material values apart from building materials`
+
+### ⏳ T5.4 — Outil de cuisson et assets cuits
+
+- **Objectif** : P8. Les 56 modèles, leurs matériaux, ceux de la piste et leurs textures deviennent des assets catalogués, aux ids déterministes.
+- **Fichiers** :
+  - **`scripts/RgceAssetCooker/`**, outil console (`RgceAssetCooker.csproj`, README) qui référence `RacingGame.Gameplay` et `CasaEngine.EditorServices`. Il écrit avec les sérialiseurs de l'éditeur (`EditorAssetJsonSerializer`) :
+    - **un `.staticModel` par glTF** : `Content/Models/<Nom>.staticModel`, nommé `StaticModel.<Nom>`. La racine tournée de π/2 est cuite dans les modèles que charge `LoadLegacyModel`, pas dans la voiture ni le plateau ;
+    - **un `.material` par matériau de modèle** : `Content/Materials/Models/<Nom>/<Emplacement>.material`, nommé `Material.<Nom>.<Emplacement>`, avec les valeurs des recettes de T5.3 :
+      - les états `null` du jeu deviennent les états que le rendu applique ;
+      - les emplacements de la voiture à texture de voiture prennent `Texture.RacerCar`, que la peinture remplace à l'exécution (T5.6) ;
+    - **un `.material` par matériau de piste** : `Content/Materials/Track/<Rôle>.material`, nommé `Material.Track.<Rôle>` ;
+    - **un `.texture` par image utilisée** : `Content/Textures/<Nom>.texture`, nommé `Texture.<Nom>`, avec l'échantillonneur des recettes. Les entrées `png` de S3 sont renommées `Image.<Nom>` dans `generate_rgce_content_assets.py`, puisque rien ne les référence par id ;
+    - les entrées du catalogue, avec des ids uuid5 du nom, comme les autres générateurs.
+  - **Comportement de l'outil** : un second lancement ne change aucun octet. `--check` liste les glTF ou les images sans asset cuit.
+- **Validation** :
+  - build de l'outil et de `RacingGame.slnx` à 0 erreur ;
+  - second lancement identique ;
+  - `generate_rgce_content_assets.py --check` à 0 ;
+  - **fidélité** : l'outil relit chaque `.staticModel` cuit. Sommets, indices et nœuds sont ceux de la lecture du glTF, plus la racine tournée là où elle s'applique. Chaque `.material` compilé par `MaterialCompiler` donne, avec la règle d'états de T5.1, les valeurs de sa recette ;
+  - les nouveaux assets s'ouvrent dans l'éditeur par `catalogue_open.ps1` : code 0 pour chacun.
+- **Commit** : `feat(racing-casa): cook the models, materials and textures into assets`
+
+### ⏳ T5.5 — Le jeu charge la piste et le décor par le catalogue
+
+- **Objectif** :
+  - le décor, les poteaux, les segments et les feux de départ sont des `StaticModelComponent` qui portent `StaticModelAssetId` ;
+  - les générateurs prennent leurs matériaux par id : un `material_asset_id` en `[SerializedProperty]`, qui vaut par défaut l'asset cuit ;
+  - le chemin de la piste n'appelle plus `LoadLegacyModel` ni les réglages par nom.
+- **Fichiers** :
+  - `LegacyTrackSceneFactory*` et les générateurs ;
+  - `RaceStartLight` : il change l'asset de son composant au lieu d'un `StaticModel` construit à la main ;
+  - le monde de test de T4.6, réenregistré par l'éditeur s'il gagne des propriétés.
+- **Validation** :
+  - build à 0 erreur ; contrôle des noms à 0 ;
+  - **A4** :
+    - export contre `s5/scene-a.json`, avec `--effective-states` : mêmes maillages, matrices, valeurs de matériau, fonctionnalités de rendu et pixels de texture ;
+    - pour le reste, contre les références de T4.1 :
+    - audit dans le seuil, dont `start-full` et ses feux ;
+    - audits des voitures identiques ;
+    - captures d'interface à 0,00 ;
+    - smoke à 0 ;
+  - `rg "LoadLegacyModel|EvaluateRuntimeTuning|ApplyFallbackMaterials" RacingGame.Gameplay/Track RacingGame.Gameplay/GameFramework/RaceStartLight.cs` ne trouve plus d'appel. La voiture garde les siens jusqu'à T5.6.
+- **Commit** : `feat(racing-casa): load the track and scenery models from the catalogue`
+
+### ⏳ T5.6 — La voiture et le carrousel par le catalogue
+
+- **Objectif** : la voiture et les plateaux chargent `StaticModel.Car` et `StaticModel.CarSelectionPlate`. La peinture reste un état d'exécution, propre à chaque indice de voiture, qui ne modifie aucun asset partagé.
+- **Conception de la voiture** :
+  - **modèle** : pour chaque indice de voiture, `LegacyCarVisualFactory` prend une copie privée du modèle cuit par `AssetContentManager.LoadCopy<StaticModel>(StaticModel.Car)`, l'initialise et la garde dans son cache par indice, comme aujourd'hui (`:42`) ;
+  - **emplacements à texture de voiture** : ce sont ceux dont le matériau cuit a `Texture.RacerCar` pour texture de base. Pour chacun, la fabrique remplace, dans la copie privée seulement, le matériau du maillage **et** celui de chacun de ses `SubMesh` par une copie du matériau compilé, puisque le rendu prend d'abord `SubMesh.Material`. Cette copie prend pour texture de base `CarPaint.Painted` ou `CarPaint.Unpainted` de l'indice ;
+  - **règle peinte ou non** : elle reste la règle documentée du chemin de peinture, appliquée au nom de l'emplacement (`slot_name`) et à la réflexion du matériau cuit, comme `IsPaintMaterial` aujourd'hui sur le matériau importé. Les autres règles par nom (réglages, facteurs de réflexion, carte de normales, repli) sont cuites dans les `.material` ;
+  - **textures** : `CarPaint` garde son décodage StbImageSharp avec la couleur-clé ; le `.texture` cuit ne sert que de valeur par défaut, dans l'éditeur ;
+  - **ids des copies** : chaque copie de matériau d'une voiture reçoit un nouvel id (`Guid.NewGuid()`), comme les matériaux construits en code aujourd'hui. Elle n'a donc pas d'entrée dans le cache des matériaux compilés, et le rendu prend sa propre texture peinte et les fonctionnalités résolues sur le maillage. Garder l'id de l'asset ferait dessiner le matériau compilé partagé, avec sa texture non peinte ;
+  - **rattachement** : le `StaticModelComponent` `BodyVisual` reçoit la copie privée par sa propriété `StaticModel`, comme aujourd'hui, sans asset id. Aucune surcharge par instance n'est nécessaire, et l'export voit les matériaux peints par `ModelMesh.Material` ;
+  - **plateaux** : le modèle cuit, partagé par asset id, sans peinture.
+- **Fichiers** : `LegacyCarVisualFactory`, `LegacyCarVisualComponent`, `CarSelectionCarousel`, et si besoin `RaceCarEntityFactory`.
+- **Validation** :
+  - build à 0 erreur ;
+  - export contre `s5/scene-a.json`, avec `--effective-states` : les maillages de la voiture ont les empreintes de texture peinte et les fonctionnalités de la référence ;
+  - **contrôle négatif** : un export pris avec une autre couleur de voiture signale les emplacements peints ;
+  - captures d'interface à 0,00, dont `car-selection` (les trois voitures peintes et les plateaux) et `race-hud` ;
+  - audits des voitures identiques ;
+  - `rg "EvaluateRuntimeTuning|UsesCarDiffuseTexture|UsesLegacyCarReflectionBlend|LoadLegacyModel|ApplyFallbackMaterials"` ne trouve plus rien hors de l'outil de cuisson et de `RaceMaterialRecipe`. `IsPaintMaterial`, la règle de peinture, ne reste que dans le chemin de peinture documenté.
+- **Commit** : `feat(racing-casa): load the car and the selection plates from the catalogue`
+
+### ⏳ T5.7 — ADR, documentation et clôture de S5
+
+- **Fichiers** :
+  - `docs/decisions/0018-rgce-models-and-materials-are-cooked-assets.md`, avec l'index des ADR ;
+  - `RacingGameCasaEngine/Assets/README.md` : la cuisson, les noms, le second lancement, la peinture ;
+  - ce plan.
+- **Validation** :
+  - le catalogue entier ouvert dans l'éditeur : chaque entrée avec le code 0 ;
+  - vérificateur indépendant de S5, CONFIRMED.
+- **Commit** : `docs(adr): record the cooked models, materials and textures`
+
+---
+
 ## Points ouverts
 
 | Réf | Sujet | Tâche concernée |
@@ -1177,8 +1380,8 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 | O4 | PNG d'interface hérités non portés : `HelpScreenWindows`, `HelpScreenXbox360`, `OptionsScreenXbox360`, `MouseCursor`. Faut-il compter aussi la copie brute de `GameFont.png` ? Elle est proposée, D4 voulant « tout porter ». | S3 |
 | O5 | Les cartes de normales héritées gardent la disposition `agb`, et le jeu actuel les lit telles quelles. Le chantier conserve exactement ces pixels, sans réencodage. | S3, S5 |
 | O6 | **Levé (T0.2).** Le panneau Logs de l'éditeur restait vide sur les captures d'automatisation. Sur décision de l'auteur, il a été corrigé (MGUI `4e94d7e8`, CasaEngine `c0f3343`), et l'option `--logs-filter` (`4ce5ea0`) met l'avertissement à l'écran. La sonde `pluginprobe`, d'abord proposée, n'a pas été retenue. | T0.1, T1.2 |
-| O7 | Défaut ancien relevé en T4.5 : les éléments `WidthHelper`, `RoadHelper` et `CombiObject` des `.Track` et des `.CombiModel` ne correspondent pas aux types que lisait `XmlSerializer` (`LegacyWidthHelper`, `LegacyRoadHelper`, `LegacyCombiObject`). Le jeu ignore donc les aides de largeur et de route (palmiers, lanternes, tunnels) et le contenu des CombiModel. Le chantier garde ce comportement pour la parité ; le corriger change le rendu, c'est un chantier à part. | Après le chantier |
-| O8 | **⚠️ S5 en pause (2026-10-08).** Le détail de S5 a eu trois relectures, toutes REVISE ; les deux dernières ont relevé des P1, et la règle d'arrêt interdit de les lever par une nouvelle boucle sans l'auteur. Les blocages sont tous corrigés dans le brouillon (`s5_plan.md` du scratchpad). Ils portent sur trois points : (1) le compilateur nomme les états de rendu que le jeu laisse vides ; (2) la conception de la voiture et de sa peinture ; (3) les fonctionnalités de rendu d'un matériau compilé ignorent le maillage, d'où une carte de normales sans tangentes. Le point (3) demande une correction de CasaEngine (`RenderFeatureResolver`, `RenderItem.Features`) et un export qui enregistre les fonctionnalités et le matériau de chaque sous-maillage. S6 et S7 dépendent de S5. Question à l'auteur : relancer une revue sur le brouillon corrigé puis exécuter S5, ou relire le plan d'abord. | S5 |
+| O7 | **Décidé (D9) : corrigé avant S6.** Défaut ancien relevé en T4.5 : les éléments `WidthHelper`, `RoadHelper` et `CombiObject` des `.Track` et des `.CombiModel` ne correspondent pas aux types que lisait `XmlSerializer` (`LegacyWidthHelper`, `LegacyRoadHelper`, `LegacyCombiObject`). Le jeu ignore donc les aides de largeur et de route (palmiers, lanternes, tunnels) et le contenu des CombiModel. Le chantier garde ce comportement pour la parité ; le corriger change le rendu, c'est un chantier à part. | Après le chantier |
+| O8 | **Levé (2026-10-08) : l'auteur a demandé une dernière relecture du brouillon corrigé, rendue READY, puis l'exécution.** S5 en pause (2026-10-08). Le détail de S5 a eu trois relectures, toutes REVISE ; les deux dernières ont relevé des P1, et la règle d'arrêt interdit de les lever par une nouvelle boucle sans l'auteur. Les blocages sont tous corrigés dans le brouillon (`s5_plan.md` du scratchpad). Ils portent sur trois points : (1) le compilateur nomme les états de rendu que le jeu laisse vides ; (2) la conception de la voiture et de sa peinture ; (3) les fonctionnalités de rendu d'un matériau compilé ignorent le maillage, d'où une carte de normales sans tangentes. Le point (3) demande une correction de CasaEngine (`RenderFeatureResolver`, `RenderItem.Features`) et un export qui enregistre les fonctionnalités et le matériau de chaque sous-maillage. S6 et S7 dépendent de S5. Question à l'auteur : relancer une revue sur le brouillon corrigé puis exécuter S5, ou relire le plan d'abord. | S5 |
 
 ## Hors périmètre
 
