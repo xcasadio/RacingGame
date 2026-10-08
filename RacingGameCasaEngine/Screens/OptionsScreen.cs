@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.Components;
 using RacingGameCasaEngine.UI;
-using RacingGameCasaEngine.UI.ViewModels;
+using RacingGame.Gameplay.ViewModels;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using XnaKeys = Microsoft.Xna.Framework.Input.Keys;

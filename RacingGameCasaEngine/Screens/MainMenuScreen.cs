@@ -4,7 +4,7 @@ using CasaEngine.Framework.GUI;
 using MGUI.Core.UI;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
-using RacingGameCasaEngine.UI.ViewModels;
+using RacingGame.Gameplay.ViewModels;
 using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace RacingGameCasaEngine.Screens;

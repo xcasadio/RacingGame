@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>
 /// Data context of <c>Screen.TrackSelection</c>, RacingGame's track selection (ADR-0011): the menu decoration, the black

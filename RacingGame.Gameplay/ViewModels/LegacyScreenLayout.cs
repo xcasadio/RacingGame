@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>
 /// RacingGame's resolution helpers for one viewport (<c>git show 4f840a3^:RacingGame.Shared/Graphics/BaseGame.cs</c>,

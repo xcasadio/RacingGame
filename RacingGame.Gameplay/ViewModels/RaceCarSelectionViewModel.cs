@@ -1,7 +1,7 @@
 using MGUI.Core.UI;
 using Microsoft.Xna.Framework;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>
 /// Data context of <c>Screen.CarSelection</c>, the car selection of the author's capture of the original game (ADR-0009):

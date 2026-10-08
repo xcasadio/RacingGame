@@ -1,6 +1,6 @@
 using MGUI.Core.UI;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>
 /// One track card of the track selection: the card sprite at its animated rectangle, drawn in full when selected and at

@@ -1,7 +1,7 @@
 using MGUI.Core.UI;
 using MonoGame.Extended;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>
 /// Data context of <c>Screen.Splash</c>, the title screen of the author's capture of the original game (ADR-0009): the

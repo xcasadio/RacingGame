@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>One line of the highscore board: rank, player name and time, and where RacingGame wrote each of them.</summary>
 public sealed class RaceHighscoreRowViewModel : RaceViewModelBase

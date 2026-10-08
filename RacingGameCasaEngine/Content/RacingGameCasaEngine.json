@@ -6,7 +6,7 @@
   "IsFixedTimeStep": true,
   "IsMouseVisible": true,
   "FirstWorldLoaded": "Worlds/Editor.world",
-  "GameplayDllName": "RacingGameCasaEngine.UI.dll",
+  "GameplayDllName": "RacingGame.Gameplay.dll",
   "ExternalToolsDirectory": "ExternalTools",
   "DebugIsFullScreen": false,
   "DebugHeight": 768,

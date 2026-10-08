@@ -4,8 +4,8 @@
     <TargetFramework>net9.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>RacingGameCasaEngine.UI</RootNamespace>
-    <AssemblyName>RacingGameCasaEngine.UI</AssemblyName>
+    <RootNamespace>RacingGame.Gameplay</RootNamespace>
+    <AssemblyName>RacingGame.Gameplay</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <!-- Same version as RacingGameCasaEngine and the CasaEngine pin: the editor loads its own copy. -->

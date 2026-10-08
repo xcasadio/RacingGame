@@ -2,7 +2,7 @@ using MGUI.Core.UI;
 using MGUI.Core.UI.Responsive;
 using MonoGame.Extended;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>One digit slot of a HUD number: the <c>Ui.Hud.Digit*</c> sprite and its place in the panel.</summary>
 public sealed class RaceHudDigitViewModel : RaceViewModelBase

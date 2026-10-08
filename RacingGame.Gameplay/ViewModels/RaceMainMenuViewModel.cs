@@ -1,6 +1,6 @@
 using MonoGame.Extended;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>
 /// Data context of <c>Screen.MainMenu</c>: the menu decoration, and the band and the five buttons laid out every frame,

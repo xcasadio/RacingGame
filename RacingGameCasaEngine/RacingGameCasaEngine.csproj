@@ -23,7 +23,7 @@
     <ProjectReference Include="..\CasaEngine\CasaEngine\CasaEngine.csproj" />
     <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Core\MGUI.Core.csproj" />
     <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Shared\MGUI.Shared.csproj" />
-    <ProjectReference Include="..\RacingGameCasaEngine.UI\RacingGameCasaEngine.UI.csproj" />
+    <ProjectReference Include="..\RacingGame.Gameplay\RacingGame.Gameplay.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Content\UI\**\*.*">

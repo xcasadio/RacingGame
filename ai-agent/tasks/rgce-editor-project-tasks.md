@@ -382,7 +382,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
 
 ## Phase 1 — `RacingGame.Gameplay`, la DLL de gameplay de l'éditeur (S1)
 
-### ⏳ T1.1 — Renommer `RacingGameCasaEngine.UI` en `RacingGame.Gameplay`
+### ✅ T1.1 — Renommer `RacingGameCasaEngine.UI` en `RacingGame.Gameplay`
 
 - **Objectif** : renommer le projet, sans aucun changement de comportement (D7).
 - **Fichiers** : les 37 fichiers de code, de projet et de réglages que liste `rg -l "RacingGameCasaEngine\.UI" --hidden --glob '*.cs' --glob '*.csproj' --glob '*.slnx' --glob '*.json' --glob '.gitignore' --glob '!.claude/**' --glob '!CasaEngine/**' --glob '!**/bin/**' --glob '!**/obj/**' .` (relevé du 2026-10-08) :
@@ -407,6 +407,18 @@ Un arrêt fige la tranche et celles qui en dépendent.
   - éditeur : `capture_editor_screen.ps1` sur les 9 écrans, dans `artifacts/editor-project-baseline/editor-screens-t1.1/`. `UiCaptureCompare` contre `editor-screens/` de T0.1 doit rester dans le bruit mesuré en T0.1. Un view model non résolu enlève les données de conception de l'aperçu, ce que la comparaison voit ;
   - la même commande `rg` que dans « Fichiers » ne trouve plus aucun fichier.
 - **Commit** : `refactor(racing-casa): rename the view-model project to RacingGame.Gameplay`
+
+> Validation (2026-10-08) :
+> - **Correction du plan** : l'exe a son propre espace de noms `RacingGameCasaEngine.UI`, celui de son dossier `UI/` (`CarSelectionCarousel`, `MenuSounds`, `UiImageResources`, `OpaqueGeometryAlphaViewPipeline`). Il n'a aucun lien avec le projet renommé et reste tel quel : le renommer serait un refactor hors tâche.
+>   - Seuls changent l'espace de noms des view models `RacingGameCasaEngine.UI.ViewModels` (17 fichiers, plus les `using` de 10 écrans), le projet, la DLL et ses références : 32 fichiers.
+>   - La vérification `rg` de « Fichiers » ne pouvait donc pas tomber à zéro. Elle porte sur `RacingGameCasaEngine\.UI\.ViewModels|RacingGameCasaEngine\.UI\.(dll|pdb|csproj)|RacingGameCasaEngine\.UI[\/]` avec les mêmes globs, et ne trouve plus rien.
+> - `dotnet build RacingGame.slnx` : 0 erreur. La cible de copie dépose `RacingGame.Gameplay.dll` et `.pdb` dans `Content/` ; l'ancienne DLL et son PDB sont supprimés.
+> - `--smoke-frontend` sort avec le code 0, et les réglages sont restaurés à l'identique.
+> - `--capture-ui-screens` contre `references-acb6ad9` : 0,00 sur les 10 états.
+> - **Éditeur** :
+>   - les 9 écrans (`editor-screens-t1.1/`) sont identiques au pixel près à `editor-screens/` ;
+>   - **contrôle négatif** : sur une copie du projet dans le scratchpad, `GameplayDllName` pointant vers une DLL absente, MainMenu diffère d'une moyenne de 19,9, alors que le script de capture répond `OK`. La comparaison voit donc bien un view model non résolu.
+> - Les fins de ligne CRLF des fichiers modifiés sont conservées.
 
 ### ⏳ T1.2 — `Plugin` et recompilation depuis l'éditeur
 

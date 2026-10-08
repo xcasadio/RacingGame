@@ -3,7 +3,7 @@ using MGUI.Core.UI.Brushes.BorderBrushes;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>
 /// One button of the main menu, in screen pixels: its square, the parts drawn with MGUI brushes (grey rim, inner bevel,

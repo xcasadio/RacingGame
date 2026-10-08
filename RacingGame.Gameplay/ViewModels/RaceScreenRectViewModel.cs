@@ -1,7 +1,7 @@
 using MGUI.Core.UI;
 using MonoGame.Extended;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>
 /// A rectangle of a screen laid out in screen pixels, for a top-left aligned element of an overlay panel: its margin is

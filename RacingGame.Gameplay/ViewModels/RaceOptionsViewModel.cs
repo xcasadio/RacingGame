@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>The option values the Options screen shows, read from the front-end state every frame.</summary>
 public readonly record struct RaceOptionsValues(

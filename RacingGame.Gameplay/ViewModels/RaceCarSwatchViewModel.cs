@@ -1,7 +1,7 @@
 using MGUI.Core.UI.Brushes.FillBrushes;
 using Microsoft.Xna.Framework;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>
 /// One colour square of the car selection: RacingGame's ColorSelection sprite, tinted with the colour, at its rectangle.

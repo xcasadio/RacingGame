@@ -1,6 +1,6 @@
 using CasaEngine.Framework.Assets;
 using CasaEngine.Framework.UI;
-using RacingGameCasaEngine.UI.ViewModels;
+using RacingGame.Gameplay.ViewModels;
 
 namespace RacingGameCasaEngine.Screens;
 

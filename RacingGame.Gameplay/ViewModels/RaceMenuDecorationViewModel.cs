@@ -1,6 +1,6 @@
 using MonoGame.Extended;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>
 /// Background and bouncing logo shared by the menu screens. The logo rectangle is the legacy menu's (362, 36, 601, 218)

@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>One help section: a title and its two lines, and where each is written.</summary>
 public sealed class RaceHelpSectionViewModel : RaceViewModelBase

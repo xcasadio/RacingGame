@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using MGUI.Shared.Helpers;
 
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>Base of the screen view models: a property notifies only when its value changes (CasaEngine ADR-0038).</summary>
 public abstract class RaceViewModelBase : ViewModelBase

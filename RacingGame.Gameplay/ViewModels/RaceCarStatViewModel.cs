@@ -1,4 +1,4 @@
-namespace RacingGameCasaEngine.UI.ViewModels;
+namespace RacingGame.Gameplay.ViewModels;
 
 /// <summary>
 /// One property row of the car selection (RacingGame's <c>CarSelection.ShowCarPropertyBar</c>): a label, and under it a

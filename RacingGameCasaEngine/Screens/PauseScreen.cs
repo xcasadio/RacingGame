@@ -3,7 +3,7 @@ using CasaEngine.Framework.GUI;
 using MGUI.Core.UI;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
-using RacingGameCasaEngine.UI.ViewModels;
+using RacingGame.Gameplay.ViewModels;
 
 namespace RacingGameCasaEngine.Screens;
 
