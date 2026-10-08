@@ -1373,7 +1373,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
 >   - `Blockade`, `Blockade2` et `Laterne2Sides` ne sont chargés par aucun chemin ;
 >   - 8 autres ne sont nommés que par les `.Track`.
 
-### 🧪 T5.4 — Outil de cuisson et assets cuits
+### ✅ T5.4 — Outil de cuisson et assets cuits
 
 - **Objectif** : P8. Les 56 modèles, leurs matériaux, ceux de la piste et leurs textures deviennent des assets catalogués, aux ids déterministes.
 - **Fichiers** :
@@ -1415,7 +1415,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
 >   - `--check` et `--verify` signalent bien un asset retiré et un matériau modifié.
 > - **Catalogue** : aucun id ni nom en double, chaque fichier existe, et `generate_rgce_content_assets.py --check` rapporte 0.
 > - **Jeu** : `RacingGame.slnx` compile avec 0 erreur, et `--smoke-frontend` sort avec le code 0. Le jeu ne charge pas encore les assets cuits.
-> - **🧪 En attente** : le parcours des 266 entrées `staticmodel`, `material` et `texture` dans l'éditeur (`catalogue_open.ps1`), qui exerce aussi `MaterialCompiler`.
+> - **Éditeur** : les 266 entrées `staticmodel`, `material` et `texture` (les 258 nouvelles et les 8 textures d'interface) ont été ouvertes une par une, avec une copie de l'éditeur et une copie du contenu (`artifacts/editor-project-baseline/s5/catalogue-t5.4/`). Toutes s'ouvrent avec le code 0, ce qui exerce `MaterialCompiler`. La capture lue de `StaticModel.Hotel01` montre ses maillages et leurs matériaux cuits, par leurs ids.
 > - **Avis P4** : la vérification de l'outil ne compare des sous-maillages que leur nombre, et aucun modèle n'en a ; lancer l'outil avant le générateur donne les mêmes entrées dans un autre ordre.
 
 ### ⏳ T5.5 — Le jeu charge la piste et le décor par le catalogue
