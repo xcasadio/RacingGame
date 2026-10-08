@@ -695,9 +695,9 @@ Faits relevés pour cette phase (2026-10-08) :
 >     - après la vue `chase-road-only`, le validateur active la caméra libre de débogage (`TrackMigrationCaptureValidator.cs:119`). Celle-ci lit la souris et le clavier (`DebugFreeCameraComponent.cs:61,84`) et remplace la pose à chaque image ;
 >     - les images de la référence `a`, de la référence `b` et de T3.5 montrent trois poses différentes d'une même vue (terrain, sol, ciel), avec des textures correctes.
 >     Le critère « chacune des 21 captures sous son seuil » n'est pas mesurable avec cet outil. La parité repose donc sur les 3 vues déterministes, l'export de scène, les captures d'interface, la liste de sortie et les pixels identiques de T3.1. T4.1 rend l'audit déterministe.
->   - **contrôle négatif** : `Road.png` renommé dans le dossier de sortie, les 3 vues `chase-road-only` passent de 27 à 43 pour un seuil de 0,5, avec le code 1. Le fichier a été remis, avec un SHA-1 identique à sa source.
+>   - **contrôle négatif** : `Road.png` renommé dans le dossier de sortie, les 3 vues `chase-road-only` passent à 31, 38 et 48 sur leur canal le plus écarté, pour un seuil de 0,5, avec le code 1. Le fichier a été remis, avec un SHA-1 identique à sa source.
 
-### ⏳ T3.6 — ADR, documentation et clôture de S3
+### ✅ T3.6 — ADR, documentation et clôture de S3
 
 - **Fichiers** :
   - `docs/decisions/0016-rgce-content-holds-every-game-file.md`. Il remplace la règle « le contenu lié non catalogué reste lié » de l'ADR-0002, dont le statut devient « superseded in part by ADR-0015, ADR-0016 » ;
@@ -706,6 +706,26 @@ Faits relevés pour cette phase (2026-10-08) :
   - ce plan.
 - **Validation** : vérificateur indépendant de S3, CONFIRMED.
 - **Commit** : `docs(adr): record that the project content holds every game file`
+
+> Validation (2026-10-08) :
+> - **Documents** :
+>   - ADR-0016, avec son entrée dans l'index ;
+>   - le statut de l'ADR-0002, « superseded in part by ADR-0015 … and ADR-0016 (linked content) » ;
+>   - la section « Content and catalogue » et les sons de `RacingGameCasaEngine/Assets/README.md`.
+> - **Fichier projet** : un File > Save de l'éditeur, fait sur une copie du projet avec `scripts/capture_editor_screen.ps1 -SaveProject`, laisse le catalogue de 345 entrées identique octet pour octet. Il déplaçait la clé `GameplayCsprojName`, ajoutée en T1.2 hors de l'ordre où l'éditeur l'écrit. Le fichier validé est remis dans cet ordre (`ProjectSettingsHelper.cs:126-132`), ce qui rend juste la phrase du README : « a Save leaves them unchanged ».
+> - **Vérificateur indépendant de S3 : CONFIRMED**, sans constat P0 à P2. Il a refait :
+>   - `--check` ;
+>   - deux lancements du générateur sur une copie : 662 fichiers identiques ;
+>   - `--verify-textures`, et une seconde comparaison des 129 paires avec un autre décodeur (Pillow) : 0 différence ;
+>   - les 22 `.sound` contre `RacingGame.xap`, qu'il a lu lui-même ;
+>   - la résolution des 102 noms de textures hérités des glTF, avant et après : mêmes fichiers, `.tga` devenu `.png` ;
+>   - la liste de sortie, les exports de scène, un `--smoke-frontend`, et la relecture des captures de l'audit.
+>   Il juge l'explication des 7 vues posées étayée par le code et par les images.
+> - **Ses 4 avis, traités dans ce commit** :
+>   - P3, volumes des catégories XACT : `Music` -3 dB et `Gears` -4 dB ne sont pas repris. L'ADR-0016 et le README le disent maintenant, au lieu de « garde les réglages XACT » ; il faudra les reprendre quand le jeu jouera ces sons ;
+>   - P4 : le contenu propre au moteur (shaders, polices, icônes) arrive dans la sortie par la référence au projet CasaEngine. L'ADR et le README le précisent ;
+>   - P4 : « Textures are PNG » devient « PNG, sauf les deux DDS ; 100 TGA convertis par la conversion des modèles, 29 par `--textures` » ;
+>   - P4 : les chiffres du contrôle négatif de T3.5 sont corrigés (31, 38 et 48 sur le canal le plus écarté).
 
 ---
 

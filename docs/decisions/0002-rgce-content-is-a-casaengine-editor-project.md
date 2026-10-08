@@ -1,6 +1,6 @@
 # ADR-0002: RacingGameCasaEngine's content folder is a CasaEngine editor project
 
-- **Status**: Accepted; superseded in part by ADR-0015 (view-model library, `GameplayCsprojName`)
+- **Status**: Accepted; superseded in part by ADR-0015 (view-model library, `GameplayCsprojName`) and ADR-0016 (linked content)
 - **Date**: 2026-10-05
 - **Source**: this chantier: `ai-agent/tasks/rgce-xaml-screens-tasks.md`, decisions D16, D18, D19 and D20 (author answers, 2026-10-05), and the read-only editor discovery recorded in its "État vérifié du dépôt"
 

@@ -32,6 +32,18 @@ Sound effects play through CasaEngine's audio service ([ADR-0003](../../docs/dec
 - Catalogue both in `AssetInfos.json`: `Sound.<Name>` for the `.sound` (`asset_type` `sound`), `Sound.<Name>Wave` for the `.wav` (`asset_type` `wav`).
 - Play it with `AudioService.PlaySound`. Its volume follows the Sound Volume option, which sets `SoundEffect.MasterVolume`, applied by MonoGame to every sound instance CasaEngine plays.
 - Current sounds: `Sound.Beep` and `Sound.Bleep`, played by the race start light (`GameFramework/RaceStartLight.cs`).
+- The 22 other legacy waves are ported but not played yet ([ADR-0016](../../docs/decisions/0016-rgce-content-holds-every-game-file.md)): 19 effects and engine loops, and 3 musics on the `Music` bus, streamed. `scripts/generate_rgce_content_assets.py` copies them under their XACT wave name and writes their `.sound` with the XACT sound volume (`10^(dB/2000)`) and looping. The XACT category volumes (`Music` -3 dB, `Gears` -4 dB) are not carried: set them when the game starts playing these sounds.
+
+## Content and catalogue
+
+Every game file the game reads lives under `Content` and has a catalogue entry ([ADR-0016](../../docs/decisions/0016-rgce-content-holds-every-game-file.md)); the engine's own content (shaders, fonts, icons) comes from the CasaEngine project reference. The csproj copies `Content\**` to the output, minus the editor-only files, and links nothing from `RacingGame/Content`.
+
+- Two scripts write the catalogue. Ids are uuid5 of the asset name, so a second run changes nothing:
+  - `scripts/generate_rgce_ui_assets.py`: the screens, sprites and UI images;
+  - `scripts/generate_rgce_content_assets.py`: `Texture.<name>` for the textures, `Data.<name>` for the height map and CombiModel files, `ModelSource.<name>` for the glTF models, and `Sound.<name>`/`Sound.<name>Wave` for the 22 ported sounds.
+- `python scripts/generate_rgce_content_assets.py --check` lists the content files that no entry names. The project files are not catalogued: the project file, the catalogue, the gameplay dll and pdb, `.casaeditor/`, the `.design.json` and `.xaml` of the screens, and the glTF `.bin` buffers.
+- Textures are PNG, apart from the two cube-map DDS. The 129 legacy `.tga` textures were converted to PNG files of the same name with the same RGBA pixels: 100 by the model conversion of `scripts/LegacyModelGltfConverter`, 29 by its `--textures` mode. `--verify-textures` checks every pair. The game compares texture names without extension, and resolves a `.tga` named by a model's legacy metadata to the `.png` of the same name.
+- `.gitattributes` marks the binaries (`png`, `wav`, `dds`, `data`, `tga`, `bin`); there is no LFS.
 
 ## CasaEngine editor project
 
