@@ -10,9 +10,8 @@ namespace RacingGame.Gameplay.Track;
 /// cannot allow. The file formats are those XmlSerializer wrote and read before: same element names, same members, the
 /// members of a structure set in the order of the file, the numbers parsed as XmlConvert parses them.
 /// <para>
-/// The width helpers and the CombiModel items are read under the element names of the files (WidthHelper, CombiObject),
-/// as the original game reads them. The road helpers are still looked up by the name of their class (LegacyRoadHelper),
-/// as XmlSerializer did; the shipped files name them RoadHelper, so they are not read yet.
+/// The helper and CombiModel item elements are read under the element names of the files (WidthHelper, RoadHelper,
+/// CombiObject), as the original game reads them.
 /// </para>
 /// </summary>
 internal static class LegacyTrackFileReader
@@ -45,7 +44,7 @@ internal static class LegacyTrackFileReader
 
                     break;
                 case "RoadHelpers":
-                    foreach (XElement item in element.Elements(nameof(LegacyRoadHelper)))
+                    foreach (XElement item in element.Elements("RoadHelper"))
                     {
                         layout.RoadHelpers.Add(ReadRoadHelper(item));
                     }

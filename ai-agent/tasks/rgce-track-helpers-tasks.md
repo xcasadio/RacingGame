@@ -431,7 +431,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 >   - `options` (0,39) et `car-selection` (0,28) font partie du bruit déjà vu.
 > - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
 
-### ⏳ T1.3 — Aides de route : palmiers et lanternes
+### ✅ T1.3 — Aides de route : palmiers et lanternes
 
 - **Objectif** : P2, pour le dernier élément. Le lecteur lit `RoadHelper` : palmiers et lanternes sont placés, et les plages de tunnel sont lues pour T2.1.
 - **Fichiers** : `RacingGame.Gameplay/Track/LegacyTrackFileReader.cs` : nom d'élément `RoadHelper`, et le commentaire de classe.
@@ -449,6 +449,32 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
   - **audits des voitures** : identiques à ceux de T1.2 ; sinon l'écart est expliqué, ou ⚠️ Blocked ;
   - captures d'interface : celles de T1.2, ou écart de `race-hud` lu et décrit ; smoke à 0.
 - **Commit** : `fix(racing-casa): read the road helpers of the legacy tracks`
+
+> Validation (2026-10-09) :
+> - **Code** : `LegacyTrackFileReader` lit `RoadHelper` sous ce nom. Il ne cherche plus aucun élément sous le nom d'une classe, et son commentaire le dit.
+> - Build à 0 erreur.
+> - **Lecture** (`o7/probe-read`) : 8 / 12 / 35 aides de route (Beginner / Advanced / Expert), aux types et positions lus par `XmlSerializer`, sans écart. Les autres valeurs et les largeurs restent celles de T1.2.
+> - **Export contre T1.2** (`artifacts/o7-track-helpers/t1.3/`, `o7/categorize.py`) :
+>   - **aucun maillage en moins** : bannières, panneaux et tout le reste sont identiques, et les modèles des bannières et des panneaux gardent leur ordre (D3) ;
+>   - **en plus, seulement des palmiers et des lanternes**, par piste (Advanced / Beginner / Expert) :
+>     - entités `AlphaPalm` 21 / 4 / 36, `AlphaPalm2` 14 / 2 / 23, `AlphaPalm3` 14 / 7 / 30 et `AlphaPalmSmall` 2 / 1 / 9, soit 51 / 14 / 98 palmiers ;
+>     - entités `Laterne` 89 / 53 / 330, les bornes hautes de « État vérifié » : le filtre de doublons n'en écarte aucune ;
+>   - entités `Track.Scenery.*` : 183 → 323, 198 → 265, 301 → 729 ;
+>   - enregistrements dessinés : 1 180 → 1 371, 871 → 952, 2 302 → 2 828.
+> - **Original** :
+>   - `missingInLive` = 0, `modelMismatch` = 0, les 4 écarts anciens et `additional-other:` sont ceux de T1.2 ;
+>   - `additional-scenery:` est celle de T1.2, plus les palmiers et les lanternes ci-dessus, aux mêmes nombres.
+> - **Audit** : 13 vues au-dessus de 0,5 contre T1.2, toutes lues par paires.
+>   - `helper-palms` montre des palmiers sur les 3 pistes, et `helper-laterns` des lanternes.
+>   - Ailleurs (`start-full` d'Advanced et d'Expert, `sector-20` des 3 pistes, `sector-50` et `sector-80` d'Expert), le seul changement est un palmier ou une lanterne dans le champ.
+>   - `track-audit-a` contre `-b` : 30 vues sur 30 dans le seuil.
+> - **Audits des voitures** : identiques à T1.2 et à S0.
+> - **Captures d'interface** contre T1.2 :
+>   - `race-hud` est à 1,30 à cause du chronomètre (0:00.95 contre 0:00.91) ;
+>   - `race-finished` est à 10,76, la valeur déjà vue entre deux lancements du même build en T1.1 (état du feu de départ) ;
+>   - les autres écrans sont à 0,00.
+> - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
+> - **Coût** (O2) : Expert passe à 729 entités de décor et 2 828 enregistrements dessinés. Aucune lenteur n'a été relevée dans les lancements automatiques, mais aucune mesure de performance n'existe.
 
 ---
 
