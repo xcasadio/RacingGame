@@ -1,0 +1,10 @@
+{
+  "id": "ed3e523d-7c2a-5656-b194-942f0b820e10",
+  "name": "Sound.BrakeMinor",
+  "audio_file_asset_id": "e7082a59-dd06-547a-bc4d-66ea5aabbafb",
+  "volume": 0.891,
+  "pitch": 0.0,
+  "is_looped": false,
+  "bus_name": "Sfx",
+  "is_streaming": false
+}

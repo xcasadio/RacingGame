@@ -1,0 +1,10 @@
+{
+  "id": "c192e3bc-41b1-59a7-9a7a-bac66ec845be",
+  "name": "Sound.Victory",
+  "audio_file_asset_id": "1bf726b8-2740-5695-853b-e985f5ed1062",
+  "volume": 0.891,
+  "pitch": 0.0,
+  "is_looped": false,
+  "bus_name": "Sfx",
+  "is_streaming": false
+}

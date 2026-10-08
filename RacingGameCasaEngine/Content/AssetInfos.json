@@ -563,6 +563,1512 @@
       "name": "Ui.Options.NameField",
       "file_name": "UI/Sprites/Ui.Options.NameField.sprite",
       "asset_type": "sprite"
+    },
+    {
+      "id": "8b3575b6-530d-5b6f-bb1a-972600b2b13b",
+      "name": "Sound.BrakeCurveMajorWave",
+      "file_name": "Audio/BrakeCurveMajor.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "99958b94-cb5d-57b9-bbaa-5bf1a0f83931",
+      "name": "Sound.BrakeCurveMajor",
+      "file_name": "Audio/BrakeCurveMajor.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "70664b10-96fe-5b3b-a768-b8d8c63b1383",
+      "name": "Sound.BrakeCurveMinorWave",
+      "file_name": "Audio/BrakeCurveMinor.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "54f8cfe9-d649-55c9-845e-0e090d59874d",
+      "name": "Sound.BrakeCurveMinor",
+      "file_name": "Audio/BrakeCurveMinor.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "c494f762-446f-58e5-bb5e-21330af78b29",
+      "name": "Sound.BrakeMajorWave",
+      "file_name": "Audio/BrakeMajor.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "a05a1b83-84a9-5a40-82f3-be7c68eacda0",
+      "name": "Sound.BrakeMajor",
+      "file_name": "Audio/BrakeMajor.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "e7082a59-dd06-547a-bc4d-66ea5aabbafb",
+      "name": "Sound.BrakeMinorWave",
+      "file_name": "Audio/BrakeMinor.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "ed3e523d-7c2a-5656-b194-942f0b820e10",
+      "name": "Sound.BrakeMinor",
+      "file_name": "Audio/BrakeMinor.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "5b82e053-4b3e-5377-9b9a-45fb9d498a93",
+      "name": "Sound.CarCrashMinorWave",
+      "file_name": "Audio/CarCrashMinor.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "638b8847-cadb-517c-a3cd-1b69d71c3453",
+      "name": "Sound.CarCrashMinor",
+      "file_name": "Audio/CarCrashMinor.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "e09479e4-1252-5a9d-b711-7dccb326db86",
+      "name": "Sound.CarCrashTotalWave",
+      "file_name": "Audio/CarCrashTotal.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "1402408d-ff69-5f90-9375-219ff412e06c",
+      "name": "Sound.CarCrashTotal",
+      "file_name": "Audio/CarCrashTotal.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "b43ddc95-0028-5c7b-9da6-fe9a6f3d1b84",
+      "name": "Sound.CarLoseWave",
+      "file_name": "Audio/CarLose.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "5621c808-d2f0-5e2f-b347-87b79b03c332",
+      "name": "Sound.CarLose",
+      "file_name": "Audio/CarLose.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "87ff767c-62cb-5145-b81c-ef73ae223ce6",
+      "name": "Sound.CheckpointBetterWave",
+      "file_name": "Audio/CheckpointBetter.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "7af2c4b4-7f4c-5116-b4e8-3e1ee0aeffd6",
+      "name": "Sound.CheckpointBetter",
+      "file_name": "Audio/CheckpointBetter.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "a67bf6ed-3728-5f2a-99eb-f3ab022b2f65",
+      "name": "Sound.CheckpointWorseWave",
+      "file_name": "Audio/CheckpointWorse.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "be7d26ba-dcae-5321-9f8f-e4b2d97ed244",
+      "name": "Sound.CheckpointWorse",
+      "file_name": "Audio/CheckpointWorse.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "a3b839a8-5e2f-5392-a050-a85ac3245969",
+      "name": "Sound.Gear1Wave",
+      "file_name": "Audio/Gear1.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "00092800-f537-58fb-9d40-aea0bb5e350b",
+      "name": "Sound.Gear1",
+      "file_name": "Audio/Gear1.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "5c0c3f56-647b-524c-a65c-36d4b728e43a",
+      "name": "Sound.Gear1ToGear2Wave",
+      "file_name": "Audio/Gear1ToGear2.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "1f88b788-940d-557d-bf8a-a026a7bf2e22",
+      "name": "Sound.Gear1ToGear2",
+      "file_name": "Audio/Gear1ToGear2.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "72873b84-7dad-505e-9244-e14e5bc54acf",
+      "name": "Sound.Gear2Wave",
+      "file_name": "Audio/Gear2.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "94744f4d-94ab-5bff-99e2-0fd9202859d9",
+      "name": "Sound.Gear2",
+      "file_name": "Audio/Gear2.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "b558f0d3-b38e-52bc-a572-cb31665044b0",
+      "name": "Sound.Gear2ToGear3Wave",
+      "file_name": "Audio/Gear2ToGear3.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "bf34ec44-847d-5a0a-a092-520655c8e332",
+      "name": "Sound.Gear2ToGear3",
+      "file_name": "Audio/Gear2ToGear3.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "aed439bf-a819-58f0-bf4a-a9ee2eee445e",
+      "name": "Sound.Gear3Wave",
+      "file_name": "Audio/Gear3.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "2b79e1bd-f224-5154-967c-f957344aee6c",
+      "name": "Sound.Gear3",
+      "file_name": "Audio/Gear3.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "df8d4857-2608-500d-8c84-6fc2fd6c25bd",
+      "name": "Sound.Gear3ToGear4Wave",
+      "file_name": "Audio/Gear3ToGear4.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "353ec58f-60b7-58bf-b681-f794229b59fe",
+      "name": "Sound.Gear3ToGear4",
+      "file_name": "Audio/Gear3ToGear4.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "89d31564-1d37-58c6-9d34-9ed1abbbbf9a",
+      "name": "Sound.Gear4Wave",
+      "file_name": "Audio/Gear4.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "3056f80b-3862-588f-8ebd-43e6602e8bb5",
+      "name": "Sound.Gear4",
+      "file_name": "Audio/Gear4.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "0e08ef2b-2348-5977-903a-a5a1af0e405b",
+      "name": "Sound.Gear4ToGear5Wave",
+      "file_name": "Audio/Gear4ToGear5.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "a7a1f50c-e7b1-55db-bdc2-e3cea139025e",
+      "name": "Sound.Gear4ToGear5",
+      "file_name": "Audio/Gear4ToGear5.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "d7cb3d25-5121-5f42-a6ea-66190fed32d1",
+      "name": "Sound.Gear5Wave",
+      "file_name": "Audio/Gear5.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "93240430-3621-54e0-b539-8fa337361c7b",
+      "name": "Sound.Gear5",
+      "file_name": "Audio/Gear5.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "1bf726b8-2740-5695-853b-e985f5ed1062",
+      "name": "Sound.VictoryWave",
+      "file_name": "Audio/Victory.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "c192e3bc-41b1-59a7-9a7a-bac66ec845be",
+      "name": "Sound.Victory",
+      "file_name": "Audio/Victory.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "9bf46b0b-c8df-5af4-bc31-b2e1ddb4d369",
+      "name": "Sound.RacingGameGameMusic1Wave",
+      "file_name": "Audio/RacingGameGameMusic1.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "d837054f-665d-5b05-a4d1-fc86e7f8ac9a",
+      "name": "Sound.RacingGameGameMusic1",
+      "file_name": "Audio/RacingGameGameMusic1.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "8ddd5d5f-2707-5a8c-8146-dc8bba940d50",
+      "name": "Sound.RacingGameGameMusic2Wave",
+      "file_name": "Audio/RacingGameGameMusic2.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "cfd4f67d-8d63-5e2a-ac16-d2e2f8e130f7",
+      "name": "Sound.RacingGameGameMusic2",
+      "file_name": "Audio/RacingGameGameMusic2.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "15e1405c-ad3a-5713-8cc9-15d691f7cec9",
+      "name": "Sound.RacingGameMenuMusic2Wave",
+      "file_name": "Audio/RacingGameMenuMusic2.wav",
+      "asset_type": "wav"
+    },
+    {
+      "id": "bdd146cd-1071-545b-8dc3-52fe36b81c2e",
+      "name": "Sound.RacingGameMenuMusic2",
+      "file_name": "Audio/RacingGameMenuMusic2.sound",
+      "asset_type": "sound"
+    },
+    {
+      "id": "a15e9ca6-f25d-57df-bbe8-58fe88d02393",
+      "name": "Texture.Ast",
+      "file_name": "Textures/Ast.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "5f2875e3-5e3c-547a-9c71-f307efa2cc9e",
+      "name": "Texture.Ast_Normal",
+      "file_name": "Textures/Ast_Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "840b35af-e786-578c-b175-50bb11753bc9",
+      "name": "Texture.banner",
+      "file_name": "Textures/banner.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "4facb327-019c-5213-8f5e-3625d506ad8a",
+      "name": "Texture.banner2",
+      "file_name": "Textures/banner2.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "24a2b32b-c1ba-584c-9ef0-be606bcd8557",
+      "name": "Texture.banner3",
+      "file_name": "Textures/banner3.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "8d22cec5-468d-5fd3-9eb4-ee02605ae5ee",
+      "name": "Texture.bannerNormal",
+      "file_name": "Textures/bannerNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "33d9d3f4-376d-558e-a766-1dd9508581e7",
+      "name": "Texture.Blockade",
+      "file_name": "Textures/Blockade.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "c529a66d-51c1-59a2-acd0-1291aef08599",
+      "name": "Texture.BlockadeNormal",
+      "file_name": "Textures/BlockadeNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "5dd4c964-020b-59c5-9d59-b40fc856c0f9",
+      "name": "Texture.Building",
+      "file_name": "Textures/Building.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "90028987-847e-58fe-8425-5748e5d72476",
+      "name": "Texture.building2",
+      "file_name": "Textures/building2.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "12a36932-44ed-5d95-9282-930a9492a6e5",
+      "name": "Texture.building2Normal",
+      "file_name": "Textures/building2Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "ac4cd6ae-b8d3-5a5a-9ab0-dc96284c2d6a",
+      "name": "Texture.building3",
+      "file_name": "Textures/building3.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "629851fa-c9ad-57ee-9bf5-73959a502aab",
+      "name": "Texture.building3Normal",
+      "file_name": "Textures/building3Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "1eb569bc-444b-513f-9d0a-01ebafce228d",
+      "name": "Texture.building4",
+      "file_name": "Textures/building4.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "6d6b83b1-58c5-55c5-9410-fc0e448eca49",
+      "name": "Texture.building4Normal",
+      "file_name": "Textures/building4Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "f92d219a-667a-5a3e-a0ee-bf32e92266e1",
+      "name": "Texture.building5",
+      "file_name": "Textures/building5.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "f5aafcc7-298e-5552-8e5b-18e019c4d866",
+      "name": "Texture.building5Normal",
+      "file_name": "Textures/building5Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "76184b45-daaf-5f75-b95c-c0dd0e84f1bc",
+      "name": "Texture.buildingNormal",
+      "file_name": "Textures/buildingNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "83abb111-8ba1-57eb-ae86-3f508fcc5dee",
+      "name": "Texture.CarSelectionPlate",
+      "file_name": "Textures/CarSelectionPlate.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "8e094e45-a78a-5f06-bd0d-0413d2fb6ccd",
+      "name": "Texture.CarSelectionPlateNormal",
+      "file_name": "Textures/CarSelectionPlateNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "1e3f14cc-e102-5985-8c6d-b26ce5f38192",
+      "name": "Texture.Circle",
+      "file_name": "Textures/Circle.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "757fcf8f-42c3-558f-8506-59fa03418b2f",
+      "name": "Texture.CityGround",
+      "file_name": "Textures/CityGround.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "96617661-8bca-526c-ac44-c1d533392b4f",
+      "name": "Texture.CityGroundNormal",
+      "file_name": "Textures/CityGroundNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "ed07aa99-b199-5af0-83d7-d5d371f84c77",
+      "name": "Texture.ColorSelection",
+      "file_name": "Textures/ColorSelection.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "ef8c88ef-de63-5a98-ab78-3b3a9cdcf5d5",
+      "name": "Texture.Fort",
+      "file_name": "Textures/Fort.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "2e12e05b-cd5c-57e0-859e-844d25ad455b",
+      "name": "Texture.FortNormal",
+      "file_name": "Textures/FortNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "8713c6a1-ee64-5ded-94dc-c5f974610b1e",
+      "name": "Texture.GameFont",
+      "file_name": "Textures/GameFont.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "6caf3268-f68a-570d-b7ef-b00cf260a621",
+      "name": "Texture.garbagecan",
+      "file_name": "Textures/garbagecan.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "79136d8c-712e-537b-96af-6c6d92b7aa8d",
+      "name": "Texture.garbagecanNormal",
+      "file_name": "Textures/garbagecanNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "e2905824-a11b-5df6-9f94-c212db174b4c",
+      "name": "Texture.gelaender",
+      "file_name": "Textures/gelaender.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "682cfd75-480d-5604-a015-be56f9c12d45",
+      "name": "Texture.gelaenderNormal",
+      "file_name": "Textures/gelaenderNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "56e18fd4-1a7d-5eb1-b46c-0cf1f66a8a1b",
+      "name": "Texture.Glow",
+      "file_name": "Textures/Glow.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "30eaf85c-cec3-511f-9407-a9c9d4050e0d",
+      "name": "Texture.Goal",
+      "file_name": "Textures/Goal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "45bdf478-81e6-51a3-90b0-c5307c611a90",
+      "name": "Texture.GoalNormal",
+      "file_name": "Textures/GoalNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "55e3201a-ffa1-53df-85a7-75ea3ef139bb",
+      "name": "Texture.Halo",
+      "file_name": "Textures/Halo.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "fad6d6b8-b299-5163-a628-c27d91035032",
+      "name": "Texture.headers",
+      "file_name": "Textures/headers.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "a6ad8d47-ea2a-515e-b90b-7d02811837b8",
+      "name": "Texture.HelpScreenWindows",
+      "file_name": "Textures/HelpScreenWindows.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "cd0bbe80-4b5b-53cb-a4f6-4e9e019c60e7",
+      "name": "Texture.HelpScreenXbox360",
+      "file_name": "Textures/HelpScreenXbox360.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "db9ed5d2-b56b-5b1e-ac54-86ca676aa01c",
+      "name": "Texture.Hotel01",
+      "file_name": "Textures/Hotel01.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "7166e1ab-0631-5fc3-84e0-3f707ebdcf12",
+      "name": "Texture.Hotel01Normal",
+      "file_name": "Textures/Hotel01Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "b31b3bff-8792-5afb-81f3-f9c8f4b160d3",
+      "name": "Texture.Hydrant",
+      "file_name": "Textures/Hydrant.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "6b555315-ff71-5ea3-8ef4-e0a06dc72915",
+      "name": "Texture.HydrantNormal",
+      "file_name": "Textures/HydrantNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "95a67847-c358-5d31-b575-18ee01cddfc4",
+      "name": "Texture.ingame",
+      "file_name": "Textures/ingame.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "446fc65a-376a-54fa-85c9-defe51566bcf",
+      "name": "Texture.Kaktus",
+      "file_name": "Textures/Kaktus.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "8afb2e7a-8eb7-54d7-aab3-9616d02f1a24",
+      "name": "Texture.KaktusBenny",
+      "file_name": "Textures/KaktusBenny.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "bedb9c92-2388-5dc6-bd32-aa281d2e1e60",
+      "name": "Texture.KaktusBennyNormal",
+      "file_name": "Textures/KaktusBennyNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "f5ede79a-136a-5e9e-a3fc-7d7a53a5b9dd",
+      "name": "Texture.KaktusNormal",
+      "file_name": "Textures/KaktusNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "fcbd498e-66ee-5887-81bc-98b1bd70e93a",
+      "name": "Texture.KaktusSeg",
+      "file_name": "Textures/KaktusSeg.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "52b96ab5-a11c-5f0a-8cf9-6a8d17e560ff",
+      "name": "Texture.KaktusSegNormal",
+      "file_name": "Textures/KaktusSegNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "e5c1c7c3-e196-5799-b8a3-3c40cc825e1e",
+      "name": "Texture.ladyluck",
+      "file_name": "Textures/ladyluck.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "d6afb8a6-dc12-57dc-a449-74e6f7b0fb58",
+      "name": "Texture.ladyluckNormal",
+      "file_name": "Textures/ladyluckNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "ee748e62-6069-552c-a7cb-2656da413b49",
+      "name": "Texture.Landscape",
+      "file_name": "Textures/Landscape.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "afabb175-1413-5bd8-b522-afcecd9c9a9e",
+      "name": "Texture.LandscapeDetail",
+      "file_name": "Textures/LandscapeDetail.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "186967ba-4271-55f9-8d80-0c89d28ff7c4",
+      "name": "Texture.LandscapeNormal",
+      "file_name": "Textures/LandscapeNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "214d041f-02c3-5f81-856a-77340643731a",
+      "name": "Texture.Leitplanke",
+      "file_name": "Textures/Leitplanke.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "e3ea4176-c059-59fb-9f9a-e868aec92025",
+      "name": "Texture.LeitplankeNormal",
+      "file_name": "Textures/LeitplankeNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "c6be3c44-22d2-5cb0-b53e-09820b6ed0b1",
+      "name": "Texture.Lens",
+      "file_name": "Textures/Lens.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "84abe541-816d-5284-8453-53ea82da319f",
+      "name": "Texture.Light",
+      "file_name": "Textures/Light.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "c6b327c2-138e-5634-bfd8-6f37f3b0b665",
+      "name": "Texture.LightNormal",
+      "file_name": "Textures/LightNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "e7a5db0c-1fd8-5f7a-b502-fdffcef10792",
+      "name": "Texture.MouseCursor",
+      "file_name": "Textures/MouseCursor.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "0c552081-7789-5a5f-baed-47f83237d8c4",
+      "name": "Texture.Noise128x128",
+      "file_name": "Textures/Noise128x128.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "2c5eb790-96ab-55bf-8bb1-ad756cdd26c6",
+      "name": "Texture.NormalizeCubeMap",
+      "file_name": "Textures/NormalizeCubeMap.dds",
+      "asset_type": "dds"
+    },
+    {
+      "id": "78d74b5d-4477-5870-b9f0-2fb2785fb73a",
+      "name": "Texture.Oiltank",
+      "file_name": "Textures/Oiltank.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "ca6cb4dd-226b-599b-a385-ff2ee17a18c4",
+      "name": "Texture.OiltankNormal",
+      "file_name": "Textures/OiltankNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "fb9ac3bb-5364-51ce-98a4-3e0abbfe2296",
+      "name": "Texture.OilWell",
+      "file_name": "Textures/OilWell.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "fc78fa46-097d-594f-ba3d-36d2dcf14d1a",
+      "name": "Texture.OilWellNormal",
+      "file_name": "Textures/OilWellNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "d595c19b-9300-53fb-867a-81de2839631f",
+      "name": "Texture.OptionsScreenWindows",
+      "file_name": "Textures/OptionsScreenWindows.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "631ef05e-eb71-5961-aa12-f7d419635ce7",
+      "name": "Texture.OptionsScreenXbox360",
+      "file_name": "Textures/OptionsScreenXbox360.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "b153a04a-14e4-5efe-b513-9c3117010af5",
+      "name": "Texture.Palm",
+      "file_name": "Textures/Palm.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "869e432a-597e-516a-92c3-fb8d7ac0b28e",
+      "name": "Texture.Palm2_stamm",
+      "file_name": "Textures/Palm2_stamm.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "4978fdde-ab9e-5e6f-99bd-2125fd8bda42",
+      "name": "Texture.Palm2_stammNormal",
+      "file_name": "Textures/Palm2_stammNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "a3e86ca6-7f37-53e2-8e19-0c5b64d36b09",
+      "name": "Texture.PalmLeave",
+      "file_name": "Textures/PalmLeave.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "36a32797-5ea9-5696-a027-1d5593b2994d",
+      "name": "Texture.PalmLeave2",
+      "file_name": "Textures/PalmLeave2.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "e038e3f3-1eea-580f-9d5a-29eaf5ae5ad5",
+      "name": "Texture.PalmLeave2Normal",
+      "file_name": "Textures/PalmLeave2Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "1078fe2d-6e64-56cb-9d78-f5c410a67176",
+      "name": "Texture.PalmLeaveNormal",
+      "file_name": "Textures/PalmLeaveNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "7e526d68-3750-5170-a5ed-10c967c3db2d",
+      "name": "Texture.PalmNormal",
+      "file_name": "Textures/PalmNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "8822c24b-834d-55b9-bfbc-81c31b0e29f5",
+      "name": "Texture.plants",
+      "file_name": "Textures/plants.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "0b445133-d346-5ba9-b4a5-5605c05403a0",
+      "name": "Texture.plants_normal",
+      "file_name": "Textures/plants_normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "258db0c7-f76b-5c71-aa44-ed705eb55957",
+      "name": "Texture.plazacasino",
+      "file_name": "Textures/plazacasino.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "64d193ca-0111-5335-a38c-0dc4ceb35252",
+      "name": "Texture.plazacasinoNormal",
+      "file_name": "Textures/plazacasinoNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "2557625d-5ce2-5451-a2b7-3a135d2a0756",
+      "name": "Texture.plazaschild",
+      "file_name": "Textures/plazaschild.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "dcfea5dd-0dd3-55fb-b311-559803736d1a",
+      "name": "Texture.plazaschildNormal",
+      "file_name": "Textures/plazaschildNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "00e2e569-4969-5cf9-b970-ade49f1c0cbe",
+      "name": "Texture.pokal1",
+      "file_name": "Textures/pokal1.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "6749be3f-7f4d-53a1-9eaf-7e836ca1384a",
+      "name": "Texture.pokal2",
+      "file_name": "Textures/pokal2.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "add4fda3-a606-5c72-9eac-76e40ee816a3",
+      "name": "Texture.pokal3",
+      "file_name": "Textures/pokal3.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "41fa73a2-729a-54f1-ae75-b61b4d4a26da",
+      "name": "Texture.RacerCar",
+      "file_name": "Textures/RacerCar.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "5f52b917-4644-54cb-af7e-284e8f89c9f5",
+      "name": "Texture.RacerCar2",
+      "file_name": "Textures/RacerCar2.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "101670ce-e617-5dd0-b918-298abb25fe25",
+      "name": "Texture.RacerCar3",
+      "file_name": "Textures/RacerCar3.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "7b5dbfb3-2dde-5f50-8e2f-22e0eb2a4170",
+      "name": "Texture.RacerCarNormal",
+      "file_name": "Textures/RacerCarNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "2d144226-dfc1-5a63-b447-e764ac60c71a",
+      "name": "Texture.Ring",
+      "file_name": "Textures/Ring.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "438bfe97-634a-50cc-a008-7661c239ab25",
+      "name": "Texture.Road",
+      "file_name": "Textures/Road.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "484e0876-9c46-5dba-a9e0-1ee738a599e3",
+      "name": "Texture.RoadBack",
+      "file_name": "Textures/RoadBack.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "4fb8d401-e0fd-5126-8b63-82acc3adcc24",
+      "name": "Texture.RoadBackNormal",
+      "file_name": "Textures/RoadBackNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "0b5843ea-baee-53ce-86c4-a78e20e32cd9",
+      "name": "Texture.RoadCement",
+      "file_name": "Textures/RoadCement.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "0d6c0065-ba1a-5057-935d-b3d1b95d2a10",
+      "name": "Texture.RoadCementNormal",
+      "file_name": "Textures/RoadCementNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "1b5334e0-8e29-5397-b99c-78b3e55c1413",
+      "name": "Texture.RoadColumnSegment",
+      "file_name": "Textures/RoadColumnSegment.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "4bae0ab6-d503-5a1e-bba2-84bac5ad6918",
+      "name": "Texture.RoadColumnSegmentNormal",
+      "file_name": "Textures/RoadColumnSegmentNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "1a7d7bd4-e1ca-580c-8cd5-d1614d32acd6",
+      "name": "Texture.RoadNormal",
+      "file_name": "Textures/RoadNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "d6ef3fd8-b1f3-5ca4-bbe3-eba82bf6fe56",
+      "name": "Texture.roadsign1",
+      "file_name": "Textures/roadsign1.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "9f3629b7-4bd8-5674-b900-4509d1549593",
+      "name": "Texture.roadsign1Normal",
+      "file_name": "Textures/roadsign1Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "17f9e044-cff7-545f-8300-fdf3305780d5",
+      "name": "Texture.roadsign2",
+      "file_name": "Textures/roadsign2.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "b28d95a0-9f71-5ec7-8736-107dd95cf9f0",
+      "name": "Texture.roadsign2Normal",
+      "file_name": "Textures/roadsign2Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "238a3cad-0522-5461-814e-7ffeb8e0ebe7",
+      "name": "Texture.RoadTunnel",
+      "file_name": "Textures/RoadTunnel.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "4b5d6d2a-e5c2-5683-a670-8392b2924c2d",
+      "name": "Texture.RoadTunnelNormal",
+      "file_name": "Textures/RoadTunnelNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "41777c0d-005f-5a83-82a9-aa9e2fcb1e93",
+      "name": "Texture.ruin",
+      "file_name": "Textures/ruin.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "3e6977d8-97aa-5e74-9676-3b399561b090",
+      "name": "Texture.Ruin01",
+      "file_name": "Textures/Ruin01.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "93bc5917-691e-5cdd-95a7-7067679245d5",
+      "name": "Texture.Ruin01_Normal",
+      "file_name": "Textures/Ruin01_Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "6b4b6fe8-b7ad-525d-aa5f-d04bf4a02cf2",
+      "name": "Texture.ruinNormal",
+      "file_name": "Textures/ruinNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "f043d3c3-e458-596b-b303-337d3a479d2b",
+      "name": "Texture.Schild",
+      "file_name": "Textures/Schild.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "04116e05-6045-528f-a90d-f42d6d698966",
+      "name": "Texture.Schild2",
+      "file_name": "Textures/Schild2.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "740a8ce7-6054-54c7-80d2-f851c260b3dd",
+      "name": "Texture.Schild_Kurve_links",
+      "file_name": "Textures/Schild_Kurve_links.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "8b07131c-f334-5c97-b1fd-b7056b34e2b4",
+      "name": "Texture.Schild_Kurve_linksNormal",
+      "file_name": "Textures/Schild_Kurve_linksNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "575ba5db-0534-5416-86db-612712ca4bec",
+      "name": "Texture.SchildNormal",
+      "file_name": "Textures/SchildNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "9e56ba58-8b3f-52bc-9756-b948770d4a52",
+      "name": "Texture.ScreenBorderFadeout",
+      "file_name": "Textures/ScreenBorderFadeout.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "95f12b33-3671-5deb-9355-09fc944ac9a5",
+      "name": "Texture.ShadowDistanceFadeoutMap",
+      "file_name": "Textures/ShadowDistanceFadeoutMap.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "04094476-9f9a-5491-b0d3-b6d9eed5da87",
+      "name": "Texture.SharpRock",
+      "file_name": "Textures/SharpRock.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "443fc575-732c-541e-a862-eefaa1020999",
+      "name": "Texture.SharpRock3Normal",
+      "file_name": "Textures/SharpRock3Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "972a6d97-0ed0-5c59-9549-767b3294c692",
+      "name": "Texture.SharpRockNormal",
+      "file_name": "Textures/SharpRockNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "c05a0383-4b3e-5760-ba8a-7cbbc0aab2da",
+      "name": "Texture.SignWarning",
+      "file_name": "Textures/SignWarning.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "d32e7ebe-6bfa-573e-a9a0-128d43ee4708",
+      "name": "Texture.SignWarningNormal",
+      "file_name": "Textures/SignWarningNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "5b5ee89a-7aa1-54eb-97a7-8b073248b17b",
+      "name": "Texture.SkyCubeMap",
+      "file_name": "Textures/SkyCubeMap.dds",
+      "asset_type": "dds"
+    },
+    {
+      "id": "a75de752-fc98-5f27-bd54-23a2fe324ab6",
+      "name": "Texture.Stone04",
+      "file_name": "Textures/Stone04.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "97857b00-fab2-5a97-bdac-a5083b5db742",
+      "name": "Texture.Stone04Normal",
+      "file_name": "Textures/Stone04Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "ffad8b73-3a42-5642-a5ef-8ea71546b2dd",
+      "name": "Texture.Stone5",
+      "file_name": "Textures/Stone5.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "78142258-67df-56c9-ab9d-c9692434ee29",
+      "name": "Texture.Stone5Normal",
+      "file_name": "Textures/Stone5Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "d74cea9b-1844-53bc-bfcf-3463a8917608",
+      "name": "Texture.Streaks",
+      "file_name": "Textures/Streaks.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "36510152-8a12-5b89-a8b1-fcd570cd7bf6",
+      "name": "Texture.streetlamp",
+      "file_name": "Textures/streetlamp.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "ee1bc3ee-282f-58d5-83f4-4050834ebf22",
+      "name": "Texture.streetlamp2",
+      "file_name": "Textures/streetlamp2.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "6f60a172-062d-5bfe-bdd1-2f6337e009c6",
+      "name": "Texture.streetlamp2Normal",
+      "file_name": "Textures/streetlamp2Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "44b40f69-7d55-5bfb-91fc-363f882c5772",
+      "name": "Texture.streetlampNormal",
+      "file_name": "Textures/streetlampNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "4b91e2fd-2c99-533c-8d4b-cbbf85a17b43",
+      "name": "Texture.Sun",
+      "file_name": "Textures/Sun.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "e10be4bc-3e16-5d15-9202-c749438905d9",
+      "name": "Texture.TLight",
+      "file_name": "Textures/TLight.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "8ba22f5e-ea00-5423-8cfc-ef9d6277a615",
+      "name": "Texture.TLightNormal",
+      "file_name": "Textures/TLightNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "5adfe0c3-efcd-561f-b1de-8605e9716c41",
+      "name": "Texture.track",
+      "file_name": "Textures/track.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "8d38aef0-4aa7-5f4b-bee7-08c2fd56cb96",
+      "name": "Texture.train",
+      "file_name": "Textures/train.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "b6d880d0-a24c-59a4-bee4-4d2e8ab6c7cb",
+      "name": "Texture.trainNormal",
+      "file_name": "Textures/trainNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "134f3d5e-9c1b-5fd3-bd54-462cddb4fcdb",
+      "name": "Texture.Trunk",
+      "file_name": "Textures/Trunk.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "aeb3b57b-52a8-58b4-a9fd-0ea8c09b1153",
+      "name": "Texture.Trunk_Normal",
+      "file_name": "Textures/Trunk_Normal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "d4c2816c-e8d2-5770-a171-49b60f151d6f",
+      "name": "Texture.Windmill",
+      "file_name": "Textures/Windmill.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "3642db3a-388c-5379-b033-9df0d07f58bb",
+      "name": "Texture.WindmillNormal",
+      "file_name": "Textures/WindmillNormal.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "79c3f134-36a8-5727-bd7f-d43024d38de5",
+      "name": "Data.LandscapeHeights",
+      "file_name": "LandscapeHeights.data",
+      "asset_type": "data"
+    },
+    {
+      "id": "d55e6999-d6e1-5c9a-9168-b7b64d379f24",
+      "name": "Data.CombiBuildings",
+      "file_name": "Models/CombiBuildings.CombiModel",
+      "asset_type": "combimodel"
+    },
+    {
+      "id": "66c46253-6eeb-5ab6-b3da-f7fb19a36ab9",
+      "name": "Data.CombiHotels",
+      "file_name": "Models/CombiHotels.CombiModel",
+      "asset_type": "combimodel"
+    },
+    {
+      "id": "c25d6bb6-4149-5927-82fc-118849897ee6",
+      "name": "Data.CombiOilTanks",
+      "file_name": "Models/CombiOilTanks.CombiModel",
+      "asset_type": "combimodel"
+    },
+    {
+      "id": "13d79593-bc23-5fc7-95f6-1698545c3faa",
+      "name": "Data.CombiPalms",
+      "file_name": "Models/CombiPalms.CombiModel",
+      "asset_type": "combimodel"
+    },
+    {
+      "id": "1a5156cd-0e6b-5814-b215-16bbbc410b55",
+      "name": "Data.CombiPalms2",
+      "file_name": "Models/CombiPalms2.CombiModel",
+      "asset_type": "combimodel"
+    },
+    {
+      "id": "9c456558-ff1d-54cb-ac7c-9fefe7181a23",
+      "name": "Data.CombiRuins",
+      "file_name": "Models/CombiRuins.CombiModel",
+      "asset_type": "combimodel"
+    },
+    {
+      "id": "80af2c9d-03b0-5f3c-92f6-abe1ada9549f",
+      "name": "Data.CombiRuins2",
+      "file_name": "Models/CombiRuins2.CombiModel",
+      "asset_type": "combimodel"
+    },
+    {
+      "id": "0053aef0-863f-5794-af3c-4367f4c20912",
+      "name": "Data.CombiSandCastle",
+      "file_name": "Models/CombiSandCastle.CombiModel",
+      "asset_type": "combimodel"
+    },
+    {
+      "id": "de2d5858-34fa-5e2f-a41c-f3eeb355c03c",
+      "name": "Data.CombiStones",
+      "file_name": "Models/CombiStones.CombiModel",
+      "asset_type": "combimodel"
+    },
+    {
+      "id": "847fea5d-0a39-516d-9414-5c6399af384c",
+      "name": "Data.CombiStones2",
+      "file_name": "Models/CombiStones2.CombiModel",
+      "asset_type": "combimodel"
+    },
+    {
+      "id": "f4a5d759-be7d-5c0b-a5be-57706d87a4e9",
+      "name": "ModelSource.AlphaDeadTree",
+      "file_name": "Models/AlphaDeadTree.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "2e9518c3-48c5-5308-badf-6aae705a92f3",
+      "name": "ModelSource.AlphaPalm",
+      "file_name": "Models/AlphaPalm.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "c4328515-a195-5954-aa3e-315dc160d997",
+      "name": "ModelSource.AlphaPalm2",
+      "file_name": "Models/AlphaPalm2.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "3f911b8b-514e-5049-b1df-2f11c4308955",
+      "name": "ModelSource.AlphaPalm3",
+      "file_name": "Models/AlphaPalm3.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "5c166435-fe2a-530d-a20d-91338d61cb8b",
+      "name": "ModelSource.AlphaPalmSmall",
+      "file_name": "Models/AlphaPalmSmall.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "c0dc4dd2-bf31-5d81-b7b7-3cd7ebb47f57",
+      "name": "ModelSource.AlphaTrain",
+      "file_name": "Models/AlphaTrain.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "c12d264b-569f-5742-917e-4f67d261e4e1",
+      "name": "ModelSource.Banner",
+      "file_name": "Models/Banner.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "4ebc8953-1e49-5bc9-ba46-59c253faedba",
+      "name": "ModelSource.Banner2",
+      "file_name": "Models/Banner2.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "ad1ff5ec-5ee2-52f2-a772-7eb5a97b183c",
+      "name": "ModelSource.Banner3",
+      "file_name": "Models/Banner3.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "9c132053-65ff-5299-9ff9-3de9993bf914",
+      "name": "ModelSource.Banner4",
+      "file_name": "Models/Banner4.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "38303495-fae7-54a0-8c01-7ec0b010ca22",
+      "name": "ModelSource.Banner5",
+      "file_name": "Models/Banner5.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "f3d8d528-c112-57e1-bd98-2fe14a4c6ef6",
+      "name": "ModelSource.Banner6",
+      "file_name": "Models/Banner6.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "4bce0d9a-2944-56f4-a636-b2a0d1518a7e",
+      "name": "ModelSource.Blockade",
+      "file_name": "Models/Blockade.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "3847fced-f885-5a86-bd65-3caa69c2a249",
+      "name": "ModelSource.Blockade2",
+      "file_name": "Models/Blockade2.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "15fb742e-e8d9-5b48-9528-31a5cba94644",
+      "name": "ModelSource.Building",
+      "file_name": "Models/Building.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "c3e3ea03-1057-543a-b62d-ccdac1284c0e",
+      "name": "ModelSource.Building2",
+      "file_name": "Models/Building2.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "8b889ca4-2d24-5673-8d52-6772ae68a196",
+      "name": "ModelSource.Building3",
+      "file_name": "Models/Building3.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "d2c9492b-0708-5a3b-9e28-04e936ceb469",
+      "name": "ModelSource.Building4",
+      "file_name": "Models/Building4.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "40388174-51a9-53f3-9f9e-7e6beddf6b36",
+      "name": "ModelSource.Building5",
+      "file_name": "Models/Building5.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "829008d5-7e10-5e75-b80b-b5875fb53e73",
+      "name": "ModelSource.Car",
+      "file_name": "Models/Car.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "61525469-9ac7-56a4-a8c3-c08062c42806",
+      "name": "ModelSource.CarSelectionPlate",
+      "file_name": "Models/CarSelectionPlate.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "92f8617b-526d-57d4-9334-b4c410f7e0c4",
+      "name": "ModelSource.Casino01",
+      "file_name": "Models/Casino01.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "117a3fa9-728c-5b69-b597-865f2d454a2e",
+      "name": "ModelSource.Goal",
+      "file_name": "Models/Goal.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "9d89dc20-de31-53ce-8577-df0c09c839ab",
+      "name": "ModelSource.GuardRailHolder",
+      "file_name": "Models/GuardRailHolder.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "015356a5-bdb2-5d36-a0e5-a336f0935015",
+      "name": "ModelSource.Hotel01",
+      "file_name": "Models/Hotel01.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "0da931a3-c38e-5cba-b6a4-da90c8dd58d5",
+      "name": "ModelSource.Hotel02",
+      "file_name": "Models/Hotel02.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "9ef8e7ba-94dc-5e09-8b3e-fcf3465f3028",
+      "name": "ModelSource.Hydrant",
+      "file_name": "Models/Hydrant.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "e7a43e89-19dd-54e2-984a-45fc0136f713",
+      "name": "ModelSource.Kaktus",
+      "file_name": "Models/Kaktus.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "ae1f52c5-e6bc-5f51-a415-2a3ae84d8c0e",
+      "name": "ModelSource.Kaktus2",
+      "file_name": "Models/Kaktus2.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "986c812d-25f3-5e15-95a6-455d9cb09283",
+      "name": "ModelSource.KaktusBenny",
+      "file_name": "Models/KaktusBenny.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "b2907596-e926-549f-973a-8287c0ae3bf4",
+      "name": "ModelSource.KaktusSeg",
+      "file_name": "Models/KaktusSeg.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "080ffe39-0396-5823-a495-eed8ae865dd8",
+      "name": "ModelSource.Laterne",
+      "file_name": "Models/Laterne.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "e22af8ea-4d11-5c85-8ac8-9023fef18511",
+      "name": "ModelSource.Laterne2Sides",
+      "file_name": "Models/Laterne2Sides.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "61c0d2ed-124a-509f-91fd-3931e0187789",
+      "name": "ModelSource.OilPump",
+      "file_name": "Models/OilPump.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "76f6a9a9-89ab-556c-aa6f-bb6080d25001",
+      "name": "ModelSource.OilTanks",
+      "file_name": "Models/OilTanks.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "ca1dc62b-4706-5746-a7ee-79a61c9d397a",
+      "name": "ModelSource.RoadColumnSegment",
+      "file_name": "Models/RoadColumnSegment.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "81040b6f-8aa9-56be-af7a-ba04ae4632c4",
+      "name": "ModelSource.Roadsign",
+      "file_name": "Models/Roadsign.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "8c711603-026a-5cd5-b085-3b7ec1dba678",
+      "name": "ModelSource.Roadsign2",
+      "file_name": "Models/Roadsign2.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "88de6850-25f9-506b-a0e5-486ad4c940e2",
+      "name": "ModelSource.Ruin",
+      "file_name": "Models/Ruin.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "5f1b0dc8-3df2-598e-a85f-413dc841bdc9",
+      "name": "ModelSource.RuinHouse",
+      "file_name": "Models/RuinHouse.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "ed4335d6-d715-5387-9d20-79837135181f",
+      "name": "ModelSource.SandCastle",
+      "file_name": "Models/SandCastle.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "01bbb98f-6ee3-57e6-9948-c8ff6be0d09d",
+      "name": "ModelSource.SharpRock",
+      "file_name": "Models/SharpRock.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "95eb72ac-6ae7-5a0f-9b77-5e040de2af5e",
+      "name": "ModelSource.SharpRock2",
+      "file_name": "Models/SharpRock2.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "db6bd394-3582-5916-bbd8-eac65e9986b6",
+      "name": "ModelSource.Sign",
+      "file_name": "Models/Sign.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "b7fcca23-3126-5ed1-95a6-76171f9b74fe",
+      "name": "ModelSource.Sign2",
+      "file_name": "Models/Sign2.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "2544e16a-795f-5b07-b53b-b27c32bd2821",
+      "name": "ModelSource.SignCurveLeft",
+      "file_name": "Models/SignCurveLeft.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "6318def7-1373-5fe3-8ed6-863db3f57163",
+      "name": "ModelSource.SignCurveRight",
+      "file_name": "Models/SignCurveRight.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "71980dfa-bb57-55eb-97fa-67c33017495f",
+      "name": "ModelSource.SignWarning",
+      "file_name": "Models/SignWarning.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "9e413f63-3f65-56a0-87df-107b3d029556",
+      "name": "ModelSource.StartLight",
+      "file_name": "Models/StartLight.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "fc97c691-648c-535e-9698-4897c5d1fee4",
+      "name": "ModelSource.StartLight2",
+      "file_name": "Models/StartLight2.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "2d6d8b6d-9d1f-5ffa-b891-430fbaba8e84",
+      "name": "ModelSource.StartLight3",
+      "file_name": "Models/StartLight3.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "98e407a4-e3ff-5340-aac6-e763f66e7e97",
+      "name": "ModelSource.Stone4",
+      "file_name": "Models/Stone4.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "7dbd3463-243e-523f-b2e8-fc2ca1f55bd6",
+      "name": "ModelSource.Stone5",
+      "file_name": "Models/Stone5.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "96c68711-cd73-5a95-8ac2-4b6498e733f4",
+      "name": "ModelSource.Train",
+      "file_name": "Models/Train.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "ce4afb38-8fea-5da0-a7ac-1b326f445529",
+      "name": "ModelSource.Trashcan",
+      "file_name": "Models/Trashcan.gltf",
+      "asset_type": "gltf"
+    },
+    {
+      "id": "847ffaec-f9a8-5558-8894-6790d835ca99",
+      "name": "ModelSource.Windmill",
+      "file_name": "Models/Windmill.gltf",
+      "asset_type": "gltf"
     }
   ]
 }

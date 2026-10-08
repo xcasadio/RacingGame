@@ -1,0 +1,10 @@
+{
+  "id": "7af2c4b4-7f4c-5116-b4e8-3e1ee0aeffd6",
+  "name": "Sound.CheckpointBetter",
+  "audio_file_asset_id": "87ff767c-62cb-5145-b81c-ef73ae223ce6",
+  "volume": 0.398,
+  "pitch": 0.0,
+  "is_looped": false,
+  "bus_name": "Sfx",
+  "is_streaming": false
+}

@@ -1,0 +1,10 @@
+{
+  "id": "a7a1f50c-e7b1-55db-bdc2-e3cea139025e",
+  "name": "Sound.Gear4ToGear5",
+  "audio_file_asset_id": "0e08ef2b-2348-5977-903a-a5a1af0e405b",
+  "volume": 1.0,
+  "pitch": 0.0,
+  "is_looped": false,
+  "bus_name": "Sfx",
+  "is_streaming": false
+}

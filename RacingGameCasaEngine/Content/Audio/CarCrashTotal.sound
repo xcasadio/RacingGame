@@ -1,0 +1,10 @@
+{
+  "id": "1402408d-ff69-5f90-9375-219ff412e06c",
+  "name": "Sound.CarCrashTotal",
+  "audio_file_asset_id": "e09479e4-1252-5a9d-b711-7dccb326db86",
+  "volume": 0.891,
+  "pitch": 0.0,
+  "is_looped": false,
+  "bus_name": "Sfx",
+  "is_streaming": false
+}

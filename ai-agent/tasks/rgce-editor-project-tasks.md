@@ -575,7 +575,7 @@ Faits relevés pour cette phase (2026-10-08) :
 > - **Ordre** : cette tâche passe avant T3.1, faute de pouvoir compiler le convertisseur pendant les travaux moteur de S2. Sans `.gitattributes`, `git ls-files --eol` classe déjà les DDS et `LandscapeHeights.data` en binaire (`-text`), et ce dernier ne contient aucun octet 0x0A ni 0x0D : aucune conversion de fin de ligne n'est possible.
 > - **Sortie du jeu inchangée** : les liens du csproj copient encore les mêmes fichiers aux mêmes chemins de sortie, et T3.5 les retire.
 
-### ⏳ T3.3 — Les 22 sons et musiques non portés
+### ✅ T3.3 — Les 22 sons et musiques non portés
 
 - **Objectif** : P10. Pour chaque son : la WAV d'origine sous le nom de sa vague XACT, sans espace (`Content/Audio/<Nom>.wav`), et un `.sound` :
   - `volume` = `10^(dB/2000)` ;
@@ -589,7 +589,15 @@ Faits relevés pour cette phase (2026-10-08) :
   - les 6 sons déjà portés suivent la même formule et restent inchangés.
 - **Commit** : avec T3.4.
 
-### ⏳ T3.4 — Catalogue de tout le contenu
+> Validation (2026-10-08), par le générateur de T3.4 :
+> - les 22 WAV sont identiques octet pour octet à leur original de `RacingGame/Content/Audio/Waves` (SHA-1), copiés sous le nom de leur vague XACT sans espace ;
+> - chaque `.sound` concorde avec la table XACT (`cue_table.md`) :
+>   - volume à 0,001 près : 1,000 à 0 dB, 0,891 à -1 dB, 0,398 à -8 dB ;
+>   - bus `Sfx`, sauf les 3 musiques en `Music` et `is_streaming: true` ;
+>   - `is_looped: true` pour `Gear1` → `Gear5` et les musiques, dont le « Play Wave Loop Count » XACT vaut 255 ;
+> - les `.sound` gardent la forme des 6 sons déjà portés : indentation de 2 espaces, LF, sans saut de ligne final. Ces 6 sons restent inchangés, et `git status` ne les signale pas.
+
+### ✅ T3.4 — Catalogue de tout le contenu
 
 - **Objectif** : chaque fichier de `Content` est catalogué, sauf les fichiers du projet et les fichiers annexes. Ces exceptions sont :
   - le fichier projet, le catalogue, la DLL et le PDB du gameplay, `.casaeditor/` ;
@@ -605,7 +613,7 @@ Faits relevés pour cette phase (2026-10-08) :
     - `Texture.<nom>` : PNG des textures 3D et d'interface hérités ;
     - `Texture.<nom>` : les 2 DDS (type `dds`) ;
     - `Data.LandscapeHeights` (type `data`) ;
-    - `Data.Combi.<nom>` (type `combimodel`) ;
+    - `Data.<nom>` (type `combimodel`), par exemple `Data.CombiBuildings` ;
     - `ModelSource.<nom>` : les 56 glTF (type `gltf`) ;
     - `Sound.<nom>` et `Sound.<nom>Wave` : les 22 sons de T3.3.
   - Les entrées existantes sont gardées telles quelles. C'est le cas de `MenuBackground` et `MenuButtons`, déjà catalogués sur `Textures/background.png` et `buttons.png`.
@@ -616,6 +624,21 @@ Faits relevés pour cette phase (2026-10-08) :
   - aucun id ni nom en double ;
   - `--smoke-frontend` sort avec le code 0.
 - **Commit** : `feat(racing-casa): catalogue every content file and port the remaining sounds`
+
+> Validation (2026-10-08) :
+> - **Catalogue** : il passe de 94 à 345 entrées. Les 94 entrées existantes sont gardées à l'identique et à leur place. Les 251 ajoutées :
+>   - 138 `png` (`Texture.<nom>`) : les 140 PNG de `Content/Textures`, moins `background.png` et `buttons.png`, déjà catalogués ;
+>   - 2 `dds` ;
+>   - 1 `data` ;
+>   - 10 `combimodel` ;
+>   - 56 `gltf` ;
+>   - 22 `wav` et 22 `sound`.
+>   Les types sont ceux qu'`AssetInfo.InferAssetType` déduit de l'extension.
+> - **Un second lancement** du générateur ne change aucun octet (SHA-1 du catalogue et de `Content/Audio`).
+> - **`--check`** : 0 fichier de `Content` hors catalogue, en dehors des exceptions ci-dessus.
+> - **Doublons** : aucun id ni nom en double ; le générateur s'arrête s'il en trouve.
+> - **Format** : le catalogue garde son indentation de 2 espaces, le CRLF et l'absence de saut de ligne final.
+> - **Jeu** : `RacingGame.slnx` compile avec 0 erreur, et `--smoke-frontend` sort avec le code 0, sans avertissement dans le journal. La sortie contient les 56 fichiers de `Content/Audio`, que la règle `Content\Audio\*.*` copie.
 
 ### ⏳ T3.5 — Le jeu ne lit plus que `Content`
 

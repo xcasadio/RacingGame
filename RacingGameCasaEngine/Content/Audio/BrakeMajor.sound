@@ -1,0 +1,10 @@
+{
+  "id": "a05a1b83-84a9-5a40-82f3-be7c68eacda0",
+  "name": "Sound.BrakeMajor",
+  "audio_file_asset_id": "c494f762-446f-58e5-bb5e-21330af78b29",
+  "volume": 1.0,
+  "pitch": 0.0,
+  "is_looped": false,
+  "bus_name": "Sfx",
+  "is_streaming": false
+}

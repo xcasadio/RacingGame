@@ -1,0 +1,10 @@
+{
+  "id": "1f88b788-940d-557d-bf8a-a026a7bf2e22",
+  "name": "Sound.Gear1ToGear2",
+  "audio_file_asset_id": "5c0c3f56-647b-524c-a65c-36d4b728e43a",
+  "volume": 1.0,
+  "pitch": 0.0,
+  "is_looped": false,
+  "bus_name": "Sfx",
+  "is_streaming": false
+}

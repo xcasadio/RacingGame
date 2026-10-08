@@ -1,0 +1,10 @@
+{
+  "id": "54f8cfe9-d649-55c9-845e-0e090d59874d",
+  "name": "Sound.BrakeCurveMinor",
+  "audio_file_asset_id": "70664b10-96fe-5b3b-a768-b8d8c63b1383",
+  "volume": 0.891,
+  "pitch": 0.0,
+  "is_looped": false,
+  "bus_name": "Sfx",
+  "is_streaming": false
+}

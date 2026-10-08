@@ -1,0 +1,10 @@
+{
+  "id": "93240430-3621-54e0-b539-8fa337361c7b",
+  "name": "Sound.Gear5",
+  "audio_file_asset_id": "d7cb3d25-5121-5f42-a6ea-66190fed32d1",
+  "volume": 1.0,
+  "pitch": 0.0,
+  "is_looped": true,
+  "bus_name": "Sfx",
+  "is_streaming": false
+}

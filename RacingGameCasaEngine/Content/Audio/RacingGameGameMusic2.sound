@@ -1,0 +1,10 @@
+{
+  "id": "cfd4f67d-8d63-5e2a-ac16-d2e2f8e130f7",
+  "name": "Sound.RacingGameGameMusic2",
+  "audio_file_asset_id": "8ddd5d5f-2707-5a8c-8146-dc8bba940d50",
+  "volume": 1.0,
+  "pitch": 0.0,
+  "is_looped": true,
+  "bus_name": "Music",
+  "is_streaming": true
+}
