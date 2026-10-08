@@ -496,7 +496,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
 
 Le détail est dans le plan moteur `CasaEngine/ai-agent/tasks/rgce-editor-project-engine-tasks.md` (T1 → T9), exécuté sur la branche CasaEngine `chantier/rgce-editor-project`.
 
-### ⏳ T2.1 — Pointeur moteur de fin de S2 et catalogue ouvert dans l'éditeur
+### ✅ T2.1 — Pointeur moteur de fin de S2 et catalogue ouvert dans l'éditeur
 
 - **Objectif** : enregistrer dans RacingGame le pointeur `CasaEngine` sur la fin de S2 (règle du pointeur), puis mesurer ce que S2 change pour ce projet.
 - **Fichiers** : le pointeur `CasaEngine` ; ce plan.
@@ -508,6 +508,15 @@ Le détail est dans le plan moteur `CasaEngine/ai-agent/tasks/rgce-editor-projec
   - build à 0 erreur et smoke à 0 ;
   - les 94 entrées du catalogue s'ouvrent, contre 66 en T0.1.
 - **Commit** : `chore(casaengine): move the engine to the end of the editor foundations`, avec la note de validation.
+
+> Validation (2026-10-08) :
+> - **Pointeur** : `CasaEngine` passe sur `f5dee0d6c`, clôture du plan moteur, archivé dans `CasaEngine/ai-agent/tasks/archive/rgce-editor-project-engine-tasks.md`. Le vérificateur de S2 avait d'abord rendu REFUTED (restauration d'un `.texture` qui perdait un BOM) ; après la correction `2b9d5ae35`, le contre-vérificateur a rendu CONFIRMED.
+> - **Build et smoke** : `dotnet build RacingGame.slnx` donne 0 erreur. Les nouveaux avertissements viennent du sous-module ; aucun ne touche le jeu. `--smoke-frontend` sort avec le code 0.
+> - **Catalogue** : depuis S3, il compte 345 entrées et non plus 94. Elles ont toutes été ouvertes une par une, avec une copie de l'éditeur de fin de S2 et une copie du contenu. Résultat dans `artifacts/editor-project-baseline/catalogue-t2.1/` :
+>   - **345 sur 345** s'ouvrent avec le code 0, contre 66 sur 94 en T0.1 ;
+>   - par type : 148 png, 56 gltf, 50 sprite, 28 wav, 28 sound, 10 combimodel, 9 uiscreen, 8 texture, 3 track, 2 dds, 1 data, 1 fnt, 1 world ;
+>   - la copie du contenu est identique avant et après (SHA-1 de chaque fichier) ;
+>   - deux captures relues : `CombiBuildings.CombiModel` en aperçu texte, et `AlphaPalm2.gltf` en 3D, en gris neutre.
 
 ---
 
