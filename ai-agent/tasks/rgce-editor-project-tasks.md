@@ -184,7 +184,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 - une décision de l'auteur qui manque.
 Un arrêt fige la tranche et celles qui en dépendent.
 
-### S2 — Fondations moteur et éditeur (CasaEngine, à détailler)
+### S2 — Fondations moteur et éditeur (CasaEngine, détaillée dans le plan moteur)
 
 - **Résultat** : les manques qui bloquent D2, D4 et P1 sont corrigés, testés et documentés.
 - **Périmètre** :
@@ -214,7 +214,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
   - ADR et docs du moteur ;
   - vérificateur indépendant CONFIRMED.
 
-### S3 — Contenu hérité porté (à détailler)
+### S3 — Contenu hérité porté (détaillée en Phase 3)
 
 - **Résultat** : D4 et D8 sont faits.
 - **Périmètre** :
@@ -489,6 +489,160 @@ Un arrêt fige la tranche et celles qui en dépendent.
 >     - P3 : O6 périmé ;
 >     - P3 : le contrôle « Gameplay assembly not found » sur la capture Warning ne pouvait pas échouer. Il est couvert par une capture Error, et l'étape 3 de T1.2 le dit désormais ;
 >     - P4 : dossier `RacingGameCasaEngine.UI/obj/` résiduel, ignoré par git et supprimé.
+
+---
+
+## Phase 2 — Fondations moteur et éditeur (S2)
+
+Le détail est dans le plan moteur `CasaEngine/ai-agent/tasks/rgce-editor-project-engine-tasks.md` (T1 → T9), exécuté sur la branche CasaEngine `chantier/rgce-editor-project`.
+
+### ⏳ T2.1 — Pointeur moteur de fin de S2 et catalogue ouvert dans l'éditeur
+
+- **Objectif** : enregistrer dans RacingGame le pointeur `CasaEngine` sur la fin de S2 (règle du pointeur), puis mesurer ce que S2 change pour ce projet.
+- **Fichiers** : le pointeur `CasaEngine` ; ce plan.
+- **Étapes** :
+  1. Committer le pointeur `chore(casaengine): …`.
+  2. Lancer `dotnet build RacingGame.slnx` et `--smoke-frontend`.
+  3. Ouvrir le catalogue entrée par entrée dans l'éditeur recompilé, avec la sonde `catalogue_open.ps1` du scratchpad et le code de sortie de l'éditeur.
+- **Validation** :
+  - build à 0 erreur et smoke à 0 ;
+  - les 94 entrées du catalogue s'ouvrent, contre 66 en T0.1.
+- **Commit** : `chore(casaengine): move the engine to the end of the editor foundations`, avec la note de validation.
+
+---
+
+## Phase 3 — Contenu hérité porté et catalogué (S3)
+
+Faits relevés pour cette phase (2026-10-08) :
+- **Noms `.tga` dans le code du jeu** :
+  - `RacingGameLegacyMaterialTuning` compare `Path.GetFileName` de la texture diffuse avec des listes de noms `.tga` (`Bootstrap/RacingGameLegacyMaterialTuning.cs:29-83,108,149,169`) ;
+  - `LegacyCarVisualFactory` charge `Textures/RacerCar*.tga` et compare ces noms (`Components/LegacyCarVisualFactory.cs:34-36,273-301,366`) ;
+  - la route, le terrain, les rails et les colonnes chargent leurs textures `.tga` par nom littéral (`Worlds/LegacyTrackSceneFactory.cs:80-81`, `.Terrain.cs:139-140`, `.GuardRails.cs:412-431`) ;
+  - `LegacyImportProfileVerifier` cherche des matériaux par nom `.tga` (`Bootstrap/LegacyImportProfileVerifier.cs:53-141`).
+- **Résolution des textures des modèles** : `LegacyGltfModelReader.ResolveTexturePath` cherche le `..\textures\X.tga` des extras du glTF, puis son nom de fichier dans le dossier du modèle, sinon rien (`Bootstrap/LegacyGltfModelReader.cs:180-198`). Sans le TGA, c'est l'image PNG du glTF qui sert.
+- **Convertisseur** : `scripts/LegacyModelGltfConverter/LegacyTextureConverter.ConvertToPng` décode le TGA par StbImageSharp, le décodeur du jeu, et l'écrit en PNG RGBA sans perte. Il n'est appelé que par la conversion des modèles (`Program.cs`).
+- **Fichiers à porter** :
+  - les 22 WAV et la table des repères XACT, dans `editor-disc2/wav_table.md` et `cue_table.md` du scratchpad ;
+  - les volumes `.sound` existants, qui suivent `10^(dB/2000)`.
+
+### ⏳ T3.1 — `.gitattributes` et 29 TGA convertis en PNG
+
+- **Objectif** : D8, et les 29 textures qui n'existent qu'en TGA rejoignent `Content/Textures` en PNG aux pixels identiques.
+- **Fichiers** :
+  - `.gitattributes` (`*.png`, `*.wav`, `*.dds`, `*.data`, `*.tga` et `*.bin` binaires ; `*.bin` est le tampon des glTF de `Content/Models`) ;
+  - `scripts/LegacyModelGltfConverter/Program.cs` (modes `--textures <dossier tga> <dossier png> <nom>...` et `--verify-textures <dossier tga> <dossier png>`) et son README ;
+  - les 29 PNG de `RacingGameCasaEngine/Content/Textures`.
+- **Étapes** :
+  1. Écrire le `.gitattributes`, puis `git add --renormalize --dry-run .` : rien ne doit changer.
+  2. Ajouter les deux modes. `--verify-textures` décode chaque TGA et son PNG par StbImageSharp en RGBA, compare les octets et liste les différences.
+  3. Convertir les 29 noms (`tga29.md` du scratchpad).
+- **Validation** :
+  - `--verify-textures` sur les 129 paires TGA et PNG : 0 différence ;
+  - contrôle négatif : un PNG modifié d'un pixel, copié dans le scratchpad, est signalé ;
+  - `dotnet build` du convertisseur et de `RacingGame.slnx` : 0 erreur.
+- **Commit** : `feat(racing-casa): convert the remaining legacy TGA textures to PNG`
+
+### ✅ T3.2 — Cubemaps, carte de hauteurs, CombiModel et images d'interface héritées
+
+- **Objectif** : copier dans `Content` ce qui n'y est encore que par lien.
+- **Fichiers** :
+  - `Content/Textures/SkyCubeMap.dds` et `NormalizeCubeMap.dds` ;
+  - `Content/LandscapeHeights.data`, chemin que le jeu lit déjà ;
+  - `Content/Models/*.CombiModel` (10) ;
+  - `Content/Textures/{GameFont,HelpScreenWindows,HelpScreenXbox360,MouseCursor,OptionsScreenXbox360}.png` (O4).
+- **Validation** : chaque copie est identique octet pour octet à sa source dans `RacingGame/Content` (SHA-1).
+- **Commit** : `feat(racing-casa): copy the legacy cube maps, height map, combi models and UI images into the project`
+
+> Validation (2026-10-08) :
+> - **Copies** : 18 fichiers, chacun identique octet pour octet à sa source de `RacingGame/Content` (SHA-1) :
+>   - 2 DDS ;
+>   - `LandscapeHeights.data` ;
+>   - 10 CombiModel ;
+>   - 5 PNG d'interface (`GameFont`, `HelpScreenWindows`, `HelpScreenXbox360`, `MouseCursor`, `OptionsScreenXbox360`).
+>   Aucun ne remplace un fichier existant.
+> - **Ordre** : cette tâche passe avant T3.1, faute de pouvoir compiler le convertisseur pendant les travaux moteur de S2. Sans `.gitattributes`, `git ls-files --eol` classe déjà les DDS et `LandscapeHeights.data` en binaire (`-text`), et ce dernier ne contient aucun octet 0x0A ni 0x0D : aucune conversion de fin de ligne n'est possible.
+> - **Sortie du jeu inchangée** : les liens du csproj copient encore les mêmes fichiers aux mêmes chemins de sortie, et T3.5 les retire.
+
+### ⏳ T3.3 — Les 22 sons et musiques non portés
+
+- **Objectif** : P10. Pour chaque son : la WAV d'origine sous le nom de sa vague XACT, sans espace (`Content/Audio/<Nom>.wav`), et un `.sound` :
+  - `volume` = `10^(dB/2000)` ;
+  - bus `Sfx` pour les effets, `Music` pour les 3 musiques, avec `is_streaming: true` ;
+  - `is_looped: true` pour les vagues que XACT joue en boucle : `Gear1` → `Gear5` et les musiques ;
+  - `pitch` 0.
+- **Fichiers** : 22 WAV, 22 `.sound` ; le générateur de T3.4 écrit les `.sound`.
+- **Validation** :
+  - chaque WAV est identique octet pour octet à l'original (SHA-1) ;
+  - chaque `.sound` donne le volume de la table XACT à 0,001 près ;
+  - les 6 sons déjà portés suivent la même formule et restent inchangés.
+- **Commit** : avec T3.4.
+
+### ⏳ T3.4 — Catalogue de tout le contenu
+
+- **Objectif** : chaque fichier de `Content` est catalogué, sauf les fichiers du projet et les fichiers annexes. Ces exceptions sont :
+  - le fichier projet, le catalogue, la DLL et le PDB du gameplay, `.casaeditor/` ;
+  - les `.design.json` et `.xaml` des écrans ;
+  - les `.bin` des glTF, référencés par leur `.gltf` ;
+  - les `.fnt` et PNG de police déjà catalogués.
+- **Fichiers** :
+  - `scripts/generate_rgce_content_assets.py`, sur le patron de `generate_rgce_ui_assets.py` :
+    - identifiants uuid5 du nom, avec le même espace de noms ;
+    - entrées possédées par une liste explicite ;
+    - format du fichier conservé.
+  - Les entrées qu'il possède :
+    - `Texture.<nom>` : PNG des textures 3D et d'interface hérités ;
+    - `Texture.<nom>` : les 2 DDS (type `dds`) ;
+    - `Data.LandscapeHeights` (type `data`) ;
+    - `Data.Combi.<nom>` (type `combimodel`) ;
+    - `ModelSource.<nom>` : les 56 glTF (type `gltf`) ;
+    - `Sound.<nom>` et `Sound.<nom>Wave` : les 22 sons de T3.3.
+  - Les entrées existantes sont gardées telles quelles. C'est le cas de `MenuBackground` et `MenuButtons`, déjà catalogués sur `Textures/background.png` et `buttons.png`.
+  - `RacingGameCasaEngine/Content/AssetInfos.json`.
+- **Validation** :
+  - un deuxième lancement du script ne change aucun octet ;
+  - un script de contrôle liste les fichiers de `Content` non catalogués : 0 hors exceptions ;
+  - aucun id ni nom en double ;
+  - `--smoke-frontend` sort avec le code 0.
+- **Commit** : `feat(racing-casa): catalogue every content file and port the remaining sounds`
+
+### ⏳ T3.5 — Le jeu ne lit plus que `Content`
+
+- **Objectif** : retirer les liens vers `RacingGame/Content` sans changer le rendu.
+- **Fichiers** :
+  - `LegacyGltfModelReader.ResolveTexturePath` : un `.tga` absent se résout en `.png` de même nom ;
+  - `RacingGameLegacyMaterialTuning` et `LegacyImportProfileVerifier` comparent les noms sans extension ;
+  - `LegacyCarVisualFactory` et `LegacyTrackSceneFactory*` chargent les `.png` ;
+  - `RacingGameCasaEngine.csproj` :
+    - une règle `Content\**` remplace les règles par dossier. Elle exclut exactement `RacingGameCasaEngine.json`, `RacingGame.Gameplay.dll`, `RacingGame.Gameplay.pdb`, `.casaeditor\**` et `**\*.design.json`. `AssetInfos.json` et les `.xaml` restent copiés ;
+    - les **3 liens** vers `..\RacingGame\Content` sont retirés : `Textures\*.*`, `LandscapeHeights.data` et `*.CombiModel` ;
+    - le lien vers `..\CasaEngine\CasaEngine\Content\Fonts\tahoma.ttf`, police que le moteur lit au démarrage (`CasaEngineGame.cs:494`), **reste**.
+- **Avant la modification du code**, sur le commit de T3.4 :
+  - liste de sortie : chemin relatif et SHA-1 de chaque fichier du dossier de sortie `Content`, dans `artifacts/editor-project-baseline/output-content-t3.4.txt` ;
+  - deux lancements de `--capture-track-audit` (`track-audit-t3.4-a/`, `track-audit-t3.4-b/`) ;
+  - un `--export-track-runtime-scene` (`scene-t3.4.json`).
+- **Outil de comparaison des 21 captures** : la sonde `compare_audit.py` du scratchpad. Elle apparie les captures par nom sans horodatage, puis calcule la différence absolue moyenne par canal R, G et B, la même mesure qu'`UiCaptureCompare`. Le seuil de chaque capture est son bruit entre les lancements `a` et `b`, plus 0,5.
+- **Validation** :
+  - `rg "RacingGame\\\\Content" RacingGameCasaEngine/RacingGameCasaEngine.csproj` ne trouve rien, et le lien de `tahoma.ttf` est toujours là ;
+  - `dotnet build RacingGame.slnx` : 0 erreur ;
+  - liste de sortie après T3.5 contre celle de T3.4 : la seule différence permise est le retrait des 129 `.tga`. `Content\Fonts\tahoma.ttf` et `Content\AssetInfos.json` sont présents ;
+  - `--capture-track-audit` après T3.5 contre `track-audit-t3.4-a/` : chacune des 21 captures sous son seuil. La note donne le bruit `a`/`b` et l'écart de chaque capture ;
+  - **contrôle négatif** : `Road.png` renommé dans le dossier de sortie (puis remis), un lancement de `--capture-track-audit` dépasse le seuil sur au moins une capture ;
+  - `--export-track-runtime-scene` contre `scene-t3.4.json` : mêmes entités, modèles, noms et types de matériaux, transforms ;
+  - `--smoke-frontend` sort avec le code 0 ;
+  - `--capture-ui-screens` reste dans le seuil d'`UiCaptureCompare` face aux références ;
+  - `--verify-legacy-import-profile` sort avec le code 0 ;
+  - audits des voitures identiques à ceux de S0.
+- **Commit** : `refactor(racing-casa): read every game file from the project content`
+
+### ⏳ T3.6 — ADR, documentation et clôture de S3
+
+- **Fichiers** :
+  - `docs/decisions/0016-rgce-content-holds-every-game-file.md`. Il remplace la règle « le contenu lié non catalogué reste lié » de l'ADR-0002, dont le statut devient « superseded in part by ADR-0015, ADR-0016 » ;
+  - index des ADR ;
+  - `RacingGameCasaEngine/Assets/README.md` (contenu, générateur, sons) ;
+  - ce plan.
+- **Validation** : vérificateur indépendant de S3, CONFIRMED.
+- **Commit** : `docs(adr): record that the project content holds every game file`
 
 ---
 
