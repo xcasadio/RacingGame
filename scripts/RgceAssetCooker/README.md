@@ -26,9 +26,9 @@ The default `--content` is `RacingGameCasaEngine/Content` of the repository that
 - Ids are `uuid5` of the asset name in the namespace of `generate_rgce_ui_assets.py` (`racinggame-casaengine/ui-assets`).
   A `.texture` points to the png entry `Image.<Name>` (`uuid5("Image.<Name>")`).
 - **Models**: vertices, indices and nodes are exactly what `LegacyGltfModelReader` reads, with the RacingGame import profile.
-  Every model except `Car` and `CarSelectionPlate` gets the root node rotated by pi/2 about X that
-  `LegacyTrackSceneFactory.ApplyLegacyModelRootCorrection` adds (named `<Name>.LegacyRootCorrection`). Each mesh points to its material by
-  `material_asset_id`.
+  Every model except `Car` and `CarSelectionPlate` gets the root node rotated by pi/2 about X that the game used to add when it loaded
+  the glTF (`LegacyTrackSceneFactory.ApplyLegacyModelRootCorrection`, removed in T5.5 once the game loaded the cooked models), named
+  `<Name>.LegacyRootCorrection`. Each mesh points to its material by `material_asset_id`.
 - **Materials**: definition `lit-diffuse`, with the values of `RaceMaterialRecipes` (`ForScenery`, `ForCar` with car index 0, `ForPlate`,
   and `ForRoad`, `ForGround`, `ForTerrain`, `ForGuardRail`, `ForRoadColumn` with the first texture candidate that exists). A render state the
   game leaves `null` is written as the state the renderer applies: blend `Opaque`, depth `Default`, rasterizer `CullCounterClockwise`,
@@ -36,7 +36,7 @@ The default `--content` is `RacingGameCasaEngine/Content` of the repository that
   at run time (T5.6). `<Slot>` is the display name of the glTF material, with a numeric suffix if two materials of a model share it.
 - **Textures**: the sampler is the one of the recipes (`AnisotropicWrap`).
 
-The mesh fallback materials (`ForSceneryFallback`, `ForCarFallback`) are not cooked: no glTF has a mesh without a material.
+No fallback material is cooked: no glTF has a mesh without a material (the fallback recipes were removed in T5.6).
 
 ## Catalogue
 
@@ -55,5 +55,5 @@ same set of entries.
   contain. Writes nothing; exit code 1 if there is any.
 - `--verify`: re-reads every cooked file with the engine loaders (`StaticModel.Load`, `MaterialAsset.Load`, `Texture.Load`) and compares it with
   a fresh read of the glTF files and the recipes: vertices, indices, nodes, material ids, every material value under the effective-state rule,
-  the render state the engine resolves for the asset, textures, the catalogue (no duplicate id or name, every entry's file exists). Exit code 1 on
-  any mismatch. It does not compile the materials (that needs a graphics device); the editor catalogue walk opens them.
+  the render state the engine resolves for the asset, textures, the catalogue (no duplicate id or name, every entry's file exists), and the car
+  paint rule the game applies at run time against the paint role of each `Car.gltf` material in the recipes. Exit code 1 on any mismatch. It does not compile the materials (that needs a graphics device); the editor catalogue walk opens them.

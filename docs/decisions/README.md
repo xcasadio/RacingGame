@@ -31,3 +31,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0015 | RacingGame.Gameplay is the CasaEngine editor's gameplay assembly for RacingGameCasaEngine | Accepted | 2026-10-08 |
 | ADR-0016 | RacingGameCasaEngine's content folder holds every game file | Accepted | 2026-10-08 |
 | ADR-0017 | RacingGame.Gameplay holds the game code, and generator components rebuild the track | Accepted | 2026-10-08 |
+| ADR-0018 | RacingGameCasaEngine's models, materials and textures are cooked assets | Accepted | 2026-10-08 |

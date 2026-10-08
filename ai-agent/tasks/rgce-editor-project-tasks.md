@@ -1510,7 +1510,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
 >   - les copies et les textures de peinture vivent jusqu'à la fin du processus, comme avant ;
 >   - `Initialize` compile les matériaux cuits de la voiture, inutilisés une fois peints.
 
-### ⏳ T5.7 — ADR, documentation et clôture de S5
+### ✅ T5.7 — ADR, documentation et clôture de S5
 
 - **Fichiers** :
   - `docs/decisions/0018-rgce-models-and-materials-are-cooked-assets.md`, avec l'index des ADR ;
@@ -1520,6 +1520,47 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
   - le catalogue entier ouvert dans l'éditeur : chaque entrée avec le code 0 ;
   - vérificateur indépendant de S5, CONFIRMED.
 - **Commit** : `docs(adr): record the cooked models, materials and textures`
+
+> Validation (2026-10-09) :
+> - **ADR-0018** (`docs/decisions/0018-rgce-models-and-materials-are-cooked-assets.md`) et son entrée d'index.
+> - **`RacingGameCasaEngine/Assets/README.md`** :
+>   - nouvelle section « Cooked models, materials and textures » : cuisson, noms, second lancement, peinture, feu, matériaux des générateurs ;
+>   - la liste des outils du catalogue passe à trois : `Image.<nom>` pour les PNG, `World.<chemin>`, puis l'outil de cuisson.
+> - **README de l'outil de cuisson**, corrigé :
+>   - les fonctions de repli retirées en T5.6 ;
+>   - la racine tournée, que le jeu n'ajoute plus depuis T5.5 ;
+>   - le contrôle de la règle de peinture par `--verify`.
+> - **Catalogue entier ouvert dans l'éditeur** (`artifacts/editor-project-baseline/s5/catalogue-t5.7/`), avec des copies de l'éditeur et du contenu faites après `8e45f6f` :
+>   - 604 entrées sur 604 : `OPENED exit=0`, avec une capture chacune ;
+>   - par type : 148 `png`, 113 `texture`, 97 `material`, 56 `staticmodel`, 56 `gltf`, 50 `sprite`, 28 `sound`, 28 `wav`, 10 `combimodel`, 9 `uiscreen`, 3 `track`, 2 `dds`, 2 `world`, 1 `data`, 1 `fnt` ;
+>   - les captures lues de `StaticModel.Car` et de `Material.Car.lack` montrent le modèle cuit, ses matériaux par id, et les valeurs du matériau dans l'inspecteur.
+> - **Index des plans** (`ai-agent/README.md`) : les lignes de ce plan et du plan O7 sont mises à jour.
+> - **Vérificateur indépendant de S5 : CONFIRMED**, sans constat P0, P1 ni P2 (sorties dans `verify-s5/` du scratchpad). Un seul processus de jeu à la fois, et les réglages de l'auteur restaurés à l'identique.
+>   - **Assets cuits** :
+>     - `--check` et `--verify` sortent avec le code 0 (0 écart, règle de peinture sur 6 matériaux et 12 maillages) ;
+>     - une cuisson complète sur une copie de `Content` n'en change aucun octet ;
+>     - le catalogue a 604 entrées, soit 346 avant S5, plus 56, 97 et 105. Ids uuid5 vérifiés, sans doublon, et chaque fichier existe.
+>   - **Chargement par id**, lu dans le diff : décor, poteaux, segments, feu, voiture (`LoadCopy` et copies de matériaux peints), plateaux, et `material_asset_id` des quatre générateurs. `rg` ne trouve les règles par nom que dans `RaceMaterialRecipes` (appelé par l'outil de cuisson ; le jeu n'en lit que `CarDiffuseTextureNames`) et dans `LegacyImportProfileVerifier` (P3 connu).
+>   - **Rendu inchangé** :
+>     - export contre `s5/scene-a.json` avec `--effective-states` : 1 074, 689 et 2 156 enregistrements appariés ;
+>     - **témoin** construit depuis `2b622d6` : il a les outils de T5.1 et T5.2 et le correctif du moteur, mais encore les matériaux construits en code. Son export est apparié au même fichier et à celui de S5 ;
+>     - **contrôle négatif** : une puissance spéculaire changée est signalée ;
+>     - **audit** : 21 vues sur 21 dans le seuil, au plus 0,013 ;
+>     - **audits des voitures** identiques à S0, `details/` compris ;
+>     - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0 ;
+>     - **captures d'interface**, lancées dans l'ordre témoin, S5, témoin, S5 :
+>       - chaque écart entre S5 et le témoin est une valeur déjà vue entre deux lancements du témoin (au plus 1,28 sur `race-hud`) ;
+>       - contre `references-acb6ad9`, `race-finished` est à environ 13,8. Cette valeur est la même pour le témoin et pour S5 : elle est antérieure à S5.
+>   - **Éditeur** : le TSV du parcours suit le catalogue entrée par entrée. Les 604 captures existent, sans exception dans les diagnostics, et trois captures ont été lues.
+>   - **ADR-0018 et README** : chaque fait est vérifié dans le code et les fichiers cuits :
+>     - 81 matériaux sur 97 avec une carte de normales ;
+>     - aucune tangente dans les glTF ;
+>     - 54 modèles avec la racine tournée ;
+>     - 138 `Image.*` ;
+>     - les états par défaut du rendu.
+>   - **Avis P4** :
+>     - la plage de commits du brief était fausse. S5 va de `a553a75` à `8e45f6f`, et T5.1 à T5.2 précèdent `2b622d6`. Cela ne change rien au résultat ;
+>     - `Material.Track.Ground` est cuit, mais le jeu ne s'en sert pas. Déjà noté en T5.5, et les docs ne disent pas le contraire.
 
 ---
 

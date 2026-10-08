@@ -38,9 +38,10 @@ Sound effects play through CasaEngine's audio service ([ADR-0003](../../docs/dec
 
 Every game file the game reads lives under `Content` and has a catalogue entry ([ADR-0016](../../docs/decisions/0016-rgce-content-holds-every-game-file.md)); the engine's own content (shaders, fonts, icons) comes from the CasaEngine project reference. The csproj copies `Content\**` to the output, minus the editor-only files, and links nothing from `RacingGame/Content`.
 
-- Two scripts write the catalogue. Ids are uuid5 of the asset name, so a second run changes nothing:
+- Three tools write the catalogue. Ids are uuid5 of the asset name, so a second run changes nothing:
   - `scripts/generate_rgce_ui_assets.py`: the screens, sprites and UI images;
-  - `scripts/generate_rgce_content_assets.py`: `Texture.<name>` for the textures, `Data.<name>` for the height map and CombiModel files, `ModelSource.<name>` for the glTF models, and `Sound.<name>`/`Sound.<name>Wave` for the 22 ported sounds.
+  - `scripts/generate_rgce_content_assets.py`: `Image.<name>` for the PNG images (`Texture.<name>` for the two DDS cube maps), `Data.<name>` for the height map and CombiModel files, `ModelSource.<name>` for the glTF sources, `Sound.<name>`/`Sound.<name>Wave` for the 22 ported sounds, and `World.<path>` for the worlds;
+  - `scripts/RgceAssetCooker`: the cooked models, materials and textures (see "Cooked models, materials and textures"). Run the content generator first, then the cooker.
 - `python scripts/generate_rgce_content_assets.py --check` lists the content files that no entry names. The project files are not catalogued: the project file, the catalogue, the gameplay dll and pdb, `.casaeditor/`, the `.design.json` and `.xaml` of the screens, and the glTF `.bin` buffers.
 - Textures are PNG, apart from the two cube-map DDS. The 129 legacy `.tga` textures were converted to PNG files of the same name with the same RGBA pixels: 100 by the model conversion of `scripts/LegacyModelGltfConverter`, 29 by its `--textures` mode. `--verify-textures` checks every pair. The game compares texture names without extension, and resolves a `.tga` named by a model's legacy metadata to the `.png` of the same name.
 - `.gitattributes` marks the binaries (`png`, `wav`, `dds`, `data`, `tga`, `bin`); there is no LFS.
@@ -76,6 +77,21 @@ Every game file the game reads lives under `Content` and has a catalogue entry (
   - the start world, the project file and `AssetInfos.json`. The committed versions are in the form the editor writes, so a Save leaves them unchanged.
 - Never use File > New Project on this folder: it overwrites `AssetInfos.json`.
 - Editor state (`Content/.casaeditor/`) is git-ignored. Every project open leaves a shadow copy of the gameplay assembly under `%TEMP%\casaeditor-scripts\`, and every rebuild before Play a folder under `Content/.casaeditor/script-build/`; the editor never deletes either.
+
+## Cooked models, materials and textures
+
+The game and the editor load every model, material and texture of the race by asset id ([ADR-0018](../../docs/decisions/0018-rgce-models-and-materials-are-cooked-assets.md)). `scripts/RgceAssetCooker` cooks them from the glTF sources:
+
+- `Models/<Name>.staticModel` (`StaticModel.<Name>`): the geometry of `Models/<Name>.gltf` as the legacy reader reads it. The scenery, posts, column segments and start lights carry the legacy root rotated by pi/2 about X; the car and the selection plate do not.
+- `Materials/Models/<Name>/<Slot>.material` (`Material.<Name>.<Slot>`) and `Materials/Track/<Role>.material` (`Material.Track.<Role>`): `lit-diffuse` materials with the values the game used to compute from texture names (specular tuning, alpha cutout, back-face culling, reflection). Render states the game left unset are written as the renderer's defaults.
+- `Textures/<Name>.texture` (`Texture.<Name>`): one per image a cooked material uses, pointing to `Image.<Name>`.
+- After a change to a glTF, a recipe or a texture, run the cooker again; `--check` lists what is missing and `--verify` compares every cooked file with the glTF and the recipes. A second run changes nothing.
+
+Run-time state that is not cooked:
+
+- **Car paint.** Each car index takes a private copy of `StaticModel.Car`. The slots that sample the car texture (base texture `Texture.RacerCar` in the cooked material) get, in that copy only, a copy of their material with a new id and the painted or unpainted texture of `CarPaint`, which re-colours the `RacerCar*` image for the chosen colour. The painted-or-not rule is the one of the legacy game, applied to the slot name; the cooker's `--verify` checks it against the recipes.
+- **Start light.** `RaceStartLight` switches its component between `StaticModel.StartLight`, `StartLight2` and `StartLight3` during the countdown.
+- **Track generators.** The road, terrain, rail and column meshes are still built in code; their material comes from `material_asset_id`, a cooked `Material.Track.<Role>` by default.
 
 ## Track generator components
 
