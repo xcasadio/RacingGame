@@ -1,6 +1,6 @@
 # ADR-0013: RacingGameCasaEngine's Highscores, Options and Help screens reproduce the original XNA screens
 
-- **Status**: Accepted
+- **Status**: Superseded by ADR-0014
 - **Date**: 2026-10-06
 - **Source**: the author's request of 2026-10-06 to harmonise the Highscores, Options and Help screens, and the author's answers (plan `ai-agent/tasks/rgce-other-screens-xna-look-tasks.md`, D1-D6, P2-P9). It supersedes ADR-0004.
 

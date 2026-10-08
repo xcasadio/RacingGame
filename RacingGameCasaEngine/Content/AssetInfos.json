@@ -535,18 +535,6 @@
       "asset_type": "texture"
     },
     {
-      "id": "9304a35f-487c-5b94-8c01-62b476afc24a",
-      "name": "Ui.Help.PanelImage",
-      "file_name": "UI/Textures/HelpScreenWindows.png",
-      "asset_type": "png"
-    },
-    {
-      "id": "43231df2-f8aa-5e3c-bbe5-aca24ef17a1f",
-      "name": "Ui.Help.PanelTexture",
-      "file_name": "UI/Sprites/Ui.Help.PanelTexture.texture",
-      "asset_type": "texture"
-    },
-    {
       "id": "ceea9dc6-4dad-50ae-9af3-00ef5a795e1f",
       "name": "Ui.Button.Radio",
       "file_name": "UI/Sprites/Ui.Button.Radio.sprite",
@@ -628,12 +616,6 @@
       "id": "1c1729ba-7a85-5bf1-b65e-52a5cd36a54c",
       "name": "Ui.Options.HighDetail",
       "file_name": "UI/Sprites/Ui.Options.HighDetail.sprite",
-      "asset_type": "sprite"
-    },
-    {
-      "id": "71030b32-2ab2-5675-9525-df25c0719c10",
-      "name": "Ui.Help.Panel",
-      "file_name": "UI/Sprites/Ui.Help.Panel.sprite",
       "asset_type": "sprite"
     }
   ]

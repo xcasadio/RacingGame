@@ -7,17 +7,105 @@
       "LogoWidth": 755,
       "LogoHeight": 246
     },
+    "BandTopPixels": 169,
+    "BandHeightPixels": 382,
     "Header": {
       "Left": 8,
       "Top": 11,
       "Width": 410,
       "Height": 60
     },
-    "Panel": {
-      "Left": 0,
-      "Top": 117,
-      "Width": 1280,
-      "Height": 480
+    "Section0": {
+      "Title": "Race Controls",
+      "Line0": "Accelerate with Up, W, GamePad A, the right trigger, or D-pad up.",
+      "Line1": "Brake or reverse with Down, S, GamePad B, the left trigger, or D-pad down.",
+      "TitleText": {
+        "Left": 150,
+        "Top": 188,
+        "Width": 0,
+        "Height": 0
+      },
+      "Line0Text": {
+        "Left": 175,
+        "Top": 219,
+        "Width": 0,
+        "Height": 0
+      },
+      "Line1Text": {
+        "Left": 175,
+        "Top": 241,
+        "Width": 0,
+        "Height": 0
+      }
+    },
+    "Section1": {
+      "Title": "Steering",
+      "Line0": "Steer with Left and Right, A and D, the left stick, or the D-pad.",
+      "Line1": "Controller sensitivity from Options scales the analog steering response.",
+      "TitleText": {
+        "Left": 150,
+        "Top": 273,
+        "Width": 0,
+        "Height": 0
+      },
+      "Line0Text": {
+        "Left": 175,
+        "Top": 303,
+        "Width": 0,
+        "Height": 0
+      },
+      "Line1Text": {
+        "Left": 175,
+        "Top": 325,
+        "Width": 0,
+        "Height": 0
+      }
+    },
+    "Section2": {
+      "Title": "Camera",
+      "Line0": "Use Page Up and Page Down, or GamePad X and Y, to change chase distance during a race.",
+      "Line1": "The chase camera now widens with speed and switches to an orbit view when the race is finished.",
+      "TitleText": {
+        "Left": 150,
+        "Top": 357,
+        "Width": 0,
+        "Height": 0
+      },
+      "Line0Text": {
+        "Left": 175,
+        "Top": 387,
+        "Width": 0,
+        "Height": 0
+      },
+      "Line1Text": {
+        "Left": 175,
+        "Top": 410,
+        "Width": 0,
+        "Height": 0
+      }
+    },
+    "Section3": {
+      "Title": "Race Flow",
+      "Line0": "Pause with Escape or GamePad Start once the countdown is over.",
+      "Line1": "Finish the race to open the result panel, then return to the main menu.",
+      "TitleText": {
+        "Left": 150,
+        "Top": 441,
+        "Width": 0,
+        "Height": 0
+      },
+      "Line0Text": {
+        "Left": 175,
+        "Top": 472,
+        "Width": 0,
+        "Height": 0
+      },
+      "Line1Text": {
+        "Left": 175,
+        "Top": 494,
+        "Width": 0,
+        "Height": 0
+      }
     },
     "BackButton": {
       "Left": 1094,

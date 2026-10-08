@@ -4,8 +4,10 @@
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
         Padding="0" BorderThickness="0" Background="rgba(0,0,0,0)">
   <!--
-    RacingGame's help screen (ADR-0013). RaceHelpViewModel lays everything out in screen pixels with RacingGame's
-    formulas, every frame. Nothing takes MGUI's focus: HelpScreen reads the keyboard, the mouse and the gamepad itself.
+    Help (ADR-0014): the previous arrangement of the help sections in the menus' style. RaceHelpViewModel lays everything
+    out in screen pixels with RacingGame's formulas, every frame. The texts use RacingGame's GameFont at its native size;
+    HelpScreen scales them at draw time as TextureFont did, the section lines at 0.75. Nothing takes MGUI's focus:
+    HelpScreen reads the keyboard, the mouse and the gamepad itself.
   -->
   <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <!-- Menu decoration (RaceMenuDecorationViewModel): background, then the bouncing logo placed by the view model. -->
@@ -14,16 +16,42 @@
     <Image SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Decoration.LogoMargin}"
            Width="{dataBinding:MGBinding Path=Decoration.LogoWidth}" Height="{dataBinding:MGBinding Path=Decoration.LogoHeight}" />
+    <!-- Band: black at 0.683 opacity (the atlas texel's 205/255 drawn at 0.85), full width. -->
+    <Border BorderThickness="0" Background="rgba(0,0,0,174)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Top"
+            Margin="{dataBinding:MGBinding Path=BandMargin}" Height="{dataBinding:MGBinding Path=BandHeightPixels}" />
     <!-- "HELP" header (headers.png HeaderHelpGfxRect). -->
     <Image SourceName="Ui.Help.Header" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Header.Margin}" Width="{dataBinding:MGBinding Path=Header.Width}" Height="{dataBinding:MGBinding Path=Header.Height}" />
-    <!-- The help image (HelpScreenWindows.png): a dark panel with the controls, baked in. -->
-    <Image SourceName="Ui.Help.Panel" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
-           Margin="{dataBinding:MGBinding Path=Panel.Margin}" Width="{dataBinding:MGBinding Path=Panel.Width}" Height="{dataBinding:MGBinding Path=Panel.Height}" />
     <!-- B BACK, grown and outlined in orange while the mouse is over it. -->
     <Image SourceName="Ui.Button.Back" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" />
     <Image SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" Visibility="{dataBinding:MGBinding Path=BackButton.HighlightVisibility}" />
+    <!-- Four fixed section slots (RaceHelpViewModel.Section0..3), filled from RaceFrontEndCatalog.HelpSections: the title
+         in orange, its two lines in white. -->
+    <TextBlock Name="txtSection0Title" Text="{dataBinding:MGBinding Path=Section0.Title}" FontFamily="GameFont" Foreground="rgb(255,156,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Section0.TitleText.Margin}" />
+    <TextBlock Name="txtSection0Line0" Text="{dataBinding:MGBinding Path=Section0.Line0}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Section0.Line0Text.Margin}" />
+    <TextBlock Name="txtSection0Line1" Text="{dataBinding:MGBinding Path=Section0.Line1}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Section0.Line1Text.Margin}" />
+    <TextBlock Name="txtSection1Title" Text="{dataBinding:MGBinding Path=Section1.Title}" FontFamily="GameFont" Foreground="rgb(255,156,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Section1.TitleText.Margin}" />
+    <TextBlock Name="txtSection1Line0" Text="{dataBinding:MGBinding Path=Section1.Line0}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Section1.Line0Text.Margin}" />
+    <TextBlock Name="txtSection1Line1" Text="{dataBinding:MGBinding Path=Section1.Line1}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Section1.Line1Text.Margin}" />
+    <TextBlock Name="txtSection2Title" Text="{dataBinding:MGBinding Path=Section2.Title}" FontFamily="GameFont" Foreground="rgb(255,156,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Section2.TitleText.Margin}" />
+    <TextBlock Name="txtSection2Line0" Text="{dataBinding:MGBinding Path=Section2.Line0}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Section2.Line0Text.Margin}" />
+    <TextBlock Name="txtSection2Line1" Text="{dataBinding:MGBinding Path=Section2.Line1}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Section2.Line1Text.Margin}" />
+    <TextBlock Name="txtSection3Title" Text="{dataBinding:MGBinding Path=Section3.Title}" FontFamily="GameFont" Foreground="rgb(255,156,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Section3.TitleText.Margin}" />
+    <TextBlock Name="txtSection3Line0" Text="{dataBinding:MGBinding Path=Section3.Line0}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Section3.Line0Text.Margin}" />
+    <TextBlock Name="txtSection3Line1" Text="{dataBinding:MGBinding Path=Section3.Line1}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Section3.Line1Text.Margin}" />
   </OverlayPanel>
 </Window>

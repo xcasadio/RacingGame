@@ -39,8 +39,6 @@ TEXTURES = [
     ("Ui.Title.HeadersTexture", "Ui.Title.HeadersImage", "UI/Textures/headers.png"),
     ("Ui.CarSelection.ColorSelectionTexture", "Ui.CarSelection.ColorSelectionImage", "UI/Textures/ColorSelection.png"),
     ("Ui.CarSelection.OptionsWindowsTexture", "Ui.CarSelection.OptionsWindowsImage", "UI/Textures/OptionsScreenWindows.png"),
-    # Help screen panel of RacingGame (Help.cs, helpScreen).
-    ("Ui.Help.PanelTexture", "Ui.Help.PanelImage", "UI/Textures/HelpScreenWindows.png"),
 ]
 
 # (sprite asset name, texture asset name, x, y, w, h)
@@ -104,8 +102,6 @@ SPRITES = [
     ("Ui.Options.PostScreenEffects", "Ui.CarSelection.OptionsWindowsTexture", 339, 226, 206, 36),
     ("Ui.Options.Shadows", "Ui.CarSelection.OptionsWindowsTexture", 616, 226, 90, 36),
     ("Ui.Options.HighDetail", "Ui.CarSelection.OptionsWindowsTexture", 784, 226, 120, 36),
-    # HelpScreenWindows.png (1024x512): the whole Help panel.
-    ("Ui.Help.Panel", "Ui.Help.PanelTexture", 0, 0, 1024, 512),
     # ingame.png (1024x512): race HUD panels, tachometer, needle and the 10 digit glyphs.
     ("Ui.Hud.Laps", "Ui.Hud.IngameTexture", 381, 132, 222, 160),
     ("Ui.Hud.Tacho", "Ui.Hud.IngameTexture", 0, 0, 343, 341),

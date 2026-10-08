@@ -361,6 +361,102 @@ Découverte en lecture seule : workflow de 4 agents, chacun contre-vérifié par
 - Validation : liste « Validation globale ».
 - Commit : `docs(racing-casa): close the Highscores, Options and Help plan`
 
+> Interrompue le 2026-10-06 par le retour de l'auteur (phase 4) :
+> - références `references-7bbdd39` prises (copie de `ui-run-20261006-210034`) ;
+> - vérification indépendante de l'état `7bbdd39` : CONFIRMED sur les 7 points (son bilan figure dans l'état vérifié de la phase 4).
+>
+> La clôture est reprise en T4.3.
+
+---
+
+## Phase 4 — Retour de l'auteur (2026-10-06)
+
+Demande de l'auteur : « Désolé je me suis trompé pour l'écran help et option on va garder la disposition d'avant mais en uniformisant le style ». Highscores reste tel que livré en T2.2.
+
+État vérifié (2026-10-06) :
+- **Vérification indépendante de `7bbdd39`** (`verifier`, contexte neuf) : CONFIRMED sur les 7 points. Elle a refait les mesures, le build, le smoke, les captures et la reproductibilité du générateur. Ses remarques :
+  - A1 (P3) : le seuil du stick est de 0,5, alors que l'original utilisait 0,75. C'est la convention des écrans RGCE depuis le menu principal (ADR-0007). À documenter ;
+  - A2 (P4) : l'ordre des arrêts de P7 n'est plus à jour (Driving Mode est passé en troisième) ;
+  - A3 (P4) : le commentaire de `SaveFrontEndOptions` cite encore l'ADR-0004.
+- **Dispositions d'avant** (`references-19aa21f`, et le code de `944cdb8`) :
+  - **Help** : bande, titre « Help », six sections (titre orange et deux lignes blanches) dans une zone à barre de défilement, bouton Back ;
+  - **Options** : une colonne de libellés et une colonne de contrôles MGUI :
+    - nom (zone de texte) ;
+    - 5 boutons de résolution, 2 boutons Driving Mode ;
+    - 6 cases : Fullscreen, Vertical Sync, Post Screen Effects, Shadows, Show FPS, Gamepad Vibration ;
+    - 3 curseurs avec leur valeur : Sound Volume, Music Volume, Controller Sensitivity ;
+    - bouton Back.
+- **Textes des sections Help** (`git show e23d991:RacingGameCasaEngine/Bootstrap/RaceFrontEndCatalog.cs`) : Race Controls, Steering, Camera et Race Flow, deux lignes chacune. Menus et Session Flow sont des notes de développement.
+- **Largeurs en GameFont**, en unités de la base 1024 (avances de `scripts/generate_rgce_gamefont.py`) :
+  - la plus longue ligne d'aide fait 1 040 unités à l'échelle 1 et 780 à l'échelle 0,75 ;
+  - le plus long libellé d'Options, « Controller Sensitivity », fait 227 unités ; les cinq résolutions font 517 unités en tout.
+- **Art réutilisable de l'original** :
+  - le trait des curseurs est le sprite `Ui.CarSelection.StatBar` (372,297,472,6) d'`OptionsScreenWindows.png` ;
+  - le champ du nom occupe (346,27)–(891,76) dans la même image ;
+  - pastille `Ui.Button.Radio`, flèche `Ui.CarSelection.Arrow`.
+- **Assets devenus inutiles** : `Ui.Help.Panel`, `Ui.Help.PanelTexture` et la copie de `HelpScreenWindows.png` (avec sa ligne dans `UiTexturePremultiplier` et l'exclusion du csproj) ; `Ui.Options.Panel` et ses 9 zones. Le générateur ne retire pas les entrées de catalogue qu'il ne produit plus.
+
+| Réf | Décision |
+|---|---|
+| D7 | **Help** : disposition d'avant, au style des autres écrans. Seules les quatre sections destinées au joueur sont gardées (Race Controls, Steering, Camera, Race Flow), textes inchangés, toutes visibles sans barre de défilement (auteur, 2026-10-06). |
+| D8 | **Options** : disposition d'avant (une colonne de libellés, une colonne de contrôles) dans le vocabulaire de l'original (auteur, 2026-10-06) :<br>- pastilles rondes, orange si actives, grises sinon ;<br>- curseurs en trait avec poignée ronde ;<br>- résolutions et mode de conduite en libellés GameFont, en ambre si choisis ;<br>- nom en GameFont avec le curseur « \| ». |
+| D9 | **Comportement d'Options** : celui livré en T2.3 est gardé (auteur, 2026-10-06) :<br>- sons ; flèche au clavier et à la manette sur chaque ligne ;<br>- Entrée ou A pour basculer, gauche et droite pour régler ;<br>- nom tapé directement ; volume en direct ;<br>- toute sortie applique et enregistre. |
+
+| Réf | Proposition |
+|---|---|
+| P11 | **Help** :<br>- bande `rgba(0,0,0,174)` sur (0,150,1024,340) ; en-tête `Ui.Help.Header` ;<br>- pour chaque section, le titre en GameFont orange (255,156,0) à l'échelle 1, en x 120 ; les deux lignes en blanc à l'échelle 0,75, en x 140 ;<br>- de haut en bas à partir de y 170 : titre au pas de 27, lignes au pas de 20, 8 d'écart entre sections (fin vers y 462) ;<br>- bouton BACK, entrées et sons de T2.1 ;<br>- `RaceFrontEndCatalog.HelpSections` revient avec les quatre sections ;<br>- `Ui.Help.Panel`, `Ui.Help.PanelTexture` et `HelpScreenWindows.png` sont retirés (fichiers, outil, csproj, catalogue). |
+| P12 | **Options, disposition** :<br>- bande (0,110,1024,370) et en-tête `Ui.Options.Header` ;<br>- 12 lignes au pas de 27 à partir de y 122, dans l'ordre d'avant : Player Name, Resolution, Driving Mode, Fullscreen, Vertical Sync, Post Screen Effects, Shadows, Show FPS, Gamepad Vibration, Sound Volume, Music Volume, Controller Sensitivity ;<br>- libellés en GameFont blanc, alignés à droite sur x 380 ; contrôles à partir de x 400 :<br>  - nom : le champ de l'original (`Ui.Options.NameField`, (346,27,546,50)) en (395, y − 3, 400, 25), le texte blanc en x 405, avec « \| » ;<br>  - résolutions : cinq libellés espacés de 16 ; Driving Mode : « Arcade » et « Simulation » espacés de 24 ; ambre (255,156,0) si choisi, blanc sinon ;<br>  - cases : pastille carrée de `YToRes(22)` pixels, teintée (255,156,0,160) si active, (180,180,180,120) sinon ;<br>  - curseurs : trait `Ui.CarSelection.StatBar` de 300 unités de large et `YToRes(6)` de haut, centré sur la ligne ; poignée pastille de `YToRes(22)` centrée sur la valeur ; valeur en blanc en x 720 ;<br>  - flèche : `Ui.CarSelection.Arrow` haute de `YToRes(22)`, au rapport 53/39, à `XToRes(8)` devant le libellé, qui oscille de 0 à 16 unités comme l'original. |
+| P13 | **Options, entrées** (D9) :<br>- 11 arrêts dans l'ordre des lignes : Resolution, Driving Mode, Fullscreen, Vertical Sync, Post Screen Effects, Shadows, Show FPS, Gamepad Vibration, Sound, Music, Sensitivity. La flèche part sur Sound ;<br>- gauche et droite changent la résolution ou le mode de conduite (ButtonClick), ou règlent un curseur de ±10 (Highlight) ;<br>- Entrée ou A bascule une case ou le mode de conduite ;<br>- clic sur un libellé de résolution ou de mode, sur une ligne de case (pastille et libellé) ou sur le trait d'un curseur ;<br>- Highlight à l'entrée de chacune de ces zones ;<br>- seuil du stick à 0,5, convention RGCE (A1). |
+| P14 | **ADR-0014**, qui remplace l'ADR-0013 :<br>- Highscores comme l'ADR-0013 ;<br>- Help et Options selon D7 à D9 et P11 à P13 ;<br>- enregistrement à toute sortie d'Options ;<br>- seuil du stick à 0,5.<br>Le commentaire de `SaveFrontEndOptions` cite l'ADR-0014 (A3). `Ui.Options.Panel` et ses 9 zones sont retirés, `Ui.Options.NameField` est ajouté. |
+| P15 | **Validation par tâche** : celle de P10. Contre `references-7bbdd39`, seul l'écran de la tâche change ; les rectangles sont mesurés contre ces formules en 1920×1080, 1280×720 et 1024×768. 🧪 pour l'auteur : rendu, entrées et sons. |
+
+### 🧪 T4.1 — Help, disposition d'avant au style unifié
+
+- Objectif : D7, P11, et l'ADR-0014 (P14).
+- Fichiers :
+  - `RaceHelpViewModel.cs`, `Help.xaml`, `Help.design.json`, `HelpScreen.cs`, `RaceFrontEndCatalog.cs` ;
+  - `scripts/generate_rgce_ui_assets.py`, `scripts/UiTexturePremultiplier/{Program.cs,README.md}`, `RacingGameCasaEngine.csproj`, `AssetInfos.json` ; les fichiers de `Ui.Help.Panel*` et `HelpScreenWindows.png` (retirés) ;
+  - `docs/decisions/0014-…`, `0013-…` (statut), `docs/decisions/README.md`.
+- Validation : P15 ; toutes les lignes visibles, sans barre de défilement, aux trois tailles.
+- Commit : `feat(racing-casa): show the Help sections in the menus' style`
+
+> Validation (2026-10-08) :
+> - **Décision** : ADR-0014 écrite, ADR-0013 passée en « Superseded by ADR-0014 », index à jour.
+> - **Code** :
+>   - `RaceFrontEndCatalog.HelpSections` revient avec les quatre sections joueur, textes de `e23d991`.
+>   - `RaceHelpViewModel` (P11) : bande, en-tête, 4 sections (titre, 2 lignes), bouton BACK.
+>   - `Help.xaml` est généré, avec les données de conception en 1280×720.
+>   - `HelpScreen` : titres à l'échelle 1, lignes à 0,75. Les entrées et sons de T2.1 sont inchangés.
+> - **Assets retirés** : `Ui.Help.Panel`, `Ui.Help.PanelTexture` et les deux copies de `HelpScreenWindows.png`, ainsi que leurs lignes dans le générateur, l'outil de prémultiplication, son README et l'exclusion du csproj. Les 3 entrées de catalogue sont retirées par script, au format du générateur. Celui-ci donne ensuite 8 textures et 59 sprites, sans rien changer à une seconde exécution.
+> - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE. `--smoke-frontend` : code 0 sans avertissement.
+> - **Captures** :
+>   - contre `references-7bbdd39`, `help` change ; `options` diffère aussi de 0,3 %, l'écart de survol du champ « Player One » déjà connu.
+>   - Trois runs ont été faits. Entre eux, `help`, `track-selection`, `car-selection`, `race-hud` et `race-finished` varient. Les écarts de `help` et `track-selection` sont tous dans la zone de rebond du logo (x 650..1833, y 52..438), dont l'animation n'est pas figée pendant les captures. Ceux de `race-hud` viennent d'une image de décalage du chronomètre (0:00.95 contre 0:00.96). Ce sont des écarts de timing, sans lien avec Help.
+> - **Mesures** (sonde de taille pour 1280×720 et 1024×768) :
+>   - bande : y 253 → 827, 169 → 551, 180 → 588, exacts ;
+>   - premier titre et première ligne à 1 pixel près de « plume + marge du glyphe » ;
+>   - la ligne la plus longue finit à x 1724 sur 1920, 1149 sur 1280, 919 sur 1024 : tout est visible sans barre de défilement ;
+>   - bouton BACK identique au pixel près à celui de la sélection de piste, aux trois tailles.
+> - Éditeur : `capture_editor_screen.ps1` sur `Help.uiscreen`, code 0 sans erreur.
+> - Manques MGUI : M4 (59 sprites sur 8 textures), M5, M16 et M17 comptent de nouveau Help.
+> - Réglages restaurés à l'identique après chaque run.
+> - 🧪 Reste pour l'auteur : le rendu, la fermeture (Échap, B, Back, clic) et les sons.
+
+### ⏳ T4.2 — Options, disposition d'avant au style unifié
+
+- Objectif : D8, D9, P12, P13.
+- Fichiers :
+  - `RaceOptionsViewModel.cs`, `Options.xaml`, `Options.design.json`, `OptionsScreen.cs`, `RacingGameCasaEngineGame.cs` (commentaire A3) ;
+  - le générateur et `AssetInfos.json` ; les sprites `Ui.Options.Panel` et ses 9 zones (retirés), `Ui.Options.NameField` (ajouté) ;
+  - `docs/mgui-gaps-from-rgce-xaml-screens.md` (M4).
+- Validation : P15 ; smoke : la résolution appliquée au retour au menu reste vérifiée.
+- Commit : `feat(racing-casa): lay Options out as before in the menus' style`
+
+### ⏳ T4.3 — Clôture
+
+- Objectif : T3.1 sur l'état final (validation globale, nouvelles références, vérification indépendante, rapport de fin, index).
+- Commit : `docs(racing-casa): close the Highscores, Options and Help plan`
+
 ---
 
 ## Points ouverts

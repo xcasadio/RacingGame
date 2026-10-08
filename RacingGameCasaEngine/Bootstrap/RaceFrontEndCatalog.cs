@@ -40,6 +40,15 @@ internal static class RaceFrontEndCatalog
         new("Expert", "High-speed route intended for the final migration target.", "4 laps", "Technical apexes"),
     ];
 
+    // The Help screen's sections: one title and two lines each (ADR-0014).
+    public static IReadOnlyList<HelpSection> HelpSections { get; } =
+    [
+        new("Race Controls", ["Accelerate with Up, W, GamePad A, the right trigger, or D-pad up.", "Brake or reverse with Down, S, GamePad B, the left trigger, or D-pad down."]),
+        new("Steering", ["Steer with Left and Right, A and D, the left stick, or the D-pad.", "Controller sensitivity from Options scales the analog steering response."]),
+        new("Camera", ["Use Page Up and Page Down, or GamePad X and Y, to change chase distance during a race.", "The chase camera now widens with speed and switches to an orbit view when the race is finished."]),
+        new("Race Flow", ["Pause with Escape or GamePad Start once the countdown is over.", "Finish the race to open the result panel, then return to the main menu."]),
+    ];
+
     public static IReadOnlyDictionary<string, IReadOnlyList<HighscoreEntry>> Highscores { get; } =
         new Dictionary<string, IReadOnlyList<HighscoreEntry>>(StringComparer.OrdinalIgnoreCase)
         {
@@ -379,5 +388,7 @@ internal static class OriginalCarSelection
 internal sealed record ColorOption(string Name, Color Value);
 
 internal sealed record TrackDefinition(string Name, string Summary, string Laps, string Surface);
+
+internal sealed record HelpSection(string Title, IReadOnlyList<string> Lines);
 
 internal sealed record HighscoreEntry(string PlayerName, string Time);

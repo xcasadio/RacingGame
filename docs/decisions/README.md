@@ -26,4 +26,5 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0010 | RacingGameCasaEngine's track selection reproduces the original XNA screen | Superseded by ADR-0011 | 2026-10-06 |
 | ADR-0011 | RacingGameCasaEngine's track selection reproduces the original XNA screen, with cards growing around fixed centres | Accepted | 2026-10-06 |
 | ADR-0012 | RacingGameCasaEngine's UI images are premultiplied, except the menu background | Accepted | 2026-10-06 |
-| ADR-0013 | RacingGameCasaEngine's Highscores, Options and Help screens reproduce the original XNA screens | Accepted | 2026-10-06 |
+| ADR-0013 | RacingGameCasaEngine's Highscores, Options and Help screens reproduce the original XNA screens | Superseded by ADR-0014 | 2026-10-06 |
+| ADR-0014 | RacingGameCasaEngine's Help and Options keep their previous layout in the menus' style; Highscores reproduces the original screen | Accepted | 2026-10-06 |

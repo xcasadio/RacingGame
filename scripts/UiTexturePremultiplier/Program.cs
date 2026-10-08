@@ -21,7 +21,6 @@ using System.Runtime.InteropServices;
     ("RacingGameCasaEngine/Content/Textures/headers.png", "RacingGameCasaEngine/Content/UI/Textures/headers.png"),
     ("RacingGameCasaEngine/Content/Textures/ColorSelection.png", "RacingGameCasaEngine/Content/UI/Textures/ColorSelection.png"),
     ("RacingGameCasaEngine/Content/Textures/OptionsScreenWindows.png", "RacingGameCasaEngine/Content/UI/Textures/OptionsScreenWindows.png"),
-    ("RacingGameCasaEngine/Content/Textures/HelpScreenWindows.png", "RacingGameCasaEngine/Content/UI/Textures/HelpScreenWindows.png"),
     // The GameFont page, next to its .fnt (scripts/generate_rgce_gamefont.py).
     ("RacingGame/Content/Textures/GameFont.png", "RacingGameCasaEngine/Content/UI/Fonts/GameFont.png"),
 ];
