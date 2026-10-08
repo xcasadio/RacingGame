@@ -347,7 +347,11 @@ Un arrêt fige la tranche et celles qui en dépendent.
   - MGUI `MGUI.Core/UI/Containers/VirtualizingStackPanel.cs` et le test `MGUI.Tests/Architecture/VirtualizingStackPanelMeasureTests.cs` : commit `4e94d7e8` sur la branche MGUI `chantier/rgce-editor-project`, créée depuis `develop` ;
   - CasaEngine `CasaEngine.Editor/Controls/LogsPanel.cs`, le test `CasaEngine.Tests/Log/LogsPanelFormatTests.cs` et le pointeur MGUI : commit `c0f3343` sur `chantier/rgce-editor-project`, créée depuis `main` ;
   - RacingGame : pointeur `CasaEngine` sur `c0f3343`.
-- Commits : MGUI `fix(listbox): keep a virtualizing panel's height when its width is unknown` ; CasaEngine `fix(editor): show the Logs panel entries` ; RacingGame `chore(casaengine): move the engine to c0f3343`.
+  - Seconde décision de l'auteur (2026-10-08) : ajouter une option d'automatisation `--logs-filter`. Elle touche CasaEngine `EditorAutomationOptions.cs`, `GameEditor.cs`, `LogsPanel.TrySetFilter` et les tests `EditorAutomationOptionsTests` et `LogsPanelFormatTests` : commit `4ce5ea0` sur `chantier/rgce-editor-project`. Le pointeur RacingGame passe ensuite sur `4ce5ea0`.
+- Commits :
+  - MGUI `fix(listbox): keep a virtualizing panel's height when its width is unknown` ;
+  - CasaEngine `fix(editor): show the Logs panel entries`, puis `feat(editor): add a --logs-filter automation option` ;
+  - RacingGame `chore(casaengine): move the engine to c0f3343`, puis `chore(casaengine): move the engine to 4ce5ea0`.
 
 > Validation (2026-10-08) :
 > - **Cause 1, la liste vide** (MGUI) :
@@ -366,6 +370,9 @@ Un arrêt fige la tranche et celles qui en dépendent.
 >   - le panneau Logs affiche ses lignes, sans `[/c]` ;
 >   - les 9 écrans restent identiques au pixel près à `editor-screens/` (série `editor-screens-fixed-run2`). Dans la première série, la vraie souris est passée sur la fenêtre : coordonnées affichées sur l'aperçu de MainMenu et de Splash.
 > - **Limite** : le panneau défile jusqu'à la fin et n'affiche que les 6 dernières lignes. L'avertissement du plugin (entrées 1 et 12 sur 31, le projet étant chargé deux fois par l'automatisation) n'est donc pas sur la capture : voir O6.
+> - **Option `--logs-filter`** (`4ce5ea0`) :
+>   - `dotnet build CasaEngine.Editor.MonoGame.sln` : 0 erreur ; `CasaEngine.Tests` : 4 159 sur 4 159 ;
+>   - avec `--activate-panel output --logs-filter Warning`, les diagnostics indiquent « Logs filter: Warning » puis « [Automation] Logs filter 'Warning' applied. ». La capture `editor-logs-final.png` montre les avertissements, dont deux fois « Gameplay assembly 'RacingGameCasaEngine.UI.dll' contains no IPlugin implementation. ».
 > - **Faits relevés dans le journal de l'éditeur**, pour S2 :
 >   - `DllNotFoundException` sur `openal`, suivie d'un repli sur le moteur audio MonoGame ;
 >   - deux avertissements de contexte de script non déchargé.
