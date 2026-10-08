@@ -234,7 +234,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
   - A4 identique aux références ;
   - aucun lien vers `RacingGame/Content` dans le csproj.
 
-### S4 — Code de jeu dans la DLL et composants générateurs (à détailler)
+### S4 — Code de jeu dans la DLL et composants générateurs (détaillée en Phase 4)
 
 - **Résultat** : le code de jeu chargé par l'éditeur vit dans `RacingGame.Gameplay` :
   - composants, mode de jeu, contrôleur ;
@@ -726,6 +726,240 @@ Faits relevés pour cette phase (2026-10-08) :
 >   - P4 : le contenu propre au moteur (shaders, polices, icônes) arrive dans la sortie par la référence au projet CasaEngine. L'ADR et le README le précisent ;
 >   - P4 : « Textures are PNG » devient « PNG, sauf les deux DDS ; 100 TGA convertis par la conversion des modèles, 29 par `--textures` » ;
 >   - P4 : les chiffres du contrôle négatif de T3.5 sont corrigés (31, 38 et 48 sur le canal le plus écarté).
+
+---
+
+## Phase 4 — Code de jeu dans la DLL et composants générateurs (S4)
+
+> Relecture (2026-10-08) : trois vérificateurs de plan successifs. Les deux premiers ont rendu REVISE : le premier avec 4 blocages (fermeture des dépendances de T4.2, effet du drapeau de T4.1 sur la conduite, physique absente du monde de test, prérequis et arrêts), le second avec 1 (implémentation d'`IRaceGameHost`). Tous ont été corrigés. Le troisième a rendu **READY**. L'exécution suit l'accord de l'auteur, « fait toutes les taches ».
+
+Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en lecture seule, rangées dans `s4-disc/` du scratchpad, les fichiers relus en session, et une relecture par un vérificateur de plan.
+
+- **Audit de piste non reproductible** :
+  - après la vue `chase-road-only`, le validateur active la caméra de débogage (`Bootstrap/TrackMigrationCaptureValidator.cs:117-119`) et la coupe au retour au front-end (`:207-209`) ;
+  - fenêtre active, la caméra libre recalcule à chaque image la direction à partir de son propre lacet et de son tangage, plus le décalage de la souris (`Components/DebugFreeCameraComponent.cs:40-57,59-125`). Elle remplace la pose du validateur. Fenêtre inactive, elle ne fait rien (`:40`). Le résultat dépend donc du focus et de la souris ;
+  - la caméra de débogage active arrête aussi :
+    - le rig de poursuite (`Components/ChaseCameraRigComponent.cs:86`) ;
+    - la conduite : entrées du joueur, chrono et checkpoints (`Components/RaceFlowCoordinatorComponent.cs:57-61`, `Bootstrap/RaceRuntimeUiCoordinator.cs:124`) ;
+    - le curseur (`Bootstrap/RacingGameCasaEngineGame.cs:390-393`) ;
+  - le compte à rebours et le feu de départ avancent pendant les vues posées (`RaceFlowCoordinatorComponent.cs:55-56`) ;
+  - une capture lit la dernière image présentée (`RacingGameCasaEngineGame.cs:470`), qui peut avoir une mise à jour de retard (mémoire de session sur le décalage des captures).
+- **Export de scène actuel** :
+  - un enregistrement par entité : nom, modèle, transform, et sous-maillages avec le nom du maillage, le nom et le type du matériau. Pas de données de sommets (`Bootstrap/TrackRuntimeSceneExporter.cs:61-116`) ;
+  - les sommets et les indices d'un maillage sont lisibles par `StaticModelMesh.GetVertices()` et `GetIndices()` (`CasaEngine/CasaEngine/Framework/Rendering/Models/StaticModelMesh.cs:69,71`).
+- **Code de jeu dans l'exe** :
+  - 12 types dérivés d'`EntityComponent`, `SceneComponent` ou `Entity`, plus `RaceGameMode` et `RacingPlayerController`, dans `Components/`, `Entities/` et `GameFramework/`. Ils sont publics, sauf `RaceTrackPhysicsComponent`, qui est interne ;
+  - leur fermeture de dépendances tient dans `Components/`, `Entities/`, `GameFramework/`, `Gameplay/`, `Worlds/LegacyTrackSceneFactory*.cs`, `Worlds/RaceTrackPhysicsProfile.cs` et ces fichiers de `Bootstrap/` :
+    - `RuntimeRaceSession`, `RaceFrontEndCatalog`, `RaceFrontEndState` et `RaceSkySystem` ;
+    - `RaceBootstrapAssets`, lu par `LegacyTrackSceneFactory.cs:85` ;
+    - `LegacyGltfModelReader`, `RacingGameImportProfiles` et `RacingGameLegacyMaterial*`.
+  - Elle s'y ajoute deux liens vers l'exe :
+    - `RaceCourseDebugComponent.cs:30-31` lit deux constantes de `RaceWorldFactory` ;
+    - `RacingGameCasaEngineGame` est utilisé directement (voir l'accès au jeu).
+  - Aucun écran, aucune interface ni persistance n'y figure. `RuntimeRaceSession`, `RaceFrontEndCatalog` et `RaceFrontEndState` n'ont pour `using` que ces dossiers ;
+  - `RaceWorldFactory.CreateRaceWorld` prend `RacingGameCasaEngineGame` (`Worlds/RaceWorldFactory.cs:93`) ;
+  - le chemin du contenu vient d'`EngineEnvironment.ProjectPath` (`Worlds/LegacyTrackSceneFactory.cs:1583-1588`), que l'éditeur fixe aussi.
+- **Accès au jeu**, toutes les utilisations de `RacingGameCasaEngineGame` dans ces fichiers :
+  - `VehicleDynamicsComponent.cs:73,220` : transtypage, puis `RaceSession` ;
+  - `DebugFreeCameraComponent.cs:40,142,148` : transtypage, puis `IsActive`, `RaceSession`, `InputComponent` et `Window` ;
+  - `ChaseCameraRigComponent.cs:81,154,245` : transtypage et paramètres, puis `RaceSession` et `InputComponent` ;
+  - `RaceFlowCoordinatorComponent.cs:35,102` : transtypage et paramètre, puis `RaceSession` et `InputComponent` ;
+  - `GameFramework/RaceGamepadVibration.cs` :
+    - un champ `RacingGameCasaEngineGame _game` (`:28`) et un constructeur qui en prend un (`:35`) ;
+    - un transtypage, puis `RaceVibration` (`:46`) ;
+    - `_game.RaceSession` et `_game.InputComponent` (`:108-110`).
+  - Il n'est appelé que depuis `RacingGameCasaEngineGame.cs:86`.
+  - `RuntimeRaceSession` (`Bootstrap/RuntimeRaceSession.cs:10`) et `RaceGamepadVibration` (`:20`) sont internes, comme les propriétés `RaceSession` et `RaceVibration` de `RacingGameCasaEngineGame` (`Bootstrap/RacingGameCasaEngineGame.cs:121,124`), classe publique (`:25`) ;
+  - la session baisse `IsDebugCameraEnabled` en deux endroits : à la liaison d'une course et à sa remise à zéro (`RuntimeRaceSession.cs:58,113`).
+- **Noms de types** : aucun des 69 types de ces fichiers n'a le nom court d'un type de CasaEngine, de MGUI, de l'éditeur ou de `RacingGame.Gameplay` (recherche `rg` des déclarations). Le contrôle retrouve bien `Entity` et `World`.
+- **Voiture** :
+  - `RacingCarPawn : Entity` construit dans son constructeur (`Entities/RacingCarPawn.cs:73-161`) :
+    - une hiérarchie d'ancres `RacingCarAnchorComponent` : `PhysicsRoot` > `VisualPivot` > `Body`, `ChaseCamera`, `CockpitCamera`, `AudioEmitter` ;
+    - un `StaticModelComponent` `BodyVisual` ;
+    - 4 composants ;
+  - son état de course a 12 propriétés (`:31-53`). Elles sont lues ou écrites par la session, la caméra de poursuite, la dynamique, le rendu, le lieur, la fabrique, les deux validateurs des voitures et le HUD (`Screens/RaceHudScreen.cs:197-218`).
+- **Géométrie générée, toute déterministe** :
+  - route : `CreateRoadEntity` (`LegacyTrackSceneFactory.cs:256-303`), sans tangentes ;
+  - rails et poteaux : `LegacyTrackSceneFactory.GuardRails.cs:84-227` ;
+  - colonnes et segments : `:237-404` ;
+  - terrain : `LegacyTrackSceneFactory.Terrain.cs:52-137`.
+  Le seul hasard est le décor, tiré par une graine FNV-1a du nom de la piste (`LegacyTrackSceneFactory.cs:782-796`). Les caches statiques de modèles et de textures (`:59-68`) ne sont jamais vidés et sont partagés entre les mondes.
+- **Moteur** :
+  - un composant peut fabriquer un `StaticModel` en mémoire (`StaticModelMesh.SetData`, avec ou sans tangentes) et le poser sur un `StaticModelComponent` sans asset ; c'est le patron d'`ArrowComponent`. Le moteur ne libère jamais les tampons GPU d'un tel modèle (`StaticModel.cs:96-102`) ;
+  - l'éditeur n'enregistre aucun composant dont le type porte `[Browsable(false)]` : racine, composants, enfants (`CasaEngine.EditorServices/EditorEntityJsonSerializer.cs:59,73,316,482-485,596`) ;
+  - en mode édition, `InitializeWithWorld` et `Update` des composants s'exécutent, mais pas `BeginPlay` ni la physique (`GameplayExecutionPolicy.cs:31-42`, `Entity.cs:478-509`). `Game.ExecutionPolicy.IsEditorPreview` le signale ;
+  - `[SerializedProperty]` accepte `Guid`, les nombres, les booléens, les énumérations et les vecteurs, pas les listes (`SerializedProperties.cs:43-47`) ;
+  - l'automatisation de l'éditeur a `--save-project`, mais aucune option pour régler une propriété de composant (`EditorAutomationOptions.cs`).
+- **« Audit dans le seuil de T4.1 »**, de T4.2 à T4.6 : `compare_track_audit.py artifacts/editor-project-baseline/s4/track-audit-a <nouvelle série> --threshold 0.5`. Chacune des 21 captures est au plus à 0,5 par canal de la référence `a` de T4.1.
+- **Références des audits des voitures** : celles de S0, `artifacts/editor-project-baseline/car-profile-audit.md`, `car-top-speed-audit.md` et `details/`. On les compare sans la ligne `Generated:` ni l'heure murale en tête des lignes de `details/`, comme en T3.5.
+
+### Prérequis, risques et arrêts de S4
+
+- **Prérequis** : T2.1 ✅. Le pointeur `CasaEngine` doit porter la fin de S2 avant T4.1. S4 a besoin de :
+  - E1 : `[SerializedProperty]` et son écrivain ;
+  - E2 : un type inconnu signalé au lieu d'un plantage ;
+  - E5 : la section `Logs:` et le code de sortie.
+- **Arrêts** (en plus de ceux de l'enveloppe) :
+  - si T4.1 n'obtient pas deux lancements de l'audit dans le seuil, T4.1 passe en ⚠️ Blocked et T4.2 à T4.6 ne commencent pas ;
+  - un écart inexpliqué d'empreinte de sommets, de matrice ou de matériau dans `compare_race_scene_exports.py`, de T4.2 à T4.6, met la tâche en ⚠️ Blocked ;
+  - si un audit des voitures diffère, la tâche passe en ⚠️ Blocked ;
+  - en T4.6, si aucune voie automatique n'enregistre le monde ou ne règle un générateur, la tâche reste en 🧪 avec l'étape manuelle écrite, pas en ✅.
+- **Risques** :
+  - **Tampons GPU** des maillages générés : un générateur ne libère que les tampons qu'il a créés, jamais les modèles et textures partagés par les caches statiques ;
+  - **Générateurs dans l'éditeur** : ils tournent en aperçu, où `Update` s'exécute. Ils ne dépendent pas d'`IRaceGameHost`, et ne font rien tant que leurs réglages ne changent pas ;
+  - **Duplication** : une entité génératrice dupliquée dans l'éditeur pourrait copier ses enfants générés. Avant de générer, un générateur retire les enfants générés qu'il trouve ;
+  - **Noms courts** : les types ajoutés en T4.3 et T4.5 repassent le contrôle des noms.
+
+### ⏳ T4.1 — Audit de piste reproductible, export par maillage dessiné et références de S4
+
+- **Objectif** : rendre A4 mesurable pour S4 à S6 (P9).
+- **Fichiers** :
+  - `Bootstrap/RuntimeRaceSession.cs` : un drapeau `IsCameraPosedByAutomation`, à côté d'`IsDebugCameraEnabled`, baissé aux mêmes endroits que lui (`:58,113`), avec son accesseur dans `RacingGameCasaEngineGame` ;
+  - `Components/DebugFreeCameraComponent.cs` : quand ce drapeau est levé, la caméra libre ne touche ni la caméra ni la souris ;
+  - `Bootstrap/TrackMigrationCaptureValidator.cs` : il lève le drapeau en même temps qu'il active la caméra de débogage (`:119`), et le baisse quand il la coupe (`:209`). La caméra de débogage reste donc activée comme aujourd'hui : rig de poursuite arrêté, conduite, chrono et checkpoints bloqués, curseur inchangé. Seule disparaît la réécriture de la pose par la souris ;
+  - `Bootstrap/TrackRuntimeSceneExporter.cs` : une section `DrawnMeshes` par piste, qui laisse intacts les champs actuels. Un enregistrement par `StaticModelSubMeshComponent` dessiné, avec :
+    - le nom de l'entité et le chemin des composants ;
+    - le nom du maillage ;
+    - la matrice monde à 6 décimales ;
+    - le type du matériau et ses paramètres (couleurs, puissance spéculaire, réflexion, coupure alpha, file, état de rastérisation, ombres) ;
+    - l'empreinte SHA-1 des pixels de chaque texture liée ;
+    - le nombre de sommets, d'indices et de primitives, et les empreintes SHA-1 des sommets et des indices ;
+  - `scripts/compare_race_scene_exports.py` : compare deux exports en ensembles de maillages dessinés, indépendamment des noms d'entités, avec les matrices à 1e-4 près. Il liste les maillages en plus et en moins, et sort avec le code 1 s'il y en a ;
+  - `scripts/compare_track_audit.py` : la sonde `compare_audit.py` du scratchpad, versionnée. Elle apparie les captures par nom sans horodatage et mesure l'écart absolu moyen par canal, comme `UiCaptureCompare`. Avec `--threshold`, elle sort avec le code 1 si une capture le dépasse ;
+  - références dans `artifacts/editor-project-baseline/s4/` : deux lancements de l'audit (`track-audit-a/`, `-b/`) et deux exports (`scene-a.json`, `-b.json`). Ils sont pris avec ce code et avant toute autre modification de S4.
+- **Validation** :
+  - deux lancements de l'audit : chacune des 21 captures diffère d'au plus 0,5 par canal (`compare_track_audit.py` entre `a` et `b`). La note donne l'écart de chaque vue. Les 3 vues `chase-road-only` restent à 0,000 ;
+  - deux exports : `compare_race_scene_exports.py` ne trouve aucune différence ;
+  - les champs d'entité de l'export restent identiques à `scene-t3.5.json`, hors horodatage ;
+  - **contrôle négatif** : `Road.png` renommé dans le dossier de sortie, puis remis. L'audit dépasse 0,5 sur les vues de la route, et la comparaison des exports signale les maillages de la route ;
+  - `--smoke-frontend` sort avec le code 0, les captures d'interface restent à 0,00 contre `references-acb6ad9`, et les audits des voitures sont identiques à ceux de S0 ;
+  - build à 0 erreur.
+- **Commit** : `test(racing-casa): make the track audit repeatable and export every drawn mesh`
+
+### ⏳ T4.2 — Code de jeu dans `RacingGame.Gameplay` (P5)
+
+- **Objectif** : le code de jeu que l'éditeur doit voir passe dans la DLL. L'exe garde l'amorçage, les écrans, l'interface, la persistance, les validateurs et l'assemblage des mondes.
+- **Fichiers** :
+  - **vers `RacingGame.Gameplay`, par `git mv`** :
+    - `Components/`, `Entities/`, `GameFramework/`, `Gameplay/` ;
+    - `Worlds/LegacyTrackSceneFactory*.cs` et `RaceTrackPhysicsProfile.cs` ;
+    - `Bootstrap/RuntimeRaceSession.cs`, `RaceFrontEndCatalog.cs`, `RaceFrontEndState.cs`, `RaceSkySystem.cs`, `RaceBootstrapAssets.cs`, `LegacyGltfModelReader.cs`, `RacingGameImportProfiles.cs`, `RacingGameLegacyMaterialImportProfile.cs` et `RacingGameLegacyMaterialTuning.cs` ;
+    - les espaces de noms deviennent `RacingGame.Gameplay.<Dossier>` ;
+  - **`RacingGame.Gameplay/IRaceGameHost.cs`**, interface **interne** avec `RaceSession`, `RaceVibration`, `IsActive`, `Window` et `InputComponent` :
+    - `RacingGameCasaEngineGame` l'implémente, grâce à `InternalsVisibleTo("RacingGameCasaEngine")` dans la DLL :
+      - `RaceSession` et `RaceVibration` par implémentation explicite (`RuntimeRaceSession IRaceGameHost.RaceSession => RaceSession;`, de même pour `RaceVibration`). Les propriétés internes existantes restent inchangées : une propriété interne ne peut pas implémenter implicitement un membre d'interface (CS0737), et la rendre publique sur une classe publique exposerait un type interne (CS0053) ;
+      - `IsActive`, `Window` et `InputComponent` implicitement, par les membres publics hérités de `Game` et de `CasaEngineGame` ;
+    - chaque utilisation de `RacingGameCasaEngineGame` relevée plus haut passe par `IRaceGameHost` : les transtypages deviennent `World.Game as IRaceGameHost` (ou `is IRaceGameHost host`), et les paramètres des méthodes privées prennent `IRaceGameHost` ;
+    - `RaceGamepadVibration` garde un champ `IRaceGameHost _host`, reçu par son constructeur. `RacingGameCasaEngineGame.cs:86` lui passe `this`. Il lit `_host.RaceSession` et `_host.InputComponent` ;
+  - **noms d'entités** : `RaceWorldFactory` reste dans l'exe. Les noms et préfixes d'entités que les composants lisent, dont `PlayerStartEntityName` et `CheckpointEntityNamePrefix`, passent dans une classe de la DLL, `RaceWorldNames`. `RaceWorldFactory` les reprend sans changer leurs valeurs ;
+  - **visibilité** : les composants, le mode de jeu et le contrôleur restent publics. Le reste, dont `IRaceGameHost`, `RuntimeRaceSession` et `RaceGamepadVibration`, garde sa visibilité, que l'exe voit par `InternalsVisibleTo` ;
+  - `RacingGame.Gameplay.csproj` : les références que le code déplacé demande, en particulier `FontStashSharp.MonoGame` si une classe déplacée l'utilise ;
+  - **`scripts/check_gameplay_type_names.py`** : la recherche des noms courts de la découverte, versionnée, puisqu'il n'y a pas de projet de tests RGCE. Elle compare les types de `RacingGame.Gameplay` à ceux de CasaEngine, de MGUI et de l'éditeur.
+- **Garde-fous** :
+  - aucun changement de comportement ;
+  - `RaceTrackPhysicsComponent` garde son constructeur jusqu'à T4.5 ;
+  - la DLL ne référence pas l'exe.
+- **Validation** :
+  - `dotnet build RacingGame.slnx` : 0 erreur, sans CS0737 ni CS0053 ;
+  - `rg "RacingGameCasaEngineGame|RaceWorldFactory|RacingGameCasaEngine\." RacingGame.Gameplay` ne trouve rien, hors commentaires ;
+  - `check_gameplay_type_names.py` : 0 collision ;
+  - **A4 contre les références de T4.1** :
+    - `compare_race_scene_exports.py` sans différence ;
+    - audit dans le seuil de T4.1 ;
+    - captures d'interface à 0,00 ;
+    - audits des voitures identiques à S0 ;
+    - `--smoke-frontend` et `--verify-legacy-import-profile` à 0 ;
+  - **éditeur** : le projet s'ouvre (`--diagnostics-out`) avec le code 0, et la section `Logs:` ne contient ni « no IPlugin » ni erreur de chargement de l'assembly de gameplay. Qu'il résout les types des composants est vérifié en T4.6, par un monde qui les contient.
+- **Commit** : `refactor(racing-casa): move the game code into RacingGame.Gameplay`
+
+### ⏳ T4.3 — La voiture en entité ordinaire (P6)
+
+- **Objectif** : `RacingCarPawn` disparaît. La voiture est une `Entity` avec composants, construite par une fabrique de la DLL, et son état de course est porté par un composant.
+- **Fichiers** :
+  - `RacingGame.Gameplay/Components/RaceCarStateComponent.cs` : les 12 propriétés d'état de `RacingCarPawn`, avec la même visibilité ;
+  - `RacingGame.Gameplay/Entities/RaceCarEntityFactory.cs` : il construit la même hiérarchie d'ancres, le même `BodyVisual` et les mêmes composants, dans le même ordre ;
+  - tous les lecteurs et écrivains relevés passent par `entity.GetComponent<RaceCarStateComponent>()` : session, caméra de poursuite, dynamique, rendu, lieur, fabrique de monde, validateurs des voitures, HUD.
+- **Validation** :
+  - build à 0 erreur ;
+  - `rg "RacingCarPawn"` ne trouve plus rien dans le code ;
+  - `check_gameplay_type_names.py` : 0 collision ;
+  - A4 contre les références de T4.1, dont les audits des voitures identiques à S0. L'export peut renommer les composants de la voiture, mais ses maillages, leurs matrices et leurs matériaux restent identiques.
+- **Commit** : `refactor(racing-casa): build the player car as an entity with components`
+
+### ⏳ T4.4 — Placements de piste séparés de la génération des maillages
+
+- **Objectif** : un calcul pur des placements, réutilisé par les générateurs (T4.5) et par l'export des mondes (S6).
+- **Fichiers** :
+  - `RacingGame.Gameplay/Track/RaceTrackLayout.cs`, avec les types qu'il retourne. Il calcule, à partir du `.Track` et de la carte de hauteurs :
+    - la spline de la route, ses orientations, ses largeurs et ses coordonnées de texture ;
+    - les points des rails et les placements des poteaux ;
+    - les placements des colonnes et des segments ;
+    - les placements du décor, avec la même graine et l'expansion des CombiModel ;
+    - les checkpoints, le départ et le profil physique ;
+  - `LegacyTrackSceneFactory*` ne garde que la construction des maillages, des matériaux et des entités à partir de ces placements.
+- **Garde-fous** : même ordre de calcul et mêmes constantes ; les caches gardent leur portée.
+- **Validation** : build à 0 erreur ; A4 contre les références de T4.1, avec un export par maillage identique jusqu'aux noms d'entités.
+- **Commit** : `refactor(racing-casa): compute track placements apart from mesh building`
+
+### ⏳ T4.5 — Composants générateurs (D5)
+
+- **Objectif** : la route, les rails et leurs poteaux, les colonnes et leurs segments, le terrain et la physique de piste se reconstruisent à partir des assets de données, dans le jeu comme dans l'éditeur.
+- **Fichiers**, dans `RacingGame.Gameplay/Components/` :
+  - **générateurs**, des `SceneComponent` posés en racine de leur entité :
+    - `RaceTerrainGeneratorComponent` ;
+    - `RaceRoadGeneratorComponent` ;
+    - `RaceGuardRailGeneratorComponent`, pour le côté gauche ou droit, poteaux compris ;
+    - `RaceColumnGeneratorComponent`, pour les colonnes et leurs segments ;
+  - chacun a des `[SerializedProperty]` :
+    - `track_asset_id` et `heightmap_asset_id`, ids du catalogue ;
+    - les réglages exposés, dont les constantes d'espacement et d'échelle de la tranche (écart des poteaux 15, distance des colonnes 33…), avec ces valeurs par défaut ;
+  - **fonctionnement** :
+    - à `InitializeWithWorld`, chacun calcule ses placements par `RaceTrackLayout` et construit ses maillages et ses matériaux comme aujourd'hui ;
+    - il les ajoute en enfants d'un type `RaceGeneratedModelComponent : StaticModelComponent` marqué `[Browsable(false)]`, que l'éditeur n'enregistre pas. Il retire d'abord les enfants générés qu'il trouve ;
+    - à chaque `Update`, une signature des réglages relance la génération si elle a changé ;
+    - à la régénération et au détachement, il libère les tampons GPU qu'il a créés, jamais les modèles des caches ;
+  - **`RaceTrackPhysicsComponent`** devient public, avec un constructeur public sans paramètre et `track_asset_id`, `heightmap_asset_id`. Le profil est calculé à `InitializeWithWorld` ;
+  - **assemblage** : `RaceWorldFactory` et `LegacyTrackSceneFactory` assemblent la course avec ces composants. Les noms d'entités des générateurs sont gardés : `Track.Ground.*`, `Track.Road.*`, `Track.GuardRail.Left|Right.*`, `Track.Columns.*`. Les poteaux et les segments deviennent les enfants générés de leurs rails et colonnes.
+- **Validation** :
+  - build à 0 erreur ;
+  - `check_gameplay_type_names.py` : 0 collision ;
+  - **A4 contre les références de T4.1** :
+    - `compare_race_scene_exports.py` : mêmes maillages dessinés, mêmes matrices à 1e-4 près, mêmes matériaux et mêmes empreintes. Seuls les noms d'entités des poteaux et des segments changent, et la note en donne le décompte ;
+    - audit dans le seuil de T4.1 ;
+    - audits des voitures identiques à S0, ce qui valide la physique de piste ;
+    - captures d'interface à 0,00 ;
+    - `--smoke-frontend` à 0.
+- **Commit** : `feat(racing-casa): rebuild the track geometry with generator components`
+
+### ⏳ T4.6 — Monde de test des générateurs dans l'éditeur
+
+- **Objectif** : les composants s'ouvrent, s'affichent, se règlent et s'enregistrent dans l'éditeur.
+- **Fichiers** :
+  - `Content/Worlds/Test/TrackBeginnerGenerators.world`, écrit puis enregistré par l'éditeur. Il contient, sur la piste Beginner :
+    - une lumière ;
+    - une entité par générateur ;
+    - une entité portant `RaceTrackPhysicsComponent`, avec ses deux ids ;
+  - le catalogue : une entrée `World.Test.TrackBeginnerGenerators`. `generate_rgce_content_assets.py` catalogue les `.world` de `Worlds/` qu'aucune entrée ne nomme ;
+  - `RacingGameCasaEngine/Assets/README.md`.
+- **Validation** :
+  - **ouverture** : `--open-asset Worlds/Test/TrackBeginnerGenerators.world` sort avec le code 0, et sa section `Logs:` n'a ni composant non résolu (E2) ni erreur de chargement. La capture, lue, montre le terrain, la route, les rails et les colonnes ;
+  - **aller-retour d'enregistrement**, sur une copie, par `--save-project` :
+    - un premier enregistrement, puis un second qui donne exactement les mêmes octets ;
+    - aucune clé de composant perdue par rapport au fichier d'origine (comparaison JSON). Le nœud de `RaceTrackPhysicsComponent` garde `track_asset_id` et `heightmap_asset_id` ;
+    - aucun composant généré enregistré ;
+  - **réglage** : une copie du `.world` reçoit un autre écart des poteaux. Elle est ouverte, capturée, puis enregistrée ; la capture montre l'effet, et le fichier enregistré garde la valeur ;
+  - le monde de course du jeu reste identique : A4 contre T4.1.
+- **Commit** : `feat(racing-casa): open the track generators in the editor`
+
+### ⏳ T4.7 — ADR, documentation et clôture de S4
+
+- **Fichiers** :
+  - `docs/decisions/0017-racinggame-gameplay-holds-the-game-code.md` : la DLL de jeu, `IRaceGameHost`, la voiture en entité, les générateurs et leurs enfants transitoires. Elle complète l'ADR-0015 sans la remplacer ;
+  - l'index des ADR ;
+  - `RacingGameCasaEngine/Assets/README.md` ;
+  - ce plan.
+- **Validation** : vérificateur indépendant de S4, CONFIRMED.
+- **Commit** : `docs(adr): record the game code and track generators in RacingGame.Gameplay`
 
 ---
 
