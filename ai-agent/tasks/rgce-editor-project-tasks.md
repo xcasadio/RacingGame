@@ -88,7 +88,7 @@ Découverte en lecture seule, en deux workflows. Le premier, de 4 agents, portai
 | D6 | Le décor aujourd'hui placé par tirage ou lu dans les `.Track` (palmiers, panneaux, bannières, lampadaires, objets et CombiModel) est **figé en entités** du monde par un export unique ; les poteaux de rail et les segments de colonnes restent générés par la route. |
 | D7 | `RacingGameCasaEngine.UI` est **renommé `RacingGame.Gameplay`** et devient la DLL de gameplay. |
 | D8 | Les nouveaux binaires vont dans git normalement, avec un `.gitattributes` qui marque png, wav, dds, data et tga comme binaires. |
-| D9 | Ajoutée le 2026-10-08, réponse de l'auteur sur O7 : le défaut de lecture des éléments `WidthHelper`, `RoadHelper` et `CombiObject` est corrigé **avant S6**. Le décor complet (palmiers, lanternes, tunnels, aides de largeur, contenu des CombiModel) entre dans le jeu, avec de nouvelles références de rendu, puis S6 le fige dans les mondes. |
+| D9 | Ajoutée le 2026-10-08, réponse de l'auteur sur O7 : le défaut de lecture des éléments `WidthHelper`, `RoadHelper` et `CombiObject` est corrigé **avant S6**. Le décor complet (palmiers, lanternes, tunnels, aides de largeur, contenu des CombiModel) entre dans le jeu, avec de nouvelles références de rendu, puis S6 le fige dans les mondes. Le plan à part `ai-agent/tasks/rgce-track-helpers-tasks.md` s'exécute **après la clôture de S5 et avant S6**. Il porte trois décisions de l'auteur (2026-10-08) : la comparaison avec l'original par `scripts/TrackPlacementExporter`, plus un contrôle visuel de l'auteur ; une suite aléatoire propre aux palmiers ; et l'ordre d'exécution. S6 part de ses références « après ». |
 
 ## Points à valider avec ce plan
 
@@ -168,7 +168,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 | **S3** | Contenu hérité porté et catalogué, plus aucun lien vers l'ancien jeu | S0 | RacingGame |
 | **S4** | Composants de jeu dans la DLL, voiture en entité, composants générateurs | S1, S2 | RacingGame |
 | **S5** | Modèles, matériaux et textures en assets de l'éditeur, chargés par le catalogue | S2, S3, S4 | RacingGame |
-| **S6** | Mondes en assets (`.world`, `PlayerCar.entity`) chargés par le jeu | S4, S5 | RacingGame |
+| **S6** | Mondes en assets (`.world`, `PlayerCar.entity`) chargés par le jeu | S4, S5, plan O7 (`rgce-track-helpers-tasks.md`) | RacingGame |
 | **S7** | Contrôle de l'éditeur sur tous les assets, documentation, clôture | toutes | les deux |
 
 **Retour arrière** :
