@@ -5,7 +5,9 @@ using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Worlds;
 using System.Diagnostics.CodeAnalysis;
+using RacingGame.Gameplay.Components;
 using RacingGame.Gameplay.Race;
+using RacingGame.Gameplay.Track;
 
 namespace RacingGameCasaEngine.Bootstrap;
 
@@ -30,6 +32,12 @@ internal sealed class TrackMigrationCaptureValidator
         CaptureSector80,
         PrepareTerrainOverview,
         CaptureTerrainOverview,
+        PrepareHelperPalms,
+        CaptureHelperPalms,
+        PrepareHelperLaterns,
+        CaptureHelperLaterns,
+        PrepareHelperTunnel,
+        CaptureHelperTunnel,
         ReturnToFrontEnd,
         Completed,
         Failed,
@@ -41,6 +49,16 @@ internal sealed class TrackMigrationCaptureValidator
     // The chase rig smooths its pose (6 and 7.5 per second): after this delay it has converged, so the chase view
     // no longer depends on how many updates ran. The start light is hidden in the road-only view.
     private static readonly TimeSpan ChaseSettleDelay = TimeSpan.FromMilliseconds(2000);
+
+    // Road point indices of the views where the road helpers act (plan rgce-track-helpers-tasks.md, P6): the middle of
+    // the first palm span, of the first latern span and of the longest tunnel. Reading the helpers does not move the
+    // road points, so the same views compare before and after.
+    private static readonly Dictionary<string, (int Palms, int Laterns, int Tunnel)> HelperViewRoadPoints = new(StringComparer.Ordinal)
+    {
+        ["Beginner"] = (215, 428, 817),
+        ["Advanced"] = (133, 408, 659),
+        ["Expert"] = (398, 177, 3764),
+    };
 
     private readonly RacingGameCasaEngineGame _game;
     private readonly RaceFrontEndFlow _flow;
@@ -219,7 +237,55 @@ internal sealed class TrackMigrationCaptureValidator
 
             case CaptureStep.CaptureTerrainOverview:
                 CaptureCurrentView("terrain-overview");
-                Advance(CaptureStep.ReturnToFrontEnd, totalTime, "Captured terrain overview");
+                Advance(CaptureStep.PrepareHelperPalms, totalTime, "Captured terrain overview");
+                break;
+
+            case CaptureStep.PrepareHelperPalms:
+                if (PrepareRoadPointView(HelperViewRoadPoints[RaceFrontEndCatalog.Tracks[_trackIndex].Name].Palms))
+                {
+                    Advance(CaptureStep.CaptureHelperPalms, totalTime, "Prepared palm helper view");
+                }
+                else
+                {
+                    Fail("Unable to locate the road points for the palm helper view.");
+                }
+                break;
+
+            case CaptureStep.CaptureHelperPalms:
+                CaptureCurrentView("helper-palms");
+                Advance(CaptureStep.PrepareHelperLaterns, totalTime, "Captured palm helper view");
+                break;
+
+            case CaptureStep.PrepareHelperLaterns:
+                if (PrepareRoadPointView(HelperViewRoadPoints[RaceFrontEndCatalog.Tracks[_trackIndex].Name].Laterns))
+                {
+                    Advance(CaptureStep.CaptureHelperLaterns, totalTime, "Prepared latern helper view");
+                }
+                else
+                {
+                    Fail("Unable to locate the road points for the latern helper view.");
+                }
+                break;
+
+            case CaptureStep.CaptureHelperLaterns:
+                CaptureCurrentView("helper-laterns");
+                Advance(CaptureStep.PrepareHelperTunnel, totalTime, "Captured latern helper view");
+                break;
+
+            case CaptureStep.PrepareHelperTunnel:
+                if (PrepareRoadPointView(HelperViewRoadPoints[RaceFrontEndCatalog.Tracks[_trackIndex].Name].Tunnel))
+                {
+                    Advance(CaptureStep.CaptureHelperTunnel, totalTime, "Prepared tunnel helper view");
+                }
+                else
+                {
+                    Fail("Unable to locate the road points for the tunnel helper view.");
+                }
+                break;
+
+            case CaptureStep.CaptureHelperTunnel:
+                CaptureCurrentView("helper-tunnel");
+                Advance(CaptureStep.ReturnToFrontEnd, totalTime, "Captured tunnel helper view");
                 break;
 
             case CaptureStep.ReturnToFrontEnd:
@@ -315,6 +381,52 @@ internal sealed class TrackMigrationCaptureValidator
 
         Vector3 position = currentPosition - direction * 18.0f + Vector3.Up * 12.0f + Vector3.Right * 4.0f;
         Vector3 target = currentPosition + direction * 6.0f;
+        PoseCamera(camera, position, target);
+        return true;
+    }
+
+    /// <summary>
+    /// Poses the camera as <see cref="PrepareCheckpointView"/> does, from the road point <paramref name="roadPointIndex"/>
+    /// of the loaded track. The road points come from the track and height map ids of the road generator, through
+    /// the same layout it builds the road from.
+    /// </summary>
+    private bool PrepareRoadPointView(int roadPointIndex)
+    {
+        if (!TryGetRaceCamera(out CameraLookAtComponent? camera, out World? world))
+        {
+            return false;
+        }
+
+        Entity? road = world.Entities.FirstOrDefault(entity => entity.Name?.StartsWith(RaceWorldNames.TrackRoadEntityNamePrefix, StringComparison.Ordinal) == true);
+        if (road?.RootComponent is not RaceRoadGeneratorComponent generator
+            || !LegacyTrackSceneFactory.TryResolveTrackSource("Track capture audit", generator.TrackAssetId, generator.HeightmapAssetId, out RaceTrackSource? source))
+        {
+            return false;
+        }
+
+        RaceTrackLayout layout = LegacyTrackSceneFactory.ComputeGeneratorLayout(source!, RaceTrackLayoutSettings.Default);
+        if (roadPointIndex < 0 || roadPointIndex >= layout.RoadPoints.Count)
+        {
+            return false;
+        }
+
+        RaceTrackRoadPoint roadPoint = layout.RoadPoints[roadPointIndex];
+        Matrix roadWorld = generator.WorldMatrixWithScale;
+        Vector3 pointPosition = Vector3.Transform(RaceTrackSpace.ConvertLegacyPoint(roadPoint.Position) - layout.Origin, roadWorld);
+        Vector3 direction = Vector3.TransformNormal(RaceTrackSpace.ConvertLegacyDirection(roadPoint.Direction), roadWorld);
+        if (direction.LengthSquared() < 0.0001f)
+        {
+            direction = Vector3.Forward;
+        }
+        else
+        {
+            direction.Normalize();
+        }
+
+        _game.SetCircuitOnlyViewEnabled(false);
+
+        Vector3 position = pointPosition - direction * 18.0f + Vector3.Up * 12.0f + Vector3.Right * 4.0f;
+        Vector3 target = pointPosition + direction * 6.0f;
         PoseCamera(camera, position, target);
         return true;
     }

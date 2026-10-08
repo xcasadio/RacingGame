@@ -249,7 +249,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 >   - seul `additionalLiveEntities` change : de 984 / 593 / 2 023 à 82 / 37 / 157. L'écart est exactement `GuardRailHolder` + `RoadColumnSegment` (742 + 160, 455 + 101, 1 529 + 337). La référence de S4 datait d'avant T4.5, qui a fait des poteaux et des segments des enfants générés, et non plus des entités.
 >   - Ce n'est donc pas un fait porteur. Mais la validation de T1.2 prévoyait de voir les poteaux dans `additional-other:` : elle les contrôle maintenant dans l'export par maillage (corrigé ci-dessous).
 
-### ⏳ T0.2 — Vues d'audit aux aides et références « avant »
+### ✅ T0.2 — Vues d'audit aux aides et références « avant »
 
 - **Objectif** :
   - des images des endroits où agissent les aides, avant et après le correctif. Ce sont aussi les images RGCE du contrôle visuel de l'auteur ;
@@ -284,6 +284,35 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
     - si ces nombres diffèrent après S5, la note les explique ; sinon ⚠️ Blocked ;
   - les réglages de l'auteur sont restaurés à l'identique.
 - **Commit** : `test(racing-casa): capture the track audit where the road helpers act`
+
+> Validation (2026-10-09) :
+> - **Code** :
+>   - `TrackMigrationCaptureValidator` ajoute `helper-palms`, `helper-laterns` et `helper-tunnel` après `terrain-overview`, aux points de route de P6 ;
+>   - le point vient de la disposition du générateur de route de la piste chargée : `TryResolveTrackSource` par ses ids, puis `ComputeGeneratorLayout`. Il est converti par `RaceTrackSpace`, puis par la matrice monde du générateur ;
+>   - la pose est celle de `PrepareCheckpointView`, dans la direction du point de route ;
+>   - `RuntimeSceneComparison` écrit `additional-scenery:` et `additional-other:` après la ligne de résumé, avec tous les groupes. La ligne de résumé ne change pas.
+> - **Écart dû à S5, corrigé dans l'outil** :
+>   - depuis T5.5, le jeu charge les modèles cuits, et l'export écrit le nom de l'asset (`StaticModel.Windmill`) au lieu du nom hérité ;
+>   - `TrackPlacementExporter` n'appariait donc plus le décor : `missingInLive` = 106 / 168 / 149 ;
+>   - en T0.1, ce défaut ne se voyait pas, puisque l'export de T5.1 date d'avant T5.5 ;
+>   - le chargement de l'export retire maintenant ce préfixe des noms de modèles, et les comptes attendus reviennent, ci-dessous. Sur l'export de T5.1, sans préfixe, les comptes ne changent pas.
+> - **Références `artifacts/o7-track-helpers/before/`**, chaque mode lancé à part (`o7_refs.sh` du scratchpad), réglages de l'auteur restaurés à l'identique :
+>   - deux audits (`track-audit-a/`, `-b/`, 30 vues chacun) ;
+>   - deux exports ;
+>   - les audits des voitures ;
+>   - les captures d'interface (`ui/`, lancement `ui-run-20261009-012259`) ;
+>   - la sortie de `TrackPlacementExporter` (`original/`, `original-compare.txt`) ;
+>   - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
+> - **Contrôles** :
+>   - build à 0 erreur et 0 avertissement ; `check_gameplay_type_names.py` : 0 collision ;
+>   - **audit** : les 21 vues de S5 sont dans le seuil de 0,5 contre `s5/track-audit-a`, au plus 0,013 (`chase-road-only` d'Expert), les autres à 0,000. Les 9 nouvelles vues sont signalées « EXTRA », comme prévu. `track-audit-a` contre `-b` : 30 vues sur 30 dans le seuil ;
+>   - **les 9 nouvelles vues**, lues sur une planche : route nue, sans palmier, lanterne ni tunnel. On y voit des rails, du décor et des panneaux ;
+>   - **export** : `scene-a.json` et `-b.json` sont identiques (1 074, 689, 2 156). Contre `s5/scene-a.json`, avec `--effective-states`, tout est apparié ;
+>   - **audits des voitures** identiques à S0, `details/` compris ;
+>   - **`TrackPlacementExporter`** :
+>     - `missingInLive` = 77 / 134 / 101 (Advanced / Beginner / Expert), `modelMismatch` = 0, et les 4 écarts anciens par piste, aux mêmes valeurs ;
+>     - **sens inverse** : hors `Banner*`, `Sign*` et `StartLight*`, `additional-scenery:` liste exactement `Windmill` 1 / 2 / 1, `AlphaTrain` 1 / 1 / 1 et `Building5` 0 / 1 / 0 ;
+>     - **`additional-other:`** (référence) : `<piste>.Columns`, `<piste>.GuardRail.Left` et `<piste>.GuardRail.Right`, une fois chacun par piste. Ce sont les entités des générateurs de colonnes et de rails. Les poteaux et les segments n'y sont plus, depuis T4.5 (voir T0.1).
 
 ---
 

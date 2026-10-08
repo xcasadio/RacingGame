@@ -633,6 +633,8 @@ public static partial class Program
         }
     }
 
+    private const string CookedStaticModelNamePrefix = "StaticModel.";
+
     private static string NormalizeRuntimeTrackName(string trackFileName)
     {
         return trackFileName.StartsWith("Track", StringComparison.OrdinalIgnoreCase)
@@ -644,8 +646,23 @@ public static partial class Program
     {
         string fullPath = Path.GetFullPath(liveRuntimeScenePath);
         string json = File.ReadAllText(fullPath);
-        return JsonSerializer.Deserialize<RuntimeSceneExportFile>(json, JsonOptions)
+        RuntimeSceneExportFile export = JsonSerializer.Deserialize<RuntimeSceneExportFile>(json, JsonOptions)
             ?? throw new InvalidOperationException($"Unable to deserialize runtime scene export '{fullPath}'.");
+
+        // Since the game loads the cooked models of the catalogue, a live model is named after its asset
+        // (StaticModel.<legacy name>); the expected placements use the legacy model name.
+        foreach (RuntimeSceneTrackRecord track in export.Tracks)
+        {
+            foreach (RuntimeSceneEntityRecord entity in track.Entities)
+            {
+                if (entity.StaticModelName?.StartsWith(CookedStaticModelNamePrefix, StringComparison.Ordinal) == true)
+                {
+                    entity.StaticModelName = entity.StaticModelName[CookedStaticModelNamePrefix.Length..];
+                }
+            }
+        }
+
+        return export;
     }
 
     private static void PrintRuntimeSceneComparisonSummary(
@@ -762,11 +779,26 @@ public static partial class Program
                         .Select(static group => $"{group.Key}={group.Count()}"));
 
             Console.WriteLine($"{expectedTrack.TrackName}: authoredExpected={expectedEntities.Count}, liveComparable={liveEntities.Count}, missingInLive={missingInLive}, modelMismatch={modelMismatch}, visibilityMismatch={visibilityMismatch}, transformMismatch={transformMismatch}, additionalLiveEntities={additionalLiveEntities.Count} ({additionalLiveSummary})");
+            // Every group of the unmatched live entities, not only the largest four: the reverse check of the comparison
+            // (a scenery object the original does not place) must see every model.
+            Console.WriteLine($"  additional-scenery: {FormatAllGroups(additionalLiveEntities.Where(static entity => string.Equals(entity.Kind, "track-scenery", StringComparison.OrdinalIgnoreCase)))}");
+            Console.WriteLine($"  additional-other: {FormatAllGroups(additionalLiveEntities.Where(static entity => !string.Equals(entity.Kind, "track-scenery", StringComparison.OrdinalIgnoreCase)))}");
             foreach (string sample in samples)
             {
                 Console.WriteLine($"  {sample}");
             }
         }
+    }
+
+    private static string FormatAllGroups(IEnumerable<RuntimeSceneEntityRecord> entities)
+    {
+        List<string> groups = entities
+            .GroupBy(static entity => entity.StaticModelName ?? entity.Kind, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(static group => group.Count())
+            .ThenBy(static group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => $"{group.Key}={group.Count()}")
+            .ToList();
+        return groups.Count == 0 ? "none" : string.Join(", ", groups);
     }
 
     private static void MatchExpectedSceneryEntities(
