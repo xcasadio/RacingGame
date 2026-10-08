@@ -870,7 +870,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 >   - `--capture-ui-screens` : 0,00 sur les 10 états ;
 >   - audits des voitures identiques à S0, dans `s4/car-audits/`.
 
-### ⏳ T4.2 — Code de jeu dans `RacingGame.Gameplay` (P5)
+### ✅ T4.2 — Code de jeu dans `RacingGame.Gameplay` (P5)
 
 - **Objectif** : le code de jeu que l'éditeur doit voir passe dans la DLL. L'exe garde l'amorçage, les écrans, l'interface, la persistance, les validateurs et l'assemblage des mondes.
 - **Fichiers** :
@@ -905,6 +905,31 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
     - `--smoke-frontend` et `--verify-legacy-import-profile` à 0 ;
   - **éditeur** : le projet s'ouvre (`--diagnostics-out`) avec le code 0, et la section `Logs:` ne contient ni « no IPlugin » ni erreur de chargement de l'assembly de gameplay. Qu'il résout les types des composants est vérifié en T4.6, par un monde qui les contient.
 - **Commit** : `refactor(racing-casa): move the game code into RacingGame.Gameplay`
+
+> Validation (2026-10-08) :
+> - **Déplacements** : 37 fichiers, par `git mv`. Les espaces de noms deviennent `RacingGame.Gameplay.<Dossier>` :
+>   - `Components/` (18), `Entities/` (1) et `GameFramework/` (4) gardent leur nom ;
+>   - `Gameplay/` devient `Cars/` (1) ;
+>   - les fichiers de `Worlds/` vont dans `Track/` (4) ;
+>   - ceux de `Bootstrap/` vont dans `Race/` (5) ou `Import/` (4).
+>   Aucun autre fichier de l'exe n'était nécessaire.
+> - **Nouveaux fichiers** :
+>   - `IRaceGameHost.cs`, interne. `RacingGameCasaEngineGame` implémente `RaceSession` et `RaceVibration` explicitement, et les trois autres membres par héritage ;
+>   - `Race/RaceWorldNames.cs`, avec les 11 noms et préfixes d'entités. `RaceWorldFactory` les reprend, aux mêmes valeurs ;
+>   - `GlobalUsings.cs`, copie de celui de l'exe ;
+>   - `scripts/check_gameplay_type_names.py`.
+> - **Projet** : `InternalsVisibleTo("RacingGameCasaEngine")` dans le csproj, sans nouvelle référence. `SharpGLTF` et `StbImageSharp` arrivent par CasaEngine, et l'éditeur les charge déjà. Aucun type n'est devenu public.
+> - **Contrôles** :
+>   - `dotnet build RacingGame.slnx` : 0 erreur, 0 avertissement ;
+>   - `rg` des types de l'exe dans la DLL : seulement 3 commentaires de documentation ;
+>   - `check_gameplay_type_names.py` : 94 types de jeu contre 2 794 du moteur et de l'éditeur, 0 collision.
+> - **A4 contre T4.1** (`artifacts/editor-project-baseline/s4/t4.2/`) :
+>   - export : 1 074, 689 et 2 156 maillages appariés, 0 renommé ;
+>   - audit : 21 vues à 0,000 ;
+>   - captures d'interface : 0,00 ;
+>   - audits des voitures identiques à S0 ;
+>   - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
+> - **Éditeur** : une copie du projet, avec la nouvelle DLL, s'ouvre avec le code 0. La section `Logs:` n'a ni « no IPlugin » ni erreur de chargement. Elle garde seulement les deux avertissements connus du déchargement du contexte de scripts, déjà présents en T2.1.
 
 ### ⏳ T4.3 — La voiture en entité ordinaire (P6)
 

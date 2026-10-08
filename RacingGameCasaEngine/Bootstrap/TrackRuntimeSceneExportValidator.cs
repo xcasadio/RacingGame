@@ -1,5 +1,6 @@
 using CasaEngine.Core.Log;
 using RacingGameCasaEngine.Worlds;
+using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.Bootstrap;
 

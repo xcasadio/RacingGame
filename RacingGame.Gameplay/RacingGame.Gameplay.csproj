@@ -12,6 +12,10 @@
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.5.1" />
   </ItemGroup>
   <ItemGroup>
+    <!-- The executable implements the internal IRaceGameHost. -->
+    <InternalsVisibleTo Include="RacingGameCasaEngine" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\CasaEngine\CasaEngine\CasaEngine.csproj" />
     <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Core\MGUI.Core.csproj" />
     <ProjectReference Include="..\CasaEngine\MGUI\MGUI.Shared\MGUI.Shared.csproj" />

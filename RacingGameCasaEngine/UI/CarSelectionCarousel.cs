@@ -13,9 +13,10 @@ using MGUI.Core.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RacingGameCasaEngine.Bootstrap;
-using RacingGameCasaEngine.Components;
 using RacingGameCasaEngine.Worlds;
 using Color = Microsoft.Xna.Framework.Color;
+using RacingGame.Gameplay.Components;
+using RacingGame.Gameplay.Import;
 
 namespace RacingGameCasaEngine.UI;
 

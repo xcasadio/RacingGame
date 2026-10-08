@@ -9,6 +9,7 @@ using RacingGame.Gameplay.ViewModels;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
+using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.Screens;
 

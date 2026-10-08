@@ -4,6 +4,7 @@ using MGUI.Core.UI;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGame.Gameplay.ViewModels;
+using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.Screens;
 

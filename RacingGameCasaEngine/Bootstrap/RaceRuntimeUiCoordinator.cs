@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
-using RacingGameCasaEngine.GameFramework;
 using RacingGameCasaEngine.Screens;
+using RacingGame.Gameplay.GameFramework;
+using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.Bootstrap;
 

@@ -13,16 +13,18 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
-using RacingGameCasaEngine.GameFramework;
 using RacingGameCasaEngine.Persistence;
 using RacingGameCasaEngine.UI;
 using RacingGameCasaEngine.Worlds;
 using Color = Microsoft.Xna.Framework.Color;
 using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
+using RacingGame.Gameplay;
+using RacingGame.Gameplay.GameFramework;
+using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.Bootstrap;
 
-public sealed class RacingGameCasaEngineGame : CasaEngineGame
+public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
 {
     private static readonly (int Width, int Height)[] MenuResolutions =
     [
@@ -122,6 +124,10 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
 
     /// <summary>Gamepad vibration on guard-rail hits (Gamepad Vibration option).</summary>
     internal RaceGamepadVibration RaceVibration { get; }
+
+    RuntimeRaceSession IRaceGameHost.RaceSession => RaceSession;
+
+    RaceGamepadVibration IRaceGameHost.RaceVibration => RaceVibration;
 
     internal void SyncOptionsState(RaceFrontEndState state)
     {

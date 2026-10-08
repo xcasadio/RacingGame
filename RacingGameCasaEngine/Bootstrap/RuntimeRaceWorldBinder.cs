@@ -4,10 +4,11 @@ using CasaEngine.Framework.Entities.Components;
 using CasaEngine.Framework.GameFramework;
 using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
-using RacingGameCasaEngine.Entities;
-using RacingGameCasaEngine.GameFramework;
-using RacingGameCasaEngine.Gameplay;
 using RacingGameCasaEngine.Worlds;
+using RacingGame.Gameplay.Cars;
+using RacingGame.Gameplay.Entities;
+using RacingGame.Gameplay.GameFramework;
+using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.Bootstrap;
 

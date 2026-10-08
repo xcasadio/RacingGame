@@ -6,6 +6,9 @@ using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGame.Gameplay.ViewModels;
 using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
+using RacingGame.Gameplay.Entities;
+using RacingGame.Gameplay.GameFramework;
+using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.Screens;
 
@@ -111,7 +114,7 @@ internal sealed class RaceHudScreen : RaceXamlScreenBase
             && (gamePad.AJustPressed || gamePad.BJustPressed || gamePad.XJustPressed || gamePad.BackJustPressed || gamePad.StartJustPressed);
     }
 
-    private bool TryGetActiveRace(out RuntimeRaceSession session, out GameFramework.RaceGameMode gameMode, out Entities.RacingCarPawn playerPawn)
+    private bool TryGetActiveRace(out RuntimeRaceSession session, out RaceGameMode gameMode, out RacingCarPawn playerPawn)
     {
         session = _game.RaceSession;
         gameMode = null!;
@@ -129,7 +132,7 @@ internal sealed class RaceHudScreen : RaceXamlScreenBase
 
     private int GetCurrentLapDisplay()
     {
-        if (!TryGetActiveRace(out _, out GameFramework.RaceGameMode gameMode, out _))
+        if (!TryGetActiveRace(out _, out RaceGameMode gameMode, out _))
         {
             return 1;
         }
@@ -139,7 +142,7 @@ internal sealed class RaceHudScreen : RaceXamlScreenBase
 
     private int GetCurrentLapTimeMilliseconds()
     {
-        if (!TryGetActiveRace(out _, out GameFramework.RaceGameMode gameMode, out _))
+        if (!TryGetActiveRace(out _, out RaceGameMode gameMode, out _))
         {
             return 0;
         }
@@ -154,7 +157,7 @@ internal sealed class RaceHudScreen : RaceXamlScreenBase
 
     private int GetBestLapTimeMilliseconds()
     {
-        return TryGetActiveRace(out _, out GameFramework.RaceGameMode gameMode, out _)
+        return TryGetActiveRace(out _, out RaceGameMode gameMode, out _)
             && gameMode.BestLapTimeSeconds.HasValue
             ? ToMilliseconds(gameMode.BestLapTimeSeconds.Value)
             : 0;
@@ -193,21 +196,21 @@ internal sealed class RaceHudScreen : RaceXamlScreenBase
 
     private int GetHudSpeedDisplay()
     {
-        return TryGetActiveRace(out _, out GameFramework.RaceGameMode gameMode, out Entities.RacingCarPawn playerPawn) && !gameMode.IsRaceFinished
+        return TryGetActiveRace(out _, out RaceGameMode gameMode, out RacingCarPawn playerPawn) && !gameMode.IsRaceFinished
             ? (int)Math.Round(playerPawn.CurrentSpeedMph)
             : 0;
     }
 
     private int GetHudGearDisplay()
     {
-        return TryGetActiveRace(out _, out GameFramework.RaceGameMode gameMode, out Entities.RacingCarPawn playerPawn) && !gameMode.IsRaceFinished
+        return TryGetActiveRace(out _, out RaceGameMode gameMode, out RacingCarPawn playerPawn) && !gameMode.IsRaceFinished
             ? playerPawn.CurrentGear
             : 1;
     }
 
     private float GetTachometerNeedleValue()
     {
-        if (!TryGetActiveRace(out _, out GameFramework.RaceGameMode gameMode, out Entities.RacingCarPawn playerPawn) || gameMode.IsRaceFinished)
+        if (!TryGetActiveRace(out _, out RaceGameMode gameMode, out RacingCarPawn playerPawn) || gameMode.IsRaceFinished)
         {
             return 0f;
         }
@@ -220,7 +223,7 @@ internal sealed class RaceHudScreen : RaceXamlScreenBase
 
     private IReadOnlyList<string> GetGameOverLines()
     {
-        if (!TryGetActiveRace(out RuntimeRaceSession session, out GameFramework.RaceGameMode gameMode, out _))
+        if (!TryGetActiveRace(out RuntimeRaceSession session, out RaceGameMode gameMode, out _))
         {
             return Array.Empty<string>();
         }

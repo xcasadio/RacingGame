@@ -3,9 +3,11 @@ using CasaEngine.Framework.Entities.Components;
 using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
-using RacingGameCasaEngine.Components;
-using RacingGameCasaEngine.Entities;
 using Color = Microsoft.Xna.Framework.Color;
+using RacingGame.Gameplay.Components;
+using RacingGame.Gameplay.Entities;
+using RacingGame.Gameplay.Race;
+using RacingGame.Gameplay.Track;
 
 namespace RacingGameCasaEngine.Worlds;
 
@@ -13,17 +15,17 @@ public static class RaceWorldFactory
 {
     internal const string FrontEndWorldName = "RacingGameCasaEngine.FrontEndWorld";
     internal const string RaceWorldNamePrefix = "RacingGameCasaEngine.RaceWorld";
-    internal const string CameraEntityName = "BootstrapCamera";
-    internal const string PlayerStartEntityName = "PlayerStart";
-    internal const string PlayerCarEntityName = "PlayerCar";
-    internal const string CheckpointEntityNamePrefix = "Checkpoint.";
-    internal const string TrackRoadEntityNamePrefix = "Track.Road.";
-    internal const string TrackGroundEntityNamePrefix = "Track.Ground.";
-    internal const string TrackSceneryEntityNamePrefix = "Track.Scenery.";
-    internal const string TrackGuardRailEntityNamePrefix = "Track.GuardRail.";
-    internal const string TrackGuardRailHolderEntityNamePrefix = "Track.GuardRailHolder.";
-    internal const string TrackColumnsEntityNamePrefix = "Track.Columns.";
-    internal const string TrackColumnSegmentEntityNamePrefix = "Track.ColumnSegment.";
+    internal const string CameraEntityName = RaceWorldNames.CameraEntityName;
+    internal const string PlayerStartEntityName = RaceWorldNames.PlayerStartEntityName;
+    internal const string PlayerCarEntityName = RaceWorldNames.PlayerCarEntityName;
+    internal const string CheckpointEntityNamePrefix = RaceWorldNames.CheckpointEntityNamePrefix;
+    internal const string TrackRoadEntityNamePrefix = RaceWorldNames.TrackRoadEntityNamePrefix;
+    internal const string TrackGroundEntityNamePrefix = RaceWorldNames.TrackGroundEntityNamePrefix;
+    internal const string TrackSceneryEntityNamePrefix = RaceWorldNames.TrackSceneryEntityNamePrefix;
+    internal const string TrackGuardRailEntityNamePrefix = RaceWorldNames.TrackGuardRailEntityNamePrefix;
+    internal const string TrackGuardRailHolderEntityNamePrefix = RaceWorldNames.TrackGuardRailHolderEntityNamePrefix;
+    internal const string TrackColumnsEntityNamePrefix = RaceWorldNames.TrackColumnsEntityNamePrefix;
+    internal const string TrackColumnSegmentEntityNamePrefix = RaceWorldNames.TrackColumnSegmentEntityNamePrefix;
 
     // The implicit lighting the old CasaEngine applied to every view (CasaEngine 295db0c6,
     // EnvironmentLightingResolver.CreateLegacyLighting). CasaEngine now lights a world only through its

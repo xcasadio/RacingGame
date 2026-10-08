@@ -2,6 +2,7 @@ using CasaEngine.Framework.GUI;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Screens;
 using RacingGameCasaEngine.Worlds;
+using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.Bootstrap;
 

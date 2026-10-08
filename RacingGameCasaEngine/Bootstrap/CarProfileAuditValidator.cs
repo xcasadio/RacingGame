@@ -2,10 +2,12 @@ using System.Globalization;
 using System.Text;
 using CasaEngine.Core.Log;
 using Microsoft.Xna.Framework;
-using RacingGameCasaEngine.Components;
-using RacingGameCasaEngine.Entities;
-using RacingGameCasaEngine.Gameplay;
 using RacingGameCasaEngine.Worlds;
+using RacingGame.Gameplay.Cars;
+using RacingGame.Gameplay.Components;
+using RacingGame.Gameplay.Entities;
+using RacingGame.Gameplay.Import;
+using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.Bootstrap;
 

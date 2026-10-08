@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGame.Gameplay.ViewModels;
 using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
+using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.Screens;
 

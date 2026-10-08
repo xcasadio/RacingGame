@@ -2,7 +2,8 @@ using System;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using RacingGameCasaEngine.Bootstrap;
-using RacingGameCasaEngine.Components;
+using RacingGame.Gameplay.Components;
+using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.Persistence;
 

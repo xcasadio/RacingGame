@@ -13,6 +13,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RacingGameCasaEngine.Worlds;
 using XnaQuaternion = Microsoft.Xna.Framework.Quaternion;
+using RacingGame.Gameplay.Components;
+using RacingGame.Gameplay.Import;
 
 namespace RacingGameCasaEngine.Bootstrap;
 

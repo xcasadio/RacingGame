@@ -1,0 +1,130 @@
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
+using RacingGame.Gameplay.GameFramework;
+using RacingGame.Gameplay.Race;
+
+namespace RacingGame.Gameplay.Components;
+
+public sealed class RaceFlowCoordinatorComponent : EntityComponent
+{
+    private readonly List<RaceCheckpointTriggerComponent> _checkpointTriggers = [];
+    private bool _isInitialized;
+    private RaceStartLight? _startLight;
+    private bool _hasPreviousPlayerPosition;
+    private Vector3 _previousPlayerPosition;
+
+    public override EntityComponent Clone()
+    {
+        return new RaceFlowCoordinatorComponent();
+    }
+
+    /// <summary>Gives back the start light's sounds with the race world.</summary>
+    public override void Detach()
+    {
+        _startLight?.Dispose();
+        _startLight = null;
+        base.Detach();
+    }
+
+    public override void Update(float elapsedTime)
+    {
+        if (Owner?.World?.Game is not IRaceGameHost game)
+        {
+            return;
+        }
+
+        RuntimeRaceSession session = game.RaceSession;
+        if (!session.IsActive || session.GameMode == null || session.PlayerController == null || session.PlayerPawn?.RootComponent == null)
+        {
+            return;
+        }
+
+        if (!_isInitialized)
+        {
+            InitializeCheckpoints(Owner.World, session.GameMode);
+            _startLight = RaceStartLight.Find(Owner.World);
+            _isInitialized = true;
+        }
+
+        HandlePauseToggle(game, session.GameMode, session.PlayerController);
+
+        session.GameMode.UpdateCountdown(elapsedTime);
+        _startLight?.Update(session.GameMode.CountdownSecondsRemaining);
+        bool canDrive = !session.IsDebugCameraEnabled
+            && session.GameMode.CountdownSecondsRemaining <= 0f
+            && !session.GameMode.IsPaused
+            && !session.GameMode.IsRaceFinished;
+        session.PlayerController.IsInputEnable = canDrive;
+
+        if (!canDrive)
+        {
+            _hasPreviousPlayerPosition = false;
+            return;
+        }
+
+        session.GameMode.UpdateRaceClock(elapsedTime);
+
+        Vector3 playerPosition = session.PlayerPawn.RootComponent.Position;
+        if (!_hasPreviousPlayerPosition)
+        {
+            _previousPlayerPosition = playerPosition;
+            _hasPreviousPlayerPosition = true;
+            return;
+        }
+
+        UpdateCheckpointProgress(session.GameMode, _previousPlayerPosition, playerPosition);
+        _previousPlayerPosition = playerPosition;
+    }
+
+    private void InitializeCheckpoints(World world, RaceGameMode gameMode)
+    {
+        _checkpointTriggers.Clear();
+        _hasPreviousPlayerPosition = false;
+
+        foreach (Entity entity in world.Entities
+                     .Where(static entity => entity.Name.StartsWith("Checkpoint.", StringComparison.Ordinal))
+                     .OrderBy(static entity => entity.Name, StringComparer.Ordinal))
+        {
+            RaceCheckpointTriggerComponent? checkpointTrigger = entity.GetComponent<RaceCheckpointTriggerComponent>();
+            if (checkpointTrigger != null)
+            {
+                _checkpointTriggers.Add(checkpointTrigger);
+            }
+        }
+
+        gameMode.ConfigureCheckpointCount(_checkpointTriggers.Count);
+    }
+
+    private void HandlePauseToggle(IRaceGameHost game, RaceGameMode gameMode, RacingPlayerController playerController)
+    {
+        bool pressed = game.InputComponent.KeyboardManager.IsKeyJustPressed(XnaKeys.Escape);
+        if (!pressed && playerController.Player is LocalPlayer localPlayer)
+        {
+            CasaEngine.Engine.Input.GamePad playerGamePad = game.InputComponent.GamePadManager.GetGamePad(localPlayer.ControllerId);
+            pressed = playerGamePad.IsConnected && (playerGamePad.StartJustPressed || playerGamePad.BackJustPressed);
+        }
+
+        if (!pressed)
+        {
+            return;
+        }
+
+        gameMode.TogglePause();
+        playerController.IsInputEnable = !gameMode.IsPaused;
+    }
+
+    private void UpdateCheckpointProgress(RaceGameMode gameMode, Vector3 previousPlayerPosition, Vector3 playerPosition)
+    {
+        if (_checkpointTriggers.Count == 0)
+        {
+            return;
+        }
+
+        RaceCheckpointTriggerComponent checkpointTrigger = _checkpointTriggers[gameMode.NextCheckpointIndex];
+        if (checkpointTrigger.IsTriggered(previousPlayerPosition, playerPosition))
+        {
+            gameMode.RegisterCheckpointPass();
+        }
+    }
+}

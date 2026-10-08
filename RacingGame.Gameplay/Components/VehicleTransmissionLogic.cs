@@ -1,0 +1,309 @@
+using Microsoft.Xna.Framework;
+
+namespace RacingGame.Gameplay.Components;
+
+internal static class VehicleTransmissionLogic
+{
+    private const float RadiansPerSecondToRpm = 60f / (MathF.PI * 2f);
+    private const float RpmToRadiansPerSecond = (MathF.PI * 2f) / 60f;
+
+    public static VehicleTransmissionDefinition CreateDefaultFiveSpeedDefinition()
+    {
+        return new VehicleTransmissionDefinition(
+            forwardGearRatios: [3.18f, 2.14f, 1.56f, 1.21f, 0.97f],
+            reverseGearRatio: 3.04f,
+            finalDriveRatio: 7.6f,
+            idleRpm: 950f,
+            upshiftRpm: 6500f,
+            downshiftRpm: 3150f,
+            redlineRpm: 7800f,
+            shiftDurationSeconds: 0.22f);
+    }
+
+    public static void Reset(VehicleTransmissionRuntimeState state, VehicleTransmissionDefinition definition)
+    {
+        state.CurrentGear = 1;
+        state.EngineRpm = definition.IdleRpm;
+        state.ShiftTimerSeconds = 0f;
+        state.NormalizedRpm = 0f;
+    }
+
+    public static VehicleTransmissionFrame UpdateAutomaticForward(
+        VehicleTransmissionRuntimeState state,
+        VehicleTransmissionDefinition definition,
+        float drivenWheelAngularSpeedRadiansPerSecond,
+        float throttle,
+        float elapsedTime)
+    {
+        state.ShiftTimerSeconds = Math.Max(0f, state.ShiftTimerSeconds - elapsedTime);
+        int currentGear = Math.Clamp(state.CurrentGear, 1, definition.ForwardGearCount);
+        float clampedThrottle = Math.Clamp(throttle, 0f, 1f);
+        float currentRpm = ComputeForwardEngineRpm(definition, currentGear, drivenWheelAngularSpeedRadiansPerSecond);
+        bool gearChanged = false;
+
+        if (state.ShiftTimerSeconds <= 0f)
+        {
+            int targetGear = DetermineTargetGear(definition, currentGear, currentRpm, drivenWheelAngularSpeedRadiansPerSecond, clampedThrottle);
+            if (targetGear != currentGear)
+            {
+                currentGear = targetGear;
+                state.ShiftTimerSeconds = definition.ShiftDurationSeconds;
+                currentRpm = ComputeForwardEngineRpm(definition, currentGear, drivenWheelAngularSpeedRadiansPerSecond);
+                gearChanged = true;
+            }
+        }
+
+        VehicleTransmissionFrame frame = EvaluateForwardFrame(
+            definition,
+            currentGear,
+            drivenWheelAngularSpeedRadiansPerSecond,
+            clampedThrottle,
+            state.ShiftTimerSeconds);
+
+        state.CurrentGear = currentGear;
+        state.EngineRpm = frame.EngineRpm;
+        state.NormalizedRpm = frame.NormalizedRpm;
+
+        return new VehicleTransmissionFrame(
+            currentGear,
+            frame.EngineRpm,
+            frame.NormalizedRpm,
+            frame.DriveForceScale,
+            frame.ShiftTorqueScale,
+            gearChanged,
+            state.IsShifting);
+    }
+
+    public static VehicleTransmissionFrame SampleCurrentGear(
+        VehicleTransmissionRuntimeState state,
+        VehicleTransmissionDefinition definition,
+        float drivenWheelAngularSpeedRadiansPerSecond,
+        float throttle)
+    {
+        int currentGear = Math.Clamp(state.CurrentGear, 1, definition.ForwardGearCount);
+        VehicleTransmissionFrame frame = EvaluateForwardFrame(
+            definition,
+            currentGear,
+            drivenWheelAngularSpeedRadiansPerSecond,
+            throttle,
+            state.ShiftTimerSeconds);
+
+        state.EngineRpm = frame.EngineRpm;
+        state.NormalizedRpm = frame.NormalizedRpm;
+
+        return new VehicleTransmissionFrame(
+            currentGear,
+            frame.EngineRpm,
+            frame.NormalizedRpm,
+            frame.DriveForceScale,
+            frame.ShiftTorqueScale,
+            GearChanged: false,
+            state.IsShifting);
+    }
+
+    public static VehicleTransmissionFrame EvaluateForwardFrame(
+        VehicleTransmissionDefinition definition,
+        int gear,
+        float drivenWheelAngularSpeedRadiansPerSecond,
+        float throttle,
+        float shiftTimerSeconds = 0f)
+    {
+        int currentGear = Math.Clamp(gear, 1, definition.ForwardGearCount);
+        float normalizedThrottle = Math.Clamp(throttle, 0f, 1f);
+        float currentRpm = ComputeForwardEngineRpm(definition, currentGear, drivenWheelAngularSpeedRadiansPerSecond);
+        float normalizedRpm = NormalizeRpm(definition, currentRpm);
+        float shiftTorqueScale = EvaluateShiftTorqueScale(shiftTimerSeconds, definition.ShiftDurationSeconds);
+        float driveForceScale = EvaluateGearForceScale(definition, currentGear)
+            * EvaluateTorqueCurve(normalizedRpm)
+            * MathHelper.Lerp(0.72f, 1f, normalizedThrottle)
+            * shiftTorqueScale;
+
+        return new VehicleTransmissionFrame(
+            currentGear,
+            currentRpm,
+            normalizedRpm,
+            driveForceScale,
+            shiftTorqueScale,
+            GearChanged: false,
+            IsShifting: shiftTimerSeconds > 0.0001f);
+    }
+
+    public static float ComputeForwardEngineRpm(
+        VehicleTransmissionDefinition definition,
+        int gear,
+        float drivenWheelAngularSpeedRadiansPerSecond)
+    {
+        float wheelRpm = Math.Abs(drivenWheelAngularSpeedRadiansPerSecond) * RadiansPerSecondToRpm;
+        float engineRpm = wheelRpm * definition.GetForwardGearRatio(gear) * definition.FinalDriveRatio;
+        return Math.Clamp(engineRpm, definition.IdleRpm, definition.RedlineRpm);
+    }
+
+    public static float ComputeReverseEngineRpm(
+        VehicleTransmissionDefinition definition,
+        float drivenWheelAngularSpeedRadiansPerSecond)
+    {
+        float wheelRpm = Math.Abs(drivenWheelAngularSpeedRadiansPerSecond) * RadiansPerSecondToRpm;
+        float engineRpm = wheelRpm * definition.ReverseGearRatio * definition.FinalDriveRatio;
+        return Math.Clamp(engineRpm, definition.IdleRpm, definition.RedlineRpm * 0.72f);
+    }
+
+    public static float ComputeDrivenWheelAngularSpeed(IReadOnlyList<VehicleWheelDefinition> wheelDefinitions, float speedUnitsPerSecond)
+    {
+        float averageDrivenWheelRadius = ComputeAverageDrivenWheelRadius(wheelDefinitions);
+        return averageDrivenWheelRadius > 0.0001f ? speedUnitsPerSecond / averageDrivenWheelRadius : 0f;
+    }
+
+    public static float ComputeFinalDriveRatioForTargetForwardSpeed(
+        IReadOnlyList<float> forwardGearRatios,
+        int gear,
+        float targetSpeedUnitsPerSecond,
+        float engineRpm,
+        IReadOnlyList<VehicleWheelDefinition> wheelDefinitions)
+    {
+        if (forwardGearRatios.Count == 0)
+        {
+            throw new ArgumentException("At least one forward gear ratio is required.", nameof(forwardGearRatios));
+        }
+
+        if (targetSpeedUnitsPerSecond <= 0.0001f)
+        {
+            throw new ArgumentOutOfRangeException(nameof(targetSpeedUnitsPerSecond));
+        }
+
+        if (engineRpm <= 0.0001f)
+        {
+            throw new ArgumentOutOfRangeException(nameof(engineRpm));
+        }
+
+        int resolvedGear = Math.Clamp(gear, 1, forwardGearRatios.Count);
+        float gearRatio = Math.Abs(forwardGearRatios[resolvedGear - 1]);
+        if (gearRatio <= 0.0001f)
+        {
+            throw new ArgumentOutOfRangeException(nameof(forwardGearRatios));
+        }
+
+        if (!TryComputeAverageDrivenWheelRadius(wheelDefinitions, out float averageDrivenWheelRadius))
+        {
+            throw new ArgumentException("At least one driven wheel with a positive radius is required.", nameof(wheelDefinitions));
+        }
+
+        float wheelRpm = (targetSpeedUnitsPerSecond / averageDrivenWheelRadius) * RadiansPerSecondToRpm;
+        return engineRpm / (wheelRpm * gearRatio);
+    }
+
+    public static float ComputeForwardSpeedUnitsAtEngineRpm(
+        VehicleTransmissionDefinition definition,
+        int gear,
+        float engineRpm,
+        IReadOnlyList<VehicleWheelDefinition> wheelDefinitions)
+    {
+        float clampedRpm = Math.Clamp(engineRpm, definition.IdleRpm, definition.RedlineRpm);
+        float wheelRpm = clampedRpm / (definition.GetForwardGearRatio(gear) * definition.FinalDriveRatio);
+        float wheelAngularSpeedRadiansPerSecond = wheelRpm * RpmToRadiansPerSecond;
+        return wheelAngularSpeedRadiansPerSecond * ComputeAverageDrivenWheelRadius(wheelDefinitions);
+    }
+
+    public static float ComputeAverageDrivenWheelRadius(IReadOnlyList<VehicleWheelDefinition> wheelDefinitions)
+    {
+        return TryComputeAverageDrivenWheelRadius(wheelDefinitions, out float averageDrivenWheelRadius)
+            ? averageDrivenWheelRadius
+            : 0.43f;
+    }
+
+    private static bool TryComputeAverageDrivenWheelRadius(
+        IReadOnlyList<VehicleWheelDefinition> wheelDefinitions,
+        out float averageDrivenWheelRadius)
+    {
+        float weightedRadius = 0f;
+        float totalDriveRatio = 0f;
+        for (int index = 0; index < wheelDefinitions.Count; index++)
+        {
+            VehicleWheelDefinition definition = wheelDefinitions[index];
+            if (definition.DriveForceRatio <= 0.0001f)
+            {
+                continue;
+            }
+
+            weightedRadius += definition.Radius * definition.DriveForceRatio;
+            totalDriveRatio += definition.DriveForceRatio;
+        }
+
+        if (totalDriveRatio <= 0.0001f)
+        {
+            averageDrivenWheelRadius = 0f;
+            return false;
+        }
+
+        averageDrivenWheelRadius = weightedRadius / totalDriveRatio;
+        return averageDrivenWheelRadius > 0.0001f;
+    }
+
+    private static int DetermineTargetGear(
+        VehicleTransmissionDefinition definition,
+        int currentGear,
+        float currentRpm,
+        float drivenWheelAngularSpeedRadiansPerSecond,
+        float throttle)
+    {
+        if (currentGear < definition.ForwardGearCount && currentRpm >= definition.UpshiftRpm && throttle > 0.15f)
+        {
+            return currentGear + 1;
+        }
+
+        if (currentGear > 1 && currentRpm <= definition.DownshiftRpm)
+        {
+            float downshiftRpm = ComputeForwardEngineRpm(definition, currentGear - 1, drivenWheelAngularSpeedRadiansPerSecond);
+            if (downshiftRpm <= definition.RedlineRpm * 0.96f)
+            {
+                return currentGear - 1;
+            }
+        }
+
+        return currentGear;
+    }
+
+    private static float NormalizeRpm(VehicleTransmissionDefinition definition, float engineRpm)
+    {
+        return Math.Clamp((engineRpm - definition.IdleRpm) / Math.Max(1f, definition.RedlineRpm - definition.IdleRpm), 0f, 1f);
+    }
+
+    private static float EvaluateTorqueCurve(float normalizedRpm)
+    {
+        if (normalizedRpm < 0.22f)
+        {
+            return MathHelper.Lerp(0.62f, 0.88f, normalizedRpm / 0.22f);
+        }
+
+        if (normalizedRpm < 0.58f)
+        {
+            return MathHelper.Lerp(0.88f, 1.04f, (normalizedRpm - 0.22f) / 0.36f);
+        }
+
+        if (normalizedRpm < 0.82f)
+        {
+            return MathHelper.Lerp(1.04f, 0.94f, (normalizedRpm - 0.58f) / 0.24f);
+        }
+
+        return MathHelper.Lerp(0.94f, 0.72f, (normalizedRpm - 0.82f) / 0.18f);
+    }
+
+    private static float EvaluateGearForceScale(VehicleTransmissionDefinition definition, int gear)
+    {
+        float gearRatio = definition.GetForwardGearRatio(gear);
+        float topGearRatio = definition.TopGearRatio;
+        float firstGearRatio = definition.FirstGearRatio;
+        float normalizedMechanicalAdvantage = Math.Clamp((gearRatio - topGearRatio) / Math.Max(0.0001f, firstGearRatio - topGearRatio), 0f, 1f);
+        return MathHelper.Lerp(1f, 1.45f, normalizedMechanicalAdvantage);
+    }
+
+    private static float EvaluateShiftTorqueScale(float shiftTimerSeconds, float shiftDurationSeconds)
+    {
+        if (shiftDurationSeconds <= 0.0001f || shiftTimerSeconds <= 0f)
+        {
+            return 1f;
+        }
+
+        float progress = 1f - Math.Clamp(shiftTimerSeconds / shiftDurationSeconds, 0f, 1f);
+        return MathHelper.Lerp(0.28f, 1f, progress);
+    }
+}

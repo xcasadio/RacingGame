@@ -1,5 +1,6 @@
 using CasaEngine.Core.Log;
 using CasaEngine.Framework.Assets.Loaders;
+using RacingGame.Gameplay.Import;
 
 namespace RacingGameCasaEngine.Bootstrap;
 

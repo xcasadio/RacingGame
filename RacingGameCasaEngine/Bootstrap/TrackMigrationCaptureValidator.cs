@@ -5,6 +5,7 @@ using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Worlds;
 using System.Diagnostics.CodeAnalysis;
+using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.Bootstrap;
 
