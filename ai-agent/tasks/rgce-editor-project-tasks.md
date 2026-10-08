@@ -1235,7 +1235,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
   - **Partage** : la peinture et le feu ne doivent rien modifier de visible dans un objet partagé ;
   - **Noms courts** : le contrôle des noms repasse à chaque tâche qui ajoute des types.
 
-### ⏳ T5.1 — Comparaison des matériaux compilés
+### ✅ T5.1 — Comparaison des matériaux compilés
 
 - **Objectif** : comparer un matériau compilé à un matériau construit en code sur ce qui se voit à l'écran.
 - **Fichiers** :
@@ -1255,6 +1255,30 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
     - un `NormalMap` ajouté aux fonctionnalités d'un maillage de décor est signalé ;
     - un `SubMesh` dont le matériau diffère de celui de son maillage est signalé.
 - **Commit** : `test(racing-casa): compare cooked materials by the states they draw with`
+
+> Validation (2026-10-08) :
+> - **Export** :
+>   - un enregistrement par `SubMesh` dessiné, ou par maillage sans `SubMesh`, avec le matériau dans l'ordre du rendu (surcharge, `SubMesh.Material`, matériau du maillage). Pour un maillage sans `SubMesh`, la surcharge est cherchée par `mesh.MaterialSlotIndex`, comme le fait le rendu (`StaticMeshRendererComponent.cs:303`) ;
+>   - nouveaux champs : `RenderFeatures` (noms triés) et, pour les sous-maillages, `SubMeshIndex`, `SubMeshIndexStart` et `SubMeshPrimitiveCount` ;
+>   - le cache des matériaux compilés est celui du jeu (`CasaEngineGame.MaterialCache`, le même que `RuntimeContext.MaterialCache` lu par le rendu), passé par `TrackRuntimeSceneExportValidator`.
+> - **Comparaison** : la clé comprend les fonctionnalités et les champs de sous-maillage. `--effective-states` remplace `"null"` par `BlendState.Opaque`, `DepthStencilState.Default`, `RasterizerState.CullCounterClockwise` et `SamplerState.AnisotropicClamp`. `--ignore-features` sert à comparer aux références de S4.
+> - **Références** : `artifacts/editor-project-baseline/s5/scene-a.json` et `-b.json`, identiques entre elles (3 919 enregistrements, fonctionnalités comprises), et `s5/track-audit-a/`.
+> - **Contre S4** (`--ignore-features`, avec ou sans `--effective-states`) : les 3 919 enregistrements sont appariés.
+>   - Aucun maillage du jeu n'a plusieurs `SubMesh`.
+>   - Fonctionnalités relevées :
+>     - `BasColorTexture` : 3 781 ;
+>     - `AlphaTest, BasColorTexture` : 101 ;
+>     - `Reflection` : 22 ;
+>     - `BasColorTexture, Emissive` : 3 ;
+>     - `BasColorTexture, Emissive, NormalMap` : 12. Ce sont le sol, les rails et les colonnes, générés avec tangentes.
+>   - Aucun maillage de glTF n'a `NormalMap`.
+> - **Contrôles négatifs**, sur des copies modifiées dans `s5/negative/` :
+>   - rastérisation `null` passée à `CullNone` : signalée, avec ou sans l'option ;
+>   - `null` passé à `CullCounterClockwise` : signalé sans l'option, plus avec ;
+>   - `NormalMap` ajouté : signalé ;
+>   - un `SubMesh` à puissance spéculaire différente : signalé. Ce contrôle est construit des deux côtés, faute de maillage réel à plusieurs `SubMesh`.
+> - **Autres contrôles** : `dotnet build RacingGame.slnx` à 0 erreur ; `--smoke-frontend` à 0 ; audit dans le seuil de T4.1 (21 sur 21).
+> - **Non éprouvé sur des données réelles** : les enregistrements par `SubMesh` et la lecture des surcharges, que le jeu n'a pas encore.
 
 ### ⏳ T5.2 — Moteur : fonctionnalités d'un matériau compilé ajustées au maillage (D3)
 

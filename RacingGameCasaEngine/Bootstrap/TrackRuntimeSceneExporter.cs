@@ -8,6 +8,9 @@ using System.Text.Json.Serialization;
 using CasaEngine.Framework.Entities;
 using CasaEngine.Framework.Entities.Components;
 using CasaEngine.Framework.Materials;
+using CasaEngine.Framework.Materials.Runtime;
+using CasaEngine.Framework.Rendering.Models;
+using CasaEngine.Framework.Rendering.Shaders;
 using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -26,7 +29,7 @@ internal static class TrackRuntimeSceneExporter
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    public static TrackRuntimeSceneSnapshot CaptureTrack(string trackName, World world)
+    public static TrackRuntimeSceneSnapshot CaptureTrack(string trackName, World world, MaterialCache? materialCache)
     {
         List<TrackRuntimeSceneEntityRecord> entities = world.Entities
             .Where(RaceWorldFactory.IsRaceRenderableEntity)
@@ -41,7 +44,7 @@ internal static class TrackRuntimeSceneExporter
         {
             if (entity.RootComponent != null)
             {
-                CollectDrawnMeshes(entity, entity.RootComponent, string.Empty, drawnMeshes);
+                CollectDrawnMeshes(entity, entity.RootComponent, string.Empty, materialCache, drawnMeshes);
             }
         }
 
@@ -135,24 +138,27 @@ internal static class TrackRuntimeSceneExporter
         }
     }
 
-    private static void CollectDrawnMeshes(Entity entity, SceneComponent component, string parentPath, List<TrackRuntimeSceneDrawnMeshRecord> drawnMeshes)
+    private static void CollectDrawnMeshes(Entity entity, SceneComponent component, string parentPath, MaterialCache? materialCache, List<TrackRuntimeSceneDrawnMeshRecord> drawnMeshes)
     {
         string path = parentPath.Length == 0 ? component.Name : parentPath + "/" + component.Name;
         if (component is StaticModelSubMeshComponent subMesh && subMesh.ModelMesh != null)
         {
-            drawnMeshes.Add(CaptureDrawnMesh(entity, subMesh, path));
+            CaptureDrawnMesh(entity, subMesh, path, materialCache, drawnMeshes);
         }
 
         foreach (SceneComponent child in component.Children)
         {
-            CollectDrawnMeshes(entity, child, path, drawnMeshes);
+            CollectDrawnMeshes(entity, child, path, materialCache, drawnMeshes);
         }
     }
 
-    private static TrackRuntimeSceneDrawnMeshRecord CaptureDrawnMesh(Entity entity, StaticModelSubMeshComponent subMesh, string path)
+    /// <summary>
+    /// Adds one record per drawn SubMesh (index range) of the mesh, or one record for a mesh without SubMesh, as
+    /// StaticMeshRendererComponent builds its render items.
+    /// </summary>
+    private static void CaptureDrawnMesh(Entity entity, StaticModelSubMeshComponent subMesh, string path, MaterialCache? materialCache, List<TrackRuntimeSceneDrawnMeshRecord> drawnMeshes)
     {
         StaticModelMesh mesh = subMesh.ModelMesh;
-        MaterialBase? material = mesh.Material;
         IReadOnlyList<VertexPositionNormalTexture> vertices = mesh.GetVertices();
         IReadOnlyList<uint> indices = mesh.GetIndices();
 
@@ -170,13 +176,6 @@ internal static class TrackRuntimeSceneExporter
             }
         }
 
-        SortedDictionary<string, string> parameters = new(StringComparer.Ordinal);
-        SortedDictionary<string, string> textures = new(StringComparer.Ordinal);
-        if (material != null)
-        {
-            CaptureMaterialProperties(material, parameters, textures);
-        }
-
         int primitiveCount = mesh.PrimitiveType switch
         {
             PrimitiveType.TriangleList => indices.Count / 3,
@@ -186,26 +185,88 @@ internal static class TrackRuntimeSceneExporter
             _ => 0,
         };
 
-        return new TrackRuntimeSceneDrawnMeshRecord
+        string vertexHash = HashVertices(vertices);
+        string indexHash = HashIndices(indices);
+
+        if (mesh.SubMeshes.Count == 0)
         {
-            EntityName = entity.Name,
-            ComponentPath = path,
-            MeshName = mesh.Name,
-            WorldMatrix = ToMatrixRows(subMesh.WorldMatrixWithScale),
-            MaterialType = material?.GetType().Name,
-            MaterialParameters = parameters,
-            TextureHashes = textures,
-            EntityIsVisible = entity.IsVisible,
-            CastShadows = shadowFlagSource.CastShadows,
-            ReceiveShadows = shadowFlagSource.ReceiveShadows,
-            PrimitiveType = mesh.PrimitiveType.ToString(),
-            HasTangents = mesh.HasTangents,
-            VertexCount = vertices.Count,
-            IndexCount = indices.Count,
-            PrimitiveCount = primitiveCount,
-            VertexHash = HashVertices(vertices),
-            IndexHash = HashIndices(indices),
-        };
+            MaterialBase? meshMaterial = GetMaterialOverride(subMesh.MaterialOverridesBySlotIndex, mesh.MaterialSlotIndex) ?? mesh.Material;
+            drawnMeshes.Add(CreateRecord(meshMaterial, null));
+            return;
+        }
+
+        for (int subMeshIndex = 0; subMeshIndex < mesh.SubMeshes.Count; subMeshIndex++)
+        {
+            SubMesh drawnRange = mesh.SubMeshes[subMeshIndex];
+            // Same order as StaticMeshRendererComponent: instance override, SubMesh material, mesh material.
+            MaterialBase? drawnMaterial = GetMaterialOverride(subMesh.MaterialOverridesBySlotIndex, drawnRange.MaterialSlotIndex)
+                ?? drawnRange.Material
+                ?? mesh.Material;
+            drawnMeshes.Add(CreateRecord(drawnMaterial, subMeshIndex));
+        }
+
+        TrackRuntimeSceneDrawnMeshRecord CreateRecord(MaterialBase? material, int? subMeshIndex)
+        {
+            SortedDictionary<string, string> parameters = new(StringComparer.Ordinal);
+            SortedDictionary<string, string> textures = new(StringComparer.Ordinal);
+            if (material != null)
+            {
+                CaptureMaterialProperties(material, parameters, textures);
+            }
+
+            SubMesh? range = subMeshIndex.HasValue ? mesh.SubMeshes[subMeshIndex.Value] : null;
+            return new TrackRuntimeSceneDrawnMeshRecord
+            {
+                EntityName = entity.Name,
+                ComponentPath = path,
+                MeshName = mesh.Name,
+                WorldMatrix = ToMatrixRows(subMesh.WorldMatrixWithScale),
+                MaterialType = material?.GetType().Name,
+                MaterialParameters = parameters,
+                TextureHashes = textures,
+                EntityIsVisible = entity.IsVisible,
+                CastShadows = shadowFlagSource.CastShadows,
+                ReceiveShadows = shadowFlagSource.ReceiveShadows,
+                PrimitiveType = mesh.PrimitiveType.ToString(),
+                HasTangents = mesh.HasTangents,
+                VertexCount = vertices.Count,
+                IndexCount = indices.Count,
+                PrimitiveCount = primitiveCount,
+                VertexHash = vertexHash,
+                IndexHash = indexHash,
+                SubMeshIndex = subMeshIndex,
+                SubMeshIndexStart = range?.IndexStart,
+                SubMeshPrimitiveCount = range?.PrimitiveCount,
+                RenderFeatures = material == null ? null : CaptureRenderFeatures(material, mesh, materialCache),
+            };
+        }
+    }
+
+    private static MaterialBase? GetMaterialOverride(IReadOnlyDictionary<int, MaterialBase>? overridesBySlotIndex, int slotIndex)
+    {
+        if (overridesBySlotIndex == null || slotIndex < 0)
+        {
+            return null;
+        }
+
+        return overridesBySlotIndex.TryGetValue(slotIndex, out MaterialBase? materialOverride) ? materialOverride : null;
+    }
+
+    /// <summary>
+    /// The features StaticMeshRendererComponent puts on the render item: the compiled material's when its id is in
+    /// the compiled-material cache, otherwise RenderFeatureResolver.Resolve. Sorted flag names.
+    /// </summary>
+    private static List<string> CaptureRenderFeatures(MaterialBase material, StaticModelMesh mesh, MaterialCache? materialCache)
+    {
+        ShaderFeature features = material.Id != Guid.Empty && materialCache != null && materialCache.TryGet(material.Id, out var compiledMaterial)
+            ? compiledMaterial.Features
+            : RenderFeatureResolver.Resolve(new RenderFeatureInput { Material = material, Mesh = mesh });
+
+        return Enum.GetValues<ShaderFeature>()
+            .Where(flag => flag != ShaderFeature.None && features.HasFlag(flag))
+            .Select(static flag => flag.ToString())
+            .Order(StringComparer.Ordinal)
+            .ToList();
     }
 
     private static void CaptureMaterialProperties(MaterialBase material, SortedDictionary<string, string> parameters, SortedDictionary<string, string> textures)
@@ -548,6 +609,16 @@ internal static class TrackRuntimeSceneExporter
         public string VertexHash { get; set; } = string.Empty;
 
         public string IndexHash { get; set; } = string.Empty;
+
+        /// <summary>Index in StaticModelMesh.SubMeshes; absent for a mesh without SubMesh.</summary>
+        public int? SubMeshIndex { get; set; }
+
+        public int? SubMeshIndexStart { get; set; }
+
+        public int? SubMeshPrimitiveCount { get; set; }
+
+        /// <summary>Names of the ShaderFeature flags the renderer draws this record with, sorted; absent without material.</summary>
+        public List<string>? RenderFeatures { get; set; }
     }
 
     internal sealed class TrackRuntimeSceneEntityRecord

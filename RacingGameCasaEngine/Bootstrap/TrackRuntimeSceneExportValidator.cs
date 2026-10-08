@@ -129,7 +129,7 @@ internal sealed class TrackRuntimeSceneExportValidator
                     return;
                 }
 
-                _trackSnapshots.Add(TrackRuntimeSceneExporter.CaptureTrack(RaceFrontEndCatalog.Tracks[_trackIndex].Name, exportWorld));
+                _trackSnapshots.Add(TrackRuntimeSceneExporter.CaptureTrack(RaceFrontEndCatalog.Tracks[_trackIndex].Name, exportWorld, _game.MaterialCache));
                 Advance(ExportStep.ReturnToFrontEnd, totalTime, $"Exported runtime scene for {RaceFrontEndCatalog.Tracks[_trackIndex].Name}");
                 break;
 

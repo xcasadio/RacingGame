@@ -5,9 +5,17 @@ A record's key is: mesh name, vertex hash, index hash and material signature (ma
 texture pixel hashes), plus what the exporter records about how the mesh is drawn (primitive type, counts, entity
 visibility, shadow flags). Within a key, records are matched by world matrix, every element within --tolerance.
 
+A mesh with several SubMesh has one record per SubMesh (SubMeshIndex, SubMeshIndexStart, SubMeshPrimitiveCount are
+part of the key); RenderFeatures, the ShaderFeature names the renderer draws the record with, is part of the key too.
+
 usage: compare_race_scene_exports.py <a.json> <b.json> [--tolerance 1e-4] [--renames] [--max-list N]
+                                     [--effective-states] [--ignore-features]
 
 --renames also reports the entity-name changes between matched records (pairs of different names).
+--effective-states maps a null BlendState, DepthStencilState, RasterizerState or SamplerState of both exports to the
+  state RenderStateCache applies: BlendState.Opaque, DepthStencilState.Default, RasterizerState.CullCounterClockwise,
+  SamplerState.AnisotropicClamp (the strings the exporter writes for a named state, GraphicsResource.Name).
+--ignore-features leaves RenderFeatures out of the key (exports taken before the field existed).
 Exit code 1 when any record is unmatched on either side, or a track is missing from one file; 0 otherwise.
 Requires numpy.
 """
@@ -25,14 +33,32 @@ def load_tracks(path):
     return {track["TrackName"]: track.get("DrawnMeshes") for track in data["Tracks"]}
 
 
-def record_key(record):
+EFFECTIVE_STATES = {
+    "BlendState": "BlendState.Opaque",
+    "DepthStencilState": "DepthStencilState.Default",
+    "RasterizerState": "RasterizerState.CullCounterClockwise",
+    "SamplerState": "SamplerState.AnisotropicClamp",
+}
+
+
+def material_parameters(record, args):
+    parameters = record.get("MaterialParameters")
+    if not args.effective_states or not parameters:
+        return parameters
+    return {
+        name: EFFECTIVE_STATES[name] if value == "null" and name in EFFECTIVE_STATES else value
+        for name, value in parameters.items()
+    }
+
+
+def record_key(record, args):
     return json.dumps(
         [
             record.get("MeshName"),
             record.get("VertexHash"),
             record.get("IndexHash"),
             record.get("MaterialType"),
-            record.get("MaterialParameters"),
+            material_parameters(record, args),
             record.get("TextureHashes"),
             record.get("PrimitiveType"),
             record.get("VertexCount"),
@@ -41,6 +67,10 @@ def record_key(record):
             record.get("EntityIsVisible"),
             record.get("CastShadows"),
             record.get("ReceiveShadows"),
+            record.get("SubMeshIndex"),
+            record.get("SubMeshIndexStart"),
+            record.get("SubMeshPrimitiveCount"),
+            None if args.ignore_features else record.get("RenderFeatures"),
         ],
         sort_keys=True,
     )
@@ -74,7 +104,8 @@ def describe(record):
     translation = record["WorldMatrix"][3][:3]
     return (
         f"entity={record['EntityName']} path={record['ComponentPath']} mesh={record['MeshName']} "
-        f"material={record.get('MaterialType')} position=({translation[0]}, {translation[1]}, {translation[2]})"
+        f"material={record.get('MaterialType')} submesh={record.get('SubMeshIndex')} "
+        f"features={record.get('RenderFeatures')} position=({translation[0]}, {translation[1]}, {translation[2]})"
     )
 
 
@@ -82,9 +113,9 @@ def compare_track(name, records_a, records_b, args):
     groups_a = defaultdict(list)
     groups_b = defaultdict(list)
     for record in records_a:
-        groups_a[record_key(record)].append(record)
+        groups_a[record_key(record, args)].append(record)
     for record in records_b:
-        groups_b[record_key(record)].append(record)
+        groups_b[record_key(record, args)].append(record)
 
     unmatched_a = []
     unmatched_b = []
@@ -127,6 +158,8 @@ def main():
     parser.add_argument("--tolerance", type=float, default=1e-4)
     parser.add_argument("--renames", action="store_true")
     parser.add_argument("--max-list", type=int, default=20)
+    parser.add_argument("--effective-states", action="store_true")
+    parser.add_argument("--ignore-features", action="store_true")
     args = parser.parse_args()
 
     tracks_a = load_tracks(args.a)
