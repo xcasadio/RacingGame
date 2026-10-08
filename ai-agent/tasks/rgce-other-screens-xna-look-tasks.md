@@ -355,7 +355,7 @@ Découverte en lecture seule : workflow de 4 agents, chacun contre-vérifié par
 
 ## Phase 3 — Clôture
 
-### ⏳ T3.1 — Validation globale, documentation et rapport de fin
+### ✅ T3.1 — Validation globale, documentation et rapport de fin
 
 - Objectif : « Validation globale », nouvelles références, passe de vérification indépendante, manques MGUI à jour, rapport de fin, index.
 - Validation : liste « Validation globale ».
@@ -365,7 +365,7 @@ Découverte en lecture seule : workflow de 4 agents, chacun contre-vérifié par
 > - références `references-7bbdd39` prises (copie de `ui-run-20261006-210034`) ;
 > - vérification indépendante de l'état `7bbdd39` : CONFIRMED sur les 7 points (son bilan figure dans l'état vérifié de la phase 4).
 >
-> La clôture est reprise en T4.3.
+> La clôture est reprise et faite en T4.3.
 
 ---
 
@@ -480,10 +480,48 @@ Demande de l'auteur : « Désolé je me suis trompé pour l'écran help et optio
 > - Réglages restaurés à l'identique après chaque run.
 > - 🧪 Reste pour l'auteur : le rendu ; chaque ligne au clavier, à la manette et à la souris ; la saisie du nom ; le volume en direct ; l'enregistrement à chaque sortie.
 
-### ⏳ T4.3 — Clôture
+### ✅ T4.3 — Clôture
 
 - Objectif : T3.1 sur l'état final (validation globale, nouvelles références, vérification indépendante, rapport de fin, index).
 - Commit : `docs(racing-casa): close the Highscores, Options and Help plan`
+
+> Validation globale (2026-10-08) :
+> - **Builds et runs** :
+>   - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE ;
+>   - `--smoke-frontend` : code 0, sans avertissement, la résolution appliquée reste vérifiée ;
+>   - captures : `help` et `options` sont identiques d'un run à l'autre, hors rebond du logo ; contre `references-7bbdd39`, seuls `help` et `options` changent, le reste étant des écarts de timing.
+> - **Mesures** aux trois tailles : notes de T2.2, T4.1 et T4.2.
+> - **Éditeur** : les trois `.uiscreen` s'ouvrent sans erreur.
+> - **Nouvelles références** : `references-08c6c19` (copie de `ui-run-20261008-093950`).
+> - **Vérification indépendante** de l'état final (`d0d1c0f`, `08c6c19`) : CONFIRMED sur les 5 points. Elle a refait les mesures aux trois tailles, le build (aussi sans incrémental), le smoke, les captures, les éditeurs et la reproductibilité du générateur. Ses remarques, toutes P4 :
+>   - `help` n'est identique d'un run à l'autre qu'en dehors de la zone de rebond du logo, déjà noté en T4.1. Noté ;
+>   - M1 de `docs/mgui-gaps-from-rgce-xaml-screens.md` parlait encore de « Vertical Sync » coloré : corrigé dans ce commit (« driving modes ») ;
+>   - un run de la sonde en 1024×768 a expiré à l'étape `race-finished`, après les captures de Help et d'Options ; le run suivant a réussi. Sans lien, noté ;
+>   - dans l'un de ses deux runs, le menu principal différait autour du bouton « ? » : survol ou timing de la vraie souris, écran non touché. Noté.
+> - Les remarques A1 à A3 de la vérification de `7bbdd39` sont traitées : seuil du stick documenté dans l'ADR-0014, ordre des arrêts réécrit dans P13, commentaires à l'ADR-0014.
+>
+> Rapport de fin :
+> - **Highscores** au look d'origine : bande, en-tête, onglets, ligne de séparation et tableau en GameFont, couleurs, entrées et sons de l'original, ouverture sur Advanced. Les données restent le catalogue de RGCE.
+> - **Help** : la disposition d'avant au style des menus. Bande, en-tête HELP, les quatre sections joueur (titres orange, lignes blanches à 0,75), sans barre de défilement, bouton BACK.
+> - **Options** : la disposition d'avant dans le vocabulaire de l'original :
+>   - libellés GameFont ;
+>   - champ du nom de l'original ;
+>   - valeurs choisies en ambre ;
+>   - pastilles rondes ;
+>   - curseurs sur le trait de l'original.
+>
+>   Le comportement de T2.3 est gardé : flèche sur chaque ligne, Entrée ou A, gauche et droite, nom tapé directement, volume en direct, enregistrement à toute sortie.
+> - **Commun** : bouton BACK, sons de menu, garde de première image, sans focus MGUI, mise en page par `LegacyScreenLayout`.
+> - **Moteur** : pointeur `CasaEngine` à `19aa21f`.
+> - **Décisions** : ADR-0013, puis ADR-0014 qui la remplace ; ADR-0004 remplacée.
+> - **Écarts connus** (ADR-0014) :
+>   - scores non enregistrés ;
+>   - Help et Options sans la disposition de l'original ;
+>   - seuil du stick à 0,5 ;
+>   - post-effet, scène 3D et curseur de l'original non reproduits.
+> - **Points ouverts pour l'auteur** :
+>   - vérifications manuelles de T2.2, T4.1 et T4.2 : rendu, entrées, sons, saisie du nom, volume en direct, enregistrement à chaque sortie ;
+>   - suite possible : figer le rebond du logo pendant les captures automatiques. Il fait varier d'un run à l'autre tous les écrans de menu, depuis que le timing est moins stable.
 
 ---
 
