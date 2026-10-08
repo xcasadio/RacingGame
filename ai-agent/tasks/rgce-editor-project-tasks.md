@@ -819,7 +819,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
   - **Duplication** : une entité génératrice dupliquée dans l'éditeur pourrait copier ses enfants générés. Avant de générer, un générateur retire les enfants générés qu'il trouve ;
   - **Noms courts** : les types ajoutés en T4.3 et T4.5 repassent le contrôle des noms.
 
-### ⏳ T4.1 — Audit de piste reproductible, export par maillage dessiné et références de S4
+### ✅ T4.1 — Audit de piste reproductible, export par maillage dessiné et références de S4
 
 - **Objectif** : rendre A4 mesurable pour S4 à S6 (P9).
 - **Fichiers** :
@@ -844,6 +844,31 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
   - `--smoke-frontend` sort avec le code 0, les captures d'interface restent à 0,00 contre `references-acb6ad9`, et les audits des voitures sont identiques à ceux de S0 ;
   - build à 0 erreur.
 - **Commit** : `test(racing-casa): make the track audit repeatable and export every drawn mesh`
+
+> Validation (2026-10-08) :
+> - **Drapeau** : `IsCameraPosedByAutomation` est levé et baissé avec la caméra de débogage par le validateur, et remis à zéro aux deux endroits de la session. La caméra libre ne touche plus ni la caméra ni la souris quand il est levé.
+> - **Le drapeau seul ne suffisait pas** : avec lui seul, deux lancements différaient encore sur 2 vues (4,08 et 39,5). Trois autres causes, toutes dans le validateur, ont été corrigées :
+>   1. **image périmée** : la capture encode un PNG pendant une mise à jour, puis la boucle à pas fixe rattrape sans dessiner. 250 ms de temps de jeu peuvent donc passer sans image, et la capture suivante relit la vue précédente (mémoire de session). Le validateur attend en plus 3 dessins entre deux étapes, comptés par `RacingGameCasaEngineGame.DrawCount`, une surcharge de `Draw` qui appelle la base puis compte ;
+>   2. **roulis du rig de poursuite** : la vue « look-at » prend l'axe haut de l'orientation du composant, que le rig laisse figée à une valeur qui dépend du nombre de mises à jour (`ChaseCameraRigComponent.cs:234`). Une pose remet l'orientation à l'identité (`PoseCamera`) ;
+>   3. **vue de poursuite non stabilisée** : le rig lisse sa pose (6 et 7,5 par seconde). La capture `chase-road-only` attend 2 000 ms, moins que le compte à rebours de 3 s. Le feu est masqué dans cette vue, et les chronos du HUD lisent encore 0:00.00.
+>   L'audit prend environ 0,5 s de plus par piste.
+> - **Export** :
+>   - section `DrawnMeshes`, un enregistrement par sous-maillage dessiné : entité, chemin des composants, maillage, matrice, type et paramètres du matériau, SHA-1 des pixels de chaque texture (mip 0, avec taille et format), drapeaux de dessin et d'ombres, nombres de sommets, d'indices et de primitives, SHA-1 des sommets et des indices ;
+>   - `StaticModelMesh` n'expose pas ses tangentes : l'empreinte couvre positions, normales et coordonnées de texture, et `HasTangents` est noté ;
+>   - les chemins de composants contiennent des GUID tirés à chaque lancement (`Object <guid>/…`) ; la comparaison les ignore.
+> - **Scripts** :
+>   - `scripts/compare_race_scene_exports.py`, avec `--renames`, `--tolerance` et `--max-list` ; sa clé comprend aussi les drapeaux et les nombres ;
+>   - `scripts/compare_track_audit.py`, avec `--threshold`.
+> - **Références** dans `artifacts/editor-project-baseline/s4/` :
+>   - `track-audit-a/` et `-b/` : les 21 vues à 0,000 sur chaque canal. 4 lancements de plus, soit 5 paires, sont aussi à 0,000 partout ;
+>   - `scene-a.json` et `-b.json` : 1 074, 689 et 2 156 maillages (Advanced, Beginner, Expert), tous appariés, 0 renommé ;
+>   - la partie « entités » de `scene-a.json` est identique à `scene-t3.5.json`.
+> - **Contrôle négatif** : `Road.png` renommé dans la sortie, puis remis (SHA-1 `e2b98833…`, identique à la source). L'audit dépasse 0,5 sur 18 vues sur 21, de 3 à 55 ; les vues d'ensemble du terrain restent dessous. La comparaison des exports signale les 6 maillages `<piste>.Road`.
+> - **Autres contrôles** :
+>   - `dotnet build RacingGame.slnx` : 0 erreur ;
+>   - `--smoke-frontend` : code 0 ;
+>   - `--capture-ui-screens` : 0,00 sur les 10 états ;
+>   - audits des voitures identiques à S0, dans `s4/car-audits/`.
 
 ### ⏳ T4.2 — Code de jeu dans `RacingGame.Gameplay` (P5)
 

@@ -393,10 +393,24 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         IsMouseVisible = !debugCameraActive && RuntimeContext.ProjectSettings.IsMouseVisible;
     }
 
+    /// <summary>Number of completed draws. A capture reads the last presented frame, so automation waits on draws, not on game time.</summary>
+    internal long DrawCount { get; private set; }
+
+    protected override void Draw(GameTime gameTime)
+    {
+        base.Draw(gameTime);
+        DrawCount++;
+    }
+
     internal void SetDebugCameraEnabled(bool enabled)
     {
         RaceSession.SetDebugCameraEnabled(enabled);
         ApplyDebugMouseCursorState();
+    }
+
+    internal void SetCameraPosedByAutomation(bool posed)
+    {
+        RaceSession.SetCameraPosedByAutomation(posed);
     }
 
     internal void SetCircuitOnlyViewEnabled(bool enabled)

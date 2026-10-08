@@ -1,3 +1,8 @@
+using System.Buffers.Binary;
+using System.Globalization;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CasaEngine.Framework.Entities;
@@ -5,6 +10,7 @@ using CasaEngine.Framework.Entities.Components;
 using CasaEngine.Framework.Materials;
 using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using RacingGameCasaEngine.Worlds;
 using XnaQuaternion = Microsoft.Xna.Framework.Quaternion;
 
@@ -26,6 +32,17 @@ internal static class TrackRuntimeSceneExporter
             .Select(CaptureEntity)
             .ToList();
 
+        List<TrackRuntimeSceneDrawnMeshRecord> drawnMeshes = [];
+        foreach (Entity entity in world.Entities
+                     .Where(RaceWorldFactory.IsRaceRenderableEntity)
+                     .OrderBy(static entity => entity.Name, StringComparer.Ordinal))
+        {
+            if (entity.RootComponent != null)
+            {
+                CollectDrawnMeshes(entity, entity.RootComponent, string.Empty, drawnMeshes);
+            }
+        }
+
         return new TrackRuntimeSceneSnapshot
         {
             TrackName = trackName,
@@ -34,6 +51,7 @@ internal static class TrackRuntimeSceneExporter
             VisibleEntityCount = entities.Count(static entity => entity.IsVisible),
             ComparisonTargetCount = entities.Count(static entity => entity.IncludeInDeterministicComparison),
             Entities = entities,
+            DrawnMeshes = drawnMeshes,
         };
     }
 
@@ -113,6 +131,264 @@ internal static class TrackRuntimeSceneExporter
         {
             CollectSubMeshes(child, subMeshes);
         }
+    }
+
+    private static void CollectDrawnMeshes(Entity entity, SceneComponent component, string parentPath, List<TrackRuntimeSceneDrawnMeshRecord> drawnMeshes)
+    {
+        string path = parentPath.Length == 0 ? component.Name : parentPath + "/" + component.Name;
+        if (component is StaticModelSubMeshComponent subMesh && subMesh.ModelMesh != null)
+        {
+            drawnMeshes.Add(CaptureDrawnMesh(entity, subMesh, path));
+        }
+
+        foreach (SceneComponent child in component.Children)
+        {
+            CollectDrawnMeshes(entity, child, path, drawnMeshes);
+        }
+    }
+
+    private static TrackRuntimeSceneDrawnMeshRecord CaptureDrawnMesh(Entity entity, StaticModelSubMeshComponent subMesh, string path)
+    {
+        StaticModelMesh mesh = subMesh.ModelMesh;
+        MaterialBase? material = mesh.Material;
+        IReadOnlyList<VertexPositionNormalTexture> vertices = mesh.GetVertices();
+        IReadOnlyList<uint> indices = mesh.GetIndices();
+
+        // Same rule as StaticModelSubMeshComponent.Draw: a generated sub-mesh takes the shadow flags of its StaticModelComponent.
+        PrimitiveComponent shadowFlagSource = subMesh;
+        if (subMesh.IsGeneratedFromModel)
+        {
+            for (SceneComponent? current = subMesh.Parent; current != null; current = current.Parent)
+            {
+                if (current is StaticModelComponent staticModelComponent)
+                {
+                    shadowFlagSource = staticModelComponent;
+                    break;
+                }
+            }
+        }
+
+        SortedDictionary<string, string> parameters = new(StringComparer.Ordinal);
+        SortedDictionary<string, string> textures = new(StringComparer.Ordinal);
+        if (material != null)
+        {
+            CaptureMaterialProperties(material, parameters, textures);
+        }
+
+        int primitiveCount = mesh.PrimitiveType switch
+        {
+            PrimitiveType.TriangleList => indices.Count / 3,
+            PrimitiveType.TriangleStrip => Math.Max(0, indices.Count - 2),
+            PrimitiveType.LineList => indices.Count / 2,
+            PrimitiveType.LineStrip => Math.Max(0, indices.Count - 1),
+            _ => 0,
+        };
+
+        return new TrackRuntimeSceneDrawnMeshRecord
+        {
+            EntityName = entity.Name,
+            ComponentPath = path,
+            MeshName = mesh.Name,
+            WorldMatrix = ToMatrixRows(subMesh.WorldMatrixWithScale),
+            MaterialType = material?.GetType().Name,
+            MaterialParameters = parameters,
+            TextureHashes = textures,
+            EntityIsVisible = entity.IsVisible,
+            CastShadows = shadowFlagSource.CastShadows,
+            ReceiveShadows = shadowFlagSource.ReceiveShadows,
+            PrimitiveType = mesh.PrimitiveType.ToString(),
+            HasTangents = mesh.HasTangents,
+            VertexCount = vertices.Count,
+            IndexCount = indices.Count,
+            PrimitiveCount = primitiveCount,
+            VertexHash = HashVertices(vertices),
+            IndexHash = HashIndices(indices),
+        };
+    }
+
+    private static void CaptureMaterialProperties(MaterialBase material, SortedDictionary<string, string> parameters, SortedDictionary<string, string> textures)
+    {
+        foreach (PropertyInfo property in material.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (!property.CanRead || property.GetIndexParameters().Length > 0 || property.GetMethod?.IsPublic != true)
+            {
+                continue;
+            }
+
+            Type type = property.PropertyType;
+            if (type == typeof(Guid) || property.Name.EndsWith("AssetId", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            object? value = property.GetValue(material);
+            if (typeof(Texture).IsAssignableFrom(type))
+            {
+                textures[property.Name] = value is Texture2D or TextureCube ? HashTexture((Texture)value) : "none";
+                continue;
+            }
+
+            string? formatted = FormatSimpleValue(value, type);
+            if (formatted != null)
+            {
+                parameters[property.Name] = formatted;
+            }
+        }
+    }
+
+    private static string? FormatSimpleValue(object? value, Type type)
+    {
+        if (value is float single)
+        {
+            return single.ToString("R", CultureInfo.InvariantCulture);
+        }
+
+        if (value is double or decimal or bool or byte or sbyte or short or ushort or int or uint or long or ulong || type.IsEnum)
+        {
+            return Convert.ToString(value, CultureInfo.InvariantCulture);
+        }
+
+        return value switch
+        {
+            Vector2 v2 => Join(v2.X, v2.Y),
+            Vector3 v3 => Join(v3.X, v3.Y, v3.Z),
+            Vector4 v4 => Join(v4.X, v4.Y, v4.Z, v4.W),
+            Microsoft.Xna.Framework.Color color => $"{color.R},{color.G},{color.B},{color.A}",
+            XnaQuaternion quaternion => Join(quaternion.X, quaternion.Y, quaternion.Z, quaternion.W),
+            _ => FormatStateObject(value, type),
+        };
+    }
+
+    private static string? FormatStateObject(object? value, Type type)
+    {
+        if (type != typeof(BlendState) && type != typeof(DepthStencilState) && type != typeof(RasterizerState) && type != typeof(SamplerState))
+        {
+            return null;
+        }
+
+        return value == null ? "null" : ((GraphicsResource)value).Name ?? "<unnamed " + value.GetType().Name + ">";
+    }
+
+    private static string Join(params float[] values)
+    {
+        return string.Join(",", values.Select(static v => v.ToString("R", CultureInfo.InvariantCulture)));
+    }
+
+    private static readonly ConditionalWeakTable<Texture, string> TextureHashCache = new();
+
+    private static string HashTexture(Texture texture)
+    {
+        if (TextureHashCache.TryGetValue(texture, out string? cached))
+        {
+            return cached;
+        }
+
+        string hash;
+        try
+        {
+            using IncrementalHash sha1 = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
+            if (texture is Texture2D texture2D)
+            {
+                AppendTextureLevel(sha1, texture2D.Width, texture2D.Height, texture2D.Format, data => texture2D.GetData(data));
+            }
+            else
+            {
+                var cube = (TextureCube)texture;
+                foreach (CubeMapFace face in Enum.GetValues<CubeMapFace>())
+                {
+                    CubeMapFace currentFace = face;
+                    AppendTextureLevel(sha1, cube.Size, cube.Size, cube.Format, data => cube.GetData(currentFace, data));
+                }
+            }
+
+            hash = Convert.ToHexString(sha1.GetHashAndReset()).ToLowerInvariant();
+        }
+        catch (Exception exception)
+        {
+            hash = "unreadable:" + exception.GetType().Name;
+        }
+
+        TextureHashCache.Add(texture, hash);
+        return hash;
+    }
+
+    private static void AppendTextureLevel(IncrementalHash sha1, int width, int height, SurfaceFormat format, Action<byte[]> getData)
+    {
+        byte[] data = new byte[GetLevelByteCount(width, height, format)];
+        getData(data);
+        Span<byte> header = stackalloc byte[12];
+        BinaryPrimitives.WriteInt32LittleEndian(header, width);
+        BinaryPrimitives.WriteInt32LittleEndian(header[4..], height);
+        BinaryPrimitives.WriteInt32LittleEndian(header[8..], (int)format);
+        sha1.AppendData(header);
+        sha1.AppendData(data);
+    }
+
+    private static int GetLevelByteCount(int width, int height, SurfaceFormat format)
+    {
+        switch (format)
+        {
+            case SurfaceFormat.Color:
+            case SurfaceFormat.Bgra32:
+            case SurfaceFormat.Rgba1010102:
+            case SurfaceFormat.Single:
+                return width * height * 4;
+            case SurfaceFormat.Alpha8:
+                return width * height;
+            case SurfaceFormat.Bgr565:
+            case SurfaceFormat.Bgra5551:
+            case SurfaceFormat.Bgra4444:
+                return width * height * 2;
+            case SurfaceFormat.HalfVector4:
+            case SurfaceFormat.Rgba64:
+                return width * height * 8;
+            case SurfaceFormat.Vector4:
+                return width * height * 16;
+            case SurfaceFormat.Dxt1:
+                return (width + 3) / 4 * ((height + 3) / 4) * 8;
+            case SurfaceFormat.Dxt3:
+            case SurfaceFormat.Dxt5:
+                return (width + 3) / 4 * ((height + 3) / 4) * 16;
+            default:
+                throw new NotSupportedException("Surface format " + format);
+        }
+    }
+
+    private static string HashVertices(IReadOnlyList<VertexPositionNormalTexture> vertices)
+    {
+        // Positions, normals, texture coordinates. StaticModelMesh does not expose its tangent array.
+        byte[] buffer = new byte[vertices.Count * 8 * sizeof(float)];
+        int offset = 0;
+        foreach (VertexPositionNormalTexture vertex in vertices)
+        {
+            WriteFloat(buffer, ref offset, vertex.Position.X);
+            WriteFloat(buffer, ref offset, vertex.Position.Y);
+            WriteFloat(buffer, ref offset, vertex.Position.Z);
+            WriteFloat(buffer, ref offset, vertex.Normal.X);
+            WriteFloat(buffer, ref offset, vertex.Normal.Y);
+            WriteFloat(buffer, ref offset, vertex.Normal.Z);
+            WriteFloat(buffer, ref offset, vertex.TextureCoordinate.X);
+            WriteFloat(buffer, ref offset, vertex.TextureCoordinate.Y);
+        }
+
+        return Convert.ToHexString(SHA1.HashData(buffer)).ToLowerInvariant();
+    }
+
+    private static string HashIndices(IReadOnlyList<uint> indices)
+    {
+        byte[] buffer = new byte[indices.Count * sizeof(uint)];
+        for (int i = 0; i < indices.Count; i++)
+        {
+            BinaryPrimitives.WriteUInt32LittleEndian(buffer.AsSpan(i * sizeof(uint)), indices[i]);
+        }
+
+        return Convert.ToHexString(SHA1.HashData(buffer)).ToLowerInvariant();
+    }
+
+    private static void WriteFloat(byte[] buffer, ref int offset, float value)
+    {
+        BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(offset), BitConverter.SingleToInt32Bits(value));
+        offset += sizeof(float);
     }
 
     private static string ClassifyEntityKind(string? entityName)
@@ -229,6 +505,47 @@ internal static class TrackRuntimeSceneExporter
         public int ComparisonTargetCount { get; set; }
 
         public List<TrackRuntimeSceneEntityRecord> Entities { get; set; } = [];
+
+        public List<TrackRuntimeSceneDrawnMeshRecord> DrawnMeshes { get; set; } = [];
+    }
+
+    internal sealed class TrackRuntimeSceneDrawnMeshRecord
+    {
+        public string EntityName { get; set; } = string.Empty;
+
+        /// <summary>Component names from the root component, joined with '/'.</summary>
+        public string ComponentPath { get; set; } = string.Empty;
+
+        public string? MeshName { get; set; }
+
+        public float[][] WorldMatrix { get; set; } = [];
+
+        public string? MaterialType { get; set; }
+
+        public SortedDictionary<string, string> MaterialParameters { get; set; } = new(StringComparer.Ordinal);
+
+        /// <summary>SHA-1 of the pixel data of every texture property of the material, by property name.</summary>
+        public SortedDictionary<string, string> TextureHashes { get; set; } = new(StringComparer.Ordinal);
+
+        public bool EntityIsVisible { get; set; }
+
+        public bool CastShadows { get; set; }
+
+        public bool ReceiveShadows { get; set; }
+
+        public string PrimitiveType { get; set; } = string.Empty;
+
+        public bool HasTangents { get; set; }
+
+        public int VertexCount { get; set; }
+
+        public int IndexCount { get; set; }
+
+        public int PrimitiveCount { get; set; }
+
+        public string VertexHash { get; set; } = string.Empty;
+
+        public string IndexHash { get; set; } = string.Empty;
     }
 
     internal sealed class TrackRuntimeSceneEntityRecord

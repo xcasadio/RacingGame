@@ -34,12 +34,21 @@ internal sealed class TrackMigrationCaptureValidator
         Failed,
     }
 
+    private const int MinDrawsBetweenSteps = 3;
+    private static readonly TimeSpan DefaultStepDelay = TimeSpan.FromMilliseconds(250);
+
+    // The chase rig smooths its pose (6 and 7.5 per second): after this delay it has converged, so the chase view
+    // no longer depends on how many updates ran. The start light is hidden in the road-only view.
+    private static readonly TimeSpan ChaseSettleDelay = TimeSpan.FromMilliseconds(2000);
+
     private readonly RacingGameCasaEngineGame _game;
     private readonly RaceFrontEndFlow _flow;
     private readonly List<string> _capturePaths = [];
     private CaptureStep _step = CaptureStep.WaitForFrontEnd;
     private TimeSpan _startedAt;
     private TimeSpan _lastTransitionAt;
+    private long _drawCountAtTransition;
+    private TimeSpan _stepDelay = DefaultStepDelay;
     private bool _started;
     private int _trackIndex;
 
@@ -71,7 +80,14 @@ internal sealed class TrackMigrationCaptureValidator
             return;
         }
 
-        if (totalTime - _lastTransitionAt < TimeSpan.FromMilliseconds(250))
+        if (totalTime - _lastTransitionAt < _stepDelay)
+        {
+            return;
+        }
+
+        // A capture synchronously encodes a PNG, then the fixed-timestep loop runs catch-up updates without drawing:
+        // game time alone can elapse with no frame drawn, and the next capture would read the previous view.
+        if (_game.DrawCount - _drawCountAtTransition < MinDrawsBetweenSteps)
         {
             return;
         }
@@ -111,12 +127,13 @@ internal sealed class TrackMigrationCaptureValidator
             case CaptureStep.PrepareChaseRoadOnly:
                 _game.SetDebugCameraEnabled(false);
                 _game.SetCircuitOnlyViewEnabled(true);
-                Advance(CaptureStep.CaptureChaseRoadOnly, totalTime, "Prepared chase-camera road-only view");
+                Advance(CaptureStep.CaptureChaseRoadOnly, totalTime, "Prepared chase-camera road-only view", ChaseSettleDelay);
                 break;
 
             case CaptureStep.CaptureChaseRoadOnly:
                 CaptureCurrentView("chase-road-only");
                 _game.SetDebugCameraEnabled(true);
+                _game.SetCameraPosedByAutomation(true);
                 Advance(CaptureStep.PrepareRoadOnlyStart, totalTime, "Captured chase-camera road-only view");
                 break;
 
@@ -207,6 +224,7 @@ internal sealed class TrackMigrationCaptureValidator
             case CaptureStep.ReturnToFrontEnd:
                 _game.SetCircuitOnlyViewEnabled(false);
                 _game.SetDebugCameraEnabled(false);
+                _game.SetCameraPosedByAutomation(false);
                 _flow.ReturnToFrontEndForAutomation();
                 _trackIndex++;
                 Advance(CaptureStep.WaitForFrontEnd, totalTime, "Returning to front-end for next track");
@@ -256,7 +274,7 @@ internal sealed class TrackMigrationCaptureValidator
 
         Vector3 target = playerStartRoot.Position + forward * 8.0f;
         Vector3 position = playerStartRoot.Position - forward * 20.0f + worldUp * 10.0f + right * 5.0f;
-        camera.SetPositionAndTarget(position, target);
+        PoseCamera(camera, position, target);
     }
 
     private bool PrepareCheckpointView(int checkpointIndex, bool roadOnly)
@@ -296,7 +314,7 @@ internal sealed class TrackMigrationCaptureValidator
 
         Vector3 position = currentPosition - direction * 18.0f + Vector3.Up * 12.0f + Vector3.Right * 4.0f;
         Vector3 target = currentPosition + direction * 6.0f;
-        camera.SetPositionAndTarget(position, target);
+        PoseCamera(camera, position, target);
         return true;
     }
 
@@ -330,7 +348,7 @@ internal sealed class TrackMigrationCaptureValidator
         float distance = Math.Max(horizontalSpan * 0.55f, 90f);
         Vector3 position = center + new Vector3(-distance * 0.6f, Math.Max(size.Y, 40f) + 70f, -distance * 0.6f);
         Vector3 target = center + Vector3.Up * Math.Max(8f, size.Y * 0.1f);
-        camera.SetPositionAndTarget(position, target);
+        PoseCamera(camera, position, target);
         return true;
     }
 
@@ -343,6 +361,14 @@ internal sealed class TrackMigrationCaptureValidator
         {
             _capturePaths.Add(capturePath);
         }
+    }
+
+    private static void PoseCamera(CameraLookAtComponent camera, Vector3 position, Vector3 target)
+    {
+        // The look-at view matrix uses the component's Up, which comes from its orientation. The chase rig leaves
+        // an orientation that depends on how many updates it ran, so a pose must reset it to be repeatable.
+        camera.LocalOrientation = Quaternion.Identity;
+        camera.SetPositionAndTarget(position, target);
     }
 
     private bool TryGetRaceCamera([NotNullWhen(true)] out CameraLookAtComponent? camera, [NotNullWhen(true)] out World? world)
@@ -359,11 +385,13 @@ internal sealed class TrackMigrationCaptureValidator
         return camera != null;
     }
 
-    private void Advance(CaptureStep nextStep, TimeSpan totalTime, string message)
+    private void Advance(CaptureStep nextStep, TimeSpan totalTime, string message, TimeSpan? stepDelay = null)
     {
         Logs.WriteInfo($"Track capture audit: {message}");
         _step = nextStep;
         _lastTransitionAt = totalTime;
+        _drawCountAtTransition = _game.DrawCount;
+        _stepDelay = stepDelay ?? DefaultStepDelay;
     }
 
     private void Complete()

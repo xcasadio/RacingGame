@@ -43,7 +43,7 @@ public sealed class DebugFreeCameraComponent : EntityComponent
         }
 
         RuntimeRaceSession session = game.RaceSession;
-        if (!session.IsActive || !session.IsDebugCameraEnabled)
+        if (!session.IsActive || !session.IsDebugCameraEnabled || session.IsCameraPosedByAutomation)
         {
             _wasActive = false;
             return;

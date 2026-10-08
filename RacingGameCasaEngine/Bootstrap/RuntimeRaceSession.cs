@@ -34,6 +34,12 @@ internal sealed class RuntimeRaceSession
 
     public bool IsDebugCameraEnabled { get; private set; }
 
+    /// <summary>
+    /// True while an automation (the track audit) poses the camera itself, so that the free debug camera
+    /// neither rewrites the camera nor reads the mouse. The other effects of the debug camera stay.
+    /// </summary>
+    public bool IsCameraPosedByAutomation { get; private set; }
+
     public bool IsCircuitOnlyViewEnabled { get; private set; }
 
     public VehicleDrivingMode DrivingMode { get; private set; } = VehicleDrivingMode.Arcade;
@@ -56,6 +62,7 @@ internal sealed class RuntimeRaceSession
         DrivingMode = gameMode.DrivingMode;
         RefreshTrackMetadata(TrackName);
         IsDebugCameraEnabled = false;
+        IsCameraPosedByAutomation = false;
         IsCircuitOnlyViewEnabled = false;
 
         ResetMovementDebugEntries();
@@ -87,6 +94,11 @@ internal sealed class RuntimeRaceSession
         IsDebugCameraEnabled = enabled;
     }
 
+    public void SetCameraPosedByAutomation(bool posed)
+    {
+        IsCameraPosedByAutomation = posed;
+    }
+
     public bool ToggleCircuitOnlyView()
     {
         IsCircuitOnlyViewEnabled = !IsCircuitOnlyViewEnabled;
@@ -111,6 +123,7 @@ internal sealed class RuntimeRaceSession
         ReferenceLapTimes = Array.Empty<string>();
         ReferenceLapTimesMilliseconds = Array.Empty<int>();
         IsDebugCameraEnabled = false;
+        IsCameraPosedByAutomation = false;
         IsCircuitOnlyViewEnabled = false;
         DrivingMode = VehicleDrivingMode.Arcade;
     }
