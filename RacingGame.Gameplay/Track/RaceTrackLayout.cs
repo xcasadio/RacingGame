@@ -862,10 +862,11 @@ internal sealed class RaceTrackLayout
         }
 
         List<LegacyRoadHelperPosition> helperPositions = BuildRoadHelperPositions(roadPoints, roadHelpers);
-        var random = CreateDeterministicTrackRandom(trackName);
 
-        AddPalmAndLaternPlacements(roadPoints, helperPositions, placementState, random);
-        AddSignAndCheckpointPlacements(roadPoints, placementState, random);
+        // The palms draw from their own sequence, so the road helpers do not change the models the checkpoint
+        // banners and the signs draw from the other one.
+        AddPalmAndLaternPlacements(roadPoints, helperPositions, placementState, CreateDeterministicTrackRandom(trackName, "Palms"));
+        AddSignAndCheckpointPlacements(roadPoints, placementState, CreateDeterministicTrackRandom(trackName, "Helpers"));
     }
 
     private static List<LegacyRoadHelperPosition> BuildRoadHelperPositions(
@@ -1175,7 +1176,7 @@ internal sealed class RaceTrackLayout
         return Vector3.CatmullRom(p1, p2, p3, p4, amount);
     }
 
-    private static Random CreateDeterministicTrackRandom(string trackName)
+    private static Random CreateDeterministicTrackRandom(string trackName, string sequenceName)
     {
         // System.HashCode is randomized per process, so the seed uses a stable FNV-1a hash instead:
         // the same track must get the same scenery on every launch.
@@ -1183,7 +1184,7 @@ internal sealed class RaceTrackLayout
         const uint FnvPrime = 16777619u;
 
         uint hash = FnvOffsetBasis;
-        foreach (byte value in Encoding.UTF8.GetBytes($"{trackName.ToUpperInvariant()}|LegacyTrackSceneFactory.Helpers"))
+        foreach (byte value in Encoding.UTF8.GetBytes($"{trackName.ToUpperInvariant()}|LegacyTrackSceneFactory.{sequenceName}"))
         {
             hash = unchecked((hash ^ value) * FnvPrime);
         }

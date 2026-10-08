@@ -318,7 +318,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 
 ## Phase 1 — Lecture des aides et des CombiModel
 
-### ⏳ T1.1 — Les palmiers tirent dans leur propre suite (D3)
+### ✅ T1.1 — Les palmiers tirent dans leur propre suite (D3)
 
 - **Objectif** : séparer la suite des palmiers de celle des bannières et des panneaux, avant que les palmiers existent. Rien ne change à l'écran : aucune aide n'est encore lue, donc aucun palmier n'est tiré.
 - **Fichiers** : `RacingGame.Gameplay/Track/RaceTrackLayout.cs`.
@@ -334,6 +334,24 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
     - smoke à 0 ;
   - **preuve de D3**, par la sonde du scratchpad sur la DLL compilée : avec les aides lues sous les noms des fichiers, la suite des modèles de bannières et de panneaux est identique à celle sans aides. Avant T1.1, la même sonde la trouve différente.
 - **Commit** : `refactor(racing-casa): draw the palms from their own random sequence`
+
+> Validation (2026-10-09) :
+> - **Code** : `CreateDeterministicTrackRandom(trackName, sequenceName)` garde le même FNV-1a, avec le suffixe `|LegacyTrackSceneFactory.<sequenceName>`.
+>   - `AddPalmAndLaternPlacements` reçoit la suite `Palms` (P3).
+>   - `AddSignAndCheckpointPlacements` garde la suite `Helpers`, dont la graine est inchangée.
+> - Build à 0 erreur.
+> - **Preuve de D3**, par la sonde `o7/probe-o7` (aides et CombiModel lus sous les noms des fichiers) :
+>   - la suite des modèles de bannières et de panneaux est identique à celle sans aides sur les 3 pistes (29, 76 et 151 modèles, `same model sequence: True`) ;
+>   - avant T1.1, la même sonde donnait 29 → 32, 76 → 72 et 151 → 152, avec `False`.
+> - **A4 contre `before/`** (`artifacts/o7-track-helpers/t1.1/`) :
+>   - export identique (1 074, 689, 2 156 enregistrements appariés) ;
+>   - audit : 30 vues sur 30 dans le seuil de 0,5 ;
+>   - audits des voitures identiques ;
+>   - `TrackPlacementExporter` : mêmes lignes que `before/` ;
+>   - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
+> - **Captures d'interface** : pas toutes à 0,00. Deux lancements du même build T1.1 diffèrent entre eux : `main-menu` 0,70, `help` 0,44, `race-hud` 0,69, `race-finished` 10,76. C'est le bruit déjà relevé en S5.
+>   - Contre `before/`, chaque écran est à 0,00 dans l'un des deux lancements, sauf `options`, à 0,39 dans les deux.
+>   - L'écran Options est capturé avant tout chargement de piste, donc avant que le code modifié puisse s'exécuter. Les deux images sont identiques à l'œil : l'écart vient de la phase du fond animé du menu.
 
 ### ⏳ T1.2 — Largeurs de route et objets des CombiModel
 
