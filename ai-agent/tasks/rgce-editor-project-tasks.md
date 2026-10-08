@@ -455,7 +455,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
 >   - Les 15 contrôles du rapport sont PASS, et `Content\RacingGame.Gameplay.dll` est remplacée.
 >   - `.casaeditor/` est déjà ignoré par git.
 
-### ⏳ T1.3 — ADR et documentation de la DLL de gameplay
+### 🧪 T1.3 — ADR et documentation de la DLL de gameplay
 
 - **Objectif** : consigner D1 et D7 et mettre la documentation à jour.
 - **Fichiers** :
@@ -467,6 +467,18 @@ Un arrêt fige la tranche et celles qui en dépendent.
   - `rg -l "RacingGameCasaEngine\.UI" docs RacingGameCasaEngine/Assets` ne trouve plus que l'ADR-0002 historique et la nouvelle ADR-0015, qui cite l'ancien nom. La portée exclut le code, vérifié en T1.1 ; les plans de `ai-agent/` sont historiques ;
   - vérificateur indépendant de S1 (renommage, plugin, parité des captures, écrans dans l'éditeur) : CONFIRMED.
 - **Commit** : `docs(adr): record RacingGame.Gameplay as the editor's gameplay assembly`
+
+> Validation (2026-10-08) :
+> - **ADR-0015** (`Accepted`) consigne D1 et D7 :
+>   - renommage, et espace de noms propre à l'exe inchangé ;
+>   - `Plugin` et `GameplayCsprojName` ;
+>   - chargement unique dans le jeu (P4) ;
+>   - `.props` local à la machine ;
+>   - conséquences : copie fantôme de la DLL seule, dossiers jamais nettoyés, `Initialize` rejouable, noms de types uniques.
+> - **ADR-0002** : statut « Accepted; superseded in part by ADR-0015 (view-model library, `GameplayCsprojName`) », sans autre changement. L'index est à jour.
+> - `RacingGameCasaEngine/Assets/README.md` : DLL de gameplay, recompilation avant Play, `.props`, dossiers `script-build`.
+> - `rg -l "RacingGameCasaEngine\.UI" docs RacingGameCasaEngine/Assets` ne trouve que l'ADR-0002 et l'ADR-0015.
+> - 🧪 Reste : le vérificateur indépendant de S1.
 
 ---
 

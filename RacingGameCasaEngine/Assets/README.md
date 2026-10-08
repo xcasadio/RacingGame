@@ -35,15 +35,16 @@ Sound effects play through CasaEngine's audio service ([ADR-0003](../../docs/dec
 
 ## CasaEngine editor project
 
-`Content/` is also a CasaEngine editor project ([ADR-0002](../../docs/decisions/0002-rgce-content-is-a-casaengine-editor-project.md)). The game itself does not read the project file.
+`Content/` is also a CasaEngine editor project ([ADR-0002](../../docs/decisions/0002-rgce-content-is-a-casaengine-editor-project.md), [ADR-0015](../../docs/decisions/0015-racinggame-gameplay-is-the-editor-gameplay-assembly.md)). The game itself does not read the project file.
 
 - Files:
   - project file `Content/RacingGameCasaEngine.json`;
   - start world `Content/Worlds/Editor.world`, with one empty entity, `EditorAutomationAnchor`, required by the editor automation;
-  - view models in `RacingGameCasaEngine.UI`. Its build copies `RacingGameCasaEngine.UI.dll` and `.pdb` into `Content/`; both files are git-ignored and named by `GameplayDllName`.
+  - gameplay assembly `RacingGame.Gameplay` (view models, `Plugin`). Its build copies `RacingGame.Gameplay.dll` and `.pdb` into `Content/`; both files are git-ignored and named by `GameplayDllName`;
+  - `GameplayCsprojName` names `RacingGame.Gameplay.csproj`: before Play, the editor rebuilds and reloads the dll when its sources are newer. On project open it writes `RacingGame.Gameplay/CasaEngine.EnginePath.props`, machine-local and git-ignored.
 - Before opening:
   - build the editor from the submodule, `dotnet build CasaEngine/CasaEngine.Editor.MonoGame.sln -c Debug`, again after every submodule update;
-  - build `RacingGame.slnx`, so that the view-model dll exists.
+  - build `RacingGame.slnx`, so that the gameplay dll exists.
 - Open: `CasaEngine/CasaEngine.Editor/bin/Debug/net9.0-windows/CasaEngine.Editor.exe --project <absolute path>/RacingGameCasaEngine/Content/RacingGameCasaEngine.json`, or Browse in the editor launcher.
 - Capture one screen without interaction: `scripts/capture_editor_screen.ps1 -Screen UI/Screens/<Name>/<Name>.uiscreen`.
   - Options: `-ProjectRoot` to work on a copy, `-SetScreenProperty <Node>:<Property>=<Value>`, `-SaveProject`, `-TimeoutSeconds` (120 by default).
@@ -62,4 +63,4 @@ Sound effects play through CasaEngine's audio service ([ADR-0003](../../docs/dec
   - the edited screen's XAML: only the edited element's start tag is rewritten, on one line;
   - the start world, the project file and `AssetInfos.json`. The committed versions are in the form the editor writes, so a Save leaves them unchanged.
 - Never use File > New Project on this folder: it overwrites `AssetInfos.json`.
-- Editor state (`Content/.casaeditor/`) is git-ignored. Every project open leaves a shadow copy of the view-model assembly under `%TEMP%\casaeditor-scripts\`, which the editor never deletes.
+- Editor state (`Content/.casaeditor/`) is git-ignored. Every project open leaves a shadow copy of the gameplay assembly under `%TEMP%\casaeditor-scripts\`, and every rebuild before Play a folder under `Content/.casaeditor/script-build/`; the editor never deletes either.

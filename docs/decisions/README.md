@@ -15,7 +15,7 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR | Title | Status | Date |
 |---|---|---|---|
 | ADR-0001 | RacingGameCasaEngine screens are CasaEngine screen assets bound to view models | Accepted | 2026-10-05 |
-| ADR-0002 | RacingGameCasaEngine's content folder is a CasaEngine editor project | Accepted | 2026-10-05 |
+| ADR-0002 | RacingGameCasaEngine's content folder is a CasaEngine editor project | Accepted; superseded in part by ADR-0015 | 2026-10-05 |
 | ADR-0003 | RacingGameCasaEngine plays its sound effects through CasaEngine's audio system | Accepted | 2026-10-05 |
 | ADR-0004 | RacingGameCasaEngine saves the user settings only when the player leaves the Options screen | Superseded by ADR-0013 | 2026-10-05 |
 | ADR-0005 | RacingGameCasaEngine's main menu reproduces the original XNA menu with MGUI brushes | Superseded by ADR-0006 | 2026-10-05 |
@@ -28,3 +28,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0012 | RacingGameCasaEngine's UI images are premultiplied, except the menu background | Accepted | 2026-10-06 |
 | ADR-0013 | RacingGameCasaEngine's Highscores, Options and Help screens reproduce the original XNA screens | Superseded by ADR-0014 | 2026-10-06 |
 | ADR-0014 | RacingGameCasaEngine's Help and Options keep their previous layout in the menus' style; Highscores reproduces the original screen | Accepted | 2026-10-06 |
+| ADR-0015 | RacingGame.Gameplay is the CasaEngine editor's gameplay assembly for RacingGameCasaEngine | Accepted | 2026-10-08 |
