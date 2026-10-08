@@ -115,4 +115,10 @@ internal static partial class LegacyTrackSceneFactory
     {
         return CreateRoadModel(layout.TrackName, layout.RoadPoints, layout.Origin, materialAssetId);
     }
+
+    /// <summary>The tunnels of the road, or null when the track has none.</summary>
+    internal static RaceGeneratedModel? CreateTunnelGeneratorModel(RaceTrackLayout layout, Guid materialAssetId)
+    {
+        return CreateTunnelModel(layout.TrackName, layout.RoadPoints, layout.TunnelSpans, layout.Origin, materialAssetId);
+    }
 }

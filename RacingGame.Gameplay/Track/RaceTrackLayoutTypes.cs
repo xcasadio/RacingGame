@@ -29,6 +29,9 @@ internal readonly record struct RaceTrackModelPlacement(string ModelName, Matrix
 /// </summary>
 internal readonly record struct RaceTrackColumnPlacement(Vector3 Position, Matrix TopSpace, Matrix BottomSpace, float GroundHeight);
 
+/// <summary>A tunnel of the road: the indices of its first and last road points, both included.</summary>
+internal readonly record struct RaceTrackTunnelSpan(int StartIndex, int EndIndex);
+
 internal sealed record RaceCheckpointTriggerDefinition(
     Vector3 Position,
     Quaternion Orientation,

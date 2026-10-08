@@ -22,6 +22,8 @@ public static class RaceMaterialRecipes
     public const string GuardRailNormalTextureName = "LeitplankeNormal.png";
     public const string RoadColumnTextureName = "RoadCement.png";
     public const string RoadColumnNormalTextureName = "RoadCementNormal.png";
+    public const string RoadTunnelTextureName = "RoadTunnel.png";
+    public const string RoadTunnelNormalTextureName = "RoadTunnelNormal.png";
 
     public static readonly string[] CarDiffuseTextureNames = ["RacerCar", "RacerCar2", "RacerCar3"];
     public static readonly string[] RoadTextureCandidates = ["Road.png", "track.png", "RoadCement.png"];
@@ -204,6 +206,27 @@ public static class RaceMaterialRecipes
             SpecularPower = 8f,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
+        };
+    }
+
+    /// <summary>
+    /// The road tunnels: RacingGame's roadTunnelMaterial (Track.cs), "mainly ambient color" with ambient (182, 182, 182),
+    /// diffuse (80, 80, 80) and specular (64, 64, 64), and the default specular power of its Material class (24). The
+    /// original draws the tunnels with culling off, to show their inside and outside.
+    /// </summary>
+    public static RaceMaterialRecipe ForRoadTunnel(string trackName, string? diffuseTexturePath, string? normalTexturePath)
+    {
+        return new RaceMaterialRecipe
+        {
+            Name = $"{trackName}.RoadTunnelMaterial",
+            BaseTextureFilePath = diffuseTexturePath,
+            NormalTextureFilePath = normalTexturePath,
+            DiffuseColor = new Color(80, 80, 80),
+            AmbientColor = new Color(182, 182, 182).ToVector3(),
+            SpecularColor = new Color(64, 64, 64).ToVector3(),
+            SpecularPower = 24f,
+            SamplerState = RaceMaterialStates.AnisotropicWrap,
+            RasterizerState = RaceMaterialStates.CullNone,
         };
     }
 

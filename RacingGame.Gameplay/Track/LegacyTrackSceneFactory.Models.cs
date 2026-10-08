@@ -20,6 +20,9 @@ internal static class RaceTrackMaterialAssets
 
     /// <summary>Material.Track.RoadColumn</summary>
     public static readonly Guid RoadColumn = new("32637518-c040-5490-914f-78db79eab3df");
+
+    /// <summary>Material.Track.RoadTunnel</summary>
+    public static readonly Guid RoadTunnel = new("c89f5ae0-0731-536b-b1d5-d442853b589f");
 }
 
 internal static partial class LegacyTrackSceneFactory

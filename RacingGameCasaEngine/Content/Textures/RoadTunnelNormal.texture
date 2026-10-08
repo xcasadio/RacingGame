@@ -1,0 +1,22 @@
+{
+  "id": "4b5d6d2a-e5c2-5683-a670-8392b2924c2d",
+  "name": "Texture.RoadTunnelNormal",
+  "texture_asset_id": "cf17efb0-97ad-55dc-8322-30d85d3b8255",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

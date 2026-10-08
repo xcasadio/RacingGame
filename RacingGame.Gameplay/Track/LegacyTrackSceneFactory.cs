@@ -166,6 +166,97 @@ internal static partial class LegacyTrackSceneFactory
         return new RaceGeneratedModel($"{trackName}.Road", roadModel, Matrix.Identity, CastShadows: true, OwnsBuffers: true);
     }
 
+    // RacingGame's road tunnel (TrackVertex.RoadTunnelHeight, Track.RoadTunnelTextureWidthFactor and RoadTunnelSideTextureHeight).
+    private const float LegacyRoadTunnelHeight = 7.125f;
+    private const float LegacyRoadTunnelTextureWidthFactor = 0.25f;
+    private const float LegacyRoadTunnelSideTextureHeight = 0.235f;
+
+    /// <summary>
+    /// The road tunnels, built as RacingGame builds them (Track.cs, "Generate the road tunnel vertices"). Each road point
+    /// of a span gives 4 vertices: the left road edge, the same edge raised by the tunnel height, the raised right edge
+    /// and the right road edge, with U scaled by 0.25 and V at 0, 0.235, 0.765 and 1. Every normal points down (the
+    /// original flips the two lower ones). Each segment has 6 triangles, drawn without culling by the material.
+    /// Returns null when the track has no tunnel.
+    /// </summary>
+    internal static RaceGeneratedModel? CreateTunnelModel(
+        string trackName,
+        IReadOnlyList<RaceTrackRoadPoint> roadPoints,
+        IReadOnlyList<RaceTrackTunnelSpan> tunnelSpans,
+        Vector3 origin,
+        Guid materialAssetId)
+    {
+        if (tunnelSpans.Count == 0)
+        {
+            return null;
+        }
+
+        int vertexCount = 0;
+        int segmentCount = 0;
+        foreach (RaceTrackTunnelSpan span in tunnelSpans)
+        {
+            vertexCount += (span.EndIndex - span.StartIndex + 1) * 4;
+            segmentCount += span.EndIndex - span.StartIndex;
+        }
+
+        var vertices = new Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture[vertexCount];
+        var indices = new uint[segmentCount * 18];
+        int vertexIndex = 0;
+        int outputIndex = 0;
+        foreach (RaceTrackTunnelSpan span in tunnelSpans)
+        {
+            int spanFirstVertex = vertexIndex;
+            for (int pointIndex = span.StartIndex; pointIndex <= span.EndIndex; pointIndex++)
+            {
+                RaceTrackRoadPoint point = roadPoints[pointIndex];
+                float textureU = point.TextureU * LegacyRoadTunnelTextureWidthFactor;
+                vertices[vertexIndex + 0] = CreateTunnelVertex(point, -0.5f, 0f, new Vector2(textureU, 0f), origin);
+                vertices[vertexIndex + 1] = CreateTunnelVertex(point, -0.5f, LegacyRoadTunnelHeight, new Vector2(textureU, LegacyRoadTunnelSideTextureHeight), origin);
+                vertices[vertexIndex + 2] = CreateTunnelVertex(point, 0.5f, LegacyRoadTunnelHeight, new Vector2(textureU, 1f - LegacyRoadTunnelSideTextureHeight), origin);
+                vertices[vertexIndex + 3] = CreateTunnelVertex(point, 0.5f, 0f, new Vector2(textureU, 1f), origin);
+                vertexIndex += 4;
+            }
+
+            for (int segment = 0; segment < span.EndIndex - span.StartIndex; segment++)
+            {
+                int segmentFirstVertex = spanFirstVertex + segment * 4;
+                for (int side = 0; side < 3; side++)
+                {
+                    indices[outputIndex + 0] = (uint)(segmentFirstVertex + side);
+                    indices[outputIndex + 1] = (uint)(segmentFirstVertex + 5 + side);
+                    indices[outputIndex + 2] = (uint)(segmentFirstVertex + 4 + side);
+                    indices[outputIndex + 3] = (uint)(segmentFirstVertex + 5 + side);
+                    indices[outputIndex + 4] = (uint)(segmentFirstVertex + side);
+                    indices[outputIndex + 5] = (uint)(segmentFirstVertex + 1 + side);
+                    outputIndex += 6;
+                }
+            }
+        }
+
+        var tunnelMesh = new StaticModelMesh { Name = $"{trackName}.Tunnel" };
+        tunnelMesh.SetData(vertices, indices);
+        tunnelMesh.MaterialAssetId = materialAssetId;
+
+        var tunnelModel = new StaticModel { Name = $"{trackName}.Tunnel" };
+        tunnelModel.Meshes.Add(tunnelMesh);
+        tunnelModel.RootNode = new StaticModelNode
+        {
+            Name = "TunnelRoot",
+            MeshIndex = 0,
+        };
+
+        return new RaceGeneratedModel($"{trackName}.Tunnel", tunnelModel, Matrix.Identity, CastShadows: true, OwnsBuffers: true);
+    }
+
+    private static Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture CreateTunnelVertex(RaceTrackRoadPoint point, float lateralFactor, float height, Vector2 textureCoordinate, Vector3 origin)
+    {
+        Vector3 legacyPosition = point.Position
+            + point.Right * (LegacyRoadWidthScale * point.RoadWidth * lateralFactor)
+            + point.Up * height;
+        Vector3 runtimePosition = ConvertLegacyPoint(legacyPosition) - origin;
+        Vector3 runtimeNormal = -ConvertLegacyDirection(point.Up);
+        return new Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture(runtimePosition, runtimeNormal, textureCoordinate);
+    }
+
     private static Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture CreateRoadVertex(RaceTrackRoadPoint point, float lateralFactor, float textureV, Vector3 origin)
     {
         Vector3 legacyPosition = point.Position + point.Right * (LegacyRoadWidthScale * point.RoadWidth * lateralFactor);

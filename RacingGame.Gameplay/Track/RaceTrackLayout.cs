@@ -78,6 +78,7 @@ internal sealed class RaceTrackLayout
         IReadOnlyList<RaceTrackModelPlacement> rightPosts,
         IReadOnlyList<RaceTrackColumnPlacement> columns,
         IReadOnlyList<RaceTrackModelPlacement> columnSegments,
+        IReadOnlyList<RaceTrackTunnelSpan> tunnelSpans,
         IReadOnlyList<RaceTrackModelPlacement> scenery,
         IReadOnlyList<RaceCheckpointTriggerDefinition> checkpointTriggers,
         RaceTrackStartPose playerStartPose,
@@ -94,6 +95,7 @@ internal sealed class RaceTrackLayout
         RightPosts = rightPosts;
         Columns = columns;
         ColumnSegments = columnSegments;
+        TunnelSpans = tunnelSpans;
         Scenery = scenery;
         CheckpointTriggers = checkpointTriggers;
         PlayerStartPose = playerStartPose;
@@ -127,6 +129,9 @@ internal sealed class RaceTrackLayout
 
     /// <summary>One column segment per column, in runtime space, in the order of <see cref="Columns"/>.</summary>
     public IReadOnlyList<RaceTrackModelPlacement> ColumnSegments { get; }
+
+    /// <summary>The tunnel spans of the road helpers, in road order. Computed with or without the scenery.</summary>
+    public IReadOnlyList<RaceTrackTunnelSpan> TunnelSpans { get; }
 
     /// <summary>The scenery in runtime space, in placement order. A placement's index is the one its entity name carries.</summary>
     public IReadOnlyList<RaceTrackModelPlacement> Scenery { get; }
@@ -206,6 +211,18 @@ internal sealed class RaceTrackLayout
             columnSegments = BuildColumnSegmentPlacements(columns, origin);
         }
 
+        // The road helper spans drive both the tunnels, which the road generator builds without the scenery, and the
+        // palms and laterns.
+        List<LegacyRoadHelperPosition> helperPositions = roadPoints.Count == 0 ? [] : BuildRoadHelperPositions(roadPoints, track.RoadHelpers);
+        var tunnelSpans = new List<RaceTrackTunnelSpan>();
+        foreach (LegacyRoadHelperPosition helperPosition in helperPositions)
+        {
+            if (helperPosition.Type == LegacyRoadHelperType.Tunnel)
+            {
+                tunnelSpans.Add(new RaceTrackTunnelSpan(helperPosition.StartIndex, helperPosition.EndIndex));
+            }
+        }
+
         if (includeScenery)
         {
             foreach (LegacyNeutralObject neutralObject in track.NeutralsObjects)
@@ -213,7 +230,7 @@ internal sealed class RaceTrackLayout
                 AddSceneryPlacement(placementState, neutralObject.modelName, neutralObject.matrix);
             }
 
-            AddHelperDrivenSceneryPlacements(trackName, roadPoints, track.RoadHelpers, placementState);
+            AddHelperDrivenSceneryPlacements(trackName, roadPoints, helperPositions, placementState);
         }
 
         return new RaceTrackLayout(
@@ -226,6 +243,7 @@ internal sealed class RaceTrackLayout
             rightPosts,
             columns,
             columnSegments,
+            tunnelSpans,
             placementState.Placements,
             checkpointTriggers,
             playerStartPose,
@@ -853,15 +871,13 @@ internal sealed class RaceTrackLayout
     private static void AddHelperDrivenSceneryPlacements(
         string trackName,
         IReadOnlyList<RaceTrackRoadPoint> roadPoints,
-        IReadOnlyList<LegacyRoadHelper> roadHelpers,
+        IReadOnlyList<LegacyRoadHelperPosition> helperPositions,
         LegacySceneryPlacementState placementState)
     {
         if (roadPoints.Count == 0)
         {
             return;
         }
-
-        List<LegacyRoadHelperPosition> helperPositions = BuildRoadHelperPositions(roadPoints, roadHelpers);
 
         // The palms draw from their own sequence, so the road helpers do not change the models the checkpoint
         // banners and the signs draw from the other one.

@@ -3623,6 +3623,24 @@
       "name": "Texture.WindmillNormal",
       "file_name": "Textures/WindmillNormal.texture",
       "asset_type": "texture"
+    },
+    {
+      "id": "c89f5ae0-0731-536b-b1d5-d442853b589f",
+      "name": "Material.Track.RoadTunnel",
+      "file_name": "Materials/Track/RoadTunnel.material",
+      "asset_type": "material"
+    },
+    {
+      "id": "238a3cad-0522-5461-814e-7ffeb8e0ebe7",
+      "name": "Texture.RoadTunnel",
+      "file_name": "Textures/RoadTunnel.texture",
+      "asset_type": "texture"
+    },
+    {
+      "id": "4b5d6d2a-e5c2-5683-a670-8392b2924c2d",
+      "name": "Texture.RoadTunnelNormal",
+      "file_name": "Textures/RoadTunnelNormal.texture",
+      "asset_type": "texture"
     }
   ]
 }

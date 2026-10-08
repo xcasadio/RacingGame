@@ -480,7 +480,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 
 ## Phase 2 — Tunnels
 
-### ⏳ T2.1 — Le générateur de route construit les tunnels (P4, P5)
+### ✅ T2.1 — Le générateur de route construit les tunnels (P4, P5)
 
 - **Objectif** : les plages `Tunnel` lues en T1.3 deviennent la géométrie de l'original.
 - **Fichiers** :
@@ -516,6 +516,38 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
   - smoke à 0.
 - **Commit** : `feat(racing-casa): build the road tunnels of the legacy tracks`
 
+> Validation (2026-10-09) :
+> - **Code** :
+>   - **disposition** : `RaceTrackLayout.Compute` calcule les plages d'aides hors de `includeScenery`. `TunnelSpans` (`RaceTrackTunnelSpan`, début et fin inclus) les donne dans l'ordre de la route, et les palmiers et lanternes reçoivent les mêmes plages ;
+>   - **maillage** : `LegacyTrackSceneFactory.CreateTunnelModel` reprend `Track.cs:464-606` et `TrackVertex.cs` :
+>     - 4 sommets par point, aux bords de la route et à 7,125 au-dessus ;
+>     - U × 0,25, V 0 / 0,235 / 0,765 / 1 ;
+>     - normales −up ;
+>     - 18 indices par segment, dans l'ordre de l'original, et 4 sommets sautés entre deux plages ;
+>     - positions et normales converties comme celles de la route ;
+>   - **générateur** : `RaceRoadGeneratorComponent` ajoute `<piste>.Tunnel` quand la piste a des tunnels, qui projette des ombres et possède ses tampons ;
+>   - **matériau** : `RaceMaterialRecipes.ForRoadTunnel` (P5, puissance 24, CullNone), le rôle `RoadTunnel` de l'outil de cuisson, et l'id constant `RaceTrackMaterialAssets.RoadTunnel`, sans propriété sérialisée (T0.1).
+> - **Assets cuits** : `Materials/Track/RoadTunnel.material`, `Textures/RoadTunnel.texture` et `RoadTunnelNormal.texture`.
+>   - Le catalogue passe de 604 à 607 entrées.
+>   - Un second lancement n'écrit rien (0 fichier écrit, 261 inchangés), et `--check` et `--verify` sortent à 0. `generate_rgce_content_assets.py --check` : 0.
+> - Build à 0 erreur ; `check_gameplay_type_names.py` : 0 collision.
+> - **Export contre T1.3** (`artifacts/o7-track-helpers/t2.1/`) : un seul enregistrement en plus par piste, `<piste>.Tunnel` sous `Track.Road.<piste>`, rien en moins.
+>   - Sommets et indices : 404 et 1 800 (Beginner), 860 et 3 834 (Advanced), 896 et 3 852 (Expert), ceux de « État vérifié ».
+>   - Matériau : diffuse (80, 80, 80), ambiante 0,7137, spéculaire 0,2510, puissance 24, `CullNone`, `AnisotropicWrap`, textures de base et de normales. Fonctionnalités `BasColorTexture` seules, faute de tangentes. Le maillage projette et reçoit des ombres.
+> - **Audit** : seules les 3 vues `helper-tunnel` changent (57 à 63). Elles montrent le toit du tunnel vu d'au-dessus, qui couvre la route. `track-audit-a` contre `-b` : 30 vues sur 30 dans le seuil.
+> - **Original** : les lignes de `TrackPlacementExporter` sont identiques à celles de T1.3, `additional-other:` comprise, puisque le tunnel est un enfant généré et non une entité.
+> - **Audits des voitures** identiques à T1.3 et à S0. `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
+> - **Captures d'interface** : `help` 0,44, `car-selection` 0,28, `race-hud` 0,77 et `race-finished` 10,76 contre T1.3. Ces valeurs sont du même ordre que le bruit déjà vu. Les écrans de course montrent le départ de Beginner, loin de son tunnel (58–65 % du tour).
+> - **Éditeur**, sur des copies de l'éditeur et du contenu :
+>   - le monde de test réduit à 0,02 s'ouvre avec le code 0, et sa section `Logs:` n'a que les deux avertissements connus ;
+>   - l'inspecteur de `Track.Road.Beginner` liste deux modèles générés, `Beginner.Road` et `Beginner.Tunnel`. La capture montre la route élargie et la forme sombre du tunnel ;
+>   - deux `--save-project` donnent les octets du fichier committé, sans enfant généré ;
+>   - `Material.Track.RoadTunnel`, `Texture.RoadTunnel` et `Texture.RoadTunnelNormal` s'ouvrent avec le code 0.
+> - **Écart relevé, soumis à l'auteur (O3)** : le tunnel est presque noir. Les valeurs de P5 sont celles de l'original, mais les deux shaders ne les combinent pas de la même façon :
+>   - **l'original** calcule `texture × (ambiante + bump × diffuse + …)` (`RacingGame/Content/Shaders/NormalMapping.fx:389`) ;
+>   - **`lit-diffuse`** calcule le terme ambiant `texture × diffuse × ambiante globale × ambiante du matériau` (`CasaEngine/Content/Shaders/LitForward.fx`, `ComputeBaseAmbientTerm`) ;
+>   - le toit, éclairé par sa seule ambiante, prend donc environ 0,31 × 0,71 × l'ambiante de la scène au lieu de 0,71.
+
 ---
 
 ## Phase 3 — Comparaison avec l'original et clôture
@@ -544,6 +576,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
        - 9 tunnels courts 12–14 % ;
        - tunnel 83–86 % ;
        - route à 1,53 vers 55 %.
+     - **Luminosité des tunnels (O3)** : dans RGCE, le tunnel est presque noir, même vu d'au-dessus. À comparer avec l'original avant de trancher O3.
      - **Ce qui diffère par nature** :
        - les palmiers de l'original changent de modèle et de rotation à chaque lancement : seuls leur présence et leur côté se comparent ;
        - les lanternes alternent de côté, tournées vers la route ;
@@ -599,6 +632,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 |---|---|---|
 | O1 | **Levé (T0.1).** Nom et forme exacts du chemin des matériaux de piste après S5 (P5) : recette, rôle de l'outil de cuisson, `Material.Track.RoadTunnel`, id constant du générateur. Écrits dans T2.1. | T0.1, T2.1 |
 | O2 | Si le chargement ou l'image d'Expert se dégrade visiblement avec le décor ajouté, le remède (regroupement, instanciation) est à décider avec l'auteur, dans un autre chantier. | T1.2, T1.3 |
+| O3 | **Tunnel presque noir (T2.1).** Le matériau a les valeurs de P5, celles de `roadTunnelMaterial`. Mais `lit-diffuse` multiplie l'ambiante par la couleur diffuse (80) et par l'ambiante de la scène, alors que l'original ajoute l'ambiante à la diffuse. Question à l'auteur : garder ces valeurs, les traduire dans le modèle de `lit-diffuse` (par exemple diffuse blanche et ambiante recalculée), ou corriger CasaEngine ? Un changement passe par la recette `ForRoadTunnel`, puis une nouvelle cuisson. Les mondes ne changent pas. | T2.1, T3.1 |
 
 ## Hors périmètre
 
