@@ -254,7 +254,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
   - les composants s'ouvrent dans l'éditeur sur un monde de test ;
   - un aller-retour d'enregistrement ne perd aucun champ.
 
-### S5 — Modèles, matériaux et textures en assets (à détailler)
+### S5 — Modèles, matériaux et textures en assets (détail en attente de l'auteur, O8)
 
 - **Résultat** : les 56 modèles sont des `.staticModel` avec leurs `.material` et `.texture` (P8), et le jeu les charge par le catalogue. Les règles de matériaux qui dépendaient des noms de fichiers ne s'appliquent plus à l'exécution : leurs valeurs sont dans les assets.
 - **Acceptation** :
@@ -1178,6 +1178,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 | O5 | Les cartes de normales héritées gardent la disposition `agb`, et le jeu actuel les lit telles quelles. Le chantier conserve exactement ces pixels, sans réencodage. | S3, S5 |
 | O6 | **Levé (T0.2).** Le panneau Logs de l'éditeur restait vide sur les captures d'automatisation. Sur décision de l'auteur, il a été corrigé (MGUI `4e94d7e8`, CasaEngine `c0f3343`), et l'option `--logs-filter` (`4ce5ea0`) met l'avertissement à l'écran. La sonde `pluginprobe`, d'abord proposée, n'a pas été retenue. | T0.1, T1.2 |
 | O7 | Défaut ancien relevé en T4.5 : les éléments `WidthHelper`, `RoadHelper` et `CombiObject` des `.Track` et des `.CombiModel` ne correspondent pas aux types que lisait `XmlSerializer` (`LegacyWidthHelper`, `LegacyRoadHelper`, `LegacyCombiObject`). Le jeu ignore donc les aides de largeur et de route (palmiers, lanternes, tunnels) et le contenu des CombiModel. Le chantier garde ce comportement pour la parité ; le corriger change le rendu, c'est un chantier à part. | Après le chantier |
+| O8 | **⚠️ S5 en pause (2026-10-08).** Le détail de S5 a eu trois relectures, toutes REVISE ; les deux dernières ont relevé des P1, et la règle d'arrêt interdit de les lever par une nouvelle boucle sans l'auteur. Les blocages sont tous corrigés dans le brouillon (`s5_plan.md` du scratchpad). Ils portent sur trois points : (1) le compilateur nomme les états de rendu que le jeu laisse vides ; (2) la conception de la voiture et de sa peinture ; (3) les fonctionnalités de rendu d'un matériau compilé ignorent le maillage, d'où une carte de normales sans tangentes. Le point (3) demande une correction de CasaEngine (`RenderFeatureResolver`, `RenderItem.Features`) et un export qui enregistre les fonctionnalités et le matériau de chaque sous-maillage. S6 et S7 dépendent de S5. Question à l'auteur : relancer une revue sur le brouillon corrigé puis exécuter S5, ou relire le plan d'abord. | S5 |
 
 ## Hors périmètre
 
