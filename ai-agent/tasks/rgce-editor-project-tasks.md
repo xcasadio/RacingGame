@@ -431,7 +431,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
 - **Étapes** :
   1. Ajouter la référence et le `Plugin`, compiler.
   2. Déclarer `GameplayCsprojName`.
-  3. Ouvrir le projet dans l'éditeur recompilé avec la commande du contrôle négatif de T0.1 (`--activate-panel output --logs-filter Warning`), capture dans `artifacts/editor-project-baseline/editor-logs-t1.2.png`. Contrôler aussi le fichier écrit à côté du csproj (O2).
+  3. Ouvrir le projet dans l'éditeur recompilé avec la commande du contrôle négatif de T0.1 (`--activate-panel output --logs-filter Warning`), capture dans `artifacts/editor-project-baseline/editor-logs-t1.2.png`. « Gameplay assembly not found » est journalisé au niveau Error (`AssemblyManager.cs:20`) : une seconde capture avec `--logs-filter Error` le couvre. Contrôler aussi le fichier écrit à côté du csproj (O2).
   4. Faire une recompilation depuis l'éditeur (`File > Build Scripts` ou Play). Si l'automatisation ne peut pas la déclencher, la vérification devient manuelle (O1).
 - **Validation** :
   - `dotnet build RacingGame.slnx` sans erreur ;
@@ -447,15 +447,15 @@ Un arrêt fige la tranche et celles qui en dépendent.
 >   - `Plugin.cs` : `Plugin : IPlugin`, `Initialize()` vide et rejouable ;
 >   - `GameplayCsprojName` = `../../RacingGame.Gameplay/RacingGame.Gameplay.csproj`.
 > - **Build et jeu** : `dotnet build RacingGame.slnx` : 0 erreur. `--smoke-frontend` sort avec le code 0, et les réglages sont restaurés à l'identique.
-> - **Contrôle du plugin**, avec `--activate-panel output --logs-filter Warning` : `editor-logs-t1.2-final.png` ne montre ni « Gameplay assembly not found » ni « contains no IPlugin implementation ». Le contrôle négatif de T0.1 montrait le second, deux fois. Restent deux avertissements de déchargement du contexte de script, déjà présents en T0.1 et sans rapport avec ce chantier.
+> - **Contrôle du plugin**, avec `--activate-panel output --logs-filter Warning` : `editor-logs-t1.2-final.png` ne montre pas « contains no IPlugin implementation », que le contrôle négatif de T0.1 montrait deux fois. « Gameplay assembly not found » est journalisé au niveau Error, que ce filtre ne montre pas. Le vérificateur de S1 l'a couvert : la capture filtrée sur Error est vide, et sur une copie du projet pointant vers une DLL absente, elle affiche ce message deux fois. Restent deux avertissements de déchargement du contexte de script, déjà présents en T0.1 et sans rapport avec ce chantier.
 > - **Écrans de l'éditeur** : les 9 de `editor-screens-t1.2/` sont identiques au pixel près à `editor-screens/`.
 > - **O2** : à l'ouverture du projet, l'éditeur écrit `RacingGame.Gameplay/CasaEngine.EnginePath.props`, dont l'en-tête dit « Machine-local : ne pas committer » et qui pointe vers l'éditeur compilé de cette machine. Il est ajouté au `.gitignore`.
 > - **O1, recompilation depuis l'éditeur**, automatisable sans manipulation : `Plugin.cs` touché, puis l'éditeur lancé avec `--project … --play-smoke`.
->   - Le rapport donne les scripts de départ `Content\RacingGame.Gameplay.dll`, puis les scripts de jeu `Content\.casaeditor\script-build61008-135457-714\RacingGame.Gameplay.dll` : l'éditeur a recompilé le csproj et chargé la nouvelle DLL.
+>   - Le rapport donne les scripts de départ `Content\RacingGame.Gameplay.dll`, puis les scripts de jeu `Content\.casaeditor\script-build\20261008-135457-714\RacingGame.Gameplay.dll` : l'éditeur a recompilé le csproj et chargé la nouvelle DLL.
 >   - Les 15 contrôles du rapport sont PASS, et `Content\RacingGame.Gameplay.dll` est remplacée.
 >   - `.casaeditor/` est déjà ignoré par git.
 
-### 🧪 T1.3 — ADR et documentation de la DLL de gameplay
+### ✅ T1.3 — ADR et documentation de la DLL de gameplay
 
 - **Objectif** : consigner D1 et D7 et mettre la documentation à jour.
 - **Fichiers** :
@@ -478,7 +478,17 @@ Un arrêt fige la tranche et celles qui en dépendent.
 > - **ADR-0002** : statut « Accepted; superseded in part by ADR-0015 (view-model library, `GameplayCsprojName`) », sans autre changement. L'index est à jour.
 > - `RacingGameCasaEngine/Assets/README.md` : DLL de gameplay, recompilation avant Play, `.props`, dossiers `script-build`.
 > - `rg -l "RacingGameCasaEngine\.UI" docs RacingGameCasaEngine/Assets` ne trouve que l'ADR-0002 et l'ADR-0015.
-> - 🧪 Reste : le vérificateur indépendant de S1.
+> - **Vérificateur indépendant de S1 et de T0.2** (2026-10-08) : CONFIRMED sur les 6 points.
+>   - Test MGUI : rouge sans le correctif (930 attendu, 0 obtenu), 3 198 tests verts avec.
+>   - CasaEngine : build de l'éditeur à 0 erreur, 4 159 tests verts ; panneau Logs lisible ; `--logs-filter`.
+>   - Renommage sans reste. `RacingGame.slnx` compile ; smoke ; captures d'interface à 0,00 ; 9 écrans de l'éditeur identiques.
+>   - Plugin trouvé, avec deux contrôles négatifs : DLL absente, et DLL sans `IPlugin`.
+>   - Recompilation depuis l'éditeur, 15 contrôles PASS. ADR et pointeurs exacts.
+>   - Ses remarques, toutes traitées dans ce commit :
+>     - P3 : un chemin de la note de T1.2 corrompu par un échappement ;
+>     - P3 : O6 périmé ;
+>     - P3 : le contrôle « Gameplay assembly not found » sur la capture Warning ne pouvait pas échouer. Il est couvert par une capture Error, et l'étape 3 de T1.2 le dit désormais ;
+>     - P4 : dossier `RacingGameCasaEngine.UI/obj/` résiduel, ignoré par git et supprimé.
 
 ---
 
@@ -491,7 +501,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
 | O3 | Le sous-module contient un plan RGCE égaré, `CasaEngine/ai-agent/tasks/racinggame-car-profile-parity-plan.md`. On le laisse tel quel, la branche moteur le portera. | S2 |
 | O4 | PNG d'interface hérités non portés : `HelpScreenWindows`, `HelpScreenXbox360`, `OptionsScreenXbox360`, `MouseCursor`. Faut-il compter aussi la copie brute de `GameFont.png` ? Elle est proposée, D4 voulant « tout porter ». | S3 |
 | O5 | Les cartes de normales héritées gardent la disposition `agb`, et le jeu actuel les lit telles quelles. Le chantier conserve exactement ces pixels, sans réencodage. | S3, S5 |
-| O6 | **Levé (T0.2).** Le panneau Logs de l'éditeur restait vide sur les captures d'automatisation. Sur décision de l'auteur, il a été corrigé (MGUI `4e94d7e8`, CasaEngine `c0f3343`), et l'option `--logs-filter` (`4ce5ea0`) met l'avertissement à l'écran. Proposition : remplacer ce contrôle par la sonde `pluginprobe` du scratchpad. Elle rejoue le chargement de l'éditeur à l'ouverture du projet : `ProjectSettingsHelper.Load`, avec le chargeur à copie fantôme de l'éditeur `EditorScriptAssemblyService.LoadShadowCopy` (`GameEditor.cs:326`). Elle affiche ce que `AssemblyManager` journalise et sort avec le code 1 sans `IPlugin`. Sur le projet actuel, elle affiche « Gameplay assembly 'RacingGameCasaEngine.UI.dll' contains no IPlugin implementation. » et sort avec le code 1 : c'est le contrôle négatif. Le panneau vide serait ajouté aux manques de S2. | T0.1, T1.2, S2 |
+| O6 | **Levé (T0.2).** Le panneau Logs de l'éditeur restait vide sur les captures d'automatisation. Sur décision de l'auteur, il a été corrigé (MGUI `4e94d7e8`, CasaEngine `c0f3343`), et l'option `--logs-filter` (`4ce5ea0`) met l'avertissement à l'écran. La sonde `pluginprobe`, d'abord proposée, n'a pas été retenue. | T0.1, T1.2 |
 
 ## Hors périmètre
 
