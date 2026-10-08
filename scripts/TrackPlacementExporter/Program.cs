@@ -568,10 +568,11 @@ public static partial class Program
             currentWidth = currentWidth * 0.9f + widthInfluence * 0.1f;
             if (index > points.Count - 7)
             {
+                // As in the original (TrackLine.AdjustRoadWidths), whose third case repeats Count - 2 and is never taken.
                 float influence =
                     index == points.Count - 1 ? 0.75f :
                     index == points.Count - 2 ? 0.5f :
-                    index == points.Count - 3 ? 0.25f : 0.175f;
+                    index == points.Count - 2 ? 0.25f : 0.175f;
                 currentWidth = influence * points[0].RoadWidth + (1 - influence) * currentWidth;
             }
 

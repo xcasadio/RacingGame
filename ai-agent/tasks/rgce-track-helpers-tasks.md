@@ -353,7 +353,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 >   - Contre `before/`, chaque écran est à 0,00 dans l'un des deux lancements, sauf `options`, à 0,39 dans les deux.
 >   - L'écran Options est capturé avant tout chargement de piste, donc avant que le code modifié puisse s'exécuter. Les deux images sont identiques à l'œil : l'écart vient de la phase du fond animé du menu.
 
-### ⏳ T1.2 — Largeurs de route et objets des CombiModel
+### ✅ T1.2 — Largeurs de route et objets des CombiModel
 
 - **Objectif** : P2, pour deux éléments. Le lecteur lit `WidthHelper` et `CombiObject` : la route prend ses largeurs, et les CombiModel leurs objets. `RoadHelper` reste non lu jusqu'à T1.3. Il n'y a donc encore ni palmier ni lanterne, et tout le décor se compare strictement à l'original.
 - **Fichiers** : `RacingGame.Gameplay/Track/LegacyTrackFileReader.cs` : noms d'éléments `WidthHelper` et `CombiObject`. Le commentaire de classe dit ce qui est lu comme dans l'original, et ce qui reste à lire en T1.3.
@@ -387,6 +387,49 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
   - **captures d'interface** : 0,00, sauf `race-hud` si la scène derrière le HUD change. L'écart est alors lu et décrit ;
   - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
 - **Commit** : `fix(racing-casa): read the width helpers and CombiModel items of the legacy files`
+
+> Validation (2026-10-09) :
+> - **Code** : `LegacyTrackFileReader` lit `WidthHelper` et `CombiObject` sous ces noms. `RoadHelper` reste cherché sous `LegacyRoadHelper`, jusqu'à T1.3. Le commentaire de classe le dit.
+> - Build à 0 erreur.
+> - **Lecture**, par la sonde `o7/probe-read` du scratchpad (`XmlSerializer` aux types de `TrackPlacementExporter`) :
+>   - 4 / 5 / 6 aides de largeur, 79 objets de CombiModel, 0 aide de route ;
+>   - toutes les valeurs (points, aides de largeur, objets neutres, objets des CombiModel) sont égales bit à bit.
+> - **Largeurs** : |largeur × 13,25 − `RoadWidth`| ≤ 1,9e-6 en chaque point des 3 pistes.
+>   - Il a fallu corriger `TrackPlacementExporter` : ses 3 derniers points s'écartaient de l'original, jusqu'à 0,076.
+>   - Dans `AdjustRoadWidths`, l'original (`RacingGame.Shared/Tracks/TrackLine.cs:597-599`) répète `points.Count - 2` dans son troisième cas, qui n'est donc jamais pris. RGCE fait de même. L'outil, lui, avait corrigé en `- 3`.
+>   - L'outil reprend maintenant le code de l'original, et `before/original/` est régénéré depuis les mêmes données (l'ancien est gardé dans `original-pre-fix/`). Seuls ces 3 points changent. Les placements, les checkpoints, la pose de départ et la sortie de la comparaison sont identiques.
+> - **Original, dans les deux sens** (`TrackPlacementExporter` sur `t1.2/scene-a.json`) :
+>   - `missingInLive` = 0 et `modelMismatch` = 0 sur les 3 pistes, avec les 4 écarts anciens aux mêmes valeurs ;
+>   - `additional-scenery:` ne contient que `Banner*`, `Sign*` et `StartLight`, aux comptes de `before/`. `Windmill`, `AlphaTrain` et `Building5` ont disparu ;
+>   - `additional-other:` est celle de `before/`.
+>   - Aucun objet n'est écarté par le filtre de doublons autrement que dans l'original.
+> - **Export contre `before/`**, par catégorie (`o7/categorize.py`, mêmes règles d'appariement que `compare_race_scene_exports.py`) :
+>   - entités `Track.Scenery.*` : 108 → 183, 68 → 198, 202 → 301 (Advanced / Beginner / Expert) ;
+>   - **maillages en moins**, par piste (Advanced / Beginner / Expert) :
+>     - la route : 1 / 1 / 1 ;
+>     - les rails : 2 / 2 / 2 ;
+>     - des poteaux : 558 / 362 / 966 ;
+>     - des bannières : 7 / 5 / 12 ;
+>     - des panneaux : 40 / 21 / 91 ;
+>     - les objets en trop : `Windmill` 2 / 4 / 2 maillages, `AlphaTrain` 1 / 1 / 1, `Building5` 0 / 1 / 0 ;
+>   - **rien en moins** pour le terrain, les colonnes et leurs segments, le feu, la bannière de départ, les autres objets neutres et la voiture ;
+>   - **maillages en plus** : les remplaçants de la route, des rails, des poteaux (+1 sur Advanced, de 742 à 743 maillages `GuardRailHolder`, les autres pistes à 455 et 1 529), des bannières et des panneaux. S'y ajoutent les objets des CombiModel : `AlphaPalm*`, `Building*`, `OilPump`, `OilTanks`, `Ruin*`, `SandCastle`, `SharpRock*` et `Stone*`. Les entités passent de 77 / 134 / 101 objets, moins les objets en trop ;
+>   - les modèles des bannières et des panneaux sont les mêmes, dans le même ordre (76 / 29 / 151) ;
+>   - enregistrements dessinés : 1 074 → 1 180, 689 → 871, 2 156 → 2 302.
+> - **Entités** : demi-largeurs des checkpoints 8,13 / 13,42 / 7,46 (Beginner), 8,13 / 8,12 / 12,1 (Advanced), 8,13 / 10,77 / 8,85 (Expert), celles de « État vérifié ».
+>   - Les positions des checkpoints et la pose de départ sont inchangées.
+>   - Seules les boîtes des checkpoints 02 et 03 changent de taille.
+> - **Audit** : 18 vues sur 30 au-dessus de 0,5 contre `before/`. Toutes ont été lues par paires :
+>   - **route élargie** : `helper-tunnel` de Beginner, `sector-80` d'Advanced, `sector-50` de Beginner et d'Expert, `helper-laterns` de Beginner, `helper-tunnel` d'Advanced et d'Expert, `road-only-start` et `start-full` d'Expert. Les rails et les poteaux suivent la largeur.
+>     - Au-delà d'une largeur de 1, la texture de la route se répète et montre une double ligne blanche, comme dans l'original (`TrackVertex.cs:64-81`, V de 0 à `roadWidth`).
+>   - **décor des CombiModel** : par exemple un palmier en haut de `start-full` d'Advanced. La grande surface grise du premier plan de `helper-tunnel` de Beginner, avant le correctif, n'est plus dans le champ ;
+>   - **petits écarts** : `chase-road-only`, `road-only-start` d'Advanced, `sector-50` d'Advanced et `start-full` de Beginner (0,6 à 2,2). La route plus large au loin, et des panneaux décalés.
+>   `track-audit-a` contre `-b` : 30 vues sur 30 dans le seuil.
+> - **Audits des voitures** : identiques à `before/` et à S0, `details/` compris.
+> - **Captures d'interface** : toutes dans le seuil de 2,0.
+>   - `race-hud` est à 0,99 : le chronomètre (0:00.93 contre 0:00.95) et la phase du feu, le bruit habituel. La scène derrière est la même.
+>   - `options` (0,39) et `car-selection` (0,28) font partie du bruit déjà vu.
+> - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
 
 ### ⏳ T1.3 — Aides de route : palmiers et lanternes
 
