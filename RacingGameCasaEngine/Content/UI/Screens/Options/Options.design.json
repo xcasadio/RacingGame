@@ -7,188 +7,256 @@
       "LogoWidth": 755,
       "LogoHeight": 246
     },
+    "BandTopPixels": 124,
+    "BandHeightPixels": 416,
     "Header": {
       "Left": 8,
       "Top": 11,
       "Width": 410,
       "Height": 60
     },
-    "Panel": {
-      "Left": 0,
-      "Top": 117,
-      "Width": 1280,
-      "Height": 480
+    "Label0": {
+      "Left": 306,
+      "Top": 134,
+      "Width": 0,
+      "Height": 0
+    },
+    "Label1": {
+      "Left": 329,
+      "Top": 165,
+      "Width": 0,
+      "Height": 0
+    },
+    "Label2": {
+      "Left": 298,
+      "Top": 195,
+      "Width": 0,
+      "Height": 0
+    },
+    "Label3": {
+      "Left": 337,
+      "Top": 225,
+      "Width": 0,
+      "Height": 0
+    },
+    "Label4": {
+      "Left": 300,
+      "Top": 256,
+      "Width": 0,
+      "Height": 0
+    },
+    "Label5": {
+      "Left": 214,
+      "Top": 286,
+      "Width": 0,
+      "Height": 0
+    },
+    "Label6": {
+      "Left": 355,
+      "Top": 317,
+      "Width": 0,
+      "Height": 0
+    },
+    "Label7": {
+      "Left": 344,
+      "Top": 347,
+      "Width": 0,
+      "Height": 0
+    },
+    "Label8": {
+      "Left": 217,
+      "Top": 377,
+      "Width": 0,
+      "Height": 0
+    },
+    "Label9": {
+      "Left": 282,
+      "Top": 408,
+      "Width": 0,
+      "Height": 0
+    },
+    "Label10": {
+      "Left": 288,
+      "Top": 438,
+      "Width": 0,
+      "Height": 0
+    },
+    "Label11": {
+      "Left": 192,
+      "Top": 468,
+      "Width": 0,
+      "Height": 0
+    },
+    "NameField": {
+      "Left": 494,
+      "Top": 134,
+      "Width": 500,
+      "Height": 28
     },
     "NameDisplay": "Player One|",
     "NameText": {
-      "Left": 440,
-      "Top": 156,
+      "Left": 506,
+      "Top": 134,
       "Width": 0,
       "Height": 0
-    },
-    "Resolution0": {
-      "Left": 424,
-      "Top": 222,
-      "Width": 122,
-      "Height": 30
     },
     "ResolutionLabel0": "1280x720",
     "ResolutionText0": {
-      "Left": 418,
-      "Top": 223,
+      "Left": 500,
+      "Top": 165,
       "Width": 0,
       "Height": 0
-    },
-    "Resolution1": {
-      "Left": 568,
-      "Top": 222,
-      "Width": 122,
-      "Height": 30
     },
     "ResolutionLabel1": "1920x1080",
     "ResolutionText1": {
-      "Left": 554,
-      "Top": 223,
+      "Left": 653,
+      "Top": 165,
       "Width": 0,
       "Height": 0
-    },
-    "Resolution2": {
-      "Left": 719,
-      "Top": 222,
-      "Width": 135,
-      "Height": 30
     },
     "ResolutionLabel2": "2560x1440",
     "ResolutionText2": {
-      "Left": 711,
-      "Top": 223,
+      "Left": 823,
+      "Top": 165,
       "Width": 0,
       "Height": 0
-    },
-    "Resolution3": {
-      "Left": 880,
-      "Top": 222,
-      "Width": 145,
-      "Height": 30
     },
     "ResolutionLabel3": "3840x2160",
     "ResolutionText3": {
-      "Left": 877,
-      "Top": 223,
+      "Left": 994,
+      "Top": 165,
       "Width": 0,
       "Height": 0
-    },
-    "Resolution4": {
-      "Left": 1048,
-      "Top": 222,
-      "Width": 86,
-      "Height": 30
     },
     "ResolutionLabel4": "Auto",
     "ResolutionText4": {
-      "Left": 1060,
-      "Top": 223,
+      "Left": 1164,
+      "Top": 165,
       "Width": 0,
       "Height": 0
     },
-    "Fullscreen": {
-      "Left": 424,
-      "Top": 288,
-      "Width": 131,
-      "Height": 34,
-      "IsHighlighted": false
-    },
-    "PostScreenEffects": {
-      "Left": 424,
-      "Top": 329,
-      "Width": 258,
-      "Height": 34,
-      "IsHighlighted": true
-    },
-    "Shadows": {
-      "Left": 770,
-      "Top": 329,
-      "Width": 112,
-      "Height": 34,
-      "IsHighlighted": true
-    },
-    "VSyncCover": {
-      "Left": 980,
-      "Top": 329,
-      "Width": 150,
-      "Height": 34
-    },
-    "VSyncText": {
-      "Left": 967,
-      "Top": 332,
+    "ArcadeText": {
+      "Left": 500,
+      "Top": 195,
       "Width": 0,
       "Height": 0
     },
-    "ShowFpsButton": {
-      "Left": 424,
-      "Top": 363,
-      "Width": 49,
-      "Height": 37,
+    "SimulationText": {
+      "Left": 623,
+      "Top": 195,
+      "Width": 0,
+      "Height": 0
+    },
+    "FullscreenButton": {
+      "Left": 500,
+      "Top": 225,
+      "Width": 25,
+      "Height": 25,
       "IsShown": true,
       "IsHighlighted": false
     },
-    "ShowFpsText": {
-      "Left": 478,
-      "Top": 364,
-      "Width": 0,
-      "Height": 0
-    },
-    "VibrationButton": {
-      "Left": 770,
-      "Top": 363,
-      "Width": 49,
-      "Height": 37,
+    "VSyncButton": {
+      "Left": 500,
+      "Top": 256,
+      "Width": 25,
+      "Height": 25,
       "IsShown": false,
       "IsHighlighted": true
     },
-    "VibrationText": {
-      "Left": 824,
-      "Top": 364,
-      "Width": 0,
-      "Height": 0
+    "PostEffectsButton": {
+      "Left": 500,
+      "Top": 286,
+      "Width": 25,
+      "Height": 25,
+      "IsShown": false,
+      "IsHighlighted": true
     },
-    "DrivingModeButton": {
-      "Left": 770,
-      "Top": 288,
-      "Width": 49,
-      "Height": 37,
+    "ShadowsButton": {
+      "Left": 500,
+      "Top": 316,
+      "Width": 25,
+      "Height": 25,
+      "IsShown": false,
+      "IsHighlighted": true
+    },
+    "ShowFpsButton": {
+      "Left": 500,
+      "Top": 347,
+      "Width": 25,
+      "Height": 25,
       "IsShown": true,
       "IsHighlighted": false
     },
-    "DrivingModeText": {
-      "Left": 824,
-      "Top": 289,
+    "VibrationButton": {
+      "Left": 500,
+      "Top": 377,
+      "Width": 25,
+      "Height": 25,
+      "IsShown": false,
+      "IsHighlighted": true
+    },
+    "SoundTrack": {
+      "Left": 500,
+      "Top": 417,
+      "Width": 375,
+      "Height": 7
+    },
+    "SoundHandle": {
+      "Left": 863,
+      "Top": 408,
+      "Width": 25,
+      "Height": 25
+    },
+    "SoundValueText": {
+      "Left": 900,
+      "Top": 408,
       "Width": 0,
       "Height": 0
     },
-    "SoundHandle": {
-      "Left": 904,
-      "Top": 380,
-      "Width": 49,
-      "Height": 37
+    "SoundValue": "100",
+    "MusicTrack": {
+      "Left": 500,
+      "Top": 447,
+      "Width": 375,
+      "Height": 7
     },
     "MusicHandle": {
-      "Left": 848,
-      "Top": 449,
-      "Width": 49,
-      "Height": 37
+      "Left": 863,
+      "Top": 438,
+      "Width": 25,
+      "Height": 25
+    },
+    "MusicValueText": {
+      "Left": 900,
+      "Top": 438,
+      "Width": 0,
+      "Height": 0
+    },
+    "MusicValue": "100",
+    "SensitivityTrack": {
+      "Left": 500,
+      "Top": 477,
+      "Width": 375,
+      "Height": 7
     },
     "SensitivityHandle": {
-      "Left": 792,
-      "Top": 518,
-      "Width": 49,
-      "Height": 37
+      "Left": 713,
+      "Top": 468,
+      "Width": 25,
+      "Height": 25
     },
+    "SensitivityValueText": {
+      "Left": 900,
+      "Top": 468,
+      "Width": 0,
+      "Height": 0
+    },
+    "SensitivityValue": "60",
     "Arrow": {
-      "Left": 182,
-      "Top": 383,
-      "Width": 78,
-      "Height": 37
+      "Left": 238,
+      "Top": 408,
+      "Width": 34,
+      "Height": 25
     },
     "SelectedStop": 8,
     "BackButton": {

@@ -14,7 +14,7 @@ namespace RacingGameCasaEngine.Screens;
 
 /// <summary>
 /// Highscores, loaded from the <c>Screen.Highscores</c> screen asset (Content/UI/Screens/Highscores), as RacingGame's
-/// (ADR-0013), with its input (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/Highscores.cs</c>, Update):
+/// (ADR-0014), with its input (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/Highscores.cs</c>, Update):
 /// <list type="bullet">
 /// <item>a click on a level tab selects it, and Left and Right (keyboard, D-pad, left stick past 0.5) select the
 /// previous or next level, wrapping, all with the ButtonClick sound;</item>

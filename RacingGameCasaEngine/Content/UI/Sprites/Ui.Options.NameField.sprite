@@ -1,12 +1,12 @@
 {
-  "id": "4cd6b501-eb12-587c-bafb-b27c9e1d1ae9",
-  "name": "Ui.Options.Resolution4",
+  "id": "95d230c2-ef99-5fd9-8df4-b3c4c28fe3ee",
+  "name": "Ui.Options.NameField",
   "sprite_sheet_asset_id": "8fbc280b-206d-5bf6-81c5-68e4e36cdcdc",
   "location": {
-    "x": 838,
-    "y": 112,
-    "w": 69,
-    "h": 32
+    "x": 346,
+    "y": 27,
+    "w": 546,
+    "h": 50
   },
   "hotspot": {
     "x": 0,

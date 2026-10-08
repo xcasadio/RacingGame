@@ -35,7 +35,7 @@ public sealed class RaceHighscoreRowViewModel : RaceViewModelBase
 }
 
 /// <summary>
-/// Data context of <c>Screen.Highscores</c>, RacingGame's highscores screen (ADR-0013): the menu decoration, the black
+/// Data context of <c>Screen.Highscores</c>, RacingGame's highscores screen (ADR-0014): the menu decoration, the black
 /// band, the "HIGHSCORES" header, the three level tabs, the separator line, the ten board lines and the B BACK button,
 /// laid out every frame in screen pixels with RacingGame's formulas (<c>git show
 /// 4f840a3^:RacingGame.Shared/GameScreens/Highscores.cs</c>, Update and Render; <c>Graphics/UIRenderer.cs</c>,

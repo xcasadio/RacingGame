@@ -89,19 +89,8 @@ SPRITES = [
     # ColorSelection.png (64x64): the colour square, tinted per colour; OptionsScreenWindows.png: the car property bar.
     ("Ui.CarSelection.Swatch", "Ui.CarSelection.ColorSelectionTexture", 0, 0, 64, 64),
     ("Ui.CarSelection.StatBar", "Ui.CarSelection.OptionsWindowsTexture", 372, 297, 472, 6),
-    # The Options panel and the areas the Options screen redraws over it: the five resolution slots and the four graphics
-    # toggles (RacingGame's Options.cs, Resolution*GfxRect, FullscreenGfxRect, PostScreenEffectsGfxRect, ShadowsGfxRect,
-    # HighDetailGfxRect).
-    ("Ui.Options.Panel", "Ui.CarSelection.OptionsWindowsTexture", 0, 0, 1024, 512),
-    ("Ui.Options.Resolution0", "Ui.CarSelection.OptionsWindowsTexture", 339, 112, 98, 32),
-    ("Ui.Options.Resolution1", "Ui.CarSelection.OptionsWindowsTexture", 454, 112, 98, 32),
-    ("Ui.Options.Resolution2", "Ui.CarSelection.OptionsWindowsTexture", 575, 112, 108, 32),
-    ("Ui.Options.Resolution3", "Ui.CarSelection.OptionsWindowsTexture", 704, 112, 116, 32),
-    ("Ui.Options.Resolution4", "Ui.CarSelection.OptionsWindowsTexture", 838, 112, 69, 32),
-    ("Ui.Options.Fullscreen", "Ui.CarSelection.OptionsWindowsTexture", 339, 182, 105, 36),
-    ("Ui.Options.PostScreenEffects", "Ui.CarSelection.OptionsWindowsTexture", 339, 226, 206, 36),
-    ("Ui.Options.Shadows", "Ui.CarSelection.OptionsWindowsTexture", 616, 226, 90, 36),
-    ("Ui.Options.HighDetail", "Ui.CarSelection.OptionsWindowsTexture", 784, 226, 120, 36),
+    # The Options screen's name field, the art of the options panel's NAME box (ADR-0014).
+    ("Ui.Options.NameField", "Ui.CarSelection.OptionsWindowsTexture", 346, 27, 546, 50),
     # ingame.png (1024x512): race HUD panels, tachometer, needle and the 10 digit glyphs.
     ("Ui.Hud.Laps", "Ui.Hud.IngameTexture", 381, 132, 222, 160),
     ("Ui.Hud.Tacho", "Ui.Hud.IngameTexture", 0, 0, 343, 341),

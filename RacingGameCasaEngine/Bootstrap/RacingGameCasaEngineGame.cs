@@ -136,7 +136,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
 
     /// <summary>
     /// Applies only the sound and music volumes, as RacingGame's Options screen did every frame while the player moved its
-    /// sliders (Sound.SetVolumes); the other options apply when the player leaves the screen (ADR-0013).
+    /// sliders (Sound.SetVolumes); the other options apply when the player leaves the screen (ADR-0014).
     /// </summary>
     internal void ApplyFrontEndVolumes(RaceFrontEndState state)
     {
@@ -173,7 +173,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
 
     /// <summary>
     /// Saves the applied display settings and the front-end options to the user settings files. Only the Options screen
-    /// calls it, when the player leaves it (ADR-0004): world loads and the automation modes apply the options without saving them.
+    /// calls it, when the player leaves it (ADR-0014): world loads and the automation modes apply the options without saving them.
     /// </summary>
     internal void SaveFrontEndOptions(RaceFrontEndState state)
     {

@@ -442,7 +442,7 @@ Demande de l'auteur : « Désolé je me suis trompé pour l'écran help et optio
 > - Réglages restaurés à l'identique après chaque run.
 > - 🧪 Reste pour l'auteur : le rendu, la fermeture (Échap, B, Back, clic) et les sons.
 
-### ⏳ T4.2 — Options, disposition d'avant au style unifié
+### 🧪 T4.2 — Options, disposition d'avant au style unifié
 
 - Objectif : D8, D9, P12, P13.
 - Fichiers :
@@ -451,6 +451,34 @@ Demande de l'auteur : « Désolé je me suis trompé pour l'écran help et optio
   - `docs/mgui-gaps-from-rgce-xaml-screens.md` (M4).
 - Validation : P15 ; smoke : la résolution appliquée au retour au menu reste vérifiée.
 - Commit : `feat(racing-casa): lay Options out as before in the menus' style`
+
+> Validation (2026-10-08) :
+> - **Code** :
+>   - `RaceOptionsViewModel` (P12) : bande, en-tête, 12 libellés alignés à droite sur x 380 (largeur mesurée par `MeasureGameFontText`), champ du nom et nom avec « | » ; résolutions et modes côte à côte, en ambre si choisis ; 6 pastilles ; 3 traits avec poignée et valeur ; flèche devant le libellé de la ligne choisie ; bouton BACK.
+>   - `Options.xaml` est généré, avec les données de conception en 1280×720.
+>   - `OptionsScreen` (P13) : 11 arrêts dans l'ordre des lignes, la flèche partant sur Sound. Gauche et droite changent la résolution ou le mode, ou règlent un curseur de ±10 ; Entrée ou A bascule une case ou le mode. Un clic agit sur un libellé, une ligne de case ou un trait. Le reste du comportement de T2.3 est inchangé (saisie du nom, volume en direct, toute sortie par `ApplyAndClose`).
+>   - Commentaires : `SaveFrontEndOptions`, `ApplyFrontEndVolumes`, `HighscoresScreen` et `RaceHighscoresViewModel` citent l'ADR-0014 (A3).
+> - **Assets** :
+>   - `Ui.Options.Panel` et ses 9 zones sont retirés : lignes du générateur, fichiers et 10 entrées de catalogue retirées par script.
+>   - `Ui.Options.NameField` (346,27,546,50) est ajouté.
+>   - Le générateur donne 8 textures et 50 sprites, sans rien changer à une seconde exécution.
+> - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans RGCE.
+> - `--smoke-frontend` : code 0 sans avertissement ; « Verified applied resolution on MainMenu ».
+> - **Captures** :
+>   - deux runs identiques sur `options` ; contre `references-7bbdd39`, `options` et `help` (T4.1) changent ;
+>   - les autres écarts sont de timing : zone de rebond du logo (menu principal, Help, sélection de voiture, à 2 pixels 3D près) et une image de décalage de la scène (`race-hud`, `race-finished`) ;
+>   - les réglages enregistrés de l'auteur donnent Sound 0, Music 100 et Sensitivity 60 (`front-end-options.json`, inchangé par les runs).
+> - **Mesures** (sonde de taille pour 1280×720 et 1024×768) :
+>   - bande : y 186 → 810, 124 → 540, 132 → 576, exacts ;
+>   - bord droit des 12 libellés : 710 à 713 en 1920×1080, 473 à 475 en 1280×720, 378 à 380 en 1024×768, pour x 380 = 711, 474 et 379, soit 2 pixels près ;
+>   - premier libellé de résolution en x 754 pour la plume 750 en 1920×1080, 402 pour 400 en 1024×768 ;
+>   - pastilles et poignées : en 1920×1080, la partie chaude de l'art tombe à 1 pixel d'anticrénelage près de l'art de la pastille (opaque en (3,4)–(34,35) sur 39) placé dans le rectangle calculé. C'est le cas pour les 6 lignes et les 3 poignées, Sound à 0 en x 732, Music à 100 en x 1294, Sensitivity à 60 en x 1069 ;
+>   - la flèche finit avant « Sound Volume » (x 402 contre 426 en 1920×1080) ;
+>   - bouton BACK identique au pixel près à celui de la sélection de piste, aux trois tailles.
+> - Éditeur : `capture_editor_screen.ps1` sur `Options.uiscreen`, code 0 sans erreur.
+> - Manques MGUI : M4 (50 sprites sur 8 textures), M5 pour Options.
+> - Réglages restaurés à l'identique après chaque run.
+> - 🧪 Reste pour l'auteur : le rendu ; chaque ligne au clavier, à la manette et à la souris ; la saisie du nom ; le volume en direct ; l'enregistrement à chaque sortie.
 
 ### ⏳ T4.3 — Clôture
 

@@ -18,29 +18,38 @@ public readonly record struct RaceOptionsValues(
     int ControllerSensitivity);
 
 /// <summary>
-/// Data context of <c>Screen.Options</c>, RacingGame's options screen (ADR-0013): the menu decoration, the "OPTIONS"
-/// header, the options panel with its baked labels, the areas redrawn over it, the player name, the round buttons, the
-/// slider handles, the selection arrow and the B BACK button, laid out every frame in screen pixels with RacingGame's
-/// formulas (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/Options.cs</c>, Update and Render). The panel and every
-/// area on it are placed with CalcRectangleKeep4To3 of the texture rectangle, plus YToRes768(125), as RacingGame did.
+/// Data context of <c>Screen.Options</c> (ADR-0014): the previous arrangement of the options, a column of labels and a
+/// column of controls, drawn with RacingGame's visual vocabulary and laid out every frame in screen pixels with
+/// RacingGame's formulas and 1024x640 units, as the other menus. It holds the menu decoration, the black band, the
+/// "OPTIONS" header, the rows, the selection arrow and the B BACK button.
 /// <para/>
-/// RacingGameCasaEngine's rows are drawn in the panel's style (ADR-0013): the resolution slots' baked labels are covered
-/// and RacingGameCasaEngine's resolutions written over them, as RacingGame's later version did; the High Detail slot
-/// shows Vertical Sync the same way; Show FPS, Gamepad Vibration and Driving Mode ("Simulation") are round buttons with a
-/// text, on a grid aligned with the panel's columns (339 and 616). The selection arrow visits every row
-/// (<see cref="StopCount"/> stops); RacingGame's reached the three sliders only, which keep its arrow positions.
+/// The rows, from the top, are Player Name, Resolution, Driving Mode, the six options and the three sliders. Labels are
+/// written in GameFont, right-aligned on x 380, and the controls start at x 400:
+/// <list type="bullet">
+/// <item>the name in the original's name field;</item>
+/// <item>the resolutions and the driving modes as labels, amber when chosen;</item>
+/// <item>an option as the original's round button, orange when on and grey when off;</item>
+/// <item>a slider as the original's track with a round handle, followed by its value.</item>
+/// </list>
+/// The selection arrow stands in front of the selected row's label and swings as RacingGame's (Options.cs,
+/// RenderSelectionArrow). Texts are written as TextureFont did: at their position minus YToRes1050(5), and scaled by the
+/// screen with <see cref="TextScaleX"/> and <see cref="TextScaleY"/>.
 /// </summary>
 public sealed class RaceOptionsViewModel : RaceViewModelBase
 {
     public const int ResolutionCount = 5;
+    public const int DrivingModeCount = 2;
+    public const int ToggleCount = 6;
+    public const int SliderCount = 3;
+    public const int RowCount = 12;
 
-    // Selection stops, in reading order. RacingGame's arrow started on the Sound slider.
+    // Selection stops, one per row below Player Name. RacingGame's arrow started on the Sound slider.
     public const int StopResolution = 0;
-    public const int StopFullscreen = 1;
-    public const int StopDrivingMode = 2;
-    public const int StopPostEffects = 3;
-    public const int StopShadows = 4;
-    public const int StopVSync = 5;
+    public const int StopDrivingMode = 1;
+    public const int StopFullscreen = 2;
+    public const int StopVSync = 3;
+    public const int StopPostEffects = 4;
+    public const int StopShadows = 5;
     public const int StopShowFps = 6;
     public const int StopVibration = 7;
     public const int StopSound = 8;
@@ -48,81 +57,132 @@ public sealed class RaceOptionsViewModel : RaceViewModelBase
     public const int StopSensitivity = 10;
     public const int StopCount = 11;
 
-    /// <summary>The tint of an option that is on (RacingGame's selColor), and of a round button that is on.</summary>
-    public static readonly Color OnColor = new(255, 156, 0, 160);
-
-    /// <summary>The tint of a round button that is off.</summary>
-    public static readonly Color OffColor = new(180, 180, 180, 120);
-
-    /// <summary>The colour of the selected resolution's label, and of Vertical Sync when on.</summary>
-    public static readonly Color SelectedLabelColor = new(255, 156, 0);
-
-    // Texture rectangles of OptionsScreenWindows.png (Options.cs Resolution*GfxRect, FullscreenGfxRect, ...).
-    private static readonly Rectangle[] ResolutionSlots =
+    /// <summary>The row labels, from the top.</summary>
+    public static readonly string[] RowLabels =
     [
-        new(339, 112, 98, 32), new(454, 112, 98, 32), new(575, 112, 108, 32), new(704, 112, 116, 32), new(838, 112, 69, 32),
+        "Player Name", "Resolution", "Driving Mode", "Fullscreen", "Vertical Sync", "Post Screen Effects", "Shadows", "Show FPS",
+        "Gamepad Vibration", "Sound Volume", "Music Volume", "Controller Sensitivity",
     ];
 
-    private static readonly Rectangle FullscreenSlot = new(339, 182, 105, 36);
-    private static readonly Rectangle PostEffectsSlot = new(339, 226, 206, 36);
-    private static readonly Rectangle ShadowsSlot = new(616, 226, 90, 36);
-    private static readonly Rectangle HighDetailSlot = new(784, 226, 120, 36);
-    // Round-button rows: Show FPS where RacingGame's later version put it; Gamepad Vibration and Driving Mode in the
-    // panel's second column, clear of the Show FPS and Fullscreen texts.
-    private static readonly Rectangle ShowFpsSlot = new(339, 262, 110, 32);
-    private static readonly Rectangle VibrationSlot = new(616, 262, 250, 32);
-    private static readonly Rectangle DrivingModeSlot = new(616, 182, 160, 32);
-    private static readonly Rectangle SoundSlot = new(384, 281, 448, 39);
-    private static readonly Rectangle MusicSlot = new(384, 354, 448, 39);
-    private static readonly Rectangle SensitivitySlot = new(384, 428, 448, 39);
-    // Arrow positions: Line4/5/6ArrowGfxRect for the sliders; in front of the row's label for the resolution and
-    // Fullscreen rows, as RacingGame's arrow pointed at the slider labels; in front of the option elsewhere.
-    private static readonly Rectangle[] ArrowSlots =
-    [
-        new(78, 110, 62, 39), new(125, 180, 62, 39), new(550, 182, 62, 39), new(273, 224, 62, 39), new(550, 224, 62, 39),
-        new(706, 224, 62, 39), new(273, 262, 62, 39), new(550, 262, 62, 39), new(154, 284, 62, 39), new(160, 354, 62, 39),
-        new(72, 437, 62, 39),
-    ];
+    /// <summary>The driving mode labels: Arcade, then Simulation.</summary>
+    public static readonly string[] DrivingModeLabels = ["Arcade", "Simulation"];
 
-    // UIRenderer.SelectionRadioButtonGfxRect (39x39).
-    private const int RadioSize = 39;
-    // TextureFont: glyphs drawn YToRes1050(5) above the position, line height YToRes1050(36 - 5).
+    /// <summary>The colour of a chosen resolution or driving mode (RacingGame's selected resolution label).</summary>
+    public static readonly Color ChosenColor = new(255, 156, 0);
+
+    private const int BandTop = 110;
+    private const int BandHeight = 370;
+    private const int FirstRowTop = 122;
+    private const int RowPitch = 27;
+    // The rows' visible text sits about 8 units below their position; the controls are centred there.
+    private const int RowCentre = 8;
+    private const int LabelRight = 380;
+    private const int ControlLeft = 400;
+    private const int ResolutionGap = 16;
+    private const int DrivingModeGap = 24;
+    private const int NameFieldLeft = 395;
+    private const int NameFieldWidth = 400;
+    private const int NameFieldHeight = 25;
+    private const int NameLeft = 405;
+    private const int ButtonSize = 22;
+    private const int TrackWidth = 300;
+    private const int TrackHeight = 6;
+    private const int ValueLeft = 720;
+    // UIRenderer.SelectionArrowGfxRect (53x39).
+    private const int ArrowArtWidth = 53;
+    private const int ArrowArtHeight = 39;
+    // TextureFont drew its glyphs YToRes1050(5) above the given position (SubRenderHeight).
     private const int FontRaise = 5;
-    private const int FontHeight = 31;
 
     private readonly Rectangle[] _resolutionRects = new Rectangle[ResolutionCount];
-    private readonly string[] _resolutionLabels = [string.Empty, string.Empty, string.Empty, string.Empty, string.Empty];
+    private readonly Rectangle[] _drivingModeRects = new Rectangle[DrivingModeCount];
     private readonly Rectangle[] _stopRects = new Rectangle[StopCount];
+    private readonly string[] _resolutionLabels = [string.Empty, string.Empty, string.Empty, string.Empty, string.Empty];
+    private readonly int[] _labelLefts = new int[RowCount];
+    private int _bandTopPixels;
+    private int _bandHeightPixels;
     private Rectangle _backButtonRect;
     private string _nameDisplay = string.Empty;
+    private string _soundValue = string.Empty;
+    private string _musicValue = string.Empty;
+    private string _sensitivityValue = string.Empty;
     private int _selectedStop = StopSound;
 
     public RaceOptionsViewModel()
     {
-        ResolutionCovers = [Resolution0, Resolution1, Resolution2, Resolution3, Resolution4];
+        Labels = [Label0, Label1, Label2, Label3, Label4, Label5, Label6, Label7, Label8, Label9, Label10, Label11];
         ResolutionTexts = [ResolutionText0, ResolutionText1, ResolutionText2, ResolutionText3, ResolutionText4];
+        DrivingModeTexts = [ArcadeText, SimulationText];
+        ToggleButtons = [FullscreenButton, VSyncButton, PostEffectsButton, ShadowsButton, ShowFpsButton, VibrationButton];
+        Tracks = [SoundTrack, MusicTrack, SensitivityTrack];
+        Handles = [SoundHandle, MusicHandle, SensitivityHandle];
+        ValueTexts = [SoundValueText, MusicValueText, SensitivityValueText];
     }
 
     public RaceMenuDecorationViewModel Decoration { get; } = new();
 
+    public int BandTopPixels
+    {
+        get => _bandTopPixels;
+        set
+        {
+            if (SetProperty(ref _bandTopPixels, value))
+            {
+                NotifyPropertyChanged(nameof(BandMargin));
+            }
+        }
+    }
+
+    public int BandHeightPixels
+    {
+        get => _bandHeightPixels;
+        set => SetProperty(ref _bandHeightPixels, value);
+    }
+
+    public MonoGame.Extended.Thickness BandMargin => new(0, _bandTopPixels, 0, 0);
+
     /// <summary>The "OPTIONS" header (headers.png HeaderOptionsGfxRect), drawn with RenderOnScreenRelative1600(10, 18).</summary>
     public RaceScreenRectViewModel Header { get; } = new();
 
-    /// <summary>The options panel (OptionsScreenWindows.png), drawn with RenderOnScreenRelative4To3(0, 125).</summary>
-    public RaceScreenRectViewModel Panel { get; } = new();
+    /// <summary>Where each row label (<see cref="RowLabels"/>) is written, right-aligned on x 380.</summary>
+    public RaceScreenRectViewModel Label0 { get; } = new();
 
-    /// <summary>A resolution slot's area, redrawn darkened over the baked label.</summary>
-    public RaceScreenRectViewModel Resolution0 { get; } = new();
+    public RaceScreenRectViewModel Label1 { get; } = new();
 
-    public RaceScreenRectViewModel Resolution1 { get; } = new();
+    public RaceScreenRectViewModel Label2 { get; } = new();
 
-    public RaceScreenRectViewModel Resolution2 { get; } = new();
+    public RaceScreenRectViewModel Label3 { get; } = new();
 
-    public RaceScreenRectViewModel Resolution3 { get; } = new();
+    public RaceScreenRectViewModel Label4 { get; } = new();
 
-    public RaceScreenRectViewModel Resolution4 { get; } = new();
+    public RaceScreenRectViewModel Label5 { get; } = new();
 
-    public IReadOnlyList<RaceScreenRectViewModel> ResolutionCovers { get; }
+    public RaceScreenRectViewModel Label6 { get; } = new();
+
+    public RaceScreenRectViewModel Label7 { get; } = new();
+
+    public RaceScreenRectViewModel Label8 { get; } = new();
+
+    public RaceScreenRectViewModel Label9 { get; } = new();
+
+    public RaceScreenRectViewModel Label10 { get; } = new();
+
+    public RaceScreenRectViewModel Label11 { get; } = new();
+
+    public IReadOnlyList<RaceScreenRectViewModel> Labels { get; }
+
+    /// <summary>The original's name field (OptionsScreenWindows.png), behind the name.</summary>
+    public RaceScreenRectViewModel NameField { get; } = new();
+
+    /// <summary>Where the player name is written.</summary>
+    public RaceScreenRectViewModel NameText { get; } = new();
+
+    /// <summary>The player name, followed by the blinking "|" cursor.</summary>
+    public string NameDisplay
+    {
+        get => _nameDisplay;
+        set => SetProperty(ref _nameDisplay, value);
+    }
 
     /// <summary>The resolution labels: RacingGameCasaEngine's resolutions, then "Auto".</summary>
     public string ResolutionLabel0 { get => _resolutionLabels[0]; set => SetLabel(0, value); }
@@ -135,7 +195,7 @@ public sealed class RaceOptionsViewModel : RaceViewModelBase
 
     public string ResolutionLabel4 { get => _resolutionLabels[4]; set => SetLabel(4, value); }
 
-    /// <summary>Where a resolution label is written, centred in its slot.</summary>
+    /// <summary>Where each resolution label is written.</summary>
     public RaceScreenRectViewModel ResolutionText0 { get; } = new();
 
     public RaceScreenRectViewModel ResolutionText1 { get; } = new();
@@ -148,52 +208,75 @@ public sealed class RaceOptionsViewModel : RaceViewModelBase
 
     public IReadOnlyList<RaceScreenRectViewModel> ResolutionTexts { get; }
 
-    /// <summary>A graphics option's area, redrawn tinted while the option is on (<see cref="RaceScreenRectViewModel.IsHighlighted"/>).</summary>
-    public RaceScreenRectViewModel Fullscreen { get; } = new();
+    /// <summary>Where "Arcade" and "Simulation" are written.</summary>
+    public RaceScreenRectViewModel ArcadeText { get; } = new();
 
-    public RaceScreenRectViewModel PostScreenEffects { get; } = new();
+    public RaceScreenRectViewModel SimulationText { get; } = new();
 
-    public RaceScreenRectViewModel Shadows { get; } = new();
+    public IReadOnlyList<RaceScreenRectViewModel> DrivingModeTexts { get; }
 
-    /// <summary>The High Detail slot, redrawn darkened over its baked label.</summary>
-    public RaceScreenRectViewModel VSyncCover { get; } = new();
+    /// <summary>An option's round button: shown off (<see cref="RaceScreenRectViewModel.IsShown"/>) or on (highlighted).</summary>
+    public RaceScreenRectViewModel FullscreenButton { get; } = new();
 
-    /// <summary>Where "Vertical Sync" is written, centred in the High Detail slot.</summary>
-    public RaceScreenRectViewModel VSyncText { get; } = new();
+    public RaceScreenRectViewModel VSyncButton { get; } = new();
 
-    /// <summary>A round button: shown off (<see cref="RaceScreenRectViewModel.IsShown"/>) or on (highlighted).</summary>
+    public RaceScreenRectViewModel PostEffectsButton { get; } = new();
+
+    public RaceScreenRectViewModel ShadowsButton { get; } = new();
+
     public RaceScreenRectViewModel ShowFpsButton { get; } = new();
 
     public RaceScreenRectViewModel VibrationButton { get; } = new();
 
-    public RaceScreenRectViewModel DrivingModeButton { get; } = new();
+    public IReadOnlyList<RaceScreenRectViewModel> ToggleButtons { get; }
 
-    /// <summary>Where a round button's text is written.</summary>
-    public RaceScreenRectViewModel ShowFpsText { get; } = new();
+    /// <summary>A slider's track (the original's, the car selection's stat bar).</summary>
+    public RaceScreenRectViewModel SoundTrack { get; } = new();
 
-    public RaceScreenRectViewModel VibrationText { get; } = new();
+    public RaceScreenRectViewModel MusicTrack { get; } = new();
 
-    public RaceScreenRectViewModel DrivingModeText { get; } = new();
+    public RaceScreenRectViewModel SensitivityTrack { get; } = new();
 
-    /// <summary>A slider's handle.</summary>
+    public IReadOnlyList<RaceScreenRectViewModel> Tracks { get; }
+
+    /// <summary>A slider's handle, the round button centred on its value.</summary>
     public RaceScreenRectViewModel SoundHandle { get; } = new();
 
     public RaceScreenRectViewModel MusicHandle { get; } = new();
 
     public RaceScreenRectViewModel SensitivityHandle { get; } = new();
 
-    /// <summary>The selection arrow, in front of the selected row.</summary>
-    public RaceScreenRectViewModel Arrow { get; } = new();
+    public IReadOnlyList<RaceScreenRectViewModel> Handles { get; }
 
-    /// <summary>Where the player name is written.</summary>
-    public RaceScreenRectViewModel NameText { get; } = new();
+    /// <summary>Where a slider's value is written.</summary>
+    public RaceScreenRectViewModel SoundValueText { get; } = new();
 
-    /// <summary>The player name, followed by the blinking "|" cursor.</summary>
-    public string NameDisplay
+    public RaceScreenRectViewModel MusicValueText { get; } = new();
+
+    public RaceScreenRectViewModel SensitivityValueText { get; } = new();
+
+    public IReadOnlyList<RaceScreenRectViewModel> ValueTexts { get; }
+
+    public string SoundValue
     {
-        get => _nameDisplay;
-        set => SetProperty(ref _nameDisplay, value);
+        get => _soundValue;
+        set => SetProperty(ref _soundValue, value);
     }
+
+    public string MusicValue
+    {
+        get => _musicValue;
+        set => SetProperty(ref _musicValue, value);
+    }
+
+    public string SensitivityValue
+    {
+        get => _sensitivityValue;
+        set => SetProperty(ref _sensitivityValue, value);
+    }
+
+    /// <summary>The selection arrow, in front of the selected row's label.</summary>
+    public RaceScreenRectViewModel Arrow { get; } = new();
 
     /// <summary>The B BACK button; highlighted (grown, with the orange outline) while the mouse is over it.</summary>
     public RaceScreenRectViewModel BackButton { get; } = new();
@@ -214,8 +297,8 @@ public sealed class RaceOptionsViewModel : RaceViewModelBase
     /// <summary>The colour of each resolution label after the last <see cref="Update"/>.</summary>
     public Color[] ResolutionColors { get; } = new Color[ResolutionCount];
 
-    /// <summary>The colour of "Vertical Sync" after the last <see cref="Update"/>.</summary>
-    public Color VSyncColor { get; private set; } = Color.White;
+    /// <summary>The colour of each driving mode label after the last <see cref="Update"/>.</summary>
+    public Color[] DrivingModeColors { get; } = new Color[DrivingModeCount];
 
     /// <summary>Lays everything out for the viewport and the values.</summary>
     /// <param name="totalSeconds">The game's total time, as RacingGame's <c>BaseGame.TotalTime</c>, for the arrow's swing and the cursor's blink.</param>
@@ -225,50 +308,84 @@ public sealed class RaceOptionsViewModel : RaceViewModelBase
         in RaceOptionsValues values, Func<string, float> measure)
     {
         var layout = new LegacyScreenLayout(viewportWidth, viewportHeight);
+        Rectangle band = layout.CalcRectangle(0, BandTop, 1024, BandHeight);
+        BandTopPixels = band.Y;
+        BandHeightPixels = band.Height;
         Set(Header, layout.CalcRectangle1600(10, 18, 512, 100));
-        Set(Panel, layout.CalcRectangleKeep4To3(0, 125, 1024, 512));
 
         TextScaleX = layout.Width / 1400f;
         TextScaleY = layout.Height / 1050f;
         int raise = layout.YToRes1050(FontRaise);
-        int fontHeight = layout.YToRes1050(FontHeight);
+        int rowHeight = layout.YToRes(RowPitch);
+        int labelRight = layout.XToRes(LabelRight);
+        int controlLeft = layout.XToRes(ControlLeft);
+        int buttonSize = layout.YToRes(ButtonSize);
 
-        // The name, and "|" every other 0.35 s.
-        bool cursorShown = pinAnimations || (int)(totalSeconds / 0.35f) % 2 == 0;
-        NameDisplay = values.PlayerName + (cursorShown ? "|" : string.Empty);
-        NameText.Set(layout.XToRes(352), layout.YToRes768(125 + 65 - 20) - raise, 0, 0);
-
-        for (int i = 0; i < ResolutionCount; i++)
+        for (int row = 0; row < RowCount; row++)
         {
-            Rectangle slot = OnPanel(layout, ResolutionSlots[i]);
-            _resolutionRects[i] = slot;
-            Set(ResolutionCovers[i], slot);
-            PlaceCentred(ResolutionTexts[i], slot, _resolutionLabels[i], layout, measure, raise, fontHeight);
-            ResolutionColors[i] = i == values.ResolutionIndex ? SelectedLabelColor : Color.White;
+            int left = labelRight - TextWidth(measure, RowLabels[row]);
+            _labelLefts[row] = left;
+            Labels[row].Set(left, RowTop(layout, row) - raise, 0, 0);
         }
 
-        SetToggle(Fullscreen, StopFullscreen, OnPanel(layout, FullscreenSlot), values.IsFullscreen);
-        SetToggle(PostScreenEffects, StopPostEffects, OnPanel(layout, PostEffectsSlot), values.EnablePostEffects);
-        SetToggle(Shadows, StopShadows, OnPanel(layout, ShadowsSlot), values.EnableShadows);
-        Rectangle highDetail = OnPanel(layout, HighDetailSlot);
-        _stopRects[StopVSync] = highDetail;
-        Set(VSyncCover, highDetail);
-        PlaceCentred(VSyncText, highDetail, "Vertical Sync", layout, measure, raise, fontHeight);
-        VSyncColor = values.EnableVSync ? SelectedLabelColor : Color.White;
+        // Player Name: the original's field, the name and "|" every other 0.35 s.
+        Set(NameField, layout.CalcRectangle(NameFieldLeft, FirstRowTop - 3, NameFieldWidth, NameFieldHeight));
+        bool cursorShown = pinAnimations || (int)(totalSeconds / 0.35f) % 2 == 0;
+        NameDisplay = values.PlayerName + (cursorShown ? "|" : string.Empty);
+        NameText.Set(layout.XToRes(NameLeft), RowTop(layout, 0) - raise, 0, 0);
 
-        SetRoundButton(ShowFpsButton, ShowFpsText, StopShowFps, OnPanel(layout, ShowFpsSlot), values.ShowFps, layout, raise, fontHeight);
-        SetRoundButton(VibrationButton, VibrationText, StopVibration, OnPanel(layout, VibrationSlot), values.EnableVibration, layout, raise, fontHeight);
-        SetRoundButton(DrivingModeButton, DrivingModeText, StopDrivingMode, OnPanel(layout, DrivingModeSlot), values.IsSimulation, layout, raise, fontHeight);
+        // Resolution and Driving Mode: labels side by side, amber when chosen.
+        PlaceChoices(layout, measure, 1, _resolutionLabels, ResolutionTexts, _resolutionRects, layout.XToRes(ResolutionGap), raise, rowHeight);
+        for (int i = 0; i < ResolutionCount; i++)
+        {
+            ResolutionColors[i] = i == values.ResolutionIndex ? ChosenColor : Color.White;
+        }
 
-        SetSlider(SoundHandle, StopSound, OnPanel(layout, SoundSlot), values.SoundVolume, layout);
-        SetSlider(MusicHandle, StopMusic, OnPanel(layout, MusicSlot), values.MusicVolume, layout);
-        SetSlider(SensitivityHandle, StopSensitivity, OnPanel(layout, SensitivitySlot), values.ControllerSensitivity, layout);
+        _stopRects[StopResolution] = Span(_resolutionRects);
+        PlaceChoices(layout, measure, 2, DrivingModeLabels, DrivingModeTexts, _drivingModeRects, layout.XToRes(DrivingModeGap), raise, rowHeight);
+        DrivingModeColors[0] = values.IsSimulation ? Color.White : ChosenColor;
+        DrivingModeColors[1] = values.IsSimulation ? ChosenColor : Color.White;
+        _stopRects[StopDrivingMode] = Span(_drivingModeRects);
 
-        // The arrow swings left by 0 to 16 units (8 + 8 sin(t / 0.21212)).
-        Rectangle arrow = OnPanel(layout, ArrowSlots[_selectedStop]);
+        // Options: the round button, orange when on; the whole row (label and button) is clickable.
+        bool[] on = [values.IsFullscreen, values.EnableVSync, values.EnablePostEffects, values.EnableShadows, values.ShowFps, values.EnableVibration];
+        for (int i = 0; i < ToggleCount; i++)
+        {
+            int row = 3 + i;
+            int centre = layout.YToRes(FirstRowTop + row * RowPitch + RowCentre);
+            RaceScreenRectViewModel button = ToggleButtons[i];
+            button.Set(controlLeft, centre - buttonSize / 2, buttonSize, buttonSize);
+            button.IsShown = !on[i];
+            button.IsHighlighted = on[i];
+            _stopRects[StopFullscreen + i] = RowArea(layout, row, controlLeft + buttonSize, rowHeight);
+        }
+
+        // Sliders: the track, the handle centred on the value, then the value.
+        int[] sliderValues = [values.SoundVolume, values.MusicVolume, values.ControllerSensitivity];
+        SoundValue = sliderValues[0].ToString();
+        MusicValue = sliderValues[1].ToString();
+        SensitivityValue = sliderValues[2].ToString();
+        int trackWidth = layout.XToRes(TrackWidth);
+        int trackHeight = Math.Max(1, layout.YToRes(TrackHeight));
+        for (int i = 0; i < SliderCount; i++)
+        {
+            int row = 9 + i;
+            int centre = layout.YToRes(FirstRowTop + row * RowPitch + RowCentre);
+            Tracks[i].Set(controlLeft, centre - trackHeight / 2, trackWidth, trackHeight);
+            float fraction = Math.Clamp(sliderValues[i], 0, 100) / 100f;
+            Handles[i].Set(controlLeft + (int)(trackWidth * fraction) - buttonSize / 2, centre - buttonSize / 2, buttonSize, buttonSize);
+            ValueTexts[i].Set(layout.XToRes(ValueLeft), RowTop(layout, row) - raise, 0, 0);
+            _stopRects[StopSound + i] = new Rectangle(controlLeft, RowTop(layout, row) - raise, trackWidth, rowHeight);
+        }
+
+        // The arrow, in front of the selected row's label, swings left by 0 to 16 units (8 + 8 sin(t / 0.21212)).
+        int selectedRow = _selectedStop + 1;
+        int arrowHeight = buttonSize;
+        int arrowWidth = (int)Math.Round(arrowHeight * ArrowArtWidth / (float)ArrowArtHeight);
+        int arrowCentre = layout.YToRes(FirstRowTop + selectedRow * RowPitch + RowCentre);
         double swing = pinAnimations ? 0.0 : Math.Sin(totalSeconds / 0.21212f);
-        arrow.X -= layout.XToRes(8 + (int)Math.Round(8 * swing));
-        Set(Arrow, arrow);
+        int arrowLeft = _labelLefts[selectedRow] - arrowWidth - layout.XToRes(8 + (int)Math.Round(8 * swing));
+        Arrow.Set(arrowLeft, arrowCentre - arrowHeight / 2, arrowWidth, arrowHeight);
 
         _backButtonRect = layout.BackButton();
         bool hovered = _backButtonRect.Contains(mouseX, mouseY);
@@ -276,11 +393,13 @@ public sealed class RaceOptionsViewModel : RaceViewModelBase
         BackButton.IsHighlighted = hovered;
     }
 
-    /// <summary>The resolution slot under the point, or -1.</summary>
+    /// <summary>The resolution label under the point, or -1.</summary>
     public int GetResolutionAt(int x, int y) => Array.FindIndex(_resolutionRects, rect => rect.Contains(x, y));
 
-    /// <summary>The option (stop) whose area is under the point, or -1. Options come before the sliders: a click on a
-    /// round button does not also move the Sound slider it overlaps, as it did in RacingGame's later version.</summary>
+    /// <summary>The driving mode label under the point (0 Arcade, 1 Simulation), or -1.</summary>
+    public int GetDrivingModeAt(int x, int y) => Array.FindIndex(_drivingModeRects, rect => rect.Contains(x, y));
+
+    /// <summary>The option row or the slider track under the point (its stop), or -1.</summary>
     public int GetStopAt(int x, int y)
     {
         for (int stop = StopFullscreen; stop < StopCount; stop++)
@@ -306,49 +425,35 @@ public sealed class RaceOptionsViewModel : RaceViewModelBase
 
     public static bool IsSlider(int stop) => stop is StopSound or StopMusic or StopSensitivity;
 
+    private static int RowTop(LegacyScreenLayout layout, int row) => layout.YToRes(FirstRowTop + row * RowPitch);
+
+    private int TextWidth(Func<string, float> measure, string text) => (int)Math.Round(measure(text) * TextScaleX);
+
+    // Labels side by side from the control column, each clickable over its width and the row's height.
+    private void PlaceChoices(LegacyScreenLayout layout, Func<string, float> measure, int row, IReadOnlyList<string> labels,
+        IReadOnlyList<RaceScreenRectViewModel> texts, Rectangle[] rects, int gap, int raise, int rowHeight)
+    {
+        int x = layout.XToRes(ControlLeft);
+        int top = RowTop(layout, row) - raise;
+        for (int i = 0; i < labels.Count; i++)
+        {
+            int width = TextWidth(measure, labels[i]);
+            texts[i].Set(x, top, 0, 0);
+            rects[i] = new Rectangle(x, top, width, rowHeight);
+            x += width + gap;
+        }
+    }
+
+    // A row from its label's left to the given right edge, over the row's height.
+    private Rectangle RowArea(LegacyScreenLayout layout, int row, int right, int rowHeight)
+    {
+        int top = RowTop(layout, row) - layout.YToRes1050(FontRaise);
+        return new Rectangle(_labelLefts[row], top, right - _labelLefts[row], rowHeight);
+    }
+
+    private static Rectangle Span(Rectangle[] rects) => new(rects[0].X, rects[0].Y, rects[^1].Right - rects[0].X, rects[0].Height);
+
     private void SetLabel(int index, string value) => SetProperty(ref _resolutionLabels[index], value ?? string.Empty, "ResolutionLabel" + index);
-
-    // RacingGame: CalcRectangleKeep4To3(gfxRect), then Y += YToRes768(125).
-    private static Rectangle OnPanel(LegacyScreenLayout layout, Rectangle textureRect)
-    {
-        Rectangle rect = layout.CalcRectangleKeep4To3(textureRect);
-        rect.Y += layout.YToRes768(125);
-        return rect;
-    }
-
-    private void SetToggle(RaceScreenRectViewModel target, int stop, Rectangle rect, bool isOn)
-    {
-        _stopRects[stop] = rect;
-        Set(target, rect);
-        target.IsHighlighted = isOn;
-    }
-
-    // RacingGame's later version: the 39x39 round button at the area's top left, the text XToRes(39 + 4) to its right.
-    private void SetRoundButton(RaceScreenRectViewModel button, RaceScreenRectViewModel text, int stop, Rectangle rect, bool isOn,
-        LegacyScreenLayout layout, int raise, int fontHeight)
-    {
-        _stopRects[stop] = rect;
-        button.Set(rect.X, rect.Y, layout.XToRes(RadioSize), layout.YToRes768(RadioSize));
-        button.IsShown = !isOn;
-        button.IsHighlighted = isOn;
-        text.Set(rect.X + layout.XToRes(RadioSize + 4), rect.Y + (rect.Height - fontHeight) / 2 - raise, 0, 0);
-    }
-
-    // The handle: the round button centred on the value's x, at the slider area's top.
-    private void SetSlider(RaceScreenRectViewModel handle, int stop, Rectangle rect, int value, LegacyScreenLayout layout)
-    {
-        _stopRects[stop] = rect;
-        float fraction = Math.Clamp(value, 0, 100) / 100f;
-        handle.Set(rect.X + (int)(rect.Width * fraction) - layout.XToRes(RadioSize) / 2, rect.Y, layout.XToRes(RadioSize), layout.YToRes768(RadioSize));
-    }
-
-    // TextureFont.WriteText at x = slot.X + (slot.Width - width) / 2, y = slot.Y + (slot.Height - Height) / 2.
-    private void PlaceCentred(RaceScreenRectViewModel target, Rectangle slot, string text, LegacyScreenLayout layout,
-        Func<string, float> measure, int raise, int fontHeight)
-    {
-        int width = (int)Math.Round(measure(text) * TextScaleX);
-        target.Set(slot.X + (slot.Width - width) / 2, slot.Y + (slot.Height - fontHeight) / 2 - raise, 0, 0);
-    }
 
     private static void Set(RaceScreenRectViewModel target, Rectangle rect) => target.Set(rect.X, rect.Y, rect.Width, rect.Height);
 }

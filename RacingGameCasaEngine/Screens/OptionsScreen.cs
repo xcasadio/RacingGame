@@ -14,25 +14,27 @@ using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
 namespace RacingGameCasaEngine.Screens;
 
 /// <summary>
-/// Options, loaded from the <c>Screen.Options</c> screen asset (Content/UI/Screens/Options), as RacingGame's (ADR-0013),
-/// with its input (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/Options.cs</c>, Update), extended to every row:
+/// Options, loaded from the <c>Screen.Options</c> screen asset (Content/UI/Screens/Options): the previous arrangement
+/// of the options in the menus' style (ADR-0014), with RacingGame's options input
+/// (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/Options.cs</c>, Update) extended to every row:
 /// <list type="bullet">
 /// <item>the typed text edits the player name (printable ASCII, the characters GameFont has; Backspace erases);</item>
 /// <item>Up and Down (keyboard, D-pad, left stick past 0.5) move the selection arrow over the rows, with Highlight;
-/// Left and Right change the resolution (ButtonClick) or move a slider by 10 (Highlight); Enter or A switch the
-/// selected option (ButtonClick);</item>
-/// <item>a click on a resolution or an option changes it (ButtonClick), a click on a slider sets it (Highlight);</item>
-/// <item>the Highlight sound plays when the mouse enters a resolution, an option, a slider or the B button;</item>
+/// Left and Right change the resolution or the driving mode (ButtonClick) or move a slider by 10 (Highlight); Enter or
+/// A switch the selected option or the driving mode (ButtonClick);</item>
+/// <item>a click on a resolution, a driving mode or an option row changes it (ButtonClick), a click on a slider sets it
+/// (Highlight);</item>
+/// <item>the Highlight sound plays when the mouse enters any of these areas or the B button;</item>
 /// <item>Escape, B, Back or a click on B BACK apply and save the settings and leave with ScreenBack.</item>
 /// </list>
 /// Every change goes to <see cref="RaceFrontEndState"/> at once; the volumes apply as they change, the other settings
-/// when the player leaves (ADR-0013). The screen plays ScreenClick when shown, as RacingGame did when it pushed a screen.
-/// Nothing takes MGUI's focus.
+/// when the player leaves. The screen plays ScreenClick when shown, as RacingGame did when it pushed a screen. Nothing
+/// takes MGUI's focus.
 /// </summary>
 internal sealed class OptionsScreen : RaceXamlScreenBase
 {
     private const float StickThreshold = 0.5f;
-    // The name text box this screen replaces took 24 characters.
+    // The name text box of the code-built screen took 24 characters.
     private const int MaxNameLength = 24;
     private const int SliderStep = 10;
 
@@ -43,7 +45,7 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
     private readonly Func<string, float> _measure;
     private MGTextBlock[] _texts = [];
     private MGTextBlock[] _resolutionTexts = [];
-    private MGTextBlock? _vsyncText;
+    private MGTextBlock[] _drivingModeTexts = [];
     private bool _isReadingText;
     // The first update after the screen opens takes no input: the key or click that opened it is still "just pressed".
     private bool _acceptsInput;
@@ -70,7 +72,7 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
         if (labels.Length != RaceOptionsViewModel.ResolutionCount)
         {
             throw new InvalidOperationException(
-                $"Options.xaml has {RaceOptionsViewModel.ResolutionCount} resolution slots; the game has {labels.Length} resolutions with Auto.");
+                $"Options.xaml has {RaceOptionsViewModel.ResolutionCount} resolution labels; the game has {labels.Length} resolutions with Auto.");
         }
 
         _viewModel.ResolutionLabel0 = labels[0];
@@ -79,17 +81,13 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
         _viewModel.ResolutionLabel3 = labels[3];
         _viewModel.ResolutionLabel4 = labels[4];
 
-        _resolutionTexts = new MGTextBlock[RaceOptionsViewModel.ResolutionCount];
-        for (int i = 0; i < _resolutionTexts.Length; i++)
-        {
-            _resolutionTexts[i] = FindControl<MGTextBlock>("txtResolution" + i);
-        }
-
-        _vsyncText = FindControl<MGTextBlock>("txtVSync");
+        _resolutionTexts = FindTexts("txtResolution", RaceOptionsViewModel.ResolutionCount);
+        _drivingModeTexts = [FindControl<MGTextBlock>("txtArcade"), FindControl<MGTextBlock>("txtSimulation")];
         _texts =
         [
-            FindControl<MGTextBlock>("txtName"), .. _resolutionTexts, _vsyncText, FindControl<MGTextBlock>("txtDrivingMode"),
-            FindControl<MGTextBlock>("txtShowFps"), FindControl<MGTextBlock>("txtVibration"),
+            .. FindTexts("txtLabel", RaceOptionsViewModel.RowCount), FindControl<MGTextBlock>("txtName"), .. _resolutionTexts,
+            .. _drivingModeTexts, FindControl<MGTextBlock>("txtSoundValue"), FindControl<MGTextBlock>("txtMusicValue"),
+            FindControl<MGTextBlock>("txtSensitivityValue"),
         ];
         foreach (MGTextBlock text in _texts)
         {
@@ -167,8 +165,10 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
 
         // Input.MouseInBox played Highlight whenever the mouse entered a box it tested.
         int resolution = _viewModel.GetResolutionAt(position.X, position.Y);
+        int drivingMode = _viewModel.GetDrivingModeAt(position.X, position.Y);
         int stop = _viewModel.GetStopAt(position.X, position.Y);
         if ((resolution >= 0 && resolution != _viewModel.GetResolutionAt(_lastMouse.X, _lastMouse.Y))
+            || (drivingMode >= 0 && drivingMode != _viewModel.GetDrivingModeAt(_lastMouse.X, _lastMouse.Y))
             || (stop >= 0 && stop != _viewModel.GetStopAt(_lastMouse.X, _lastMouse.Y))
             || (_viewModel.IsOverBackButton(position.X, position.Y) && !_viewModel.IsOverBackButton(_lastMouse.X, _lastMouse.Y)))
         {
@@ -182,6 +182,11 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
         {
             PlaySound(MenuSound.ButtonClick);
             _state.SelectedResolutionIndex = resolution;
+        }
+        else if (click && drivingMode >= 0)
+        {
+            PlaySound(MenuSound.ButtonClick);
+            _state.SelectedDrivingMode = drivingMode == 1 ? VehicleDrivingMode.Simulation : VehicleDrivingMode.Arcade;
         }
         else if (click && stop >= 0)
         {
@@ -233,6 +238,11 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
                 int resolutions = RaceOptionsViewModel.ResolutionCount;
                 _state.SelectedResolutionIndex = (Math.Clamp(_state.SelectedResolutionIndex, 0, resolutions - 1) + direction + resolutions) % resolutions;
             }
+            else if (selected == RaceOptionsViewModel.StopDrivingMode)
+            {
+                PlaySound(MenuSound.ButtonClick);
+                SwitchDrivingMode();
+            }
             else if (RaceOptionsViewModel.IsSlider(selected))
             {
                 PlaySound(MenuSound.Highlight);
@@ -244,7 +254,14 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
             && selected != RaceOptionsViewModel.StopResolution && !RaceOptionsViewModel.IsSlider(selected))
         {
             PlaySound(MenuSound.ButtonClick);
-            Toggle(selected);
+            if (selected == RaceOptionsViewModel.StopDrivingMode)
+            {
+                SwitchDrivingMode();
+            }
+            else
+            {
+                Toggle(selected);
+            }
         }
 
         if (keyboard.IsKeyJustPressed(XnaKeys.Escape)
@@ -255,17 +272,19 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
         }
     }
 
+    private void SwitchDrivingMode()
+    {
+        _state.SelectedDrivingMode = _state.SelectedDrivingMode == VehicleDrivingMode.Simulation ? VehicleDrivingMode.Arcade : VehicleDrivingMode.Simulation;
+    }
+
     private void Toggle(int stop)
     {
         switch (stop)
         {
             case RaceOptionsViewModel.StopFullscreen: _state.IsFullscreen = !_state.IsFullscreen; break;
-            case RaceOptionsViewModel.StopDrivingMode:
-                _state.SelectedDrivingMode = _state.SelectedDrivingMode == VehicleDrivingMode.Simulation ? VehicleDrivingMode.Arcade : VehicleDrivingMode.Simulation;
-                break;
+            case RaceOptionsViewModel.StopVSync: _state.EnableVSync = !_state.EnableVSync; break;
             case RaceOptionsViewModel.StopPostEffects: _state.EnablePostEffects = !_state.EnablePostEffects; break;
             case RaceOptionsViewModel.StopShadows: _state.EnableShadows = !_state.EnableShadows; break;
-            case RaceOptionsViewModel.StopVSync: _state.EnableVSync = !_state.EnableVSync; break;
             case RaceOptionsViewModel.StopShowFps: _state.ShowFps = !_state.ShowFps; break;
             case RaceOptionsViewModel.StopVibration: _state.EnableVibration = !_state.EnableVibration; break;
         }
@@ -292,7 +311,7 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
         _game.ApplyFrontEndVolumes(_state);
     }
 
-    // Every exit applies and saves the settings, as RacingGame's did (ADR-0013).
+    // Every exit applies and saves the settings, as RacingGame's did (ADR-0014).
     private void ApplyAndClose()
     {
         _isLeaving = true;
@@ -312,10 +331,21 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
         }
     }
 
+    private MGTextBlock[] FindTexts(string prefix, int count)
+    {
+        var texts = new MGTextBlock[count];
+        for (int i = 0; i < count; i++)
+        {
+            texts[i] = FindControl<MGTextBlock>(prefix + i);
+        }
+
+        return texts;
+    }
+
     private void PlaySound(MenuSound sound) => _game.MenuSounds?.Play(sound);
 
     // Lays the screen out for the viewport, the time, the mouse and the settings, then scales and colours the texts as
-    // RacingGame's TextureFont and Options.Render did.
+    // RacingGame's TextureFont did.
     private void UpdateLayout(double totalSeconds)
     {
         UpdateMenuDecoration(_viewModel.Decoration, totalSeconds);
@@ -346,9 +376,9 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
             SetForeground(_resolutionTexts[i], _viewModel.ResolutionColors[i]);
         }
 
-        if (_vsyncText != null)
+        for (int i = 0; i < _drivingModeTexts.Length; i++)
         {
-            SetForeground(_vsyncText, _viewModel.VSyncColor);
+            SetForeground(_drivingModeTexts[i], _viewModel.DrivingModeColors[i]);
         }
     }
 
