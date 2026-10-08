@@ -340,6 +340,36 @@ Un arrêt fige la tranche et celles qui en dépendent.
 >   - catalogue ouvert entrée par entrée (`catalogue/catalogue-open.tsv`) : 66 entrées sur 94 s'ouvrent (6 sound, 50 sprite, 9 uiscreen, 1 world). Les 28 autres renvoient « Unable to open asset » : 10 png, 8 texture, 6 wav, 3 track, 1 fnt, comme prévu.
 > - ⚠️ **Contrôle négatif du plugin impossible par le panneau Logs.** Avec `--activate-panel output`, le panneau « Logs » est bien actif (« Activate panel: output » dans les diagnostics), mais sa liste reste vide sur la capture, à 3 s comme à 8 s. Pourtant `LogsPanel.RefreshList` y recopie tout `LoggerEditor.Entries`, ce qui ressemble à un défaut d'affichage de l'éditeur, à noter pour S2. L'avertissement n'est donc pas lisible, et T1.2 n'a pas de contrôle réfutable sous la forme prévue (O6).
 
+### ✅ T0.2 — Panneau Logs de l'éditeur lisible
+
+- Objectif : décision de l'auteur sur O6 (2026-10-08) : corriger d'abord le panneau Logs de l'éditeur, vide sur les captures, pour garder un contrôle du plugin par capture.
+- Fichiers :
+  - MGUI `MGUI.Core/UI/Containers/VirtualizingStackPanel.cs` et le test `MGUI.Tests/Architecture/VirtualizingStackPanelMeasureTests.cs` : commit `4e94d7e8` sur la branche MGUI `chantier/rgce-editor-project`, créée depuis `develop` ;
+  - CasaEngine `CasaEngine.Editor/Controls/LogsPanel.cs`, le test `CasaEngine.Tests/Log/LogsPanelFormatTests.cs` et le pointeur MGUI : commit `c0f3343` sur `chantier/rgce-editor-project`, créée depuis `main` ;
+  - RacingGame : pointeur `CasaEngine` sur `c0f3343`.
+- Commits : MGUI `fix(listbox): keep a virtualizing panel's height when its width is unknown` ; CasaEngine `fix(editor): show the Logs panel entries` ; RacingGame `chore(casaengine): move the engine to c0f3343`.
+
+> Validation (2026-10-08) :
+> - **Cause 1, la liste vide** (MGUI) :
+>   - Une sonde lancée dans l'éditeur (scratchpad `editorlogsprobe`) lit le panneau par réflexion à chaque image. Il contient 31 entrées, mais la liste virtualisée n'est jamais mise en page : boîte de 0×0, aucune ligne réalisée.
+>   - Sa première mesure se fait avant tout arrangement, avec une largeur infinie, puisque la barre horizontale est en `Auto` et que la liste n'a pas de bordure. Elle ne trouve alors aucune largeur et rend 0. `MGElement.UpdateMeasurement` (`MGElement.cs:6057`) met alors toute la taille à 0. La zone de défilement garde ce 0 en cache, et rien ne l'invalide ensuite.
+>   - Forcer une nouvelle mise en page affichait les lignes. Correction : `CanConsumeSpaceInSingleDimension`, comme `MGBorder` et `MGSpacer`.
+>   - Le nouveau test échouait avant (hauteur 0 au lieu de 930) et passe après.
+> - **Cause 2, la balise `[/c]` affichée** (CasaEngine) : le message était échappé en doublant `[`, ce que MGUI ne reconnaît pas, et les crochets `[Trace  ]` n'étaient pas échappés. Toute la partie visible passe maintenant par `FTTokenizer.EscapeMarkdown`. Un nouveau test vérifie que la ligne affiche exactement le texte copié, dans la couleur de son niveau.
+> - **Tests et builds** :
+>   - `MGUI.Tests` : 3 198 sur 3 198 ;
+>   - `CasaEngine.Tests` : 4 154 sur 4 154 ;
+>   - `CasaEngine.Editor.MonoGame.sln` et `CasaEngine.MonoGame.sln` : 0 erreur ;
+>   - `RacingGame.slnx` : 0 erreur.
+> - **Jeu inchangé** : `--smoke-frontend` sort avec le code 0. `--capture-ui-screens` reste dans le seuil d'`UiCaptureCompare` face à `references-acb6ad9`, au plus 0,66 sur `race-hud`, écart de rythme connu.
+> - **Éditeur** :
+>   - le panneau Logs affiche ses lignes, sans `[/c]` ;
+>   - les 9 écrans restent identiques au pixel près à `editor-screens/` (série `editor-screens-fixed-run2`). Dans la première série, la vraie souris est passée sur la fenêtre : coordonnées affichées sur l'aperçu de MainMenu et de Splash.
+> - **Limite** : le panneau défile jusqu'à la fin et n'affiche que les 6 dernières lignes. L'avertissement du plugin (entrées 1 et 12 sur 31, le projet étant chargé deux fois par l'automatisation) n'est donc pas sur la capture : voir O6.
+> - **Faits relevés dans le journal de l'éditeur**, pour S2 :
+>   - `DllNotFoundException` sur `openal`, suivie d'un repli sur le moteur audio MonoGame ;
+>   - deux avertissements de contexte de script non déchargé.
+
 ---
 
 ## Phase 1 — `RacingGame.Gameplay`, la DLL de gameplay de l'éditeur (S1)
@@ -415,7 +445,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
 | O3 | Le sous-module contient un plan RGCE égaré, `CasaEngine/ai-agent/tasks/racinggame-car-profile-parity-plan.md`. On le laisse tel quel, la branche moteur le portera. | S2 |
 | O4 | PNG d'interface hérités non portés : `HelpScreenWindows`, `HelpScreenXbox360`, `OptionsScreenXbox360`, `MouseCursor`. Faut-il compter aussi la copie brute de `GameFont.png` ? Elle est proposée, D4 voulant « tout porter ». | S3 |
 | O5 | Les cartes de normales héritées gardent la disposition `agb`, et le jeu actuel les lit telles quelles. Le chantier conserve exactement ces pixels, sans réencodage. | S3, S5 |
-| O6 | **Bloquant T0.1 et T1.2.** Le panneau Logs de l'éditeur reste vide sur les captures d'automatisation. Proposition : remplacer ce contrôle par la sonde `pluginprobe` du scratchpad. Elle rejoue le chargement de l'éditeur à l'ouverture du projet : `ProjectSettingsHelper.Load`, avec le chargeur à copie fantôme de l'éditeur `EditorScriptAssemblyService.LoadShadowCopy` (`GameEditor.cs:326`). Elle affiche ce que `AssemblyManager` journalise et sort avec le code 1 sans `IPlugin`. Sur le projet actuel, elle affiche « Gameplay assembly 'RacingGameCasaEngine.UI.dll' contains no IPlugin implementation. » et sort avec le code 1 : c'est le contrôle négatif. Le panneau vide serait ajouté aux manques de S2. | T0.1, T1.2, S2 |
+| O6 | **Bloquant T0.1 et T1.2.** Décision de l'auteur : corriger d'abord le panneau (T0.2, fait). Reste : l'avertissement n'est pas visible sur la capture, car le panneau n'affiche que ses dernières lignes. Le panneau Logs de l'éditeur restait vide sur les captures d'automatisation. Proposition : remplacer ce contrôle par la sonde `pluginprobe` du scratchpad. Elle rejoue le chargement de l'éditeur à l'ouverture du projet : `ProjectSettingsHelper.Load`, avec le chargeur à copie fantôme de l'éditeur `EditorScriptAssemblyService.LoadShadowCopy` (`GameEditor.cs:326`). Elle affiche ce que `AssemblyManager` journalise et sort avec le code 1 sans `IPlugin`. Sur le projet actuel, elle affiche « Gameplay assembly 'RacingGameCasaEngine.UI.dll' contains no IPlugin implementation. » et sort avec le code 1 : c'est le contrôle négatif. Le panneau vide serait ajouté aux manques de S2. | T0.1, T1.2, S2 |
 
 ## Hors périmètre
 
