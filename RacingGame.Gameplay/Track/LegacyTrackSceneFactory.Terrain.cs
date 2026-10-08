@@ -17,7 +17,7 @@ internal static partial class LegacyTrackSceneFactory
         private const float MapHeightFactor = 10f;
         private const float MapZScale = 300f;
 
-        internal static RaceGeneratedModel CreateModel(string trackName, Vector3 origin, string filePath, AssetContentManager assetContentManager)
+        internal static RaceGeneratedModel CreateModel(string trackName, Vector3 origin, string filePath, Guid materialAssetId)
         {
             byte[] heights = File.ReadAllBytes(filePath);
             if (heights.Length < GridWidth * GridHeight)
@@ -30,7 +30,7 @@ internal static partial class LegacyTrackSceneFactory
 
             var groundMesh = new StaticModelMesh { Name = $"{trackName}.Ground" };
             groundMesh.SetData(vertices, indices);
-            groundMesh.Material = CreateTerrainMaterial(trackName, assetContentManager);
+            groundMesh.MaterialAssetId = materialAssetId;
 
             var groundModel = new StaticModel { Name = $"{trackName}.Ground" };
             groundModel.Meshes.Add(groundMesh);
@@ -130,13 +130,6 @@ internal static partial class LegacyTrackSceneFactory
             }
 
             return indices;
-        }
-
-        private static LitDiffuseMaterial CreateTerrainMaterial(string trackName, AssetContentManager assetContentManager)
-        {
-            (string? diffuseTexturePath, Texture2D? diffuseTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.GroundTextureCandidates);
-            (string? normalTexturePath, Texture2D? normalTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.TerrainNormalTextureCandidates);
-            return RaceMaterialBuilder.Create(RaceMaterialRecipes.ForTerrain(trackName, diffuseTexturePath, normalTexturePath), diffuseTexture, normalTexture, null);
         }
 
         private static Vector3 CalcLandscapePos(int x, int y, byte[] heights)

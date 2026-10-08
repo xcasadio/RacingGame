@@ -1418,7 +1418,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
 > - **Éditeur** : les 266 entrées `staticmodel`, `material` et `texture` (les 258 nouvelles et les 8 textures d'interface) ont été ouvertes une par une, avec une copie de l'éditeur et une copie du contenu (`artifacts/editor-project-baseline/s5/catalogue-t5.4/`). Toutes s'ouvrent avec le code 0, ce qui exerce `MaterialCompiler`. La capture lue de `StaticModel.Hotel01` montre ses maillages et leurs matériaux cuits, par leurs ids.
 > - **Avis P4** : la vérification de l'outil ne compare des sous-maillages que leur nombre, et aucun modèle n'en a ; lancer l'outil avant le générateur donne les mêmes entrées dans un autre ordre.
 
-### ⏳ T5.5 — Le jeu charge la piste et le décor par le catalogue
+### ✅ T5.5 — Le jeu charge la piste et le décor par le catalogue
 
 - **Objectif** :
   - le décor, les poteaux, les segments et les feux de départ sont des `StaticModelComponent` qui portent `StaticModelAssetId` ;
@@ -1439,6 +1439,28 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
     - smoke à 0 ;
   - `rg "LoadLegacyModel|EvaluateRuntimeTuning|ApplyFallbackMaterials" RacingGame.Gameplay/Track RacingGame.Gameplay/GameFramework/RaceStartLight.cs` ne trouve plus d'appel. La voiture garde les siens jusqu'à T5.6.
 - **Commit** : `feat(racing-casa): load the track and scenery models from the catalogue`
+
+> Validation (2026-10-09), en workflow : une implémentation, puis deux vérificateurs indépendants, l'un sur la parité, l'autre sur le code et l'éditeur. Tous deux rendent **CONFIRMED**.
+> - **Code** :
+>   - **modèles** : décor, poteaux, segments et feux de départ sont des `StaticModelComponent` (ou `RaceGeneratedModelComponent`) portant `StaticModelAssetId`, partagés par les handles du moteur. `LegacyTrackSceneFactory.TryGetStaticModelAssetId` passe du nom du modèle hérité (alias compris) à son asset ;
+>   - **taille des modèles** pour les placements : elle vient du modèle cuit (`Acquire`, puis `ComputeLegacyModelSize`) ;
+>   - **matériaux des générateurs** : chacun a un `material_asset_id` en `[SerializedProperty]`, cuit par défaut (`RaceTrackMaterialAssets`), qui entre dans sa signature. Les maillages procéduraux ne portent plus que `MaterialAssetId`, et le moteur résout le matériau (`StaticModelMaterialResolver`, `MaterialRuntimeResolver`, `MaterialCache`). `Material.Track.Ground` ne sert pas : le sol qui s'en servait était déjà du code mort ;
+>   - **`RaceStartLight`** prend les trois modèles d'avance et change l'asset de son composant à chaque signal, au même rythme ;
+>   - **retirés du chemin de la piste**, devenus morts : `LoadLegacyModel`, la racine tournée, les matériaux importés et de repli, les chargeurs et caches de textures, les fabriques de matériaux par rôle et `LoadStartLightModels`. La voiture, les plateaux, l'outil de cuisson et les validateurs gardent ce qu'il leur faut ;
+>   - **monde de test** : réenregistré par l'éditeur, avec `material_asset_id` sur les cinq générateurs.
+> - **Parité** :
+>   - **export** contre `s5/scene-a.json` avec `--effective-states` : les 1 074, 689 et 2 156 enregistrements sont appariés, sans renommage. Sans l'option, les états `null` et nommés diffèrent comme prévu. Les enregistrements portent maintenant des états nommés, preuve que le chemin compilé sert ;
+>   - **contrôles négatifs**, dans le dossier de sortie, puis remis à l'identique : une puissance spéculaire changée dans un matériau de décor signale les 7 maillages `Glas [39]` de `Hotel01` ; dans `Road.material`, elle signale les 3 routes ;
+>   - **audit** : 21 vues dans le seuil, au plus 0,013, et les `start-full` à 0,000 ;
+>   - **audits des voitures** identiques à S0 ;
+>   - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0 ;
+>   - le `rg` de la tâche ne trouve rien.
+> - **Captures d'interface** : `UiCaptureCompare` sort avec le code 0, mais pas à 0,00. `splash` est à 0,66, `race-hud` entre 0,66 et 1,69, et `race-finished` entre 10,7 et 16,3, au-dessus du seuil.
+>   - Le même jeu construit à `HEAD`, sans T5.5 (`git archive`), donne les mêmes chiffres : c'est l'environnement de la machine, devenu plus irrégulier, pas la tâche.
+>   - Comparés l'un à l'autre, le build de T5.5 et ce témoin donnent 0,00 sur `race-hud` et `race-finished`, les deux écrans où la piste apparaît.
+>   - La parité de l'interface est donc établie contre ce témoin. Les tâches suivantes procèdent de même tant que le bruit dure.
+> - **Éditeur** : le monde de test s'ouvre avec le code 0. Deux `--save-project` donnent les octets committés.
+> - **Avis P4 reportés** : deux commentaires décrivent encore l'ancien code (`RaceGeneratedModelComponent`, l'outil de cuisson). Si `Acquire` échoue pour le 2ᵉ ou le 3ᵉ modèle du feu, les handles déjà pris ne sont pas rendus.
 
 ### ⏳ T5.6 — La voiture et le carrousel par le catalogue
 

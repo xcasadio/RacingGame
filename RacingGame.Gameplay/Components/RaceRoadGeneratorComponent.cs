@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using CasaEngine.Core.Serialization;
 using CasaEngine.Framework.Assets;
 using RacingGame.Gameplay.Track;
 
@@ -8,6 +9,10 @@ namespace RacingGame.Gameplay.Components;
 [DisplayName("Race Road Generator")]
 public sealed class RaceRoadGeneratorComponent : RaceTrackGeneratorComponent
 {
+    /// <summary>The catalogued material (Material.Track.Road) the road is drawn with.</summary>
+    [SerializedProperty("material_asset_id")]
+    public Guid MaterialAssetId { get; set; } = RaceTrackMaterialAssets.Road;
+
     public RaceRoadGeneratorComponent()
     {
     }
@@ -19,11 +24,11 @@ public sealed class RaceRoadGeneratorComponent : RaceTrackGeneratorComponent
 
     public override EntityComponent Clone() => new RaceRoadGeneratorComponent(this);
 
-    private protected override RaceGeneratorSignature CreateSignature() => MakeSignature();
+    private protected override RaceGeneratorSignature CreateSignature() => MakeSignature(materialAssetId: MaterialAssetId);
 
     private protected override void Generate(RaceTrackSource source, AssetContentManager assetContentManager, List<RaceGeneratedModel> output)
     {
         RaceTrackLayout layout = LegacyTrackSceneFactory.ComputeGeneratorLayout(source, RaceTrackLayoutSettings.Default);
-        output.Add(LegacyTrackSceneFactory.CreateRoadGeneratorModel(layout, assetContentManager));
+        output.Add(LegacyTrackSceneFactory.CreateRoadGeneratorModel(layout, MaterialAssetId));
     }
 }

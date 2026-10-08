@@ -10,8 +10,9 @@ namespace RacingGame.Gameplay.GameFramework;
 /// when the race starts. Two seconds before the start it beeps, one second before it turns yellow and beeps, and at the
 /// start it turns green and bleeps.
 /// <para/>
-/// RacingGame swapped the light's model; so does this class, re-initializing the light's
-/// <see cref="StaticModelComponent"/>, which rebuilds its meshes from the new model. The sounds go through CasaEngine's
+/// RacingGame swapped the light's model; so does this class, giving the light's <see cref="StaticModelComponent"/> the
+/// catalogued model of the next signal (StaticModel.StartLight, StartLight2, StartLight3) and initializing it again, which
+/// rebuilds its meshes. The three models are held, and initialized, from the start, so a signal loads nothing. The sounds go through CasaEngine's
 /// audio service (ADR-0003), whose voices follow the Sound Volume option (<c>SoundEffect.MasterVolume</c>).
 /// </summary>
 internal sealed class RaceStartLight : IDisposable
@@ -22,16 +23,24 @@ internal sealed class RaceStartLight : IDisposable
 
     private readonly World _world;
     private readonly StaticModelComponent _component;
-    private readonly StaticModel[] _models;
+    private readonly Guid[] _modelAssetIds;
+    private readonly AssetHandle<StaticModel>[] _modelHandles;
     private readonly AssetHandle<SoundAsset>? _beep;
     private readonly AssetHandle<SoundAsset>? _bleep;
     private int _signal = -1;
 
-    private RaceStartLight(World world, StaticModelComponent component, StaticModel[] models, AssetHandle<SoundAsset>? beep, AssetHandle<SoundAsset>? bleep)
+    private RaceStartLight(
+        World world,
+        StaticModelComponent component,
+        Guid[] modelAssetIds,
+        AssetHandle<StaticModel>[] modelHandles,
+        AssetHandle<SoundAsset>? beep,
+        AssetHandle<SoundAsset>? bleep)
     {
         _world = world;
         _component = component;
-        _models = models;
+        _modelAssetIds = modelAssetIds;
+        _modelHandles = modelHandles;
         _beep = beep;
         _bleep = bleep;
     }
@@ -58,19 +67,25 @@ internal sealed class RaceStartLight : IDisposable
         }
 
         AssetContentManager assetContentManager = world.Game.AssetContentManager;
-        StaticModel?[] models = LegacyTrackSceneFactory.LoadStartLightModels(assetContentManager);
-        if (models.Any(static model => model == null))
+        string[] modelNames = RaceTrackLayout.StartLightModelNames;
+        var modelAssetIds = new Guid[modelNames.Length];
+        for (int index = 0; index < modelNames.Length; index++)
         {
-            Logs.WriteWarning("Start light: a light model is missing, the start light stays as built.");
-            return null;
+            if (!LegacyTrackSceneFactory.TryGetStaticModelAssetId(modelNames[index], out modelAssetIds[index]))
+            {
+                Logs.WriteWarning("Start light: a light model is missing, the start light stays as built.");
+                return null;
+            }
         }
 
-        foreach (StaticModel? model in models)
+        var modelHandles = new AssetHandle<StaticModel>[modelAssetIds.Length];
+        for (int index = 0; index < modelAssetIds.Length; index++)
         {
-            model!.Initialize(assetContentManager);
+            modelHandles[index] = assetContentManager.Acquire<StaticModel>(modelAssetIds[index]);
+            modelHandles[index].Asset.Initialize(assetContentManager);
         }
 
-        return new RaceStartLight(world, component, models!, AcquireSound(assetContentManager, BeepSoundName), AcquireSound(assetContentManager, BleepSoundName));
+        return new RaceStartLight(world, component, modelAssetIds, modelHandles, AcquireSound(assetContentManager, BeepSoundName), AcquireSound(assetContentManager, BleepSoundName));
     }
 
     /// <summary>Gives the signal due for the seconds left before the start, once: the light's colour and its sound.</summary>
@@ -83,20 +98,25 @@ internal sealed class RaceStartLight : IDisposable
         }
 
         _signal = signal;
-        StaticModel model = _models[signal];
-        if (!ReferenceEquals(_component.StaticModel, model))
+        Guid modelAssetId = _modelAssetIds[signal];
+        if (_component.StaticModelAssetId != modelAssetId)
         {
-            _component.StaticModel = model;
+            _component.StaticModelAssetId = modelAssetId;
             _component.InitializeWithWorld(_world);
         }
 
-        bool isStart = signal == _models.Length - 1;
+        bool isStart = signal == _modelAssetIds.Length - 1;
         Logs.WriteTrace($"Start light: {SignalColors[signal]}, {PlaySound(isStart ? _bleep : _beep, isStart ? "bleep" : "beep")}");
     }
 
-    /// <summary>Gives back the sounds' asset handles.</summary>
+    /// <summary>Gives back the models' and the sounds' asset handles.</summary>
     public void Dispose()
     {
+        foreach (AssetHandle<StaticModel> modelHandle in _modelHandles)
+        {
+            modelHandle.Dispose();
+        }
+
         _beep?.Dispose();
         _bleep?.Dispose();
     }

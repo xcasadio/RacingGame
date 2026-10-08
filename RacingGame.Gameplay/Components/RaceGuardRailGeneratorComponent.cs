@@ -17,6 +17,10 @@ public sealed class RaceGuardRailGeneratorComponent : RaceTrackGeneratorComponen
     [SerializedProperty("holder_gap")]
     public float HolderGap { get; set; } = RaceTrackLayout.HolderGap;
 
+    /// <summary>The catalogued material (Material.Track.GuardRail) the rail is drawn with.</summary>
+    [SerializedProperty("material_asset_id")]
+    public Guid MaterialAssetId { get; set; } = RaceTrackMaterialAssets.GuardRail;
+
     public RaceGuardRailGeneratorComponent()
     {
     }
@@ -28,12 +32,12 @@ public sealed class RaceGuardRailGeneratorComponent : RaceTrackGeneratorComponen
 
     public override EntityComponent Clone() => new RaceGuardRailGeneratorComponent(this);
 
-    private protected override RaceGeneratorSignature CreateSignature() => MakeSignature(holderGap: HolderGap, side: Side);
+    private protected override RaceGeneratorSignature CreateSignature() => MakeSignature(holderGap: HolderGap, side: Side, materialAssetId: MaterialAssetId);
 
     private protected override void Generate(RaceTrackSource source, AssetContentManager assetContentManager, List<RaceGeneratedModel> output)
     {
         var settings = new RaceTrackLayoutSettings(HolderGap, RaceTrackLayout.ColumnsDistance);
         RaceTrackLayout layout = LegacyTrackSceneFactory.ComputeGeneratorLayout(source, settings);
-        output.AddRange(LegacyTrackSceneFactory.CreateGuardRailModels(layout, Side == RaceGuardRailSide.Left, assetContentManager));
+        output.AddRange(LegacyTrackSceneFactory.CreateGuardRailModels(layout, Side == RaceGuardRailSide.Left, MaterialAssetId));
     }
 }

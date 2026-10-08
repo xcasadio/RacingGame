@@ -13,6 +13,10 @@ public sealed class RaceColumnGeneratorComponent : RaceTrackGeneratorComponent
     [SerializedProperty("columns_distance")]
     public float ColumnsDistance { get; set; } = RaceTrackLayout.ColumnsDistance;
 
+    /// <summary>The catalogued material (Material.Track.RoadColumn) the columns is drawn with.</summary>
+    [SerializedProperty("material_asset_id")]
+    public Guid MaterialAssetId { get; set; } = RaceTrackMaterialAssets.RoadColumn;
+
     public RaceColumnGeneratorComponent()
     {
     }
@@ -24,12 +28,12 @@ public sealed class RaceColumnGeneratorComponent : RaceTrackGeneratorComponent
 
     public override EntityComponent Clone() => new RaceColumnGeneratorComponent(this);
 
-    private protected override RaceGeneratorSignature CreateSignature() => MakeSignature(columnsDistance: ColumnsDistance);
+    private protected override RaceGeneratorSignature CreateSignature() => MakeSignature(columnsDistance: ColumnsDistance, materialAssetId: MaterialAssetId);
 
     private protected override void Generate(RaceTrackSource source, AssetContentManager assetContentManager, List<RaceGeneratedModel> output)
     {
         var settings = new RaceTrackLayoutSettings(RaceTrackLayout.HolderGap, ColumnsDistance);
         RaceTrackLayout layout = LegacyTrackSceneFactory.ComputeGeneratorLayout(source, settings);
-        output.AddRange(LegacyTrackSceneFactory.CreateColumnGeneratorModels(layout, assetContentManager));
+        output.AddRange(LegacyTrackSceneFactory.CreateColumnGeneratorModels(layout, MaterialAssetId));
     }
 }

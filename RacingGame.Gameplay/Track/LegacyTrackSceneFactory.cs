@@ -1,32 +1,22 @@
 using System.Xml.Serialization;
 using CasaEngine.Engine;
 using CasaEngine.Framework.Assets;
-using CasaEngine.Framework.Assets.Loaders;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Color = Microsoft.Xna.Framework.Color;
 using static RacingGame.Gameplay.Track.RaceTrackSpace;
 using RacingGame.Gameplay.Components;
-using RacingGame.Gameplay.Import;
 using RacingGame.Gameplay.Race;
 
 namespace RacingGame.Gameplay.Track;
 
 internal static partial class LegacyTrackSceneFactory
 {
-    private const float GroundMargin = 18f;
-    private static readonly Quaternion LegacyXModelCorrection = Quaternion.CreateFromAxisAngle(Vector3.Right, MathHelper.Pi / 2.0f);
-
     // The start light's models: red, yellow and green (RacingGame.Shared/Landscapes/TrackObjectManager.cs).
     internal const string StartLightEntityNamePrefix = "Track.Scenery.StartLight.";
 
-    private static readonly Texture2DLoader TextureLoader = new();
     private static readonly Dictionary<string, LegacyTrackLayout> TrackCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, List<LegacyCombiObject>> CombiCache = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly Dictionary<string, StaticModel?> ModelCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, float> ModelSizeCache = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly Dictionary<string, Texture2D?> TextureCache = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly Dictionary<string, TextureCube?> TextureCubeCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, LegacyTerrainHeightSampler> TerrainCache = new(StringComparer.OrdinalIgnoreCase);
 
     internal static RaceTrackScene Create(string trackName, AssetContentManager assetContentManager)
@@ -39,7 +29,7 @@ internal static partial class LegacyTrackSceneFactory
             source.Track,
             source.Heights,
             LoadCombiModel,
-            modelName => LoadLegacyModel(modelName, assetContentManager) != null ? GetLegacyModelSize(modelName) : (float?)null);
+            modelName => GetLegacyModelSize(modelName, assetContentManager));
 
         // The track's geometry is rebuilt by generator components from the same catalogued assets; the layout above
         // only drives what stays assembled here: the scenery, the checkpoints and the start.
@@ -63,16 +53,13 @@ internal static partial class LegacyTrackSceneFactory
         for (int index = 0; index < layout.Scenery.Count; index++)
         {
             RaceTrackModelPlacement placement = layout.Scenery[index];
-            StaticModel? staticModel = LoadLegacyModel(placement.ModelName, assetContentManager);
-            if (staticModel == null)
+            if (!TryGetStaticModelAssetId(placement.ModelName, out Guid modelAssetId))
             {
                 continue;
             }
 
-            sceneryEntities.Add(CreateStaticModelEntity($"Track.Scenery.{placement.ModelName}.{index:000}", staticModel, placement.Transform));
+            sceneryEntities.Add(CreateStaticModelEntity($"Track.Scenery.{placement.ModelName}.{index:000}", modelAssetId, placement.Transform));
         }
-
-        LoadStartLightModels(assetContentManager);
 
         return new RaceTrackScene(trackEntities, sceneryEntities, layout.PlayerStartPose, layout.CheckpointTriggers, trackAssetId, heightmapAssetId);
     }
@@ -130,57 +117,7 @@ internal static partial class LegacyTrackSceneFactory
         return combiObjects;
     }
 
-    private static StaticModel? LoadLegacyModel(string modelName, AssetContentManager assetContentManager)
-    {
-        modelName = RaceTrackLayout.NormalizeLegacyModelName(modelName);
-
-        if (ModelCache.TryGetValue(modelName, out StaticModel? cachedModel))
-        {
-            return cachedModel;
-        }
-
-        string fileName = Path.Combine(GetProjectContentPath(), "Models", $"{modelName}.gltf");
-        if (!File.Exists(fileName))
-        {
-            Logs.WriteWarning($"Legacy track model '{modelName}' not found at '{fileName}'.");
-            ModelCache[modelName] = null;
-            return null;
-        }
-
-        if (!LegacyGltfModelReader.IsFileSupported(fileName))
-        {
-            Logs.WriteWarning($"Legacy track model '{modelName}' uses an unsupported format for runtime import.");
-            ModelCache[modelName] = null;
-            return null;
-        }
-
-        StaticModelImportResult importResult = LegacyGltfModelReader.ReadWithMetadata(fileName, RacingGameImportProfiles.LegacyMaterialProfile);
-        StaticModel model = importResult.Model;
-        ApplyLegacyModelRootCorrection(model);
-        ApplyImportedMaterials(model, importResult.Materials, modelName, assetContentManager);
-        ApplyFallbackMaterials(model, modelName);
-        ModelCache[modelName] = model;
-        ModelSizeCache[modelName] = ComputeLegacyModelSize(model);
-        return model;
-    }
-
-    private static void ApplyLegacyModelRootCorrection(StaticModel model)
-    {
-        if (model.RootNode == null)
-        {
-            return;
-        }
-
-        var correctedRoot = new StaticModelNode
-        {
-            Name = $"{model.Name}.LegacyRootCorrection",
-            Rotation = LegacyXModelCorrection,
-        };
-        correctedRoot.Children.Add(model.RootNode);
-        model.RootNode = correctedRoot;
-    }
-
-    internal static RaceGeneratedModel CreateRoadModel(string trackName, IReadOnlyList<RaceTrackRoadPoint> roadPoints, Vector3 origin, AssetContentManager assetContentManager)
+    internal static RaceGeneratedModel CreateRoadModel(string trackName, IReadOnlyList<RaceTrackRoadPoint> roadPoints, Vector3 origin, Guid materialAssetId)
     {
         var vertices = new Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture[roadPoints.Count * 5];
 
@@ -216,7 +153,7 @@ internal static partial class LegacyTrackSceneFactory
 
         var roadMesh = new StaticModelMesh { Name = $"{trackName}.Road" };
         roadMesh.SetData(vertices, indices);
-        roadMesh.Material = CreateRoadMaterial(trackName, assetContentManager);
+        roadMesh.MaterialAssetId = materialAssetId;
 
         var roadModel = new StaticModel { Name = $"{trackName}.Road" };
         roadModel.Meshes.Add(roadMesh);
@@ -240,31 +177,7 @@ internal static partial class LegacyTrackSceneFactory
             new Microsoft.Xna.Framework.Vector2(point.TextureU, textureV));
     }
 
-    private static Entity CreateGroundEntity(string trackName, IReadOnlyList<Vector3> roadPoints, AssetContentManager assetContentManager)
-    {
-        float minX = roadPoints.Min(static point => point.X) - GroundMargin;
-        float maxX = roadPoints.Max(static point => point.X) + GroundMargin;
-        float minZ = roadPoints.Min(static point => point.Z) - GroundMargin;
-        float maxZ = roadPoints.Max(static point => point.Z) + GroundMargin;
-        float minY = roadPoints.Min(static point => point.Y) - 0.8f;
-        float width = Math.Max(10f, maxX - minX);
-        float depth = Math.Max(10f, maxZ - minZ);
-
-        StaticModel groundModel = StaticModel.CreateFromPrimitive(new BoxPrimitive(width, 1.0f, depth), $"{trackName}.Ground");
-        groundModel.Meshes[0].Material = CreateGroundMaterial(trackName, assetContentManager);
-
-        Matrix transform = Matrix.CreateTranslation(new Vector3((minX + maxX) * 0.5f, minY, (minZ + maxZ) * 0.5f));
-        // As in RacingGame, the ground only receives shadows (Landscape.GenerateShadow).
-        return CreateStaticModelEntity($"Track.Ground.{trackName}", groundModel, transform, castShadows: false);
-    }
-
-    /// <summary>The start light's red, yellow and green models, loaded once (null for a missing one).</summary>
-    internal static StaticModel?[] LoadStartLightModels(AssetContentManager assetContentManager)
-    {
-        return RaceTrackLayout.StartLightModelNames.Select(modelName => LoadLegacyModel(modelName, assetContentManager)).ToArray();
-    }
-
-    private static Entity CreateStaticModelEntity(string name, StaticModel model, Matrix transform, bool castShadows = true)
+    private static Entity CreateStaticModelEntity(string name, Guid staticModelAssetId, Matrix transform)
     {
         if (!transform.Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation))
         {
@@ -281,8 +194,8 @@ internal static partial class LegacyTrackSceneFactory
 
         var component = new StaticModelComponent
         {
-            StaticModel = model,
-            CastShadows = castShadows,
+            StaticModelAssetId = staticModelAssetId,
+            CastShadows = true,
         };
         component.LocalTransform.Position = translation;
         component.LocalTransform.Orientation = rotation;
@@ -317,14 +230,6 @@ internal static partial class LegacyTrackSceneFactory
     {
         int index = (int)MathF.Round(progress * (roadPoints.Count - 1)) % roadPoints.Count;
         return roadPoints[Math.Clamp(index, 0, roadPoints.Count - 1)];
-    }
-
-    private static float GetLegacyModelSize(string modelName)
-    {
-        modelName = RaceTrackLayout.NormalizeLegacyModelName(modelName);
-        return ModelSizeCache.TryGetValue(modelName, out float cachedSize)
-            ? cachedSize
-            : 1f;
     }
 
     private static float ComputeLegacyModelSize(StaticModel model)
@@ -392,145 +297,6 @@ internal static partial class LegacyTrackSceneFactory
         LegacyTerrainHeightSampler sampler = LegacyTerrainHeightSampler.Load(filePath);
         TerrainCache[filePath] = sampler;
         return sampler;
-    }
-
-    private static LitDiffuseMaterial CreateRoadMaterial(string trackName, AssetContentManager assetContentManager)
-    {
-        (string? roadTexturePath, Texture2D? roadTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.RoadTextureCandidates);
-        return RaceMaterialBuilder.Create(RaceMaterialRecipes.ForRoad(trackName, roadTexturePath), roadTexture, null, null);
-    }
-
-    private static LitDiffuseMaterial CreateGroundMaterial(string trackName, AssetContentManager assetContentManager)
-    {
-        (string? groundTexturePath, Texture2D? groundTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.GroundTextureCandidates);
-        return RaceMaterialBuilder.Create(RaceMaterialRecipes.ForGround(trackName, groundTexturePath), groundTexture, null, null);
-    }
-
-    private static void ApplyImportedMaterials(StaticModel model, IReadOnlyList<StaticModelImportedMaterial> importedMaterials, string modelName, AssetContentManager assetContentManager)
-    {
-        foreach (StaticModelMesh mesh in model.Meshes)
-        {
-            if (mesh.Material != null)
-            {
-                continue;
-            }
-
-            if (mesh.MaterialIndex < 0 || mesh.MaterialIndex >= importedMaterials.Count)
-            {
-                continue;
-            }
-
-            StaticModelImportedMaterial importedMaterial = importedMaterials[mesh.MaterialIndex];
-            mesh.Material = CreateImportedRuntimeMaterial(modelName, importedMaterial, assetContentManager);
-        }
-    }
-
-    private static LitDiffuseMaterial CreateImportedRuntimeMaterial(string modelName, StaticModelImportedMaterial importedMaterial, AssetContentManager assetContentManager)
-    {
-        RaceMaterialRecipe recipe = RaceMaterialRecipes.ForScenery(modelName, importedMaterial);
-        Texture2D? diffuseTexture = LoadTexture(recipe.BaseTextureFilePath, assetContentManager);
-        Texture2D? normalTexture = LoadTexture(recipe.NormalTextureFilePath, assetContentManager);
-        TextureCube? reflectionCube = recipe.ReflectionCubeFilePath != null
-            ? LoadTextureCube(recipe.ReflectionCubeFilePath, assetContentManager)
-            : null;
-
-        return RaceMaterialBuilder.Create(recipe, diffuseTexture, normalTexture, reflectionCube);
-    }
-
-    // The first of the project textures that loads: its path, which the material recipe takes, and the texture.
-    private static (string? FilePath, Texture2D? Texture) LoadProjectTexture(AssetContentManager assetContentManager, params string[] fileNames)
-    {
-        foreach (string fileName in fileNames)
-        {
-            string texturePath = Path.Combine(GetProjectContentPath(), "Textures", fileName);
-            Texture2D? texture = LoadTexture(texturePath, assetContentManager);
-            if (texture != null)
-            {
-                return (texturePath, texture);
-            }
-        }
-
-        return (null, null);
-    }
-
-    private static Texture2D? LoadTexture(string? texturePath, AssetContentManager assetContentManager)
-    {
-        if (string.IsNullOrWhiteSpace(texturePath))
-        {
-            return null;
-        }
-
-        string normalizedPath = Path.GetFullPath(texturePath);
-        if (TextureCache.TryGetValue(normalizedPath, out Texture2D? cachedTexture))
-        {
-            return cachedTexture;
-        }
-
-        if (!File.Exists(normalizedPath) || !TextureLoader.IsFileSupported(normalizedPath))
-        {
-            TextureCache[normalizedPath] = null;
-            return null;
-        }
-
-        try
-        {
-            var texture = (Texture2D)TextureLoader.LoadAsset(normalizedPath, assetContentManager);
-            TextureCache[normalizedPath] = texture;
-            return texture;
-        }
-        catch (Exception ex)
-        {
-            Logs.WriteException(ex);
-            TextureCache[normalizedPath] = null;
-            return null;
-        }
-    }
-
-    private static TextureCube? LoadTextureCube(string? texturePath, AssetContentManager assetContentManager)
-    {
-        if (string.IsNullOrWhiteSpace(texturePath))
-        {
-            return null;
-        }
-
-        string normalizedPath = Path.GetFullPath(texturePath);
-        if (TextureCubeCache.TryGetValue(normalizedPath, out TextureCube? cachedTexture))
-        {
-            return cachedTexture;
-        }
-
-        if (!File.Exists(normalizedPath) || !TextureCubeLoader.IsTextureCubeFile(normalizedPath))
-        {
-            TextureCubeCache[normalizedPath] = null;
-            return null;
-        }
-
-        try
-        {
-            var texture = TextureCubeLoader.LoadTextureCube(normalizedPath, assetContentManager.GraphicsDevice);
-            TextureCubeCache[normalizedPath] = texture;
-            return texture;
-        }
-        catch (Exception ex)
-        {
-            Logs.WriteException(ex);
-            TextureCubeCache[normalizedPath] = null;
-            return null;
-        }
-    }
-
-    private static void ApplyFallbackMaterials(StaticModel model, string modelName)
-    {
-        RaceMaterialRecipe recipe = RaceMaterialRecipes.ForSceneryFallback(modelName);
-        foreach (StaticModelMesh mesh in model.Meshes)
-        {
-            if (mesh.Material != null)
-            {
-                continue;
-            }
-
-            mesh.Material = RaceMaterialBuilder.Create(recipe, null, null, null);
-        }
     }
 
     private static string ResolveAssetFilePath(AssetInfo assetInfo)

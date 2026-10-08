@@ -54,7 +54,7 @@ internal static partial class LegacyTrackSceneFactory
             string trackName,
             RaceTrackLayout layout,
             bool leftSide,
-            AssetContentManager assetContentManager)
+            Guid materialAssetId)
         {
             var models = new List<RaceGeneratedModel>();
             if (!layout.HasGuardRails)
@@ -67,9 +67,9 @@ internal static partial class LegacyTrackSceneFactory
                 leftSide ? layout.LeftRailPoints : layout.RightRailPoints,
                 layout.Origin,
                 layout.Settings.HolderGap,
-                assetContentManager,
+                materialAssetId,
                 leftSide));
-            models.AddRange(CreateHolderModels(leftSide ? layout.LeftPosts : layout.RightPosts, assetContentManager));
+            models.AddRange(CreateHolderModels(leftSide ? layout.LeftPosts : layout.RightPosts));
             return models;
         }
 
@@ -77,7 +77,7 @@ internal static partial class LegacyTrackSceneFactory
         internal static IReadOnlyList<RaceGeneratedModel> CreateColumnModels(
             string trackName,
             RaceTrackLayout layout,
-            AssetContentManager assetContentManager)
+            Guid materialAssetId)
         {
             if (layout.Columns.Count == 0)
             {
@@ -85,8 +85,8 @@ internal static partial class LegacyTrackSceneFactory
             }
 
             var models = new List<RaceGeneratedModel>();
-            models.Add(CreateProceduralColumnsModel(trackName, layout.Columns, layout.Origin, assetContentManager));
-            models.AddRange(CreateColumnSegmentModels(layout.ColumnSegments, assetContentManager));
+            models.Add(CreateProceduralColumnsModel(trackName, layout.Columns, layout.Origin, materialAssetId));
+            models.AddRange(CreateColumnSegmentModels(layout.ColumnSegments));
             return models;
         }
 
@@ -95,7 +95,7 @@ internal static partial class LegacyTrackSceneFactory
             IReadOnlyList<RaceTrackRailPoint> railPoints,
             Vector3 origin,
             float holderGap,
-            AssetContentManager assetContentManager,
+            Guid materialAssetId,
             bool leftSide)
         {
             var vertices = new VertexPositionNormalTextureTangent[railPoints.Count * GuardRailSectionVertices.Length];
@@ -149,7 +149,7 @@ internal static partial class LegacyTrackSceneFactory
             string sideName = leftSide ? "Left" : "Right";
             var mesh = new StaticModelMesh { Name = $"{trackName}.GuardRail.{sideName}" };
             mesh.SetData(vertices, indices);
-            mesh.Material = CreateGuardRailMaterial(trackName, assetContentManager, sideName);
+            mesh.MaterialAssetId = materialAssetId;
 
             var model = new StaticModel { Name = $"{trackName}.GuardRail.{sideName}" };
             model.Meshes.Add(mesh);
@@ -165,13 +165,10 @@ internal static partial class LegacyTrackSceneFactory
             return new RaceGeneratedModel($"{trackName}.GuardRail.{sideName}", model, Matrix.Identity, CastShadows: true, OwnsBuffers: true);
         }
 
-        // The post model is the factory's cached one: the generator places it but never owns it.
-        private static IReadOnlyList<RaceGeneratedModel> CreateHolderModels(
-            IReadOnlyList<RaceTrackModelPlacement> posts,
-            AssetContentManager assetContentManager)
+        // The post model is the catalogued one: each placement holds it through the engine, the generator never owns it.
+        private static IReadOnlyList<RaceGeneratedModel> CreateHolderModels(IReadOnlyList<RaceTrackModelPlacement> posts)
         {
-            StaticModel? holderModel = LoadLegacyModel(RaceTrackLayout.GuardRailPostModelName, assetContentManager);
-            if (holderModel == null)
+            if (!TryGetStaticModelAssetId(RaceTrackLayout.GuardRailPostModelName, out Guid holderModelAssetId))
             {
                 return [];
             }
@@ -179,7 +176,7 @@ internal static partial class LegacyTrackSceneFactory
             var models = new List<RaceGeneratedModel>(posts.Count);
             for (int index = 0; index < posts.Count; index++)
             {
-                models.Add(new RaceGeneratedModel($"Post.{index:000}", holderModel, posts[index].Transform, CastShadows: true, OwnsBuffers: false));
+                models.Add(new RaceGeneratedModel($"Post.{index:000}", null, posts[index].Transform, CastShadows: true, OwnsBuffers: false, StaticModelAssetId: holderModelAssetId));
             }
 
             return models;
@@ -189,7 +186,7 @@ internal static partial class LegacyTrackSceneFactory
             string trackName,
             IReadOnlyList<RaceTrackColumnPlacement> columns,
             Vector3 origin,
-            AssetContentManager assetContentManager)
+            Guid materialAssetId)
         {
             var vertices = new VertexPositionNormalTextureTangent[columns.Count * BaseColumnVertices.Length * 2];
 
@@ -244,7 +241,7 @@ internal static partial class LegacyTrackSceneFactory
 
             var mesh = new StaticModelMesh { Name = $"{trackName}.Columns" };
             mesh.SetData(vertices, indices);
-            mesh.Material = CreateRoadColumnMaterial(trackName, assetContentManager);
+            mesh.MaterialAssetId = materialAssetId;
 
             var model = new StaticModel { Name = $"{trackName}.Columns" };
             model.Meshes.Add(mesh);
@@ -260,13 +257,10 @@ internal static partial class LegacyTrackSceneFactory
             return new RaceGeneratedModel($"{trackName}.Columns", model, Matrix.Identity, CastShadows: true, OwnsBuffers: true);
         }
 
-        // The segment model is the factory's cached one: the generator places it but never owns it.
-        private static IReadOnlyList<RaceGeneratedModel> CreateColumnSegmentModels(
-            IReadOnlyList<RaceTrackModelPlacement> segments,
-            AssetContentManager assetContentManager)
+        // The segment model is the catalogued one: each placement holds it through the engine, the generator never owns it.
+        private static IReadOnlyList<RaceGeneratedModel> CreateColumnSegmentModels(IReadOnlyList<RaceTrackModelPlacement> segments)
         {
-            StaticModel? segmentModel = LoadLegacyModel(RaceTrackLayout.ColumnSegmentModelName, assetContentManager);
-            if (segmentModel == null)
+            if (!TryGetStaticModelAssetId(RaceTrackLayout.ColumnSegmentModelName, out Guid segmentModelAssetId))
             {
                 return [];
             }
@@ -274,24 +268,10 @@ internal static partial class LegacyTrackSceneFactory
             var models = new List<RaceGeneratedModel>(segments.Count);
             for (int index = 0; index < segments.Count; index++)
             {
-                models.Add(new RaceGeneratedModel($"Segment.{index:000}", segmentModel, segments[index].Transform, CastShadows: true, OwnsBuffers: false));
+                models.Add(new RaceGeneratedModel($"Segment.{index:000}", null, segments[index].Transform, CastShadows: true, OwnsBuffers: false, StaticModelAssetId: segmentModelAssetId));
             }
 
             return models;
-        }
-
-        private static LitDiffuseMaterial CreateGuardRailMaterial(string trackName, AssetContentManager assetContentManager, string sideName)
-        {
-            (string? diffuseTexturePath, Texture2D? diffuseTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.GuardRailTextureName);
-            (string? normalTexturePath, Texture2D? normalTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.GuardRailNormalTextureName);
-            return RaceMaterialBuilder.Create(RaceMaterialRecipes.ForGuardRail(trackName, sideName, diffuseTexturePath, normalTexturePath), diffuseTexture, normalTexture, null);
-        }
-
-        private static LitDiffuseMaterial CreateRoadColumnMaterial(string trackName, AssetContentManager assetContentManager)
-        {
-            (string? diffuseTexturePath, Texture2D? diffuseTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.RoadColumnTextureName);
-            (string? normalTexturePath, Texture2D? normalTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.RoadColumnNormalTextureName);
-            return RaceMaterialBuilder.Create(RaceMaterialRecipes.ForRoadColumn(trackName, diffuseTexturePath, normalTexturePath), diffuseTexture, normalTexture, null);
         }
 
         private static Vector3 NormalizeOrFallback(Vector3 vector, Vector3 fallback)

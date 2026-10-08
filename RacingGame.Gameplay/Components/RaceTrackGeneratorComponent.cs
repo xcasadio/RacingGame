@@ -14,7 +14,8 @@ internal readonly record struct RaceGeneratorSignature(
     Guid HeightmapAssetId,
     float HolderGap,
     float ColumnsDistance,
-    RaceGuardRailSide Side);
+    RaceGuardRailSide Side,
+    Guid MaterialAssetId);
 
 /// <summary>
 /// A scene component, root of its entity, that builds a part of a race track from catalogued data assets: the .Track layout
@@ -22,8 +23,8 @@ internal readonly record struct RaceGeneratorSignature(
 /// again when its settings change, in the game and in the editor preview alike.
 /// <para>
 /// Ownership: the procedural models a generator creates are its own, and it frees their GPU buffers when it builds again
-/// and when it is detached. It never frees what the track scene factory caches in its static caches: the models of
-/// the posts and of the column segments, the textures of the materials.
+/// and when it is detached. It never frees what the engine shares: the catalogued models of the posts and of the column
+/// segments, held by their components, and the compiled material of its <c>material_asset_id</c>.
 /// </para>
 /// </summary>
 public abstract class RaceTrackGeneratorComponent : SceneComponent, IEntityPolicyDefaultsProvider
@@ -60,9 +61,9 @@ public abstract class RaceTrackGeneratorComponent : SceneComponent, IEntityPolic
     /// <summary>Adds the models to build, from the resolved track assets, to <paramref name="output"/>.</summary>
     private protected abstract void Generate(RaceTrackSource source, AssetContentManager assetContentManager, List<RaceGeneratedModel> output);
 
-    private protected RaceGeneratorSignature MakeSignature(float holderGap = 0f, float columnsDistance = 0f, RaceGuardRailSide side = RaceGuardRailSide.Left)
+    private protected RaceGeneratorSignature MakeSignature(float holderGap = 0f, float columnsDistance = 0f, RaceGuardRailSide side = RaceGuardRailSide.Left, Guid materialAssetId = default)
     {
-        return new RaceGeneratorSignature(TrackAssetId, HeightmapAssetId, holderGap, columnsDistance, side);
+        return new RaceGeneratorSignature(TrackAssetId, HeightmapAssetId, holderGap, columnsDistance, side, materialAssetId);
     }
 
     // A generator ticks in the editor, which may not set explicit policies: it must see its settings change.
@@ -146,7 +147,7 @@ public abstract class RaceTrackGeneratorComponent : SceneComponent, IEntityPolic
                 // Registered before any buffer exists, so a failure below still frees them.
                 foreach (RaceGeneratedModel model in generated)
                 {
-                    if (model.OwnsBuffers)
+                    if (model.OwnsBuffers && model.Model != null)
                     {
                         _ownedModels.Add(model.Model);
                     }
@@ -181,9 +182,17 @@ public abstract class RaceTrackGeneratorComponent : SceneComponent, IEntityPolic
         var child = new RaceGeneratedModelComponent
         {
             Name = model.Name,
-            StaticModel = model.Model,
             CastShadows = model.CastShadows,
         };
+        if (model.StaticModelAssetId != Guid.Empty)
+        {
+            child.StaticModelAssetId = model.StaticModelAssetId;
+        }
+        else
+        {
+            child.StaticModel = model.Model!;
+        }
+
         child.LocalTransform.Position = translation;
         child.LocalTransform.Orientation = rotation;
         child.LocalTransform.Scale = scale;

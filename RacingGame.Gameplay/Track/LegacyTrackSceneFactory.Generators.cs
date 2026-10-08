@@ -6,10 +6,11 @@ namespace RacingGame.Gameplay.Track;
 
 /// <summary>
 /// A model a generator component places under itself, with its transform relative to the generator.
-/// <paramref name="OwnsBuffers"/> is true for a procedural model the generator created, whose GPU buffers it frees;
-/// it is false for a model shared through the factory's static caches (posts, column segments), which it never frees.
+/// <paramref name="OwnsBuffers"/> is true for a procedural <paramref name="Model"/> the generator created, whose GPU buffers it
+/// frees. It is false for a catalogued model (posts, column segments), named by <paramref name="StaticModelAssetId"/> with a
+/// null <paramref name="Model"/>: the engine shares it, and the generator never frees it.
 /// </summary>
-internal sealed record RaceGeneratedModel(string Name, StaticModel Model, Matrix Transform, bool CastShadows, bool OwnsBuffers);
+internal sealed record RaceGeneratedModel(string Name, StaticModel? Model, Matrix Transform, bool CastShadows, bool OwnsBuffers, Guid StaticModelAssetId = default);
 
 /// <summary>The catalogued inputs of a track: its .Track layout and its landscape height map.</summary>
 internal sealed record RaceTrackSource(string TrackName, LegacyTrackLayout Track, string HeightmapPath, LegacyTerrainHeightSampler Heights);
@@ -94,24 +95,24 @@ internal static partial class LegacyTrackSceneFactory
             includeScenery: false);
     }
 
-    internal static RaceGeneratedModel CreateTerrainModel(RaceTrackSource source, AssetContentManager assetContentManager)
+    internal static RaceGeneratedModel CreateTerrainModel(RaceTrackSource source, Guid materialAssetId)
     {
         Vector3 origin = RaceTrackLayout.ComputeOrigin(source.Track.TrackPoints);
-        return LegacyTerrainMeshBuilder.CreateModel(source.TrackName, origin, source.HeightmapPath, assetContentManager);
+        return LegacyTerrainMeshBuilder.CreateModel(source.TrackName, origin, source.HeightmapPath, materialAssetId);
     }
 
-    internal static IReadOnlyList<RaceGeneratedModel> CreateGuardRailModels(RaceTrackLayout layout, bool leftSide, AssetContentManager assetContentManager)
+    internal static IReadOnlyList<RaceGeneratedModel> CreateGuardRailModels(RaceTrackLayout layout, bool leftSide, Guid materialAssetId)
     {
-        return LegacyTrackGuardRailBuilder.CreateRailModels(layout.TrackName, layout, leftSide, assetContentManager);
+        return LegacyTrackGuardRailBuilder.CreateRailModels(layout.TrackName, layout, leftSide, materialAssetId);
     }
 
-    internal static IReadOnlyList<RaceGeneratedModel> CreateColumnGeneratorModels(RaceTrackLayout layout, AssetContentManager assetContentManager)
+    internal static IReadOnlyList<RaceGeneratedModel> CreateColumnGeneratorModels(RaceTrackLayout layout, Guid materialAssetId)
     {
-        return LegacyTrackGuardRailBuilder.CreateColumnModels(layout.TrackName, layout, assetContentManager);
+        return LegacyTrackGuardRailBuilder.CreateColumnModels(layout.TrackName, layout, materialAssetId);
     }
 
-    internal static RaceGeneratedModel CreateRoadGeneratorModel(RaceTrackLayout layout, AssetContentManager assetContentManager)
+    internal static RaceGeneratedModel CreateRoadGeneratorModel(RaceTrackLayout layout, Guid materialAssetId)
     {
-        return CreateRoadModel(layout.TrackName, layout.RoadPoints, layout.Origin, assetContentManager);
+        return CreateRoadModel(layout.TrackName, layout.RoadPoints, layout.Origin, materialAssetId);
     }
 }

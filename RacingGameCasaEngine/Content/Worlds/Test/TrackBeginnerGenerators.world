@@ -36,7 +36,8 @@
           },
           "children_component": [],
           "track_asset_id": "21fa9381-a49a-4eb7-9ca6-bd20fbc1f71f",
-          "heightmap_asset_id": "79c3f134-36a8-5727-bd7f-d43024d38de5"
+          "heightmap_asset_id": "79c3f134-36a8-5727-bd7f-d43024d38de5",
+          "material_asset_id": "9115353e-e656-50e3-a5c1-586824eec3fa"
         },
         "components": [],
         "script_class_name": null
@@ -78,7 +79,8 @@
           "track_asset_id": "21fa9381-a49a-4eb7-9ca6-bd20fbc1f71f",
           "heightmap_asset_id": "79c3f134-36a8-5727-bd7f-d43024d38de5",
           "side": "Left",
-          "holder_gap": 15.0
+          "holder_gap": 15.0,
+          "material_asset_id": "e3ace877-45bf-5a01-8b79-4ef50791173d"
         },
         "components": [],
         "script_class_name": null
@@ -120,7 +122,8 @@
           "track_asset_id": "21fa9381-a49a-4eb7-9ca6-bd20fbc1f71f",
           "heightmap_asset_id": "79c3f134-36a8-5727-bd7f-d43024d38de5",
           "side": "Right",
-          "holder_gap": 15.0
+          "holder_gap": 15.0,
+          "material_asset_id": "e3ace877-45bf-5a01-8b79-4ef50791173d"
         },
         "components": [],
         "script_class_name": null
@@ -161,7 +164,8 @@
           "children_component": [],
           "track_asset_id": "21fa9381-a49a-4eb7-9ca6-bd20fbc1f71f",
           "heightmap_asset_id": "79c3f134-36a8-5727-bd7f-d43024d38de5",
-          "columns_distance": 33.0
+          "columns_distance": 33.0,
+          "material_asset_id": "32637518-c040-5490-914f-78db79eab3df"
         },
         "components": [],
         "script_class_name": null
@@ -201,7 +205,8 @@
           },
           "children_component": [],
           "track_asset_id": "21fa9381-a49a-4eb7-9ca6-bd20fbc1f71f",
-          "heightmap_asset_id": "79c3f134-36a8-5727-bd7f-d43024d38de5"
+          "heightmap_asset_id": "79c3f134-36a8-5727-bd7f-d43024d38de5",
+          "material_asset_id": "fc904080-b053-51e1-82e2-33858bfe1140"
         },
         "components": [],
         "script_class_name": null
