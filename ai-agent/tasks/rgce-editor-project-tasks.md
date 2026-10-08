@@ -966,7 +966,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 >   - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
 > - **Éditeur** : le projet s'ouvre avec le code 0. La section `Logs:` ne contient que les deux avertissements connus.
 
-### ⏳ T4.4 — Placements de piste séparés de la génération des maillages
+### ✅ T4.4 — Placements de piste séparés de la génération des maillages
 
 - **Objectif** : un calcul pur des placements, réutilisé par les générateurs (T4.5) et par l'export des mondes (S6).
 - **Fichiers** :
@@ -980,6 +980,33 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 - **Garde-fous** : même ordre de calcul et mêmes constantes ; les caches gardent leur portée.
 - **Validation** : build à 0 erreur ; A4 contre les références de T4.1, avec un export par maillage identique jusqu'aux noms d'entités.
 - **Commit** : `refactor(racing-casa): compute track placements apart from mesh building`
+
+> Validation (2026-10-08) :
+> - **Code**, dans `RacingGame.Gameplay/Track/`, tout en interne :
+>   - `RaceTrackLayout.Compute(trackName, track, heights, loadCombiModel, getModelSize)` reprend tel quel le code du calcul de la fabrique, dans le même ordre et avec les mêmes constantes. Il rend :
+>     - la spline de la route ;
+>     - les points des rails, les poteaux, les colonnes et leurs segments ;
+>     - le décor ;
+>     - les checkpoints, le départ et le profil physique ;
+>   - `RaceTrackLayoutTypes.cs` : les points et les placements ;
+>   - `RaceTrackSpace.cs` : les conversions de l'espace hérité ;
+>   - `LegacyTerrainHeightSampler.cs` : sorti de la fabrique ;
+>   - `LegacyTrackSceneFactory*` ne garde que le chargement, les caches, les matériaux, la construction des maillages et des entités. La fabrique perd 1 333 lignes.
+> - **Résultats identiques au bit près** :
+>   - la classe mutable du point de spline est gardée, car un `Right.Normalize()` sur une copie temporaire ne normalise rien aujourd'hui, et des structures immuables auraient changé les flottants ;
+>   - la dépendance à la taille des modèles passe par un délégué (`getModelSize`, nul quand le modèle manque), ce qui garde le calcul sans GPU pour S6.
+>   Seul l'ordre de remplissage des caches change : les modèles du décor se chargent avant les textures de la piste.
+> - **Pureté** : `rg "GraphicsDevice|Texture2D|StaticModel|\bEntity\b|\bWorld\b|AssetContentManager"` ne trouve rien dans les 4 nouveaux fichiers.
+> - **Contrôles** :
+>   - `dotnet build RacingGame.slnx` : 0 erreur, 0 avertissement ;
+>   - `check_gameplay_type_names.py` : 103 types, 0 collision.
+> - **A4 contre T4.1** (`artifacts/editor-project-baseline/s4/t4.4/`) :
+>   - export : 0 renommé, 0 non apparié (1 074, 689, 2 156) ;
+>   - la partie « entités » est identique à `scene-a.json`, aux GUID près ;
+>   - audit : 21 vues à 0,000 ;
+>   - audits des voitures identiques à S0 ;
+>   - captures d'interface : 0,00 ;
+>   - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
 
 ### ⏳ T4.5 — Composants générateurs (D5)
 

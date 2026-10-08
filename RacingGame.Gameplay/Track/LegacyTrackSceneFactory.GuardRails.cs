@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using RacingGame.Gameplay.Components;
 using RacingGame.Gameplay.Import;
+using static RacingGame.Gameplay.Track.RaceTrackSpace;
 
 namespace RacingGame.Gameplay.Track;
 
@@ -12,15 +13,9 @@ internal static partial class LegacyTrackSceneFactory
     private static class LegacyTrackGuardRailBuilder
     {
         private const float RailCorrectionScale = 0.0019f;
-        private const float HolderGap = 15.0f;
         private const float GuardRailHeight = 1.35f * 1.5f * 0.425f;
-        private const float InsideRoadDistance = 0.5f;
-        private const float ColumnsDistance = 33.0f;
         private const float ColumnGroundHeight = 1.0f;
-        private const float MinimumColumnHeight = 2.5f;
         private const float TopColumnSubHeight = 0.55f;
-
-        private static readonly Vector3 HolderPileCorrectionVector = new(0.225f, 0f, 0f);
 
         private static readonly RailSectionVertex[] GuardRailSectionVertices =
         [
@@ -56,64 +51,28 @@ internal static partial class LegacyTrackSceneFactory
 
         internal static IReadOnlyList<Entity> CreateEntities(
             string trackName,
-            IReadOnlyList<LegacyTrackPoint> roadPoints,
-            Vector3 origin,
-            LegacyTerrainHeightSampler terrainSampler,
+            RaceTrackLayout layout,
             AssetContentManager assetContentManager)
         {
             var entities = new List<Entity>();
-            if (roadPoints.Count < 4)
+            if (!layout.HasGuardRails)
             {
                 return entities;
             }
 
-            List<LegacyRailPoint> leftRailPoints = BuildRailPoints(roadPoints, leftSide: true);
-            List<LegacyRailPoint> rightRailPoints = BuildRailPoints(roadPoints, leftSide: false);
+            entities.Add(CreateRailEntity(trackName, layout.LeftRailPoints, layout.Origin, assetContentManager, leftSide: true));
+            entities.Add(CreateRailEntity(trackName, layout.RightRailPoints, layout.Origin, assetContentManager, leftSide: false));
 
-            entities.Add(CreateRailEntity(trackName, leftRailPoints, origin, assetContentManager, leftSide: true));
-            entities.Add(CreateRailEntity(trackName, rightRailPoints, origin, assetContentManager, leftSide: false));
-
-            entities.AddRange(CreateHolderEntities(trackName, leftRailPoints, origin, assetContentManager, leftSide: true));
-            entities.AddRange(CreateHolderEntities(trackName, rightRailPoints, origin, assetContentManager, leftSide: false));
-            entities.AddRange(CreateColumnEntities(trackName, roadPoints, origin, terrainSampler, assetContentManager));
+            entities.AddRange(CreateHolderEntities(trackName, layout.LeftPosts, assetContentManager, leftSide: true));
+            entities.AddRange(CreateHolderEntities(trackName, layout.RightPosts, assetContentManager, leftSide: false));
+            entities.AddRange(CreateColumnEntities(trackName, layout, assetContentManager));
 
             return entities;
         }
 
-        private static List<LegacyRailPoint> BuildRailPoints(IReadOnlyList<LegacyTrackPoint> roadPoints, bool leftSide)
-        {
-            var railPoints = new List<LegacyRailPoint>(roadPoints.Count / 2 + 1);
-            int railPointCount = roadPoints.Count / 2 + 1;
-
-            for (int index = 0; index < railPointCount; index++)
-            {
-                int pointIndex = index * 2;
-                if (pointIndex >= roadPoints.Count - 1)
-                {
-                    pointIndex = roadPoints.Count - 1;
-                }
-
-                LegacyTrackPoint roadPoint = roadPoints[pointIndex];
-                Vector3 right = roadPoint.Right;
-                Vector3 direction = roadPoint.Direction;
-                Vector3 position = roadPoint.Position + (leftSide ? -1f : 1f) * (LegacyRoadWidthScale * roadPoint.RoadWidth * right * 0.5f);
-
-                if (leftSide)
-                {
-                    right = -right;
-                    direction = -direction;
-                }
-
-                position -= right * InsideRoadDistance;
-                railPoints.Add(new LegacyRailPoint(position, right, direction, roadPoint.Up));
-            }
-
-            return railPoints;
-        }
-
         private static Entity CreateRailEntity(
             string trackName,
-            IReadOnlyList<LegacyRailPoint> railPoints,
+            IReadOnlyList<RaceTrackRailPoint> railPoints,
             Vector3 origin,
             AssetContentManager assetContentManager,
             bool leftSide)
@@ -123,7 +82,7 @@ internal static partial class LegacyTrackSceneFactory
 
             for (int index = 0; index < railPoints.Count; index++)
             {
-                LegacyRailPoint railPoint = railPoints[index];
+                RaceTrackRailPoint railPoint = railPoints[index];
                 Matrix pointSpace = CreatePointSpaceMatrix(railPoint.Right, railPoint.Direction, railPoint.Up);
                 Vector3 localPosition = railPoint.Position + railPoint.Up * GuardRailHeight;
                 Matrix transform = pointSpace * Matrix.CreateTranslation(localPosition);
@@ -144,7 +103,7 @@ internal static partial class LegacyTrackSceneFactory
 
                 Vector3 nextPosition = railPoints[(index + 1) % railPoints.Count].Position;
                 float distance = Vector3.Distance(nextPosition, railPoint.Position);
-                uTexValue += (1f / HolderGap) * distance * 2.0f;
+                uTexValue += (1f / RaceTrackLayout.HolderGap) * distance * 2.0f;
             }
 
             var indices = new uint[(railPoints.Count - 1) * (GuardRailSectionVertices.Length - 1) * 6];
@@ -187,47 +146,22 @@ internal static partial class LegacyTrackSceneFactory
 
         private static IReadOnlyList<Entity> CreateHolderEntities(
             string trackName,
-            IReadOnlyList<LegacyRailPoint> railPoints,
-            Vector3 origin,
+            IReadOnlyList<RaceTrackModelPlacement> posts,
             AssetContentManager assetContentManager,
             bool leftSide)
         {
-            StaticModel? holderModel = LoadLegacyModel("GuardRailHolder", assetContentManager);
+            StaticModel? holderModel = LoadLegacyModel(RaceTrackLayout.GuardRailPostModelName, assetContentManager);
             if (holderModel == null)
             {
                 return [];
             }
 
             var entities = new List<Entity>();
-            float lastHolderGap = 0f;
             string sideName = leftSide ? "Left" : "Right";
 
-            for (int index = 0; index < railPoints.Count; index++)
+            foreach (RaceTrackModelPlacement post in posts)
             {
-                LegacyRailPoint railPoint = railPoints[index];
-                Vector3 nextPosition = railPoints[(index + 1) % railPoints.Count].Position;
-                float distance = Vector3.Distance(nextPosition, railPoint.Position);
-
-                if (distance > 0.0001f && lastHolderGap - distance <= 0f)
-                {
-                    Vector3 p1 = railPoints[index - 1 < 0 ? railPoints.Count - 1 : index - 1].Position;
-                    Vector3 p2 = railPoint.Position;
-                    Vector3 p3 = railPoints[(index + 1) % railPoints.Count].Position;
-                    Vector3 p4 = railPoints[(index + 2) % railPoints.Count].Position;
-                    Vector3 holderPoint = Vector3.CatmullRom(p1, p2, p3, p4, lastHolderGap / distance);
-
-                    Matrix pointSpace = CreatePointSpaceMatrix(railPoint.Right, railPoint.Direction, railPoint.Up);
-                    Matrix legacyTransform = Matrix.CreateScale(1.125f)
-                        * Matrix.CreateTranslation(HolderPileCorrectionVector)
-                        * pointSpace
-                        * Matrix.CreateTranslation(holderPoint);
-
-                    Matrix runtimeTransform = ConvertLegacyTransform(legacyTransform, origin);
-                    entities.Add(CreateStaticModelEntity($"Track.GuardRailHolder.{sideName}.{trackName}.{entities.Count:000}", holderModel, runtimeTransform));
-                    lastHolderGap += HolderGap;
-                }
-
-                lastHolderGap -= distance;
+                entities.Add(CreateStaticModelEntity($"Track.GuardRailHolder.{sideName}.{trackName}.{entities.Count:000}", holderModel, post.Transform));
             }
 
             return entities;
@@ -235,89 +169,38 @@ internal static partial class LegacyTrackSceneFactory
 
         private static IReadOnlyList<Entity> CreateColumnEntities(
             string trackName,
-            IReadOnlyList<LegacyTrackPoint> roadPoints,
-            Vector3 origin,
-            LegacyTerrainHeightSampler terrainSampler,
+            RaceTrackLayout layout,
             AssetContentManager assetContentManager)
         {
-            var columnPositions = new List<Vector3>();
-            var topSpaces = new List<Matrix>();
-            var bottomSpaces = new List<Matrix>();
-            float lastColumnsDistance = ColumnsDistance;
-
-            for (int index = 0; index < roadPoints.Count; index++)
-            {
-                LegacyTrackPoint currentPoint = roadPoints[index];
-                LegacyTrackPoint nextPoint = roadPoints[(index + 1) % roadPoints.Count];
-                float distance = Vector3.Distance(nextPoint.Position, currentPoint.Position);
-
-                if (distance > 0.0001f && lastColumnsDistance - distance <= 0f)
-                {
-                    Vector3 p1 = roadPoints[index - 1 < 0 ? roadPoints.Count - 1 : index - 1].Position;
-                    Vector3 p2 = currentPoint.Position;
-                    Vector3 p3 = nextPoint.Position;
-                    Vector3 p4 = roadPoints[(index + 2) % roadPoints.Count].Position;
-                    Vector3 columnPoint = Vector3.CatmullRom(p1, p2, p3, p4, lastColumnsDistance / distance);
-
-                    float draft = Vector3.Dot(currentPoint.Up, new Vector3(0f, 0f, 1f));
-                    float columnHeight = columnPoint.Z - terrainSampler.GetMapHeight(columnPoint.X, columnPoint.Y);
-                    if (draft > 0.3f && columnHeight > MinimumColumnHeight)
-                    {
-                        columnPositions.Add(columnPoint);
-                        topSpaces.Add(CreatePointSpaceMatrix(currentPoint.Right, currentPoint.Direction, currentPoint.Up));
-
-                        Vector3 upVector = new(0f, 0f, 1f);
-                        Vector3 rightVector = Vector3.Cross(currentPoint.Direction, upVector);
-                        if (rightVector.LengthSquared() < 0.0001f)
-                        {
-                            rightVector = Vector3.Right;
-                        }
-                        else
-                        {
-                            rightVector.Normalize();
-                        }
-
-                        bottomSpaces.Add(CreatePointSpaceMatrix(rightVector, currentPoint.Direction, upVector));
-                    }
-
-                    lastColumnsDistance += ColumnsDistance;
-                }
-
-                lastColumnsDistance -= distance;
-            }
-
-            if (columnPositions.Count == 0)
+            if (layout.Columns.Count == 0)
             {
                 return [];
             }
 
             var entities = new List<Entity>();
-            entities.Add(CreateProceduralColumnsEntity(trackName, columnPositions, topSpaces, bottomSpaces, origin, terrainSampler, assetContentManager));
-            entities.AddRange(CreateColumnSegmentEntities(trackName, columnPositions, origin, terrainSampler, assetContentManager));
+            entities.Add(CreateProceduralColumnsEntity(trackName, layout.Columns, layout.Origin, assetContentManager));
+            entities.AddRange(CreateColumnSegmentEntities(trackName, layout.ColumnSegments, assetContentManager));
             return entities;
         }
 
         private static Entity CreateProceduralColumnsEntity(
             string trackName,
-            IReadOnlyList<Vector3> columnPositions,
-            IReadOnlyList<Matrix> topSpaces,
-            IReadOnlyList<Matrix> bottomSpaces,
+            IReadOnlyList<RaceTrackColumnPlacement> columns,
             Vector3 origin,
-            LegacyTerrainHeightSampler terrainSampler,
             AssetContentManager assetContentManager)
         {
-            var vertices = new VertexPositionNormalTextureTangent[columnPositions.Count * BaseColumnVertices.Length * 2];
+            var vertices = new VertexPositionNormalTextureTangent[columns.Count * BaseColumnVertices.Length * 2];
 
-            for (int index = 0; index < columnPositions.Count; index++)
+            for (int index = 0; index < columns.Count; index++)
             {
-                Vector3 topAnchor = columnPositions[index];
-                Vector3 bottomAnchor = new(topAnchor.X, topAnchor.Y, terrainSampler.GetMapHeight(topAnchor.X, topAnchor.Y) + ColumnGroundHeight);
+                Vector3 topAnchor = columns[index].Position;
+                Vector3 bottomAnchor = new(topAnchor.X, topAnchor.Y, columns[index].GroundHeight + ColumnGroundHeight);
                 Vector3 topPosition = new(topAnchor.X, topAnchor.Y, topAnchor.Z - TopColumnSubHeight);
                 float topTexV = Vector3.Distance(topPosition, bottomAnchor) / (MathHelper.Pi * 2f);
 
                 for (int topBottom = 0; topBottom < 2; topBottom++)
                 {
-                    Matrix pointSpace = topBottom == 0 ? bottomSpaces[index] : topSpaces[index];
+                    Matrix pointSpace = topBottom == 0 ? columns[index].BottomSpace : columns[index].TopSpace;
                     Vector3 anchor = topBottom == 0 ? bottomAnchor : topPosition;
                     float texV = topBottom == 0 ? 0f : topTexV;
 
@@ -338,10 +221,10 @@ internal static partial class LegacyTrackSceneFactory
                 }
             }
 
-            var indices = new uint[(BaseColumnVertices.Length - 1) * columnPositions.Count * 6];
+            var indices = new uint[(BaseColumnVertices.Length - 1) * columns.Count * 6];
             int currentIndex = 0;
             int currentVertex = 0;
-            for (int columnIndex = 0; columnIndex < columnPositions.Count; columnIndex++)
+            for (int columnIndex = 0; columnIndex < columns.Count; columnIndex++)
             {
                 for (int quadIndex = 0; quadIndex < BaseColumnVertices.Length - 1; quadIndex++)
                 {
@@ -377,30 +260,19 @@ internal static partial class LegacyTrackSceneFactory
 
         private static IReadOnlyList<Entity> CreateColumnSegmentEntities(
             string trackName,
-            IReadOnlyList<Vector3> columnPositions,
-            Vector3 origin,
-            LegacyTerrainHeightSampler terrainSampler,
+            IReadOnlyList<RaceTrackModelPlacement> segments,
             AssetContentManager assetContentManager)
         {
-            StaticModel? segmentModel = LoadLegacyModel("RoadColumnSegment", assetContentManager);
+            StaticModel? segmentModel = LoadLegacyModel(RaceTrackLayout.ColumnSegmentModelName, assetContentManager);
             if (segmentModel == null)
             {
                 return [];
             }
 
-            var entities = new List<Entity>(columnPositions.Count);
-            for (int index = 0; index < columnPositions.Count; index++)
+            var entities = new List<Entity>(segments.Count);
+            for (int index = 0; index < segments.Count; index++)
             {
-                Vector3 columnPoint = columnPositions[index];
-                Vector3 bottomPosition = new(
-                    columnPoint.X,
-                    columnPoint.Y,
-                    terrainSampler.GetMapHeight(columnPoint.X, columnPoint.Y));
-
-                Matrix legacyTransform = Matrix.CreateScale(1.2f)
-                    * Matrix.CreateTranslation(new Vector3(bottomPosition.X, bottomPosition.Y, bottomPosition.Z));
-                Matrix runtimeTransform = ConvertLegacyTransform(legacyTransform, origin);
-                entities.Add(CreateStaticModelEntity($"Track.ColumnSegment.{trackName}.{index:000}", segmentModel, runtimeTransform));
+                entities.Add(CreateStaticModelEntity($"Track.ColumnSegment.{trackName}.{index:000}", segmentModel, segments[index].Transform));
             }
 
             return entities;
@@ -442,48 +314,6 @@ internal static partial class LegacyTrackSceneFactory
             };
         }
 
-        private static Matrix CreatePointSpaceMatrix(Vector3 right, Vector3 direction, Vector3 up)
-        {
-            if (right.LengthSquared() > 0.0001f)
-            {
-                right.Normalize();
-            }
-            else
-            {
-                right = Vector3.Right;
-            }
-
-            if (direction.LengthSquared() > 0.0001f)
-            {
-                direction.Normalize();
-            }
-            else
-            {
-                direction = Vector3.UnitY;
-            }
-
-            if (up.LengthSquared() > 0.0001f)
-            {
-                up.Normalize();
-            }
-            else
-            {
-                up = Vector3.UnitZ;
-            }
-
-            Matrix pointSpace = Matrix.Identity;
-            pointSpace.M11 = right.X;
-            pointSpace.M12 = right.Y;
-            pointSpace.M13 = right.Z;
-            pointSpace.M21 = direction.X;
-            pointSpace.M22 = direction.Y;
-            pointSpace.M23 = direction.Z;
-            pointSpace.M31 = up.X;
-            pointSpace.M32 = up.Y;
-            pointSpace.M33 = up.Z;
-            return pointSpace;
-        }
-
         private static Vector3 NormalizeOrFallback(Vector3 vector, Vector3 fallback)
         {
             if (vector.LengthSquared() < 0.0001f)
@@ -494,8 +324,6 @@ internal static partial class LegacyTrackSceneFactory
             vector.Normalize();
             return vector;
         }
-
-        private readonly record struct LegacyRailPoint(Vector3 Position, Vector3 Right, Vector3 Direction, Vector3 Up);
 
         private readonly record struct RailSectionVertex(Vector3 Position, float V, Vector3 Normal, Vector3 Tangent);
 

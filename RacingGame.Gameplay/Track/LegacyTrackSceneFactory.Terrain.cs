@@ -2,6 +2,7 @@ using CasaEngine.Framework.Assets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
+using static RacingGame.Gameplay.Track.RaceTrackSpace;
 
 namespace RacingGame.Gameplay.Track;
 
