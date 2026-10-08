@@ -7,7 +7,10 @@ Owned entries (plan ai-agent/tasks/rgce-editor-project-tasks.md, T3.3 and T3.4):
   streamed), looped when XACT loops it (the gear loops and the musics);
 - Texture.<stem> for every .png and .dds of Content/Textures that no catalogue entry names yet;
 - Data.LandscapeHeights for Content/LandscapeHeights.data, Data.<stem> for Content/Models/*.CombiModel;
-- ModelSource.<stem> for every Content/Models/*.gltf (its .bin buffer is a sidecar of the .gltf, not catalogued).
+- ModelSource.<stem> for every Content/Models/*.gltf (its .bin buffer is a sidecar of the .gltf, not catalogued);
+- World.<path> for every Content/Worlds/**/*.world that no entry names yet (T4.6): the path is relative to Worlds, without
+  the extension, with "/" replaced by "." (Worlds/Test/TrackBeginnerGenerators.world is World.Test.TrackBeginnerGenerators).
+  The "id" written in the .world must be the id of its entry: the script reports a world whose id differs.
 
 Catalogue contract, as scripts/generate_rgce_ui_assets.py: the script updates its own entries in place, appends new
 ones at the end in a stable order, leaves every other entry untouched, and keeps the file format (2-space indent,
@@ -120,6 +123,9 @@ def file_entries(already_catalogued, owned_names):
         add(f"Data.{path.stem}", f"Models/{path.name}", "combimodel")
     for path in sorted((CONTENT / "Models").glob("*.gltf"), key=lambda p: p.name.lower()):
         add(f"ModelSource.{path.stem}", f"Models/{path.name}", "gltf")
+    for path in sorted((CONTENT / "Worlds").rglob("*.world"), key=lambda p: p.as_posix().lower()):
+        relative = path.relative_to(CONTENT / "Worlds").with_suffix("").as_posix()
+        add("World." + relative.replace("/", "."), path.relative_to(CONTENT).as_posix(), "world")
     return owned
 
 
@@ -153,7 +159,7 @@ def main():
     owned = sound_entries()
     owned_names = {entry["name"] for entry in owned}
     # A file is owned when its entry is ours from a previous run, or when no entry names it yet.
-    previously_owned = {entry["name"] for entry in entries if entry.get("name", "").startswith(("Texture.", "Data.", "ModelSource."))}
+    previously_owned = {entry["name"] for entry in entries if entry.get("name", "").startswith(("Texture.", "Data.", "ModelSource.", "World."))}
     already_catalogued = catalogued_files(entry for entry in entries if entry.get("name") not in previously_owned)
     owned += file_entries(already_catalogued, owned_names)
 
@@ -168,6 +174,12 @@ def main():
     names = [entry.get("name") for entry in entries]
     if len(set(ids)) != len(ids) or len(set(names)) != len(names):
         raise SystemExit("duplicate catalogue id or name")
+
+    for entry in owned:
+        if entry["asset_type"] == "world":
+            world_id = json.loads((CONTENT / entry["file_name"]).read_bytes().decode("utf-8-sig")).get("id")
+            if world_id != entry["id"]:
+                raise SystemExit(f"{entry['file_name']} has id {world_id}, its catalogue entry {entry['name']} has id {entry['id']}")
 
     write_json(CATALOG, catalog)
     print(f"{len(SOUNDS)} sounds, {len(owned)} owned catalogue entries, {len(entries)} entries in the catalogue")

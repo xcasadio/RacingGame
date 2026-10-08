@@ -1084,7 +1084,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 >   - Avec `holder_gap` à 45, le rail gauche compte 76 poteaux au lieu de 455.
 >   - Un `--save-project` garde les réglages et n'écrit aucun enfant généré.
 
-### ⏳ T4.6 — Monde de test des générateurs dans l'éditeur
+### ✅ T4.6 — Monde de test des générateurs dans l'éditeur
 
 - **Objectif** : les composants s'ouvrent, s'affichent, se règlent et s'enregistrent dans l'éditeur.
 - **Fichiers** :
@@ -1103,6 +1103,32 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
   - **réglage** : une copie du `.world` reçoit un autre écart des poteaux. Elle est ouverte, capturée, puis enregistrée ; la capture montre l'effet, et le fichier enregistré garde la valeur ;
   - le monde de course du jeu reste identique : A4 contre T4.1.
 - **Commit** : `feat(racing-casa): open the track generators in the editor`
+
+> Validation (2026-10-08) :
+> - **Monde** : `Worlds/Test/TrackBeginnerGenerators.world`, dans la forme qu'écrit l'éditeur, avec 7 entités à l'échelle 1 :
+>   - `Track.Road.Beginner` ;
+>   - `Track.GuardRail.Left.Beginner` et `Track.GuardRail.Right.Beginner` (`holder_gap` 15) ;
+>   - `Track.Columns.Beginner` (`columns_distance` 33) ;
+>   - `Track.Ground.Beginner` ;
+>   - une lumière directionnelle ;
+>   - `Track.Physics`, avec `RaceTrackPhysicsComponent` et ses deux ids.
+>   Son id (`29b7f6c4-…`) est celui de son entrée de catalogue, `World.Test.TrackBeginnerGenerators`.
+> - **Catalogue** : `generate_rgce_content_assets.py` catalogue aussi les `Worlds/**/*.world` qu'aucune entrée ne nomme, et s'arrête si l'id d'un monde diffère de celui de son entrée. `Editor.world` est laissé tel quel. Deux lancements de plus ne changent rien, et `--check` rapporte 0.
+> - **Ouverture**, sur une copie : code 0. La section `Logs:` ne contient que les deux avertissements connus : aucun composant non résolu, aucune erreur de chargement ni de génération.
+> - **Cadrage** : aucune option ni aucun fichier ne cadre la caméra 3D de l'éditeur. Elle part toujours à 10 unités de l'origine, et seul un double-clic sur une entité la recentre. À l'échelle 1, elle est dans le terrain : la capture ne montre que la grille.
+>   - Les copies capturées réduisent donc les racines à 0,02 ; le monde committé reste à l'échelle 1.
+>   - La capture lue montre le terrain, la route, les rails et leurs poteaux, et les colonnes sous la route surélevée, petites à cette échelle. L'inspecteur liste les enfants générés des colonnes (508 composants).
+>   - Le README donne l'astuce.
+> - **Aller-retour d'enregistrement**, par `--save-project` sur une copie :
+>   - le premier et le second enregistrement donnent les mêmes octets que le fichier committé (`024c766d…`) ;
+>   - aucune clé perdue, et `RaceTrackPhysicsComponent` garde ses deux ids ;
+>   - aucun `RaceGeneratedModelComponent` n'est écrit.
+> - **Réglage** : dans une copie, `holder_gap` 45 sur le rail gauche réduit visiblement ses poteaux (228 composants contre 678). Le fichier enregistré garde 45 à gauche et 15 à droite.
+> - **Jeu inchangé** :
+>   - l'export par maillage donne 0 non apparié et les mêmes 3 324 renommages qu'en T4.5 ;
+>   - `--smoke-frontend` : code 0 ;
+>   - `dotnet build RacingGame.slnx` : 0 erreur, aucun code touché.
+> - **Limite relevée** : l'automatisation de l'éditeur ne sait pas cadrer la caméra 3D. C'est un manque de CasaEngine, hors de ce chantier.
 
 ### ⏳ T4.7 — ADR, documentation et clôture de S4
 

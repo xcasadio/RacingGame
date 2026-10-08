@@ -2069,6 +2069,12 @@
       "name": "ModelSource.Windmill",
       "file_name": "Models/Windmill.gltf",
       "asset_type": "gltf"
+    },
+    {
+      "id": "29b7f6c4-50a1-5c4b-bda6-112ac33f8278",
+      "name": "World.Test.TrackBeginnerGenerators",
+      "file_name": "Worlds/Test/TrackBeginnerGenerators.world",
+      "asset_type": "world"
     }
   ]
 }

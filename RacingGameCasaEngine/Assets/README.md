@@ -76,3 +76,29 @@ Every game file the game reads lives under `Content` and has a catalogue entry (
   - the start world, the project file and `AssetInfos.json`. The committed versions are in the form the editor writes, so a Save leaves them unchanged.
 - Never use File > New Project on this folder: it overwrites `AssetInfos.json`.
 - Editor state (`Content/.casaeditor/`) is git-ignored. Every project open leaves a shadow copy of the gameplay assembly under `%TEMP%\casaeditor-scripts\`, and every rebuild before Play a folder under `Content/.casaeditor/script-build/`; the editor never deletes either.
+
+## Track generator components
+
+The race track is not stored as meshes. Four components of `RacingGame.Gameplay` rebuild it from the data assets, in the game and in the editor. Each one is the root component of its own entity:
+
+- `RaceTerrainGeneratorComponent`: the ground, from the heightmap;
+- `RaceRoadGeneratorComponent`: the road;
+- `RaceGuardRailGeneratorComponent`: one side of the guard rail, with its posts;
+- `RaceColumnGeneratorComponent`: the columns and their segments.
+
+`RaceTrackPhysicsComponent` is not a generator: it computes the track profile that the car physics reads, from the same two ids.
+
+- Serialized settings:
+  - `track_asset_id`: the `.Track` asset (`Data` ids of `AssetInfos.json`, for example `TrackBeginnerData`);
+  - `heightmap_asset_id`: the heightmap asset (`Data.LandscapeHeights`);
+  - guard rail: `side` (`Left` or `Right`) and `holder_gap` (distance between posts, default 15);
+  - columns: `columns_distance` (distance between columns, default 33).
+- A generator rebuilds its geometry when a setting changes. An absent or unknown id writes one warning naming the entity, and the generator draws nothing.
+- The posts, the column segments and the meshes are generated children (`RaceGeneratedModelComponent`). They are shown in the inspector and are marked `[Browsable(false)]`, so the editor does not save them: a saved world holds only the settings above.
+- Test world: `Worlds/Test/TrackBeginnerGenerators.world` (catalogue entry `World.Test.TrackBeginnerGenerators`). It holds the five generators of the Beginner track under the names the game uses (`Track.Road.Beginner`, `Track.GuardRail.Left.Beginner`, `Track.GuardRail.Right.Beginner`, `Track.Columns.Beginner`, `Track.Ground.Beginner`), a directional light, and one entity with `RaceTrackPhysicsComponent`. The file is in the form the editor writes: a Save leaves it unchanged.
+- Opening it, on a scratch copy of `Content` (never on the real folder):
+  - `CasaEngine.Editor.exe --project <copy>\RacingGameCasaEngine.json --open-asset Worlds/Test/TrackBeginnerGenerators.world --entity-index 1 --capture-delay 3 --diagnostics-out <file> --screenshot-out <png>`;
+  - from the editor, open the world from the content browser, then change a setting in the inspector (for example `holder_gap` of the left rail) and File > Save;
+  - there is no automation option that sets a component property: edit the copied `.world` instead.
+- Camera tip: the track is hundreds of units wide, and the editor viewport starts at distance 10 from the origin, so at scale 1 the camera sits inside the terrain. Nothing sets that camera from a file or a command line option (`.casaeditor/viewport.editor.json` only holds the 2D view state). Double-click an entity in the hierarchy to frame it, or, for automated captures, scale the roots of the copied world to 0.02 and move them to y = -2. Keep the committed world at scale 1.
+- `generate_rgce_content_assets.py` catalogues every `Worlds/**/*.world` that no entry names, as `World.<path without extension, "/" replaced by ".">`, and checks that the `id` written in the world is the id of its entry.
