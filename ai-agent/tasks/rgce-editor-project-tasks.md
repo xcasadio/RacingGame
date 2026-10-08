@@ -293,7 +293,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
 
 ## Phase 0 — Références avant chantier (S0)
 
-### ⚠️ T0.1 — Plan, pointeur du moteur et références de parité
+### ✅ T0.1 — Plan, pointeur du moteur et références de parité
 
 - **Objectif** : committer ce plan et le pointeur du sous-module (P3), puis prendre, avant toute modification, les références qui serviront à prouver la parité (P9) et l'état de l'éditeur.
 - **Fichiers** :
@@ -313,7 +313,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
      - `--verify-legacy-import-profile`.
   4. Éditeur recompilé :
      - `scripts/capture_editor_screen.ps1` sur les 9 écrans, deux fois, avec `-OutputDirectory artifacts/editor-project-baseline/editor-screens/` puis `…/editor-screens-run2/`. L'écart entre les deux séries, mesuré par `UiCaptureCompare`, fixe le bruit d'un lancement à l'autre ;
-     - **contrôle négatif du plugin** : l'éditeur ouvert sur le projet avec les arguments du script plus `--activate-panel output`, qui affiche le panneau « Logs ». La capture va dans `artifacts/editor-project-baseline/editor-logs.png`. Elle doit montrer l'avertissement `Gameplay assembly 'RacingGameCasaEngine.UI.dll' contains no IPlugin implementation.` (`AssemblyManager.cs:29`), puisque la DLL actuelle n'a pas de plugin ; on le lit sur l'image. Si le message n'est pas lisible dans le panneau, T0.1 passe en ⚠️ : T1.2 n'aurait pas de contrôle réfutable ;
+     - **contrôle négatif du plugin** : l'éditeur ouvert sur le projet avec les arguments du script plus `--activate-panel output --logs-filter Warning`, qui affiche le panneau « Logs » réduit à ses avertissements (option ajoutée par T0.2). La capture va dans `artifacts/editor-project-baseline/editor-logs.png`. Elle doit montrer l'avertissement `Gameplay assembly 'RacingGameCasaEngine.UI.dll' contains no IPlugin implementation.` (`AssemblyManager.cs:29`), puisque la DLL actuelle n'a pas de plugin ; on le lit sur l'image. Si le message n'est pas lisible dans le panneau, T0.1 passe en ⚠️ : T1.2 n'aurait pas de contrôle réfutable ;
      - ouverture par l'automatisation de chaque entrée du catalogue, en notant celles qui ne s'ouvrent pas. Le rapport en attend 28 sans document.
   5. Écrire les chiffres dans la note de validation : codes de sortie, nombre de fichiers, entités par piste, assets ouverts et non ouverts, bruit des captures de l'éditeur.
 - **Validation** :
@@ -338,7 +338,8 @@ Un arrêt fige la tranche et celles qui en dépendent.
 > - **Éditeur** :
 >   - 9 écrans capturés deux fois (`editor-screens/`, `editor-screens-run2/`) : identiques au pixel près, bruit nul ;
 >   - catalogue ouvert entrée par entrée (`catalogue/catalogue-open.tsv`) : 66 entrées sur 94 s'ouvrent (6 sound, 50 sprite, 9 uiscreen, 1 world). Les 28 autres renvoient « Unable to open asset » : 10 png, 8 texture, 6 wav, 3 track, 1 fnt, comme prévu.
-> - ⚠️ **Contrôle négatif du plugin impossible par le panneau Logs.** Avec `--activate-panel output`, le panneau « Logs » est bien actif (« Activate panel: output » dans les diagnostics), mais sa liste reste vide sur la capture, à 3 s comme à 8 s. Pourtant `LogsPanel.RefreshList` y recopie tout `LoggerEditor.Entries`, ce qui ressemble à un défaut d'affichage de l'éditeur, à noter pour S2. L'avertissement n'est donc pas lisible, et T1.2 n'a pas de contrôle réfutable sous la forme prévue (O6).
+> - **Contrôle négatif du plugin, d'abord bloqué puis fait.** Au premier essai : Avec `--activate-panel output`, le panneau « Logs » est bien actif (« Activate panel: output » dans les diagnostics), mais sa liste reste vide sur la capture, à 3 s comme à 8 s. Pourtant `LogsPanel.RefreshList` y recopie tout `LoggerEditor.Entries`, ce qui ressemble à un défaut d'affichage de l'éditeur, à noter pour S2. L'avertissement n'était donc pas lisible (O6). L'auteur a fait corriger le panneau et ajouter `--logs-filter` (T0.2). Avec l'éditeur de `4ce5ea0`, `editor-logs-final.png` montre deux fois « Gameplay assembly 'RacingGameCasaEngine.UI.dll' contains no IPlugin implementation. » : le contrôle sait échouer.
+> - Les captures `editor-screens/`, prises avec l'éditeur d'avant T0.2, restent la référence : la série `editor-screens-fixed-run2`, prise avec l'éditeur corrigé, leur est identique au pixel près.
 
 ### ✅ T0.2 — Panneau Logs de l'éditeur lisible
 
@@ -418,7 +419,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
 - **Étapes** :
   1. Ajouter la référence et le `Plugin`, compiler.
   2. Déclarer `GameplayCsprojName`.
-  3. Ouvrir le projet dans l'éditeur recompilé avec la commande du contrôle négatif de T0.1 (`--activate-panel output`), capture dans `artifacts/editor-project-baseline/editor-logs-t1.2.png`. Contrôler aussi le fichier écrit à côté du csproj (O2).
+  3. Ouvrir le projet dans l'éditeur recompilé avec la commande du contrôle négatif de T0.1 (`--activate-panel output --logs-filter Warning`), capture dans `artifacts/editor-project-baseline/editor-logs-t1.2.png`. Contrôler aussi le fichier écrit à côté du csproj (O2).
   4. Faire une recompilation depuis l'éditeur (`File > Build Scripts` ou Play). Si l'automatisation ne peut pas la déclencher, la vérification devient manuelle (O1).
 - **Validation** :
   - `dotnet build RacingGame.slnx` sans erreur ;
@@ -452,7 +453,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
 | O3 | Le sous-module contient un plan RGCE égaré, `CasaEngine/ai-agent/tasks/racinggame-car-profile-parity-plan.md`. On le laisse tel quel, la branche moteur le portera. | S2 |
 | O4 | PNG d'interface hérités non portés : `HelpScreenWindows`, `HelpScreenXbox360`, `OptionsScreenXbox360`, `MouseCursor`. Faut-il compter aussi la copie brute de `GameFont.png` ? Elle est proposée, D4 voulant « tout porter ». | S3 |
 | O5 | Les cartes de normales héritées gardent la disposition `agb`, et le jeu actuel les lit telles quelles. Le chantier conserve exactement ces pixels, sans réencodage. | S3, S5 |
-| O6 | **Bloquant T0.1 et T1.2.** Décision de l'auteur : corriger d'abord le panneau (T0.2, fait). Reste : l'avertissement n'est pas visible sur la capture, car le panneau n'affiche que ses dernières lignes. Le panneau Logs de l'éditeur restait vide sur les captures d'automatisation. Proposition : remplacer ce contrôle par la sonde `pluginprobe` du scratchpad. Elle rejoue le chargement de l'éditeur à l'ouverture du projet : `ProjectSettingsHelper.Load`, avec le chargeur à copie fantôme de l'éditeur `EditorScriptAssemblyService.LoadShadowCopy` (`GameEditor.cs:326`). Elle affiche ce que `AssemblyManager` journalise et sort avec le code 1 sans `IPlugin`. Sur le projet actuel, elle affiche « Gameplay assembly 'RacingGameCasaEngine.UI.dll' contains no IPlugin implementation. » et sort avec le code 1 : c'est le contrôle négatif. Le panneau vide serait ajouté aux manques de S2. | T0.1, T1.2, S2 |
+| O6 | **Levé (T0.2).** Le panneau Logs de l'éditeur restait vide sur les captures d'automatisation. Sur décision de l'auteur, il a été corrigé (MGUI `4e94d7e8`, CasaEngine `c0f3343`), et l'option `--logs-filter` (`4ce5ea0`) met l'avertissement à l'écran. Proposition : remplacer ce contrôle par la sonde `pluginprobe` du scratchpad. Elle rejoue le chargement de l'éditeur à l'ouverture du projet : `ProjectSettingsHelper.Load`, avec le chargeur à copie fantôme de l'éditeur `EditorScriptAssemblyService.LoadShadowCopy` (`GameEditor.cs:326`). Elle affiche ce que `AssemblyManager` journalise et sort avec le code 1 sans `IPlugin`. Sur le projet actuel, elle affiche « Gameplay assembly 'RacingGameCasaEngine.UI.dll' contains no IPlugin implementation. » et sort avec le code 1 : c'est le contrôle négatif. Le panneau vide serait ajouté aux manques de S2. | T0.1, T1.2, S2 |
 
 ## Hors périmètre
 
