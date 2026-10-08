@@ -208,7 +208,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 
 ## Phase 0 — Préalables, après S5
 
-### ⏳ T0.1 — Plan revérifié contre le code de S5
+### ✅ T0.1 — Plan revérifié contre le code de S5
 
 - **Objectif** : ce plan cite du code que S5 va modifier (`LegacyTrackSceneFactory`, générateurs, export, matériaux). Avant d'écrire du code, il est confronté au code après S5.
 - **Sources** : ce plan ; le code à la fin de S5 ; le plan éditeur (notes de T5.1 à T5.7).
@@ -220,6 +220,34 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
   5. Si un fait porteur a changé, ou si le chemin des matériaux demande une autre forme que P5 : ⚠️ Blocked. Le plan est alors corrigé, relu par un vérificateur de plan et soumis à l'auteur.
 - **Validation** : la note liste les faits revérifiés et les noms relevés, et dit si la sonde redonne les mêmes chiffres.
 - **Commit** : `docs(racing-casa): recheck the track helper plan after slice S5`
+
+> Validation (2026-10-09), à `708e141` :
+> - **S5 close** : T5.7 ✅, vérificateur CONFIRMED. L'arbre de travail ne contient que `.serena/` et `log.txt`, à l'auteur.
+> - **Fichiers non touchés par S5** (`git diff --stat a553a75..HEAD`). Leurs citations restent exactes, numéros de ligne compris :
+>   - `LegacyTrackFileReader.cs`, `RaceTrackLayout.cs` et `RaceTrackLayoutTypes.cs` ;
+>   - `TrackMigrationCaptureValidator.cs`, `CarProfileAuditValidator.cs:112`, `CarTopSpeedAuditValidator.cs:109` et `RaceFrontEndCatalog.cs:38` ;
+>   - `scripts/TrackPlacementExporter`.
+>   `InternalsVisibleTo("RacingGameCasaEngine")` reste à `RacingGame.Gameplay.csproj:16`, et S5 a ajouté `RgceAssetCooker` à `:18`.
+> - **`LegacyTrackSceneFactory.cs`, réduit par S5** : les faits sont les mêmes, mais les lignes ont bougé :
+>   - `CreateRoadModel` passe de `:185-232` à `:120-167`. Le maillage ne porte plus de matériau construit, mais `MaterialAssetId` ;
+>   - `LegacyTrackLayout`, sans `XmlArrayItem` pour les deux listes d'aides, passe de `:645-653` à `:324-333` ;
+>   - `LegacyRoadHelperType` passe de `:667-673` à `:347-353` ;
+>   - `GetNearestWidthScale` passe de `:296` à `:207`, et `SampleLoopPoint` de `:318` à `:229`, toujours sans appelant ;
+>   - `ComputeGeneratorLayout` passe toujours `includeScenery: false` (`LegacyTrackSceneFactory.Generators.cs:86-96`) ;
+>   - `RaceGeneratedModel` garde `CastShadows` et `OwnsBuffers` (`:14`).
+> - **Catalogue** : les PNG des tunnels s'appellent maintenant `Image.RoadTunnel` et `Image.RoadTunnelNormal` (T5.4). Aucun `.texture` ne les cite encore, puisque aucun matériau cuit ne s'en sert.
+> - **Chemin des matériaux de piste** (P5, O1), relevé dans le code :
+>   - recette : `RaceMaterialRecipes.ForRoad` et ses voisines (`RacingGame.Gameplay/Import/RaceMaterialRecipes.cs:128-209`), avec les noms de textures en constantes (`RoadColumnTextureName`…) ;
+>   - **outil de cuisson** : `TrackRoles` (`scripts/RgceAssetCooker/CookPlan.cs:70`) et le dictionnaire de `BuildTrackMaterials` (`:156-180`). Il écrit `Materials/Track/<Rôle>.material` (`Material.Track.<Rôle>`), puis un `.texture` pour chaque image utilisée ;
+>   - **id** : `RaceTrackMaterialAssets` (`LegacyTrackSceneFactory.Models.cs:10-23`), uuid5 du nom ;
+>   - **générateur** : `RaceRoadGeneratorComponent.MaterialAssetId`, `[SerializedProperty("material_asset_id")]`, valant par défaut `RaceTrackMaterialAssets.Road`. Il entre dans la signature.
+>   T2.1 reçoit ces noms. P4 interdit toute nouvelle propriété sérialisée, donc l'id du matériau du tunnel est une constante du générateur et non une propriété (lecture de P4 avec P5, voir T2.1).
+> - **Valeur manquante dans P5** : la puissance spéculaire. `roadTunnelMaterial` ne la fixe pas, et garde le défaut de `Material`, soit 24 (`RacingGame.Shared/Graphics/Material.cs`, `DefaultSpecularPower`). T2.1 la reprend.
+> - **Sonde** : copiée dans `o7/probe-o7/` du scratchpad, recompilée contre la DLL de `708e141` et relancée. Sa sortie est identique, octet pour octet, à celle de la découverte (`diff` vide).
+> - **`TrackPlacementExporter`** contre `s5/scene-a.json` :
+>   - mêmes `missingInLive` (77 / 134 / 101), `modelMismatch` = 0, et les 4 écarts anciens par piste, aux mêmes valeurs ;
+>   - seul `additionalLiveEntities` change : de 984 / 593 / 2 023 à 82 / 37 / 157. L'écart est exactement `GuardRailHolder` + `RoadColumnSegment` (742 + 160, 455 + 101, 1 529 + 337). La référence de S4 datait d'avant T4.5, qui a fait des poteaux et des segments des enfants générés, et non plus des entités.
+>   - Ce n'est donc pas un fait porteur. Mais la validation de T1.2 prévoyait de voir les poteaux dans `additional-other:` : elle les contrôle maintenant dans l'export par maillage (corrigé ci-dessous).
 
 ### ⏳ T0.2 — Vues d'audit aux aides et références « avant »
 
@@ -292,7 +320,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
     - `missingInLive` = 0 et `modelMismatch` = 0 sur les 3 pistes, avec les 4 écarts anciens par piste aux mêmes valeurs ;
     - `additional-scenery:` ne contient que `Banner*`, `Sign*` et `StartLight*`, aux comptes de `before/`. Aucun autre modèle, palmiers des CombiModel compris ;
     - les objets en trop de `before/` ont donc disparu : `Windmill` 1 / 2 / 1, `AlphaTrain` 1 / 1 / 1, `Building5` 0 / 1 / 0 (Advanced / Beginner / Expert). Ce retrait est exigé ;
-    - `additional-other:` garde les groupes et les comptes de `before/`. Seuls les poteaux changent : `GuardRailHolder` passe de 742 à 743 sur Advanced, et reste à 455 sur Beginner et à 1 529 sur Expert (« État vérifié ») ;
+    - `additional-other:` garde les groupes et les comptes de `before/`. Depuis T4.5, les poteaux ne sont plus des entités, et n'y figurent donc pas (T0.1). Leur changement se contrôle dans l'export : les maillages dont le chemin de composant contient `GuardRailHolder` (742 / 455 / 1 529 dans `s5/scene-a.json`) passent de 742 à 743 sur Advanced, et restent à 455 sur Beginner et à 1 529 sur Expert (« État vérifié ») ;
     - si le filtre de doublons de RGCE (tailles des glTF) écarte un autre objet que l'original (tailles des `.X`), chaque cas est décrit avec les deux tailles et soumis à l'auteur : la tâche passe en ⚠️ Blocked ;
   - **export** contre `before/`, par `compare_race_scene_exports.py` :
     - entités `Track.Scenery.*` : 183 / 198 / 301 (Advanced / Beginner / Expert), contre 108 / 68 / 202 ;
@@ -343,12 +371,24 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
   - `RacingGame.Gameplay/Track/RaceTrackLayout.cs` et `RaceTrackLayoutTypes.cs` : le calcul des plages d'aides se fait hors de `includeScenery`. La propriété `TunnelSpans` donne leurs indices de début et de fin, dans l'ordre de la route ;
   - `RacingGame.Gameplay/Track/LegacyTrackSceneFactory.cs` (ou le fichier de la route après S5) : `CreateTunnelModel` construit le maillage de P4, avec ses normales et ses coordonnées converties comme celles de la route ;
   - `RacingGame.Gameplay/Components/RaceRoadGeneratorComponent.cs` : le générateur ajoute `<piste>.Tunnel` à sa sortie quand la piste a des tunnels ;
-  - le matériau du tunnel, par le chemin des matériaux de piste relevé en T0.1 (P5). Ses fichiers exacts (recette, asset cuit, catalogue) sont écrits ici par T0.1.
+  - le matériau du tunnel, par le chemin des matériaux de piste relevé en T0.1 (P5) :
+    - `RacingGame.Gameplay/Import/RaceMaterialRecipes.cs` :
+      - une recette `ForRoadTunnel(trackName, diffuseTexturePath, normalTexturePath)`, avec les valeurs de P5 et une puissance spéculaire de 24, le défaut de `Material` d'origine ;
+      - les constantes `RoadTunnelTextureName` (`RoadTunnel.png`) et `RoadTunnelNormalTextureName` (`RoadTunnelNormal.png`) ;
+    - `scripts/RgceAssetCooker/CookPlan.cs` : le rôle `RoadTunnel` dans `TrackRoles` et dans `BuildTrackMaterials`. L'outil écrit :
+      - `Content/Materials/Track/RoadTunnel.material` (`Material.Track.RoadTunnel`) ;
+      - `Content/Textures/RoadTunnel.texture` et `RoadTunnelNormal.texture` (`Texture.RoadTunnel`, `Texture.RoadTunnelNormal`, qui citent `Image.RoadTunnel` et `Image.RoadTunnelNormal`) ;
+      - leurs entrées du catalogue ;
+      `--verify` les couvre comme les autres ;
+    - `RaceTrackMaterialAssets.RoadTunnel` (`LegacyTrackSceneFactory.Models.cs`), uuid5 de `Material.Track.RoadTunnel` ;
+    - `RaceRoadGeneratorComponent` passe `RaceTrackMaterialAssets.RoadTunnel` au tunnel. Il ne s'agit pas d'une propriété sérialisée, contrairement au `material_asset_id` de la route : P4 n'en permet aucune nouvelle, et les `.world` ne changent pas. Le matériau du tunnel se règle donc dans l'asset cuit, pas dans l'inspecteur du générateur ;
+    - le README de l'outil (cinq matériaux de piste) et `RacingGameCasaEngine/Assets/README.md` sont mis à jour en T3.2.
 - **Validation** :
   - build à 0 erreur ; `check_gameplay_type_names.py` : 0 collision ;
   - **export** contre celui de T1.3 : un seul maillage en plus par piste, `<piste>.Tunnel`, rien en moins.
     - Sommets et indices : 404 et 1 800 (Beginner), 860 et 3 834 (Advanced), 896 et 3 852 (Expert).
-    - Matériau : les valeurs de P5, avec CullNone. Le maillage projette des ombres ;
+    - Matériau : `Material.Track.RoadTunnel`, aux valeurs de P5 avec CullNone et une puissance spéculaire de 24. Le maillage projette des ombres ;
+  - **outil de cuisson** : un second lancement n'écrit rien, et `--check` et `--verify` sortent avec le code 0 ;
   - **audit** : `helper-tunnel` montre le tunnel sur les 3 pistes, ce qu'on lit sur la capture. Les autres vues ne changent que là où un tunnel est dans le champ ;
   - **éditeur**, sur une copie de `Worlds/Test/TrackBeginnerGenerators.world`, à l'échelle 0,02 comme en T4.6 :
     - l'ouverture sort avec le code 0, et la section `Logs:` n'a que les avertissements connus ;
@@ -441,7 +481,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
-| O1 | Nom et forme exacts du chemin des matériaux de piste après S5 (P5), relevés en T0.1. | T0.1, T2.1 |
+| O1 | **Levé (T0.1).** Nom et forme exacts du chemin des matériaux de piste après S5 (P5) : recette, rôle de l'outil de cuisson, `Material.Track.RoadTunnel`, id constant du générateur. Écrits dans T2.1. | T0.1, T2.1 |
 | O2 | Si le chargement ou l'image d'Expert se dégrade visiblement avec le décor ajouté, le remède (regroupement, instanciation) est à décider avec l'auteur, dans un autre chantier. | T1.2, T1.3 |
 
 ## Hors périmètre
