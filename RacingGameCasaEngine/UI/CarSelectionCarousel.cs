@@ -1,11 +1,8 @@
 using System;
-using System.IO;
 using CasaEngine.Core.Log;
-using CasaEngine.Engine.Environment;
-using CasaEngine.Framework.Assets.Loaders;
+using CasaEngine.Framework.Assets;
 using CasaEngine.Framework.Entities;
 using CasaEngine.Framework.Entities.Components;
-using CasaEngine.Framework.Materials.Runtime;
 using CasaEngine.Framework.Rendering;
 using CasaEngine.Framework.Rendering.Models;
 using CasaEngine.Framework.World;
@@ -16,7 +13,6 @@ using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.Worlds;
 using Color = Microsoft.Xna.Framework.Color;
 using RacingGame.Gameplay.Components;
-using RacingGame.Gameplay.Import;
 
 namespace RacingGameCasaEngine.UI;
 
@@ -49,7 +45,7 @@ internal sealed class CarSelectionCarousel : IDisposable
     private const float FieldOfView = MathHelper.PiOver2;
     private const float NearPlane = 0.5f;
     private const float FarPlane = 1750f;
-    private const string PlateModelName = "CarSelectionPlate";
+    private const string PlateModelAssetName = "StaticModel.CarSelectionPlate";
     // Shadow map of the carousel: the engine's box is centred on the camera, about 11 units from the carousel's centre,
     // whose cars reach 7 units from it.
     private const int ShadowMapResolution = 2048;
@@ -116,10 +112,10 @@ internal sealed class CarSelectionCarousel : IDisposable
         _world.AddEntity(new Entity { Name = "Carousel.Light", RootComponent = _light });
 
         // As in RacingGame, only the cars cast shadows; the plates receive them.
-        StaticModel? plate = LoadPlateModel(game);
+        Guid plateAssetId = GetPlateAssetId();
         for (int i = 0; i < CarCount; i++)
         {
-            _plates[i] = AddModelEntity($"Carousel.Plate.{i}", plate);
+            _plates[i] = AddModelEntity($"Carousel.Plate.{i}", null, plateAssetId);
             _plates[i].CastShadows = false;
             _cars[i] = AddModelEntity($"Carousel.Car.{i}", LegacyCarVisualFactory.LoadConfiguredCarModel(game.AssetContentManager, i, 0));
         }
@@ -330,66 +326,31 @@ internal sealed class CarSelectionCarousel : IDisposable
         return ((int)Math.Round(left), (int)Math.Round(right));
     }
 
-    private StaticModelComponent AddModelEntity(string name, StaticModel? model)
+    private StaticModelComponent AddModelEntity(string name, StaticModel? model, Guid staticModelAssetId = default)
     {
         var component = new StaticModelComponent { StaticModel = model };
+        if (staticModelAssetId != Guid.Empty)
+        {
+            // The cooked plate, shared by the engine between the three plates: no paint, nothing to own.
+            component.StaticModelAssetId = staticModelAssetId;
+        }
+
         var entity = new Entity { Name = name, RootComponent = component };
         entity.ApplyExplicitPolicies(EntityPolicySet.DynamicDefault);
         _world.AddEntity(entity);
         return component;
     }
 
-    // CarSelectionPlate.gltf: Y up and in the car's units already, so no root correction, unlike the track scenery.
-    private static StaticModel? LoadPlateModel(RacingGameCasaEngineGame game)
+    // The cooked CarSelectionPlate (Y up and in the car's units already, so no root correction, unlike the track scenery).
+    private static Guid GetPlateAssetId()
     {
-        string fileName = Path.Combine(EngineEnvironment.ProjectPath, "Models", $"{PlateModelName}.gltf");
-        if (!File.Exists(fileName) || !LegacyGltfModelReader.IsFileSupported(fileName))
+        AssetInfo? assetInfo = AssetCatalog.Get(PlateModelAssetName);
+        if (assetInfo == null)
         {
-            Logs.WriteWarning($"Car selection: platform model '{fileName}' cannot be read.");
-            return null;
+            Logs.WriteWarning($"Car selection: the catalog has no '{PlateModelAssetName}' asset.");
+            return Guid.Empty;
         }
 
-        StaticModelImportResult importResult = LegacyGltfModelReader.ReadWithMetadata(fileName, RacingGameImportProfiles.LegacyMaterialProfile);
-        StaticModel model = importResult.Model;
-        var textureLoader = new Texture2DLoader();
-        foreach (StaticModelMesh mesh in model.Meshes)
-        {
-            if (mesh.MaterialIndex < 0 || mesh.MaterialIndex >= importResult.Materials.Count)
-            {
-                continue;
-            }
-
-            StaticModelImportedMaterial importedMaterial = importResult.Materials[mesh.MaterialIndex];
-            RaceMaterialRecipe recipe = RaceMaterialRecipes.ForPlate(PlateModelName, importedMaterial);
-            mesh.Material = RaceMaterialBuilder.Create(
-                recipe,
-                LoadTexture(textureLoader, recipe.BaseTextureFilePath, game),
-                LoadTexture(textureLoader, recipe.NormalTextureFilePath, game),
-                null);
-            for (int index = 0; index < mesh.SubMeshes.Count; index++)
-            {
-                mesh.SubMeshes[index].Material = mesh.Material;
-            }
-        }
-
-        return model;
-    }
-
-    private static Texture2D? LoadTexture(Texture2DLoader loader, string? path, RacingGameCasaEngineGame game)
-    {
-        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path) || !loader.IsFileSupported(path))
-        {
-            return null;
-        }
-
-        try
-        {
-            return (Texture2D)loader.LoadAsset(path, game.AssetContentManager);
-        }
-        catch (Exception ex)
-        {
-            Logs.WriteException(ex);
-            return null;
-        }
+        return assetInfo.Id;
     }
 }

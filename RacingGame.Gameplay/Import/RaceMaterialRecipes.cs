@@ -7,9 +7,9 @@ namespace RacingGame.Gameplay.Import;
 
 /// <summary>
 /// The pure functions that compute a <see cref="RaceMaterialRecipe"/> for each path that builds a game material: the
-/// scenery, posts, segments and start lights, the car, the car selection plates, the fallbacks, and the track
-/// materials written in code. The logic moved here from the builders, unchanged; the builders only load the
-/// textures a recipe names and copy its values.
+/// scenery, posts, segments and start lights, the car, the car selection plates, and the track
+/// materials written in code. The logic moved here from the builders, unchanged; the asset cooker writes each recipe
+/// as a cooked material, which the game loads from the catalogue.
 /// </summary>
 public static class RaceMaterialRecipes
 {
@@ -63,19 +63,6 @@ public static class RaceMaterialRecipes
         };
     }
 
-    /// <summary>The material of a mesh of the scenery model <paramref name="modelName"/> that has no imported material.</summary>
-    public static RaceMaterialRecipe ForSceneryFallback(string modelName)
-    {
-        Color diffuseColor = InferSceneryColor(modelName);
-        return new RaceMaterialRecipe
-        {
-            DiffuseColor = diffuseColor,
-            EmissiveColor = diffuseColor.ToVector3() * 0.015f,
-            SpecularColor = new Vector3(0.05f),
-            SpecularPower = 4f,
-        };
-    }
-
     /// <summary>
     /// A material of the car <paramref name="carIndex"/>. <paramref name="texturesDirectory"/> is the project's
     /// Textures directory, where the car's normal map is.
@@ -114,20 +101,6 @@ public static class RaceMaterialRecipes
             Queue = presentation.Queue,
             AlphaCutoff = presentation.AlphaCutoff,
             RasterizerState = presentation.DisableBackfaceCulling ? RaceMaterialStates.CullNone : null,
-        };
-    }
-
-    /// <summary>The material of a car mesh that has no imported material.</summary>
-    public static RaceMaterialRecipe ForCarFallback(string meshName)
-    {
-        return new RaceMaterialRecipe
-        {
-            Name = $"{LegacyCarModelName}.{meshName}.Fallback",
-            DiffuseColor = new Color(196, 196, 196),
-            AmbientColor = new Vector3(0.16f),
-            EmissiveColor = new Vector3(0.02f),
-            SpecularColor = new Vector3(0.32f),
-            SpecularPower = 12f,
         };
     }
 
@@ -320,40 +293,5 @@ public static class RaceMaterialRecipes
     {
         return !string.IsNullOrWhiteSpace(texturePath)
             && Path.GetFileNameWithoutExtension(texturePath).Equals(CarNormalTextureName, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static Color InferSceneryColor(string modelName)
-    {
-        if (modelName.Contains("Palm", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Kaktus", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Tree", StringComparison.OrdinalIgnoreCase))
-        {
-            return new Color(86, 138, 76);
-        }
-
-        if (modelName.Contains("Hotel", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Building", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Casino", StringComparison.OrdinalIgnoreCase))
-        {
-            return new Color(174, 168, 160);
-        }
-
-        if (modelName.Contains("Oil", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Train", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Road", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Sign", StringComparison.OrdinalIgnoreCase))
-        {
-            return new Color(126, 126, 132);
-        }
-
-        if (modelName.Contains("Rock", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Stone", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Ruin", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Sand", StringComparison.OrdinalIgnoreCase))
-        {
-            return new Color(156, 140, 112);
-        }
-
-        return new Color(190, 190, 190);
     }
 }

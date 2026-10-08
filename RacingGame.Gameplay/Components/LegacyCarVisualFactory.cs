@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using CasaEngine.Engine.Environment;
 using CasaEngine.Framework.Assets;
-using CasaEngine.Framework.Assets.Loaders;
 using CasaEngine.Framework.Materials.Runtime;
 using CasaEngine.Framework.Rendering.Models;
 using Microsoft.Xna.Framework;
@@ -17,24 +16,28 @@ using RacingGame.Gameplay.Race;
 namespace RacingGame.Gameplay.Components;
 
 /// <summary>
-/// Builds RacingGame's car for the race and the car selection: one model per car type, from Car.gltf with the car's
-/// texture (RacerCar, RacerCar2, RacerCar3). The selected colour is painted into the texture as RacingGame's shader
-/// painted it (<c>NormalMapping.fx</c>, SpecularWithReflectionForCar20: <c>lerp(rgb, carHueColor, texture alpha)</c>),
-/// on the CPU since CasaEngine's shaders have no such tint (ADR-0009). The paint material samples the painted texture,
-/// the car's other materials the texture as it is. The texture's alpha, the paint mask, is kept: RacingGame's shader
-/// also scaled the specular by it, as CasaEngine's does.
+/// Builds RacingGame's car for the race and the car selection: one model per car type, a private copy of the cooked
+/// <c>StaticModel.Car</c> with the car's texture (RacerCar, RacerCar2, RacerCar3). The selected colour is painted into
+/// the texture as RacingGame's shader painted it (<c>NormalMapping.fx</c>, SpecularWithReflectionForCar20:
+/// <c>lerp(rgb, carHueColor, texture alpha)</c>), on the CPU since CasaEngine's shaders have no such tint (ADR-0009).
+/// <para/>
+/// The paint is a run-time state of each car index, never written to a shared asset: in the private copy, each slot whose
+/// cooked material has <c>Texture.RacerCar</c> for base texture gets, on the mesh and on each of its sub-meshes, a copy
+/// of the compiled material with a new id (so it is not in the compiled-material cache, and the renderer draws its own
+/// texture) whose base texture is the car's painted texture (the paint slot, <see cref="IsPaintSlot"/>) or its unpainted
+/// one (the other slots). The texture's alpha, the paint mask, is kept: RacingGame's shader also scaled the specular by
+/// it, as CasaEngine's does. Every other value (tuning, reflection blend, normal map) comes from the cooked material.
 /// </summary>
 internal static class LegacyCarVisualFactory
 {
+    private const string CarModelAssetName = "StaticModel.Car";
+    private const string CarTextureAssetName = "Texture.RacerCar";
     private const float LegacyCarCollisionLength = RaceCarEntityFactory.CollisionLength;
     private const float LegacyCarCollisionWidth = RaceCarEntityFactory.CollisionWidth;
     private const float LegacyCarCollisionHeight = RaceCarEntityFactory.CollisionHeight;
     private static readonly Color LegacyTextureColorKey = new(255, 0, 255, 0);
     private static readonly string[] CarDiffuseTextureNames = RaceMaterialRecipes.CarDiffuseTextureNames;
 
-    private static readonly Texture2DLoader TextureLoader = new();
-    private static readonly Dictionary<string, Texture2D?> TextureCache = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly Dictionary<string, TextureCube?> TextureCubeCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<int, StaticModel?> ConfiguredCarModelCache = new();
     private static readonly Dictionary<int, CarPaint?> CarPaints = new();
     private static readonly object CacheLock = new();
@@ -42,7 +45,6 @@ internal static class LegacyCarVisualFactory
     private static BoundingBox _cachedCarBounds;
     private static bool _hasCachedCarBounds;
     private static bool _hasLoggedMissingCarModel;
-    private static bool _hasLoggedUnsupportedCarModel;
 
     internal static readonly Quaternion LegacyCarFacingCorrection = Quaternion.CreateFromAxisAngle(Vector3.Up, MathHelper.Pi);
 
@@ -64,12 +66,12 @@ internal static class LegacyCarVisualFactory
 
             int key = normalizedCarIndex;
 
-            string filePath = Path.Combine(GetProjectContentPath(), "Models", "Car.gltf");
-            if (!File.Exists(filePath))
+            AssetInfo? carModelInfo = AssetCatalog.Get(CarModelAssetName);
+            if (carModelInfo == null)
             {
                 if (!_hasLoggedMissingCarModel)
                 {
-                    Logs.WriteWarning($"Legacy car model not found at '{filePath}'.");
+                    Logs.WriteWarning($"The catalog has no '{CarModelAssetName}' asset.");
                     _hasLoggedMissingCarModel = true;
                 }
 
@@ -77,22 +79,10 @@ internal static class LegacyCarVisualFactory
                 return null;
             }
 
-            if (!LegacyGltfModelReader.IsFileSupported(filePath))
-            {
-                if (!_hasLoggedUnsupportedCarModel)
-                {
-                    Logs.WriteWarning($"Legacy car model '{filePath}' uses an unsupported format for runtime import.");
-                    _hasLoggedUnsupportedCarModel = true;
-                }
-
-                ConfiguredCarModelCache[key] = null;
-                return null;
-            }
-
-            StaticModelImportResult importResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
-            StaticModel model = importResult.Model;
-            ApplyImportedMaterials(model, importResult.Materials, key, assetContentManager);
-            ApplyFallbackMaterials(model);
+            // A private copy, not the shared asset: its car-texture slots are repainted for this car index.
+            StaticModel model = assetContentManager.LoadCopy<StaticModel>(carModelInfo.Id);
+            model.Initialize(assetContentManager);
+            ApplyCarPaint(model, GetCarPaint(normalizedCarIndex, assetContentManager));
 
             if (!_hasCachedCarBounds)
             {
@@ -144,99 +134,116 @@ internal static class LegacyCarVisualFactory
         return new Vector3(-boundsCenter.X * scale, groundedOffsetY, -boundsCenter.Z * scale);
     }
 
-    private static void ApplyImportedMaterials(
-        StaticModel model,
-        IReadOnlyList<StaticModelImportedMaterial> importedMaterials,
-        int carIndex,
-        AssetContentManager assetContentManager)
+    /// <summary>
+    /// Whether the car-texture slot named <paramref name="slotName"/> (<c>"Car [lack]"</c>: the mesh, then the material in
+    /// brackets) takes the painted texture: RacingGame's paint rule, on the material's name (<c>IsPaintMaterial</c> of the
+    /// legacy import, now on the slot name). A chrome, rubber or glass material is never painted, a "lack" or "paint"
+    /// material always; any other one is when the cooked material reflects (<paramref name="reflects"/>).
+    /// </summary>
+    internal static bool IsPaintSlot(string slotName, bool reflects)
     {
+        string materialName = slotName;
+        int open = slotName.LastIndexOf('[');
+        if (open >= 0 && slotName.EndsWith(']'))
+        {
+            materialName = slotName.Substring(open + 1, slotName.Length - open - 2);
+        }
+
+        if (materialName.Contains("chrome", StringComparison.OrdinalIgnoreCase)
+            || materialName.Contains("gummi", StringComparison.OrdinalIgnoreCase)
+            || materialName.Contains("glass", StringComparison.OrdinalIgnoreCase)
+            || materialName.Contains("fenster", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (materialName.Contains("lack", StringComparison.OrdinalIgnoreCase)
+            || materialName.Contains("paint", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return reflects;
+    }
+
+    /// <summary>Whether the cooked material reflects the scene or a cube, for <see cref="IsPaintSlot"/>.</summary>
+    internal static bool Reflects(LitDiffuseMaterial material)
+    {
+        return material.UseSceneReflectionCube || material.ReflectionCube != null || material.ReflectionCubeAssetId != Guid.Empty;
+    }
+
+    // Replaces, in the private copy of the cooked model, the material of every car-texture slot (mesh and sub-meshes)
+    // by a copy that samples the car's painted or unpainted texture. Without a paint (texture unreadable) the cooked
+    // materials stay as they are.
+    private static void ApplyCarPaint(StaticModel model, CarPaint? paint)
+    {
+        AssetInfo? carTextureInfo = AssetCatalog.Get(CarTextureAssetName);
+        if (paint == null || carTextureInfo == null)
+        {
+            return;
+        }
+
         foreach (StaticModelMesh mesh in model.Meshes)
         {
-            LitDiffuseMaterial? material = null;
-
-            if (mesh.MaterialIndex >= 0 && mesh.MaterialIndex < importedMaterials.Count)
+            mesh.Material = CreateCarTextureCopy(mesh.Material, mesh.SlotName, carTextureInfo.Id, paint) ?? mesh.Material;
+            foreach (SubMesh subMesh in mesh.SubMeshes)
             {
-                StaticModelImportedMaterial importedMaterial = importedMaterials[mesh.MaterialIndex];
-                material = CreateImportedRuntimeMaterial(importedMaterial, carIndex, assetContentManager);
-                mesh.Material = material;
-            }
-
-            for (int index = 0; index < mesh.SubMeshes.Count; index++)
-            {
-                mesh.SubMeshes[index].Material = material;
+                string slotName = string.IsNullOrEmpty(subMesh.SlotName) ? mesh.SlotName : subMesh.SlotName;
+                subMesh.Material = CreateCarTextureCopy(subMesh.Material, slotName, carTextureInfo.Id, paint) ?? subMesh.Material;
             }
         }
     }
 
-    private static LitDiffuseMaterial CreateImportedRuntimeMaterial(
-        StaticModelImportedMaterial importedMaterial,
-        int carIndex,
-        AssetContentManager assetContentManager)
+    // The copy of a compiled car-texture material with the car's texture, or null when the material has another base texture.
+    private static LitDiffuseMaterial? CreateCarTextureCopy(MaterialBase? material, string slotName, Guid carTextureAssetId, CarPaint paint)
     {
-        RaceMaterialRecipe recipe = RaceMaterialRecipes.ForCar(importedMaterial, carIndex, Path.Combine(GetProjectContentPath(), "Textures"));
-        Texture2D? diffuseTexture;
-        if (recipe.BaseTextureRole == RaceBaseTextureRole.File)
+        if (material is not LitDiffuseMaterial source || source.BasColorAssetId != carTextureAssetId)
         {
-            diffuseTexture = LoadTexture(recipe.BaseTextureFilePath, assetContentManager);
-        }
-        else
-        {
-            CarPaint? paint = GetCarPaint(carIndex, assetContentManager);
-            diffuseTexture = paint == null ? null : recipe.BaseTextureRole == RaceBaseTextureRole.CarPainted ? paint.Painted : paint.Unpainted;
+            return null;
         }
 
-        Texture2D? normalTexture = LoadTexture(recipe.NormalTextureFilePath, assetContentManager);
-        TextureCube? reflectionCube = recipe.ReflectionCubeFilePath != null
-            ? LoadTextureCube(recipe.ReflectionCubeFilePath, assetContentManager)
-            : null;
-
-        return RaceMaterialBuilder.Create(recipe, diffuseTexture, normalTexture, reflectionCube);
+        return CopyWithBaseTexture(source, IsPaintSlot(slotName, Reflects(source)) ? paint.Painted : paint.Unpainted);
     }
 
-    private static void ApplyFallbackMaterials(StaticModel model)
+    /// <summary>
+    /// A copy of a compiled <see cref="LitDiffuseMaterial"/> with every value of the cooked material, a new id and
+    /// <paramref name="baseColor"/> for base texture. The new id keeps it out of the compiled-material cache, so the
+    /// renderer draws this texture and resolves the render features on the mesh, as for a material built in code.
+    /// </summary>
+    internal static LitDiffuseMaterial CopyWithBaseTexture(LitDiffuseMaterial source, Texture2D baseColor)
     {
-        foreach (StaticModelMesh mesh in model.Meshes)
+        return new LitDiffuseMaterial
         {
-            if (mesh.Material != null)
-            {
-                continue;
-            }
-
-            mesh.Material = RaceMaterialBuilder.Create(RaceMaterialRecipes.ForCarFallback(mesh.Name), null, null, null);
-        }
-    }
-
-    private static Texture2D? LoadTexture(string? texturePath, AssetContentManager assetContentManager)
-    {
-        if (string.IsNullOrWhiteSpace(texturePath))
-        {
-            return null;
-        }
-
-        string normalizedPath = Path.GetFullPath(texturePath);
-        if (TextureCache.TryGetValue(normalizedPath, out Texture2D? cachedTexture))
-        {
-            return cachedTexture;
-        }
-
-        if (!File.Exists(normalizedPath) || !TextureLoader.IsFileSupported(normalizedPath))
-        {
-            TextureCache[normalizedPath] = null;
-            return null;
-        }
-
-        try
-        {
-            Texture2D texture = (Texture2D)TextureLoader.LoadAsset(normalizedPath, assetContentManager);
-            TextureCache[normalizedPath] = texture;
-            return texture;
-        }
-        catch (Exception ex)
-        {
-            Logs.WriteException(ex);
-            TextureCache[normalizedPath] = null;
-            return null;
-        }
+            Id = Guid.NewGuid(),
+            Name = source.Name,
+            ShaderAssetId = source.ShaderAssetId,
+            IsTransparent = source.IsTransparent,
+            Queue = source.Queue,
+            AlphaCutoff = source.AlphaCutoff,
+            CastShadows = source.CastShadows,
+            ReceiveShadows = source.ReceiveShadows,
+            BlendState = source.BlendState,
+            DepthStencilState = source.DepthStencilState,
+            RasterizerState = source.RasterizerState,
+            SamplerState = source.SamplerState,
+            BasColor = baseColor,
+            NormalMap = source.NormalMap,
+            NormalMapAssetId = source.NormalMapAssetId,
+            ReflectionCube = source.ReflectionCube,
+            ReflectionCubeAssetId = source.ReflectionCubeAssetId,
+            UseSceneReflectionCube = source.UseSceneReflectionCube,
+            DiffuseColor = source.DiffuseColor,
+            AmbientColor = source.AmbientColor,
+            EmissiveColor = source.EmissiveColor,
+            SpecularColor = source.SpecularColor,
+            SpecularPower = source.SpecularPower,
+            TintColor = source.TintColor,
+            TintStrength = source.TintStrength,
+            TintMaskFromBaseAlpha = source.TintMaskFromBaseAlpha,
+            ReflectionAddAmount = source.ReflectionAddAmount,
+            ReflectionMultiplyBase = source.ReflectionMultiplyBase,
+            ReflectionMultiplyFactor = source.ReflectionMultiplyFactor,
+        };
     }
 
     // The car's paint, built on first use and kept for the game's life; null when the texture cannot be read.
@@ -260,39 +267,6 @@ internal static class LegacyCarVisualFactory
 
         CarPaints[carIndex] = paint;
         return paint;
-    }
-
-    private static TextureCube? LoadTextureCube(string? texturePath, AssetContentManager assetContentManager)
-    {
-        if (string.IsNullOrWhiteSpace(texturePath))
-        {
-            return null;
-        }
-
-        string normalizedPath = Path.GetFullPath(texturePath);
-        if (TextureCubeCache.TryGetValue(normalizedPath, out TextureCube? cachedTexture))
-        {
-            return cachedTexture;
-        }
-
-        if (!File.Exists(normalizedPath) || !TextureCubeLoader.IsTextureCubeFile(normalizedPath))
-        {
-            TextureCubeCache[normalizedPath] = null;
-            return null;
-        }
-
-        try
-        {
-            TextureCube texture = TextureCubeLoader.LoadTextureCube(normalizedPath, assetContentManager.GraphicsDevice);
-            TextureCubeCache[normalizedPath] = texture;
-            return texture;
-        }
-        catch (Exception ex)
-        {
-            Logs.WriteException(ex);
-            TextureCubeCache[normalizedPath] = null;
-            return null;
-        }
     }
 
     private static BoundingBox ComputeModelBounds(StaticModel model)

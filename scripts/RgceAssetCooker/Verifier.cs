@@ -4,6 +4,7 @@ using CasaEngine.Framework.Rendering.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
+using RacingGame.Gameplay.Components;
 using RacingGame.Gameplay.Import;
 using Texture = CasaEngine.Framework.Assets.Textures.Texture;
 
@@ -53,6 +54,8 @@ internal sealed class Verifier
         {
             VerifyModel(model);
         }
+
+        VerifyCarPaintRule(expected);
 
         foreach (CookedMaterial material in expected.AllMaterials)
         {
@@ -200,6 +203,51 @@ internal sealed class Verifier
         {
             Mismatch($"{where}: indices differ ({actualIndices.Count} read, {expectedIndices.Count} expected)");
         }
+    }
+
+    // ---- car paint rule -------------------------------------------------------------------------------------------
+
+    // The game paints from the cooked slot name and the cooked reflection (LegacyCarVisualFactory.IsPaintSlot). For every
+    // mesh of the cooked car, it must give the role RaceMaterialRecipes.ForCar gave the glTF material: car-textured or not,
+    // painted or not.
+    private void VerifyCarPaintRule(CookPlan expected)
+    {
+        CookedModel? car = expected.Models.FirstOrDefault(model => model.Name == $"StaticModel.{CookPlanner.CarModelName}");
+        if (car == null)
+        {
+            Mismatch("car paint rule: no Car model in the plan");
+            return;
+        }
+
+        Guid carTextureId = Uuid5.ForAsset($"Texture.{CookPlanner.CarTextureStem}");
+        var checkedMaterials = new HashSet<int>();
+        foreach (StaticModelMesh mesh in car.Model.Meshes)
+        {
+            if (mesh.MaterialIndex < 0 || mesh.MaterialIndex >= car.Materials.Count)
+            {
+                continue;
+            }
+
+            CookedMaterial material = car.Materials[mesh.MaterialIndex];
+            RaceBaseTextureRole oldRole = material.Recipe.BaseTextureRole;
+            bool carTextured = material.BaseTextureId == carTextureId;
+            bool reflects = material.UseSceneReflectionCube || material.ReflectionTextureId != Guid.Empty;
+            bool painted = carTextured && LegacyCarVisualFactory.IsPaintSlot(mesh.SlotName, reflects);
+            RaceBaseTextureRole newRole = !carTextured
+                ? RaceBaseTextureRole.File
+                : painted ? RaceBaseTextureRole.CarPainted : RaceBaseTextureRole.CarUnpainted;
+            if (newRole != oldRole)
+            {
+                Mismatch($"car paint rule: slot '{mesh.SlotName}' ({material.Name}) is {newRole}, RaceMaterialRecipes.ForCar says {oldRole}");
+            }
+
+            if (checkedMaterials.Add(mesh.MaterialIndex))
+            {
+                _notes.Add($"car paint rule: {material.Name} -> {newRole} (ForCar: {oldRole}), slot '{mesh.SlotName}'");
+            }
+        }
+
+        _notes.Add($"car paint rule: {checkedMaterials.Count} of {car.Materials.Count} glTF materials compared, over {car.Model.Meshes.Count} meshes");
     }
 
     // ---- materials -------------------------------------------------------------------------------------------

@@ -1462,7 +1462,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
 > - **Éditeur** : le monde de test s'ouvre avec le code 0. Deux `--save-project` donnent les octets committés.
 > - **Avis P4 reportés** : deux commentaires décrivent encore l'ancien code (`RaceGeneratedModelComponent`, l'outil de cuisson). Si `Acquire` échoue pour le 2ᵉ ou le 3ᵉ modèle du feu, les handles déjà pris ne sont pas rendus.
 
-### ⏳ T5.6 — La voiture et le carrousel par le catalogue
+### ✅ T5.6 — La voiture et le carrousel par le catalogue
 
 - **Objectif** : la voiture et les plateaux chargent `StaticModel.Car` et `StaticModel.CarSelectionPlate`. La peinture reste un état d'exécution, propre à chaque indice de voiture, qui ne modifie aucun asset partagé.
 - **Conception de la voiture** :
@@ -1482,6 +1482,33 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
   - audits des voitures identiques ;
   - `rg "EvaluateRuntimeTuning|UsesCarDiffuseTexture|UsesLegacyCarReflectionBlend|LoadLegacyModel|ApplyFallbackMaterials"` ne trouve plus rien hors de l'outil de cuisson et de `RaceMaterialRecipe`. `IsPaintMaterial`, la règle de peinture, ne reste que dans le chemin de peinture documenté.
 - **Commit** : `feat(racing-casa): load the car and the selection plates from the catalogue`
+
+> Validation (2026-10-09), en workflow : une implémentation, puis deux vérificateurs indépendants, l'un sur la parité, l'autre sur le code. Tous deux rendent **CONFIRMED**.
+> - **Voiture** :
+>   - pour chaque indice, `LoadCopy<StaticModel>(StaticModel.Car)`, `Initialize`, puis le cache par indice ;
+>   - les emplacements dont le matériau compilé a `Texture.RacerCar` pour texture de base reçoivent, sur le maillage et chacun de ses `SubMesh`, une copie champ par champ (`CopyWithBaseTexture`). Elle porte un nouvel id et `BasColor` = `CarPaint.Painted` ou `Unpainted`. `BasColorAssetId` reste vide, comme pour un matériau construit en code ;
+>   - rien de partagé n'est modifié : ni le `StaticModel.Car` du cache, ni les matériaux compilés ;
+>   - `BodyVisual` reçoit la copie par sa propriété `StaticModel`.
+> - **Règle de peinture** : `IsPaintSlot(nom d'emplacement, réflexion)` applique la règle des noms, puis la réflexion cuite. `RgceAssetCooker --verify` la compare au rôle de `RaceMaterialRecipes.ForCar` pour les 6 matériaux de `Car.gltf`, sur 12 maillages : 0 écart.
+>   - Peint : `lack`.
+>   - Non peints : `gummi`, `gummi 2`, `chrome`, `chrome 2`.
+>   - Autre texture : `Standard 19`.
+> - **Plateaux** : `StaticModelComponent` partagés sur `StaticModel.CarSelectionPlate`. `LoadPlateModel` et son chargeur de textures sont retirés.
+> - **Code mort retiré** : `RaceMaterialBuilder`, `ForCarFallback`, `ForSceneryFallback` et `InferSceneryColor`.
+> - **Parité** :
+>   - **export** contre `s5/scene-a.json` avec `--effective-states` : tout est apparié. Les 12 maillages de la voiture par piste ont les empreintes de texture peinte (`556ac047…` pour `lack`) et les fonctionnalités de la référence ;
+>   - **contrôle négatif** : un export avec la couleur 1 signale les 3 `Car [lack]` ;
+>   - **audit** dans le seuil (au plus 0,028) ; **audits des voitures** identiques à S0 ;
+>   - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
+> - **Captures d'interface**, contre un témoin construit à `HEAD` : `car-selection` et `race-hud` à 0,00. `splash` et `race-finished` restent bruités d'un lancement à l'autre, même entre deux lancements de la même version.
+>   - Un vérificateur a trouvé une cause probable : les deux vérificateurs lançaient le jeu en même temps.
+>   - Les prochains workflows n'auront plus qu'un seul angle qui lance le jeu.
+> - **Écart accepté sur le `rg` (P3)** : `EvaluateRuntimeTuning` reste appelé par `LegacyImportProfileVerifier`. C'est un outil de contrôle, pas le chemin du jeu, et `--verify-legacy-import-profile` doit continuer de passer. Aucun chemin d'exécution du jeu ne correspond.
+> - **Avis P4 reportés** :
+>   - le README de l'outil de cuisson cite encore les fonctions de repli retirées (à corriger en T5.7) ;
+>   - les copies privées gardent le `MaterialAssetId` cuit, si bien qu'un rechargement à chaud d'un matériau de voiture rendrait le matériau non peint ;
+>   - les copies et les textures de peinture vivent jusqu'à la fin du processus, comme avant ;
+>   - `Initialize` compile les matériaux cuits de la voiture, inutilisés une fois peints.
 
 ### ⏳ T5.7 — ADR, documentation et clôture de S5
 
