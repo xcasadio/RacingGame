@@ -1,0 +1,22 @@
+{
+  "id": "7166e1ab-0631-5fc3-84e0-3f707ebdcf12",
+  "name": "Texture.Hotel01Normal",
+  "texture_asset_id": "9a9720b6-30fe-5d3d-a29b-d7102cf23c47",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

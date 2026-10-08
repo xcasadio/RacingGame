@@ -5,12 +5,19 @@ Owned entries (plan ai-agent/tasks/rgce-editor-project-tasks.md, T3.3 and T3.4):
   RacingGame/Content/Audio/Waves under its XACT wave name, without spaces (Content/Audio/<Wave>.wav), and its .sound is
   written with the XACT volume (10^(dB/2000), as the six sounds ported before), bus Sfx (Music for the three musics,
   streamed), looped when XACT loops it (the gear loops and the musics);
-- Texture.<stem> for every .png and .dds of Content/Textures that no catalogue entry names yet;
+- Image.<stem> for every .png of Content/Textures that no catalogue entry names yet, and Texture.<stem> for every .dds
+  (cube maps). The png entries were named Texture.<stem> before T5.4: the script renames them in place. The name
+  Texture.<stem> now belongs to the .texture asset that scripts/RgceAssetCooker writes for a png (Content/Textures/<stem>.texture),
+  whose texture_asset_id is the id of the Image.<stem> entry. Nothing referenced the png entries by id;
 - Data.LandscapeHeights for Content/LandscapeHeights.data, Data.<stem> for Content/Models/*.CombiModel;
 - ModelSource.<stem> for every Content/Models/*.gltf (its .bin buffer is a sidecar of the .gltf, not catalogued);
 - World.<path> for every Content/Worlds/**/*.world that no entry names yet (T4.6): the path is relative to Worlds, without
   the extension, with "/" replaced by "." (Worlds/Test/TrackBeginnerGenerators.world is World.Test.TrackBeginnerGenerators).
   The "id" written in the .world must be the id of its entry: the script reports a world whose id differs.
+
+The entries of scripts/RgceAssetCooker (asset types staticmodel, material and texture: StaticModel.*, Material.*, and the
+Texture.* .texture assets) are not owned by this script: it leaves them untouched and in place, and --check only
+requires them to be catalogued, which the cooker does.
 
 Catalogue contract, as scripts/generate_rgce_ui_assets.py: the script updates its own entries in place, appends new
 ones at the end in a stable order, leaves every other entry untouched, and keeps the file format (2-space indent,
@@ -117,7 +124,9 @@ def file_entries(already_catalogued, owned_names):
 
     for path in sorted((CONTENT / "Textures").iterdir(), key=lambda p: p.name.lower()):
         if path.suffix.lower() in (".png", ".dds"):
-            add(f"Texture.{path.stem}", f"Textures/{path.name}", path.suffix.lower()[1:])
+            # png images are Image.<stem>; Texture.<stem> is the cooked .texture asset of the image (scripts/RgceAssetCooker).
+            prefix = "Image" if path.suffix.lower() == ".png" else "Texture"
+            add(f"{prefix}.{path.stem}", f"Textures/{path.name}", path.suffix.lower()[1:])
     add("Data.LandscapeHeights", "LandscapeHeights.data", "data")
     for path in sorted((CONTENT / "Models").glob("*.CombiModel"), key=lambda p: p.name.lower()):
         add(f"Data.{path.stem}", f"Models/{path.name}", "combimodel")
@@ -159,12 +168,21 @@ def main():
     owned = sound_entries()
     owned_names = {entry["name"] for entry in owned}
     # A file is owned when its entry is ours from a previous run, or when no entry names it yet.
-    previously_owned = {entry["name"] for entry in entries if entry.get("name", "").startswith(("Texture.", "Data.", "ModelSource.", "World."))}
+    # Texture.<stem> is ours only while it is an image entry (png before the rename, dds): once the cooker has written the
+    # .texture asset of that name, the entry is the cooker's.
+    previously_owned = {entry["name"] for entry in entries if entry.get("name", "").startswith(("Image.", "Data.", "ModelSource.", "World."))
+                        or (entry.get("name", "").startswith("Texture.") and entry.get("asset_type") in ("png", "dds"))}
     already_catalogued = catalogued_files(entry for entry in entries if entry.get("name") not in previously_owned)
     owned += file_entries(already_catalogued, owned_names)
 
     for entry in owned:
         existing = next((index for index, current in enumerate(entries) if current.get("name") == entry["name"]), None)
+        if existing is None and entry["name"].startswith("Image."):
+            # Rename the png entry named Texture.<stem> before T5.4 in place, at its place in the catalogue.
+            legacy_name = "Texture." + entry["name"][len("Image."):]
+            existing = next((index for index, current in enumerate(entries)
+                             if current.get("name") == legacy_name and current.get("asset_type") == "png"
+                             and current.get("file_name") == entry["file_name"]), None)
         if existing is None:
             entries.append(entry)
         else:

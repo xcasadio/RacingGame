@@ -1,0 +1,22 @@
+{
+  "id": "8822c24b-834d-55b9-bfbc-81c31b0e29f5",
+  "name": "Texture.plants",
+  "texture_asset_id": "f5603b8b-5fe3-593e-befa-913b7c04b05b",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

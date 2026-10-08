@@ -1,0 +1,22 @@
+{
+  "id": "36510152-8a12-5b89-a8b1-fcd570cd7bf6",
+  "name": "Texture.streetlamp",
+  "texture_asset_id": "ddf7bc70-fa92-5362-92f7-394aa36af39a",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

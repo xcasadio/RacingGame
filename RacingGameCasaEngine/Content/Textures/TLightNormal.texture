@@ -1,0 +1,22 @@
+{
+  "id": "8ba22f5e-ea00-5423-8cfc-ef9d6277a615",
+  "name": "Texture.TLightNormal",
+  "texture_asset_id": "720461d6-6ffa-5643-87e3-3ac0a750bc68",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

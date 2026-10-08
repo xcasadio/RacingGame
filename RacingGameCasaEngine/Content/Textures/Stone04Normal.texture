@@ -1,0 +1,22 @@
+{
+  "id": "97857b00-fab2-5a97-bdac-a5083b5db742",
+  "name": "Texture.Stone04Normal",
+  "texture_asset_id": "ce1a13d7-d305-531e-9595-e246e5209782",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "8afb2e7a-8eb7-54d7-aab3-9616d02f1a24",
+  "name": "Texture.KaktusBenny",
+  "texture_asset_id": "0d1ba785-f5ea-5afc-a05a-070a71b3a3f6",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

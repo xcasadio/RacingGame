@@ -1373,7 +1373,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
 >   - `Blockade`, `Blockade2` et `Laterne2Sides` ne sont chargés par aucun chemin ;
 >   - 8 autres ne sont nommés que par les `.Track`.
 
-### ⏳ T5.4 — Outil de cuisson et assets cuits
+### 🧪 T5.4 — Outil de cuisson et assets cuits
 
 - **Objectif** : P8. Les 56 modèles, leurs matériaux, ceux de la piste et leurs textures deviennent des assets catalogués, aux ids déterministes.
 - **Fichiers** :
@@ -1393,6 +1393,30 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
   - **fidélité** : l'outil relit chaque `.staticModel` cuit. Sommets, indices et nœuds sont ceux de la lecture du glTF, plus la racine tournée là où elle s'applique. Chaque `.material` compilé par `MaterialCompiler` donne, avec la règle d'états de T5.1, les valeurs de sa recette ;
   - les nouveaux assets s'ouvrent dans l'éditeur par `catalogue_open.ps1` : code 0 pour chacun.
 - **Commit** : `feat(racing-casa): cook the models, materials and textures into assets`
+
+> Validation (2026-10-08), en workflow : une implémentation, puis deux vérificateurs indépendants, l'un sur la fidélité, l'autre sur le catalogue et l'outillage. Tous deux rendent **CONFIRMED**, sans constat bloquant.
+> - **Outil** : `scripts/RgceAssetCooker/` (`Program`, `Cooker`, `CookPlan`, `Verifier`, `CatalogFile`, `Uuid5`, README), hors de `RacingGame.slnx` comme les autres outils de `scripts/`.
+>   - `RacingGame.Gameplay` accorde `InternalsVisibleTo("RgceAssetCooker")`, pour le lecteur glTF et le profil d'import.
+>   - L'outil écrit par `EditorAssetWriterService.SaveAsset` dans un dossier temporaire et ne copie que les fichiers changés.
+>   - Il fixe les ids par réflexion, sans toucher CasaEngine.
+> - **Assets** :
+>   - 56 `.staticModel` ;
+>   - 97 `.material` : 92 de modèles, 5 de piste (`Road`, `Ground`, `Terrain`, `GuardRail`, `RoadColumn`), dont 85 Opaque, 12 AlphaTest, 12 CullNone et 4 au cube de la scène ;
+>   - 105 `.texture`.
+>   Le catalogue passe de 346 à 604 entrées. Les entrées `png` de S3 deviennent `Image.<Nom>`, ce que confirme `rg` : aucun fichier ne les référençait par id. Les `dds` gardent `Texture.<Nom>`. Le générateur de contenu laisse aux soins de l'outil les types `staticmodel`, `material` et `texture`.
+> - **Fidélité** (`--verify`) : 0 écart.
+>   - **Modèles** : 56 modèles, 105 maillages, 55 976 sommets, 141 591 indices et 175 nœuds identiques à la lecture du glTF, avec la racine tournée de π/2 exactement là où `LoadLegacyModel` l'ajoute.
+>   - **Matériaux** : 97 matériaux et 2 910 valeurs identiques à leurs recettes, avec la règle d'états.
+>   - **Textures** : 105 identiques.
+>   - **Seconde sonde** : celle du vérificateur, indépendante de l'outil, couvre les 56 modèles et donne 0 écart.
+> - **Déterminisme** :
+>   - un second lancement n'écrit rien ;
+>   - régénérés depuis le catalogue de `HEAD` dans une copie, générateur puis outil, les assets sont identiques octet pour octet à ceux de l'arbre ;
+>   - `--check` et `--verify` signalent bien un asset retiré et un matériau modifié.
+> - **Catalogue** : aucun id ni nom en double, chaque fichier existe, et `generate_rgce_content_assets.py --check` rapporte 0.
+> - **Jeu** : `RacingGame.slnx` compile avec 0 erreur, et `--smoke-frontend` sort avec le code 0. Le jeu ne charge pas encore les assets cuits.
+> - **🧪 En attente** : le parcours des 266 entrées `staticmodel`, `material` et `texture` dans l'éditeur (`catalogue_open.ps1`), qui exerce aussi `MaterialCompiler`.
+> - **Avis P4** : la vérification de l'outil ne compare des sous-maillages que leur nombre, et aucun modèle n'en a ; lancer l'outil avant le générateur donne les mêmes entrées dans un autre ordre.
 
 ### ⏳ T5.5 — Le jeu charge la piste et le décor par le catalogue
 

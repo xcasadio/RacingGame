@@ -1,0 +1,46 @@
+{
+  "id": "37179659-45bd-5b7c-a63d-05380e8dce53",
+  "name": "Material.SignWarning.orig 09 - Default",
+  "definition_id": "lit-diffuse",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "Opaque",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullCounterClockwise",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "c05a0383-4b3e-5760-ba8a-7cbbc0aab2da",
+    "normal_texture": "d32e7ebe-6bfa-573e-a9a0-128d43ee4708",
+    "reflection_texture": "00000000-0000-0000-0000-000000000000",
+    "diffuse_color": {
+      "r": 248,
+      "g": 248,
+      "b": 248,
+      "a": 255
+    },
+    "alpha_cutoff": 0.5,
+    "ambient_color": {
+      "x": 0.5019608,
+      "y": 0.5019608,
+      "z": 0.5019608
+    },
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "specular_color": {
+      "x": 0.18,
+      "y": 0.18,
+      "z": 0.18
+    },
+    "specular_power": 7.2,
+    "use_scene_reflection_cube": false,
+    "reflection_add_amount": 1.0,
+    "reflection_multiply_base": 1.0,
+    "reflection_multiply_factor": 0.0
+  }
+}

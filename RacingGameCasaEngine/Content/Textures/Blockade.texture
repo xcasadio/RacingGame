@@ -1,0 +1,22 @@
+{
+  "id": "33d9d3f4-376d-558e-a766-1dd9508581e7",
+  "name": "Texture.Blockade",
+  "texture_asset_id": "2ef1457c-90f7-5d15-968b-0b31ae2f592b",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

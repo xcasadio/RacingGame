@@ -1,0 +1,22 @@
+{
+  "id": "443fc575-732c-541e-a862-eefaa1020999",
+  "name": "Texture.SharpRock3Normal",
+  "texture_asset_id": "5d0bec6c-651f-5eef-a74e-5f50cca0d056",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

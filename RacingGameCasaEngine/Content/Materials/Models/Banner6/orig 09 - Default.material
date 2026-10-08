@@ -1,0 +1,46 @@
+{
+  "id": "dd52b312-8c9d-5aef-8c0c-9bc17d537135",
+  "name": "Material.Banner6.orig 09 - Default",
+  "definition_id": "lit-diffuse",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "Opaque",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullCounterClockwise",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "24a2b32b-c1ba-584c-9ef0-be606bcd8557",
+    "normal_texture": "8d22cec5-468d-5fd3-9eb4-ee02605ae5ee",
+    "reflection_texture": "00000000-0000-0000-0000-000000000000",
+    "diffuse_color": {
+      "r": 170,
+      "g": 170,
+      "b": 170,
+      "a": 255
+    },
+    "alpha_cutoff": 0.5,
+    "ambient_color": {
+      "x": 0.5019608,
+      "y": 0.5019608,
+      "z": 0.5019608
+    },
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "specular_color": {
+      "x": 0.13694112,
+      "y": 0.13694112,
+      "z": 0.13694112
+    },
+    "specular_power": 7.2,
+    "use_scene_reflection_cube": false,
+    "reflection_add_amount": 1.0,
+    "reflection_multiply_base": 1.0,
+    "reflection_multiply_factor": 0.0
+  }
+}

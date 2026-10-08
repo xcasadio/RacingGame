@@ -1,0 +1,22 @@
+{
+  "id": "446fc65a-376a-54fa-85c9-defe51566bcf",
+  "name": "Texture.Kaktus",
+  "texture_asset_id": "2c80c1d7-33b6-58e3-811d-ba416cd43e01",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "7b5dbfb3-2dde-5f50-8e2f-22e0eb2a4170",
+  "name": "Texture.RacerCarNormal",
+  "texture_asset_id": "f392b6dd-2683-5258-b45f-66e9896f7bbc",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

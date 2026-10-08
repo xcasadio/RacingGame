@@ -1,0 +1,46 @@
+{
+  "id": "7e6b1628-49dd-5d0b-84e3-cf5e440a258c",
+  "name": "Material.Hotel02.casino2",
+  "definition_id": "lit-diffuse",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "Opaque",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullCounterClockwise",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "258db0c7-f76b-5c71-aa44-ed705eb55957",
+    "normal_texture": "64d193ca-0111-5335-a38c-0dc4ceb35252",
+    "reflection_texture": "00000000-0000-0000-0000-000000000000",
+    "diffuse_color": {
+      "r": 186,
+      "g": 186,
+      "b": 186,
+      "a": 255
+    },
+    "alpha_cutoff": 0.5,
+    "ambient_color": {
+      "x": 0.098039,
+      "y": 0.098039,
+      "z": 0.098039
+    },
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "specular_color": {
+      "x": 0.089647025,
+      "y": 0.089647025,
+      "z": 0.089647025
+    },
+    "specular_power": 2.0,
+    "use_scene_reflection_cube": false,
+    "reflection_add_amount": 1.0,
+    "reflection_multiply_base": 1.0,
+    "reflection_multiply_factor": 0.0
+  }
+}

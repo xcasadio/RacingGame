@@ -1,0 +1,46 @@
+{
+  "id": "0d4f96ed-2d87-58e0-9e47-78000e70f3c9",
+  "name": "Material.OilTanks.PDX09 - Default",
+  "definition_id": "lit-diffuse",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "Opaque",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullCounterClockwise",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "78d74b5d-4477-5870-b9f0-2fb2785fb73a",
+    "normal_texture": "ca6cb4dd-226b-599b-a385-ff2ee17a18c4",
+    "reflection_texture": "00000000-0000-0000-0000-000000000000",
+    "diffuse_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "alpha_cutoff": 0.5,
+    "ambient_color": {
+      "x": 0.1,
+      "y": 0.1,
+      "z": 0.1
+    },
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "specular_color": {
+      "x": 0.22,
+      "y": 0.22,
+      "z": 0.22
+    },
+    "specular_power": 9.6,
+    "use_scene_reflection_cube": false,
+    "reflection_add_amount": 1.0,
+    "reflection_multiply_base": 1.0,
+    "reflection_multiply_factor": 0.0
+  }
+}

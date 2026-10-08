@@ -1,0 +1,22 @@
+{
+  "id": "4978fdde-ab9e-5e6f-99bd-2125fd8bda42",
+  "name": "Texture.Palm2_stammNormal",
+  "texture_asset_id": "c885e8e6-ae0f-5220-8313-efbaad48d98d",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

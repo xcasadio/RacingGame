@@ -1,0 +1,46 @@
+{
+  "id": "02686f75-ef2c-53dc-b82c-84732414e16b",
+  "name": "Material.Trashcan.PDX19 - Default",
+  "definition_id": "lit-diffuse",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "Opaque",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullCounterClockwise",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "6caf3268-f68a-570d-b7ef-b00cf260a621",
+    "normal_texture": "79136d8c-712e-537b-96af-6c6d92b7aa8d",
+    "reflection_texture": "00000000-0000-0000-0000-000000000000",
+    "diffuse_color": {
+      "r": 188,
+      "g": 188,
+      "b": 188,
+      "a": 255
+    },
+    "alpha_cutoff": 0.5,
+    "ambient_color": {
+      "x": 0.247059,
+      "y": 0.247059,
+      "z": 0.247059
+    },
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "specular_color": {
+      "x": 0.22,
+      "y": 0.22,
+      "z": 0.22
+    },
+    "specular_power": 9.6,
+    "use_scene_reflection_cube": false,
+    "reflection_add_amount": 1.0,
+    "reflection_multiply_base": 1.0,
+    "reflection_multiply_factor": 0.0
+  }
+}

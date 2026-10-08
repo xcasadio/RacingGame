@@ -1,0 +1,22 @@
+{
+  "id": "83abb111-8ba1-57eb-ae86-3f508fcc5dee",
+  "name": "Texture.CarSelectionPlate",
+  "texture_asset_id": "1a51ba38-6f51-5d99-901b-7e296bdd3cc6",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

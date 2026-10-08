@@ -1,0 +1,22 @@
+{
+  "id": "8b07131c-f334-5c97-b1fd-b7056b34e2b4",
+  "name": "Texture.Schild_Kurve_linksNormal",
+  "texture_asset_id": "8cba1cc0-4a50-578c-bb0d-6cb34a45f2af",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

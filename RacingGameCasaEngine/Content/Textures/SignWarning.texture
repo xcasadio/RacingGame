@@ -1,0 +1,22 @@
+{
+  "id": "c05a0383-4b3e-5760-ba8a-7cbbc0aab2da",
+  "name": "Texture.SignWarning",
+  "texture_asset_id": "34d8c783-d73c-57a3-bec3-b3eb34eb6cff",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

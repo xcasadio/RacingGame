@@ -1,0 +1,22 @@
+{
+  "id": "fc78fa46-097d-594f-ba3d-36d2dcf14d1a",
+  "name": "Texture.OilWellNormal",
+  "texture_asset_id": "212012bf-a750-571d-a852-2ae959dadbcb",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

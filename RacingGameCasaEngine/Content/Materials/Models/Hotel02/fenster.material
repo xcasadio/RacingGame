@@ -1,0 +1,46 @@
+{
+  "id": "727d4d9e-b2b6-5858-8104-6756d774cf70",
+  "name": "Material.Hotel02.fenster",
+  "definition_id": "lit-diffuse",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "Opaque",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullCounterClockwise",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "00000000-0000-0000-0000-000000000000",
+    "normal_texture": "00000000-0000-0000-0000-000000000000",
+    "reflection_texture": "00000000-0000-0000-0000-000000000000",
+    "diffuse_color": {
+      "r": 93,
+      "g": 161,
+      "b": 230,
+      "a": 255
+    },
+    "alpha_cutoff": 0.5,
+    "ambient_color": {
+      "x": 0.15,
+      "y": 0.15,
+      "z": 0.15
+    },
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "specular_color": {
+      "x": 0.737255,
+      "y": 0.890196,
+      "z": 0.898039
+    },
+    "specular_power": 24.0,
+    "use_scene_reflection_cube": true,
+    "reflection_add_amount": 1.0,
+    "reflection_multiply_base": 1.0,
+    "reflection_multiply_factor": 0.0
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "917ada7f-2436-5d60-b3b4-f9a3d200654b",
+  "name": "Material.KaktusBenny.PDX03 - Default",
+  "definition_id": "lit-diffuse",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "Opaque",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullCounterClockwise",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "8afb2e7a-8eb7-54d7-aab3-9616d02f1a24",
+    "normal_texture": "bedb9c92-2388-5dc6-bd32-aa281d2e1e60",
+    "reflection_texture": "00000000-0000-0000-0000-000000000000",
+    "diffuse_color": {
+      "r": 233,
+      "g": 233,
+      "b": 233,
+      "a": 255
+    },
+    "alpha_cutoff": 0.5,
+    "ambient_color": {
+      "x": 0.45098,
+      "y": 0.45098,
+      "z": 0.45098
+    },
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "specular_color": {
+      "x": 0.411765,
+      "y": 0.411765,
+      "z": 0.411765
+    },
+    "specular_power": 16.0,
+    "use_scene_reflection_cube": false,
+    "reflection_add_amount": 1.0,
+    "reflection_multiply_base": 1.0,
+    "reflection_multiply_factor": 0.0
+  }
+}

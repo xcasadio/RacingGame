@@ -1,0 +1,22 @@
+{
+  "id": "6caf3268-f68a-570d-b7ef-b00cf260a621",
+  "name": "Texture.garbagecan",
+  "texture_asset_id": "d3634749-7d0c-5a00-be49-c5ccca8c1358",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

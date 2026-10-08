@@ -1,0 +1,22 @@
+{
+  "id": "e038e3f3-1eea-580f-9d5a-29eaf5ae5ad5",
+  "name": "Texture.PalmLeave2Normal",
+  "texture_asset_id": "a1aa5925-cde9-52c9-a8b9-d218d26021c8",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

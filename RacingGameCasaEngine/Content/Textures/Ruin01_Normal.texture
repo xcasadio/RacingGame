@@ -1,0 +1,22 @@
+{
+  "id": "93bc5917-691e-5cdd-95a7-7067679245d5",
+  "name": "Texture.Ruin01_Normal",
+  "texture_asset_id": "f86184a0-8b34-5089-8b34-da9af49a9cb5",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

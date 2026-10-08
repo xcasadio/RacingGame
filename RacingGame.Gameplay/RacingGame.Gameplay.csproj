@@ -14,6 +14,8 @@
   <ItemGroup>
     <!-- The executable implements the internal IRaceGameHost. -->
     <InternalsVisibleTo Include="RacingGameCasaEngine" />
+    <!-- The asset cooker (scripts/RgceAssetCooker) reads the legacy glTF models with the game's own reader and import profile. -->
+    <InternalsVisibleTo Include="RgceAssetCooker" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CasaEngine\CasaEngine\CasaEngine.csproj" />

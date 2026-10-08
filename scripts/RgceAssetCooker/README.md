@@ -1,0 +1,59 @@
+# RgceAssetCooker
+
+Cooks the 56 legacy glTF models of `RacingGameCasaEngine/Content/Models` into catalogued engine assets, so the editor and the game
+can load models, materials and textures by asset id instead of building them in code (plan
+`ai-agent/tasks/rgce-editor-project-tasks.md`, T5.4).
+
+Like the other tools of `scripts/`, it is not part of `RacingGame.slnx`. Build and run it on its own:
+
+```
+dotnet build scripts/RgceAssetCooker/RgceAssetCooker.csproj
+scripts/RgceAssetCooker/bin/Debug/net9.0-windows/RgceAssetCooker.exe [--content <Content folder>] [--check | --verify]
+```
+
+The default `--content` is `RacingGameCasaEngine/Content` of the repository that holds the executable. No graphics device is needed.
+
+## What it writes
+
+| Asset | File | Catalogue name | Type |
+|---|---|---|---|
+| One per glTF | `Models/<Name>.staticModel` | `StaticModel.<Name>` | `staticmodel` |
+| One per model material | `Materials/Models/<Name>/<Slot>.material` | `Material.<Name>.<Slot>` | `material` |
+| One per track material (`Road`, `Ground`, `Terrain`, `GuardRail`, `RoadColumn`) | `Materials/Track/<Role>.material` | `Material.Track.<Role>` | `material` |
+| One per image a cooked material uses | `Textures/<Name>.texture` | `Texture.<Name>` | `texture` |
+
+- Files are written with the editor serializers (`EditorAssetWriterService`), so the editor re-saves them unchanged.
+- Ids are `uuid5` of the asset name in the namespace of `generate_rgce_ui_assets.py` (`racinggame-casaengine/ui-assets`).
+  A `.texture` points to the png entry `Image.<Name>` (`uuid5("Image.<Name>")`).
+- **Models**: vertices, indices and nodes are exactly what `LegacyGltfModelReader` reads, with the RacingGame import profile.
+  Every model except `Car` and `CarSelectionPlate` gets the root node rotated by pi/2 about X that
+  `LegacyTrackSceneFactory.ApplyLegacyModelRootCorrection` adds (named `<Name>.LegacyRootCorrection`). Each mesh points to its material by
+  `material_asset_id`.
+- **Materials**: definition `lit-diffuse`, with the values of `RaceMaterialRecipes` (`ForScenery`, `ForCar` with car index 0, `ForPlate`,
+  and `ForRoad`, `ForGround`, `ForTerrain`, `ForGuardRail`, `ForRoadColumn` with the first texture candidate that exists). A render state the
+  game leaves `null` is written as the state the renderer applies: blend `Opaque`, depth `Default`, rasterizer `CullCounterClockwise`,
+  sampler `AnisotropicClamp`. The slots of the car that sample the car texture (painted or not) use `Texture.RacerCar`; the game replaces it
+  at run time (T5.6). `<Slot>` is the display name of the glTF material, with a numeric suffix if two materials of a model share it.
+- **Textures**: the sampler is the one of the recipes (`AnisotropicWrap`).
+
+The mesh fallback materials (`ForSceneryFallback`, `ForCarFallback`) are not cooked: no glTF has a mesh without a material.
+
+## Catalogue
+
+The cooker updates its own entries of `Content/AssetInfos.json` in place and appends the new ones at the end (models, then materials,
+then textures, each in the order of the plan). The file keeps its format (2-space indent, CRLF, no final newline); the cooker refuses a
+catalogue it could not write back byte for byte. Files whose bytes do not change are not touched, so a second run changes nothing.
+
+Run `python scripts/generate_rgce_content_assets.py` first on a catalogue that still names the png images `Texture.<Name>`: the generator renames them
+`Image.<Name>` in place. The cooker then takes the `Texture.<Name>` name for the `.texture` assets. In the other order the result is the
+same set of entries.
+
+## Options
+
+- no option: cook, then verify.
+- `--check`: lists the glTF models and the images of cooked materials with no cooked file or catalogue entry, and the cooked files the plan does not
+  contain. Writes nothing; exit code 1 if there is any.
+- `--verify`: re-reads every cooked file with the engine loaders (`StaticModel.Load`, `MaterialAsset.Load`, `Texture.Load`) and compares it with
+  a fresh read of the glTF files and the recipes: vertices, indices, nodes, material ids, every material value under the effective-state rule,
+  the render state the engine resolves for the asset, textures, the catalogue (no duplicate id or name, every entry's file exists). Exit code 1 on
+  any mismatch. It does not compile the materials (that needs a graphics device); the editor catalogue walk opens them.

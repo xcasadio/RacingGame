@@ -1,0 +1,22 @@
+{
+  "id": "1b5334e0-8e29-5397-b99c-78b3e55c1413",
+  "name": "Texture.RoadColumnSegment",
+  "texture_asset_id": "e2dfee4e-c8cb-5c60-9c71-ae9f8f035c18",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

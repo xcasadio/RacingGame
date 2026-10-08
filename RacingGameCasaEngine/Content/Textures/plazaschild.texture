@@ -1,0 +1,22 @@
+{
+  "id": "2557625d-5ce2-5451-a2b7-3a135d2a0756",
+  "name": "Texture.plazaschild",
+  "texture_asset_id": "467445c9-75c9-545a-a258-d36169da4ac0",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

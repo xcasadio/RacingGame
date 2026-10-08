@@ -1,0 +1,46 @@
+{
+  "id": "dc5962ff-ca50-59b4-9f25-bca9c18a9606",
+  "name": "Material.AlphaDeadTree.PDX01 - Defaultb",
+  "definition_id": "lit-diffuse",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "AlphaTest",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullNone",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "a15e9ca6-f25d-57df-bbe8-58fe88d02393",
+    "normal_texture": "5f2875e3-5e3c-547a-9c71-f307efa2cc9e",
+    "reflection_texture": "00000000-0000-0000-0000-000000000000",
+    "diffuse_color": {
+      "r": 214,
+      "g": 214,
+      "b": 214,
+      "a": 255
+    },
+    "alpha_cutoff": 0.35,
+    "ambient_color": {
+      "x": 0.333333,
+      "y": 0.333333,
+      "z": 0.333333
+    },
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "specular_color": {
+      "x": 0.54902,
+      "y": 0.54902,
+      "z": 0.54902
+    },
+    "specular_power": 4.0,
+    "use_scene_reflection_cube": false,
+    "reflection_add_amount": 1.0,
+    "reflection_multiply_base": 1.0,
+    "reflection_multiply_factor": 0.0
+  }
+}

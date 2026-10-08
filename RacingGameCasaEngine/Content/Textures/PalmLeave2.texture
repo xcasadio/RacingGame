@@ -1,0 +1,22 @@
+{
+  "id": "36a32797-5ea9-5696-a027-1d5593b2994d",
+  "name": "Texture.PalmLeave2",
+  "texture_asset_id": "51adba54-6ce8-5fa4-a9cd-7b43cbb82201",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

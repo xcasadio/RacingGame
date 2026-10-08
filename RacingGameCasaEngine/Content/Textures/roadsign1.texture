@@ -1,0 +1,22 @@
+{
+  "id": "d6ef3fd8-b1f3-5ca4-bbe3-eba82bf6fe56",
+  "name": "Texture.roadsign1",
+  "texture_asset_id": "b3ebdd53-d195-56ae-a4dd-37f9cb214637",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

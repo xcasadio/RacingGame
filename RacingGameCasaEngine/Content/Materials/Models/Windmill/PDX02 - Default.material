@@ -1,0 +1,46 @@
+{
+  "id": "095c80a3-ca9f-50b6-8b15-b61176ff175e",
+  "name": "Material.Windmill.PDX02 - Default",
+  "definition_id": "lit-diffuse",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "Opaque",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullCounterClockwise",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "d4c2816c-e8d2-5770-a171-49b60f151d6f",
+    "normal_texture": "3642db3a-388c-5379-b033-9df0d07f58bb",
+    "reflection_texture": "00000000-0000-0000-0000-000000000000",
+    "diffuse_color": {
+      "r": 165,
+      "g": 165,
+      "b": 165,
+      "a": 255
+    },
+    "alpha_cutoff": 0.5,
+    "ambient_color": {
+      "x": 0.5019608,
+      "y": 0.5019608,
+      "z": 0.5019608
+    },
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "specular_color": {
+      "x": 0.22,
+      "y": 0.22,
+      "z": 0.22
+    },
+    "specular_power": 9.6,
+    "use_scene_reflection_cube": false,
+    "reflection_add_amount": 1.0,
+    "reflection_multiply_base": 1.0,
+    "reflection_multiply_factor": 0.0
+  }
+}

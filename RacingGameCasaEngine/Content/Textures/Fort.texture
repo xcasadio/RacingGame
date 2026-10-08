@@ -1,0 +1,22 @@
+{
+  "id": "ef8c88ef-de63-5a98-ab78-3b3a9cdcf5d5",
+  "name": "Texture.Fort",
+  "texture_asset_id": "66036cf7-f2fd-5446-8bb4-c1c451e24894",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

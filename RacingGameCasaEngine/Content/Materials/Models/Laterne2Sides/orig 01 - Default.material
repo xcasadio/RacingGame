@@ -1,0 +1,46 @@
+{
+  "id": "beecc9a9-2f64-51f2-b832-bc91bf41f4e5",
+  "name": "Material.Laterne2Sides.orig 01 - Default",
+  "definition_id": "lit-diffuse",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "Opaque",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullCounterClockwise",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "36510152-8a12-5b89-a8b1-fcd570cd7bf6",
+    "normal_texture": "44b40f69-7d55-5bfb-91fc-363f882c5772",
+    "reflection_texture": "00000000-0000-0000-0000-000000000000",
+    "diffuse_color": {
+      "r": 223,
+      "g": 223,
+      "b": 223,
+      "a": 255
+    },
+    "alpha_cutoff": 0.5,
+    "ambient_color": {
+      "x": 0.196078,
+      "y": 0.196078,
+      "z": 0.196078
+    },
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "specular_color": {
+      "x": 0.12,
+      "y": 0.12,
+      "z": 0.12
+    },
+    "specular_power": 7.2,
+    "use_scene_reflection_cube": false,
+    "reflection_add_amount": 1.0,
+    "reflection_multiply_base": 1.0,
+    "reflection_multiply_factor": 0.0
+  }
+}

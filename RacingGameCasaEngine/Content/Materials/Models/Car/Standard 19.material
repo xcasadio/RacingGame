@@ -1,0 +1,46 @@
+{
+  "id": "77db1e13-f3c3-522d-9889-59325a290cf2",
+  "name": "Material.Car.Standard 19",
+  "definition_id": "lit-diffuse",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "Opaque",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullCounterClockwise",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "00000000-0000-0000-0000-000000000000",
+    "normal_texture": "00000000-0000-0000-0000-000000000000",
+    "reflection_texture": "00000000-0000-0000-0000-000000000000",
+    "diffuse_color": {
+      "r": 12,
+      "g": 12,
+      "b": 12,
+      "a": 255
+    },
+    "alpha_cutoff": 0.5,
+    "ambient_color": {
+      "x": 0.1,
+      "y": 0.1,
+      "z": 0.1
+    },
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "specular_color": {
+      "x": 0.917647,
+      "y": 0.917647,
+      "z": 1.0
+    },
+    "specular_power": 48.0,
+    "use_scene_reflection_cube": true,
+    "reflection_add_amount": 1.0,
+    "reflection_multiply_base": 1.0,
+    "reflection_multiply_factor": 0.0
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3642db3a-388c-5379-b033-9df0d07f58bb",
+  "name": "Texture.WindmillNormal",
+  "texture_asset_id": "8978dfdd-f02f-5eff-b12b-d86817f0e726",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

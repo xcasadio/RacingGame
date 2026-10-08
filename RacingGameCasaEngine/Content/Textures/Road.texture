@@ -1,0 +1,22 @@
+{
+  "id": "438bfe97-634a-50cc-a008-7661c239ab25",
+  "name": "Texture.Road",
+  "texture_asset_id": "bbb5495d-1795-53ce-8461-394c02703fb9",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

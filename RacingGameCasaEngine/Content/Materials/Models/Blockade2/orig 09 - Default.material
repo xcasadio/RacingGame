@@ -1,0 +1,46 @@
+{
+  "id": "e714997a-8940-53e5-99ef-cd96cc1afeb3",
+  "name": "Material.Blockade2.orig 09 - Default",
+  "definition_id": "lit-diffuse",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "Opaque",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullCounterClockwise",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "33d9d3f4-376d-558e-a766-1dd9508581e7",
+    "normal_texture": "c529a66d-51c1-59a2-acd0-1291aef08599",
+    "reflection_texture": "00000000-0000-0000-0000-000000000000",
+    "diffuse_color": {
+      "r": 212,
+      "g": 212,
+      "b": 212,
+      "a": 255
+    },
+    "alpha_cutoff": 0.5,
+    "ambient_color": {
+      "x": 0.313726,
+      "y": 0.313726,
+      "z": 0.313726
+    },
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "specular_color": {
+      "x": 0.54902,
+      "y": 0.54902,
+      "z": 0.54902
+    },
+    "specular_power": 16.0,
+    "use_scene_reflection_cube": false,
+    "reflection_add_amount": 1.0,
+    "reflection_multiply_base": 1.0,
+    "reflection_multiply_factor": 0.0
+  }
+}

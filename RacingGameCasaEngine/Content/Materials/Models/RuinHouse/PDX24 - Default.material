@@ -1,0 +1,46 @@
+{
+  "id": "2e39fc10-7ab4-5d72-99af-fee5136b1224",
+  "name": "Material.RuinHouse.PDX24 - Default",
+  "definition_id": "lit-diffuse",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "Opaque",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullCounterClockwise",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "3e6977d8-97aa-5e74-9676-3b399561b090",
+    "normal_texture": "93bc5917-691e-5cdd-95a7-7067679245d5",
+    "reflection_texture": "00000000-0000-0000-0000-000000000000",
+    "diffuse_color": {
+      "r": 237,
+      "g": 237,
+      "b": 237,
+      "a": 255
+    },
+    "alpha_cutoff": 0.5,
+    "ambient_color": {
+      "x": 0.129412,
+      "y": 0.129412,
+      "z": 0.129412
+    },
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "specular_color": {
+      "x": 0.06823524,
+      "y": 0.06823524,
+      "z": 0.06823524
+    },
+    "specular_power": 12.0,
+    "use_scene_reflection_cube": false,
+    "reflection_add_amount": 1.0,
+    "reflection_multiply_base": 1.0,
+    "reflection_multiply_factor": 0.0
+  }
+}

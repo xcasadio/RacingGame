@@ -1,0 +1,22 @@
+{
+  "id": "04094476-9f9a-5491-b0d3-b6d9eed5da87",
+  "name": "Texture.SharpRock",
+  "texture_asset_id": "02373618-feaa-5593-94ac-230a6bb5377a",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

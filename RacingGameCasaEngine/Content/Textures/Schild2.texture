@@ -1,0 +1,22 @@
+{
+  "id": "04116e05-6045-528f-a90d-f42d6d698966",
+  "name": "Texture.Schild2",
+  "texture_asset_id": "fe84fc49-0b3a-503b-a96f-deb1a86b84f7",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

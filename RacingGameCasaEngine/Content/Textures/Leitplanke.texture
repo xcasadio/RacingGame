@@ -1,0 +1,22 @@
+{
+  "id": "214d041f-02c3-5f81-856a-77340643731a",
+  "name": "Texture.Leitplanke",
+  "texture_asset_id": "f2a01bb8-ca30-57d0-83eb-a7196f10a803",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

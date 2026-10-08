@@ -1,0 +1,22 @@
+{
+  "id": "24a2b32b-c1ba-584c-9ef0-be606bcd8557",
+  "name": "Texture.banner3",
+  "texture_asset_id": "1472b23a-3914-5602-92f0-490912f5630f",
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}
