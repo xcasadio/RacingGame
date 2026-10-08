@@ -7,6 +7,7 @@
   "IsMouseVisible": true,
   "FirstWorldLoaded": "Worlds/Editor.world",
   "GameplayDllName": "RacingGame.Gameplay.dll",
+  "GameplayCsprojName": "../../RacingGame.Gameplay/RacingGame.Gameplay.csproj",
   "ExternalToolsDirectory": "ExternalTools",
   "DebugIsFullScreen": false,
   "DebugHeight": 768,

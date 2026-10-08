@@ -259,4 +259,6 @@ paket-files/
 # CasaEngine editor project of RacingGameCasaEngine (ADR-0002): view-model assembly copied after build, editor state
 RacingGameCasaEngine/Content/RacingGame.Gameplay.dll
 RacingGameCasaEngine/Content/RacingGame.Gameplay.pdb
+# Written by the CasaEngine editor next to the gameplay csproj on project open: machine-local, not to commit
+RacingGame.Gameplay/CasaEngine.EnginePath.props
 RacingGameCasaEngine/Content/.casaeditor/

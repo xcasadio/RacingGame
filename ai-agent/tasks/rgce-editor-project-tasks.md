@@ -420,7 +420,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
 >   - **contrôle négatif** : sur une copie du projet dans le scratchpad, `GameplayDllName` pointant vers une DLL absente, MainMenu diffère d'une moyenne de 19,9, alors que le script de capture répond `OK`. La comparaison voit donc bien un view model non résolu.
 > - Les fins de ligne CRLF des fichiers modifiés sont conservées.
 
-### ⏳ T1.2 — `Plugin` et recompilation depuis l'éditeur
+### ✅ T1.2 — `Plugin` et recompilation depuis l'éditeur
 
 - **Objectif** : `RacingGame.Gameplay` devient la DLL de gameplay au sens de CasaEngine (D1). L'éditeur trouve son `IPlugin` et sait la recompiler, comme RPGDemo.
 - **Fichiers** :
@@ -441,6 +441,20 @@ Un arrêt fige la tranche et celles qui en dépendent.
   - la recompilation depuis l'éditeur réussit, ou 🧪 avec la manipulation notée pour l'auteur.
 - **Commit** : `feat(racing-casa): make RacingGame.Gameplay the editor's gameplay plugin`
 
+> Validation (2026-10-08) :
+> - **Changements** :
+>   - `RacingGame.Gameplay.csproj` référence `CasaEngine/CasaEngine/CasaEngine.csproj` ;
+>   - `Plugin.cs` : `Plugin : IPlugin`, `Initialize()` vide et rejouable ;
+>   - `GameplayCsprojName` = `../../RacingGame.Gameplay/RacingGame.Gameplay.csproj`.
+> - **Build et jeu** : `dotnet build RacingGame.slnx` : 0 erreur. `--smoke-frontend` sort avec le code 0, et les réglages sont restaurés à l'identique.
+> - **Contrôle du plugin**, avec `--activate-panel output --logs-filter Warning` : `editor-logs-t1.2-final.png` ne montre ni « Gameplay assembly not found » ni « contains no IPlugin implementation ». Le contrôle négatif de T0.1 montrait le second, deux fois. Restent deux avertissements de déchargement du contexte de script, déjà présents en T0.1 et sans rapport avec ce chantier.
+> - **Écrans de l'éditeur** : les 9 de `editor-screens-t1.2/` sont identiques au pixel près à `editor-screens/`.
+> - **O2** : à l'ouverture du projet, l'éditeur écrit `RacingGame.Gameplay/CasaEngine.EnginePath.props`, dont l'en-tête dit « Machine-local : ne pas committer » et qui pointe vers l'éditeur compilé de cette machine. Il est ajouté au `.gitignore`.
+> - **O1, recompilation depuis l'éditeur**, automatisable sans manipulation : `Plugin.cs` touché, puis l'éditeur lancé avec `--project … --play-smoke`.
+>   - Le rapport donne les scripts de départ `Content\RacingGame.Gameplay.dll`, puis les scripts de jeu `Content\.casaeditor\script-build61008-135457-714\RacingGame.Gameplay.dll` : l'éditeur a recompilé le csproj et chargé la nouvelle DLL.
+>   - Les 15 contrôles du rapport sont PASS, et `Content\RacingGame.Gameplay.dll` est remplacée.
+>   - `.casaeditor/` est déjà ignoré par git.
+
 ### ⏳ T1.3 — ADR et documentation de la DLL de gameplay
 
 - **Objectif** : consigner D1 et D7 et mettre la documentation à jour.
@@ -460,8 +474,8 @@ Un arrêt fige la tranche et celles qui en dépendent.
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
-| O1 | L'automatisation de l'éditeur sait-elle déclencher `Build Scripts` ? La liste de `EditorAutomationOptions.cs` n'a pas d'option de ce nom ; sinon, vérification manuelle par l'auteur. | T1.2 |
-| O2 | L'éditeur écrit `CasaEngine.EnginePath.props` à côté du csproj de gameplay à l'ouverture du projet (`EditorProjectAuthoringService.cs:22-57`). Il faut confirmer le contenu et le chemin, puis l'ignorer dans git s'il est propre à la machine. | T1.2 |
+| O1 | **Levé (T1.2).** `--play-smoke` recompile le csproj de gameplay quand ses sources sont plus récentes que la DLL chargée, puis rapporte la DLL de jeu chargée. | T1.2 |
+| O2 | **Levé (T1.2).** `RacingGame.Gameplay/CasaEngine.EnginePath.props`, propre à la machine, est ignoré par git. | T1.2 |
 | O3 | Le sous-module contient un plan RGCE égaré, `CasaEngine/ai-agent/tasks/racinggame-car-profile-parity-plan.md`. On le laisse tel quel, la branche moteur le portera. | S2 |
 | O4 | PNG d'interface hérités non portés : `HelpScreenWindows`, `HelpScreenXbox360`, `OptionsScreenXbox360`, `MouseCursor`. Faut-il compter aussi la copie brute de `GameFont.png` ? Elle est proposée, D4 voulant « tout porter ». | S3 |
 | O5 | Les cartes de normales héritées gardent la disposition `agb`, et le jeu actuel les lit telles quelles. Le chantier conserve exactement ces pixels, sans réencodage. | S3, S5 |
