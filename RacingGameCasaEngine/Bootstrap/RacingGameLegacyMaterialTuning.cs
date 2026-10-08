@@ -28,58 +28,58 @@ internal static class RacingGameLegacyMaterialTuning
 {
     private static readonly string[] MasonryTextures =
     [
-        "Building.tga",
-        "building2.tga",
-        "building3.tga",
-        "building4.tga",
-        "building5.tga",
-        "Hotel01.tga",
-        "ruin.tga",
-        "Ruin01.tga",
-        "Stone04.tga",
-        "Stone5.tga",
+        "Building",
+        "building2",
+        "building3",
+        "building4",
+        "building5",
+        "Hotel01",
+        "ruin",
+        "Ruin01",
+        "Stone04",
+        "Stone5",
     ];
 
     private static readonly string[] VegetationTextures =
     [
-        "plants.tga",
-        "PalmLeave.tga",
+        "plants",
+        "PalmLeave",
     ];
 
     private static readonly string[] SignageTextures =
     [
-        "Schild.tga",
-        "Schild2.tga",
-        "Schild_Kurve_links.tga",
-        "SignWarning.tga",
-        "banner.tga",
-        "banner2.tga",
-        "banner3.tga",
-        "roadsign1.tga",
-        "roadsign2.tga",
-        "Goal.tga",
-        "plazaschild.tga",
-        "plazacasino.tga",
-        "ladyluck.tga",
+        "Schild",
+        "Schild2",
+        "Schild_Kurve_links",
+        "SignWarning",
+        "banner",
+        "banner2",
+        "banner3",
+        "roadsign1",
+        "roadsign2",
+        "Goal",
+        "plazaschild",
+        "plazacasino",
+        "ladyluck",
     ];
 
     private static readonly string[] SignalTextures =
     [
-        "Light.tga",
-        "TLight.tga",
-        "streetlamp.tga",
-        "streetlamp2.tga",
+        "Light",
+        "TLight",
+        "streetlamp",
+        "streetlamp2",
     ];
 
     private static readonly string[] MatteIndustrialTextures =
     [
-        "Hydrant.tga",
-        "garbagecan.tga",
-        "OilWell.tga",
-        "Oiltank.tga",
-        "Leitplanke.tga",
-        "gelaender.tga",
-        "Windmill.tga",
+        "Hydrant",
+        "garbagecan",
+        "OilWell",
+        "Oiltank",
+        "Leitplanke",
+        "gelaender",
+        "Windmill",
     ];
 
     public static bool ShouldEnableReflection(string sourceAssetName, StaticModelImportedMaterial importedMaterial)
@@ -105,28 +105,28 @@ internal static class RacingGameLegacyMaterialTuning
             return new RacingGameLegacyMaterialRuntimeTuning(true, 1.0f, 1.0f, null);
         }
 
-        string textureFileName = Path.GetFileName(importedMaterial.DiffuseTextureFilePath ?? string.Empty);
-        if (IsVegetationTexture(textureFileName))
+        string textureName = Path.GetFileNameWithoutExtension(importedMaterial.DiffuseTextureFilePath ?? string.Empty);
+        if (IsVegetationTexture(textureName))
         {
             return new RacingGameLegacyMaterialRuntimeTuning(false, 0.08f, 0.35f, 8.0f);
         }
 
-        if (IsMasonryTexture(textureFileName))
+        if (IsMasonryTexture(textureName))
         {
             return new RacingGameLegacyMaterialRuntimeTuning(false, 0.12f, 0.50f, 12.0f);
         }
 
-        if (IsSignageTexture(textureFileName))
+        if (IsSignageTexture(textureName))
         {
             return new RacingGameLegacyMaterialRuntimeTuning(false, 0.18f, 0.45f, 12.0f);
         }
 
-        if (IsSignalTexture(textureFileName))
+        if (IsSignalTexture(textureName))
         {
             return new RacingGameLegacyMaterialRuntimeTuning(false, 0.12f, 0.45f, 10.0f);
         }
 
-        if (IsMatteIndustrialTexture(textureFileName))
+        if (IsMatteIndustrialTexture(textureName))
         {
             return new RacingGameLegacyMaterialRuntimeTuning(false, 0.22f, 0.60f, 14.0f);
         }
@@ -146,26 +146,27 @@ internal static class RacingGameLegacyMaterialTuning
             return true;
         }
 
-        string textureFileName = Path.GetFileName(importedMaterial.DiffuseTextureFilePath ?? string.Empty);
-        return textureFileName.Equals("RacerCar.tga", StringComparison.OrdinalIgnoreCase)
-            || textureFileName.Equals("CarSelectionPlate.tga", StringComparison.OrdinalIgnoreCase);
+        string textureName = Path.GetFileNameWithoutExtension(importedMaterial.DiffuseTextureFilePath ?? string.Empty);
+        return textureName.Equals("RacerCar", StringComparison.OrdinalIgnoreCase)
+            || textureName.Equals("CarSelectionPlate", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool IsMasonryTexture(string textureFileName)
-        => ContainsTexture(MasonryTextures, textureFileName);
+    private static bool IsMasonryTexture(string textureName)
+        => ContainsTexture(MasonryTextures, textureName);
 
-    private static bool IsVegetationTexture(string textureFileName)
-        => ContainsTexture(VegetationTextures, textureFileName);
+    private static bool IsVegetationTexture(string textureName)
+        => ContainsTexture(VegetationTextures, textureName);
 
-    private static bool IsSignageTexture(string textureFileName)
-        => ContainsTexture(SignageTextures, textureFileName);
+    private static bool IsSignageTexture(string textureName)
+        => ContainsTexture(SignageTextures, textureName);
 
-    private static bool IsSignalTexture(string textureFileName)
-        => ContainsTexture(SignalTextures, textureFileName);
+    private static bool IsSignalTexture(string textureName)
+        => ContainsTexture(SignalTextures, textureName);
 
-    private static bool IsMatteIndustrialTexture(string textureFileName)
-        => ContainsTexture(MatteIndustrialTextures, textureFileName);
+    private static bool IsMatteIndustrialTexture(string textureName)
+        => ContainsTexture(MatteIndustrialTextures, textureName);
 
-    private static bool ContainsTexture(string[] candidates, string textureFileName)
-        => candidates.Any(candidate => candidate.Equals(textureFileName, StringComparison.OrdinalIgnoreCase));
+    // Legacy texture names without extension: the project holds the .tga textures as .png files of the same name.
+    private static bool ContainsTexture(string[] candidates, string textureName)
+        => candidates.Any(candidate => candidate.Equals(textureName, StringComparison.OrdinalIgnoreCase));
 }

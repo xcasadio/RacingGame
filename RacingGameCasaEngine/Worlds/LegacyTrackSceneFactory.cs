@@ -77,8 +77,8 @@ internal static partial class LegacyTrackSceneFactory
     };
     private static readonly string[] PalmModelCandidates = ["AlphaPalm", "AlphaPalm2", "AlphaPalm3", "AlphaPalmSmall"];
     private static readonly string[] CheckpointBannerCandidates = ["Banner", "Banner2", "Banner3", "Banner4", "Banner5", "Banner6"];
-    private static readonly string[] RoadTextureCandidates = ["Road.tga", "track.tga", "RoadCement.tga"];
-    private static readonly string[] GroundTextureCandidates = ["Landscape.tga", "CityGround.tga"];
+    private static readonly string[] RoadTextureCandidates = ["Road.png", "track.png", "RoadCement.png"];
+    private static readonly string[] GroundTextureCandidates = ["Landscape.png", "CityGround.png"];
 
     internal static RaceTrackScene Create(string trackName, AssetContentManager assetContentManager)
     {

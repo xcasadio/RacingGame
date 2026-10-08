@@ -26,44 +26,19 @@
     <ProjectReference Include="..\RacingGame.Gameplay\RacingGame.Gameplay.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="Content\UI\**\*.*">
+    <!-- Every file of the project content is a game file (ADR-0016). -->
+    <None Update="Content\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <!-- Design-time data is read by the CasaEngine editor only (ADR-0002). -->
-    <None Update="Content\UI\**\*.design.json">
+    <None Update="Content\**\*.design.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
-    <None Update="Content\Audio\*.*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Worlds\*.world">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\AssetInfos.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <!-- The editor project file, the gameplay assembly the editor loads from the content folder, and the editor state (ADR-0015). -->
+    <None Update="Content\RacingGameCasaEngine.json;Content\RacingGame.Gameplay.dll;Content\RacingGame.Gameplay.pdb;Content\.casaeditor\**">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Include="..\CasaEngine\CasaEngine\Content\Fonts\tahoma.ttf" Link="Content\Fonts\tahoma.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\RacingGame\Content\Textures\*.*" Exclude="..\RacingGame\Content\Textures\background.png;..\RacingGame\Content\Textures\buttons.png;..\RacingGame\Content\Textures\ingame.png;..\RacingGame\Content\Textures\headers.png;..\RacingGame\Content\Textures\ColorSelection.png;..\RacingGame\Content\Textures\OptionsScreenWindows.png" Link="Content\Textures\%(Filename)%(Extension)">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Tracks\*.Track">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\RacingGame\Content\LandscapeHeights.data" Link="Content\LandscapeHeights.data">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\RacingGame\Content\*.CombiModel" Link="Content\Models\%(Filename)%(Extension)">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Models\*.gltf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Models\*.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Textures\*.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

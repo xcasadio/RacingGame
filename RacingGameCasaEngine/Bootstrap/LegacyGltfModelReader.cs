@@ -176,7 +176,8 @@ internal static class LegacyGltfModelReader
         return (byte)scaled;
     }
 
-    // Same resolution as the old importer (StaticModelImporter.cs:679-697).
+    // Same resolution as the old importer (StaticModelImporter.cs:679-697). The project content holds the legacy .tga
+    // textures as .png files of the same name with the same pixels, so an absent .tga resolves to that .png.
     private static string? ResolveTexturePath(string modelFilePath, string? texturePath)
     {
         if (string.IsNullOrWhiteSpace(texturePath) || texturePath.StartsWith('*'))
@@ -185,15 +186,25 @@ internal static class LegacyGltfModelReader
         }
 
         string modelDirectory = Path.GetDirectoryName(modelFilePath)!;
-        string candidate = Path.GetFullPath(Path.Combine(modelDirectory, texturePath));
+        string? resolved = ResolveExistingTexture(Path.GetFullPath(Path.Combine(modelDirectory, texturePath)));
+        return resolved ?? ResolveExistingTexture(Path.Combine(modelDirectory, Path.GetFileName(texturePath)));
+    }
+
+    private static string? ResolveExistingTexture(string candidate)
+    {
         if (File.Exists(candidate))
         {
             return candidate;
         }
 
-        candidate = Path.Combine(modelDirectory, Path.GetFileName(texturePath));
-        return File.Exists(candidate)
-            ? candidate
+        if (!Path.GetExtension(candidate).Equals(".tga", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        string pngCandidate = Path.ChangeExtension(candidate, ".png");
+        return File.Exists(pngCandidate)
+            ? pngCandidate
             : null;
     }
 

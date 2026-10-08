@@ -640,7 +640,7 @@ Faits relevés pour cette phase (2026-10-08) :
 > - **Format** : le catalogue garde son indentation de 2 espaces, le CRLF et l'absence de saut de ligne final.
 > - **Jeu** : `RacingGame.slnx` compile avec 0 erreur, et `--smoke-frontend` sort avec le code 0, sans avertissement dans le journal. La sortie contient les 56 fichiers de `Content/Audio`, que la règle `Content\Audio\*.*` copie.
 
-### ⏳ T3.5 — Le jeu ne lit plus que `Content`
+### ✅ T3.5 — Le jeu ne lit plus que `Content`
 
 - **Objectif** : retirer les liens vers `RacingGame/Content` sans changer le rendu.
 - **Fichiers** :
@@ -668,6 +668,34 @@ Faits relevés pour cette phase (2026-10-08) :
   - `--verify-legacy-import-profile` sort avec le code 0 ;
   - audits des voitures identiques à ceux de S0.
 - **Commit** : `refactor(racing-casa): read every game file from the project content`
+
+> Validation (2026-10-08) :
+> - **Code** :
+>   - `LegacyGltfModelReader.ResolveTexturePath` : pour chacun des deux chemins candidats, un `.tga` absent se résout en `.png` de même nom ;
+>   - `RacingGameLegacyMaterialTuning`, `LegacyImportProfileVerifier` et `LegacyCarVisualFactory` comparent les noms sans extension. Leurs listes de noms n'ont plus de `.tga` ;
+>   - `LegacyTrackSceneFactory*` et `LegacyCarVisualFactory` chargent les `.png` ;
+>   - `RacingGameLegacyMaterialImportProfile.UsesLegacyAlphaCutout` comparait déjà les noms sans extension : inchangé.
+> - **csproj** :
+>   - une règle `Content\**` ; `Never` pour `**\*.design.json`, `RacingGameCasaEngine.json`, `RacingGame.Gameplay.dll` et `.pdb`, et `.casaeditor\**` ;
+>   - les 3 liens vers `..\RacingGame\Content` sont retirés ;
+>   - `rg -F "RacingGame\Content"` ne trouve plus rien, et le lien de `tahoma.ttf` est toujours là.
+> - **Références** prises au commit de T3.4 (`0b6913e`), dans `artifacts/editor-project-baseline/` : `output-content-t3.4.txt` (634 fichiers, dont 129 `.tga`), `track-audit-t3.4-a/` et `-b/`, `scene-t3.4.json`.
+> - **Build** : le dossier de sortie `Content` a été vidé, puis `RacingGame.slnx` compilé : 0 erreur.
+> - **Liste de sortie** : 505 fichiers. Seuls les 129 `.tga` sont retirés ; aucun fichier n'est ajouté ni modifié (SHA-1). `Fonts/tahoma.ttf` et `AssetInfos.json` sont présents.
+> - **Export de scène** : identique à `scene-t3.4.json`, hors horodatage : entités, modèles, noms et types de matériaux, transforms.
+> - **Autres contrôles** :
+>   - `--smoke-frontend` : code 0 ;
+>   - `--capture-ui-screens` contre `references-acb6ad9` : 0,00 sur les 10 états, dont le choix de voiture et le HUD de course ;
+>   - `--verify-legacy-import-profile` : code 0 ;
+>   - audits des voitures identiques à ceux de S0, hors ligne `Generated:` et heure murale en tête des lignes de `details/`.
+> - **Audit de piste** (`compare_audit.py`, seuil égal au bruit `a`/`b` plus 0,5) :
+>   - les 3 vues `chase-road-only` sont identiques aux références (0,000), comme les deux références entre elles ;
+>   - **écart expliqué** : 7 des 18 vues posées dépassent leur seuil. Ces vues ne sont pas reproductibles d'un lancement à l'autre :
+>     - le bruit entre les deux références va jusqu'à 75 ;
+>     - après la vue `chase-road-only`, le validateur active la caméra libre de débogage (`TrackMigrationCaptureValidator.cs:119`). Celle-ci lit la souris et le clavier (`DebugFreeCameraComponent.cs:61,84`) et remplace la pose à chaque image ;
+>     - les images de la référence `a`, de la référence `b` et de T3.5 montrent trois poses différentes d'une même vue (terrain, sol, ciel), avec des textures correctes.
+>     Le critère « chacune des 21 captures sous son seuil » n'est pas mesurable avec cet outil. La parité repose donc sur les 3 vues déterministes, l'export de scène, les captures d'interface, la liste de sortie et les pixels identiques de T3.1. T4.1 rend l'audit déterministe.
+>   - **contrôle négatif** : `Road.png` renommé dans le dossier de sortie, les 3 vues `chase-road-only` passent de 27 à 43 pour un seuil de 0,5, avec le code 1. Le fichier a été remis, avec un SHA-1 identique à sa source.
 
 ### ⏳ T3.6 — ADR, documentation et clôture de S3
 

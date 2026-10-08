@@ -31,9 +31,9 @@ internal static class LegacyCarVisualFactory
     private const float LegacyCarCollisionHeight = RacingCarPawn.CollisionHeight;
     private const float LegacyCarReflectionMultiplyBase = 0.85f;
     private const float LegacyCarReflectionMultiplyFactor = 0.75f;
-    private const string CarNormalTextureFileName = "RacerCarNormal.tga";
+    private const string CarNormalTextureName = "RacerCarNormal";
     private static readonly Color LegacyTextureColorKey = new(255, 0, 255, 0);
-    private static readonly string[] CarDiffuseTextureFileNames = ["RacerCar.tga", "RacerCar2.tga", "RacerCar3.tga"];
+    private static readonly string[] CarDiffuseTextureNames = ["RacerCar", "RacerCar2", "RacerCar3"];
 
     private static readonly Texture2DLoader TextureLoader = new();
     private static readonly Dictionary<string, Texture2D?> TextureCache = new(StringComparer.OrdinalIgnoreCase);
@@ -53,7 +53,7 @@ internal static class LegacyCarVisualFactory
     {
         ArgumentNullException.ThrowIfNull(assetContentManager);
 
-        int normalizedCarIndex = NormalizeModulo(selectedCarIndex, CarDiffuseTextureFileNames.Length);
+        int normalizedCarIndex = NormalizeModulo(selectedCarIndex, CarDiffuseTextureNames.Length);
         int normalizedColorIndex = NormalizeModulo(selectedCarColorIndex, Math.Max(1, RaceFrontEndCatalog.CarColors.Count));
 
         lock (CacheLock)
@@ -270,7 +270,7 @@ internal static class LegacyCarVisualFactory
         if (UsesCarDiffuseTexture(importedMaterial.DiffuseTextureFilePath)
             || UsesCarNormalTexture(importedMaterial.NormalTextureFilePath))
         {
-            return Path.Combine(GetProjectContentPath(), "Textures", CarNormalTextureFileName);
+            return Path.Combine(GetProjectContentPath(), "Textures", CarNormalTextureName + ".png");
         }
 
         return importedMaterial.NormalTextureFilePath;
@@ -283,10 +283,10 @@ internal static class LegacyCarVisualFactory
             return false;
         }
 
-        string fileName = Path.GetFileName(texturePath);
-        for (int index = 0; index < CarDiffuseTextureFileNames.Length; index++)
+        string textureName = Path.GetFileNameWithoutExtension(texturePath);
+        for (int index = 0; index < CarDiffuseTextureNames.Length; index++)
         {
-            if (fileName.Equals(CarDiffuseTextureFileNames[index], StringComparison.OrdinalIgnoreCase))
+            if (textureName.Equals(CarDiffuseTextureNames[index], StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -298,7 +298,7 @@ internal static class LegacyCarVisualFactory
     private static bool UsesCarNormalTexture(string? texturePath)
     {
         return !string.IsNullOrWhiteSpace(texturePath)
-            && Path.GetFileName(texturePath).Equals(CarNormalTextureFileName, StringComparison.OrdinalIgnoreCase);
+            && Path.GetFileNameWithoutExtension(texturePath).Equals(CarNormalTextureName, StringComparison.OrdinalIgnoreCase);
     }
 
     private static void ApplyFallbackMaterials(StaticModel model)
@@ -363,7 +363,7 @@ internal static class LegacyCarVisualFactory
             return paint;
         }
 
-        string texturePath = Path.Combine(GetProjectContentPath(), "Textures", CarDiffuseTextureFileNames[carIndex]);
+        string texturePath = Path.Combine(GetProjectContentPath(), "Textures", CarDiffuseTextureNames[carIndex] + ".png");
         try
         {
             paint = File.Exists(texturePath) ? CarPaint.Load(texturePath, assetContentManager.GraphicsDevice) : null;

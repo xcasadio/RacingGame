@@ -50,7 +50,7 @@ internal static class LegacyImportProfileVerifier
         string filePath = Path.Combine(projectContentPath, "Models", "Building.gltf");
         var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
-        StaticModelImportedMaterial buildingMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "Building.tga");
+        StaticModelImportedMaterial buildingMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "Building");
         RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Building", buildingMaterial);
 
         if (buildingMaterial.UsesReflection || tuning.EnableReflection)
@@ -70,8 +70,8 @@ internal static class LegacyImportProfileVerifier
         var neutralResult = LegacyGltfModelReader.ReadWithMetadata(filePath, null);
         var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
-        StaticModelImportedMaterial neutralMaterial = FindMaterialByDiffuseTexture(neutralResult.Materials, "Schild.tga");
-        StaticModelImportedMaterial profileMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "Schild.tga");
+        StaticModelImportedMaterial neutralMaterial = FindMaterialByDiffuseTexture(neutralResult.Materials, "Schild");
+        StaticModelImportedMaterial profileMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "Schild");
         RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Sign", profileMaterial);
 
         if (neutralMaterial.BrightAmbientHint)
@@ -95,8 +95,8 @@ internal static class LegacyImportProfileVerifier
         string filePath = Path.Combine(projectContentPath, "Models", "StartLight.gltf");
         var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
-        StaticModelImportedMaterial signalPole = FindMaterialByDiffuseTexture(profileResult.Materials, "TLight.tga");
-        StaticModelImportedMaterial signalLens = FindMaterialByDiffuseTexture(profileResult.Materials, "Light.tga");
+        StaticModelImportedMaterial signalPole = FindMaterialByDiffuseTexture(profileResult.Materials, "TLight");
+        StaticModelImportedMaterial signalLens = FindMaterialByDiffuseTexture(profileResult.Materials, "Light");
         RacingGameLegacyMaterialRuntimeTuning poleTuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("StartLight", signalPole);
         RacingGameLegacyMaterialRuntimeTuning lensTuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("StartLight", signalLens);
 
@@ -117,8 +117,8 @@ internal static class LegacyImportProfileVerifier
         var neutralResult = LegacyGltfModelReader.ReadWithMetadata(filePath, null);
         var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
-        StaticModelImportedMaterial neutralMaterial = FindMaterialByDiffuseTexture(neutralResult.Materials, "PalmLeave.tga");
-        StaticModelImportedMaterial profileMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "PalmLeave.tga");
+        StaticModelImportedMaterial neutralMaterial = FindMaterialByDiffuseTexture(neutralResult.Materials, "PalmLeave");
+        StaticModelImportedMaterial profileMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "PalmLeave");
 
         if (neutralMaterial.AlphaCutoutHint)
         {
@@ -138,7 +138,7 @@ internal static class LegacyImportProfileVerifier
         string filePath = Path.Combine(projectContentPath, "Models", "Banner.gltf");
         var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
-        StaticModelImportedMaterial bannerMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "banner.tga");
+        StaticModelImportedMaterial bannerMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "banner");
 
         if (!profileResult.Materials.Any(static material => material.BrightAmbientHint))
         {
@@ -211,15 +211,16 @@ internal static class LegacyImportProfileVerifier
         }
     }
 
+    // Legacy texture names without extension: the project holds the .tga textures as .png files of the same name.
     private static StaticModelImportedMaterial FindMaterialByDiffuseTexture(
         IReadOnlyList<StaticModelImportedMaterial> materials,
-        string textureFileName)
+        string textureName)
     {
         StaticModelImportedMaterial? material = materials.FirstOrDefault(
-            candidate => string.Equals(Path.GetFileName(candidate.DiffuseTextureFilePath), textureFileName, StringComparison.OrdinalIgnoreCase));
+            candidate => string.Equals(Path.GetFileNameWithoutExtension(candidate.DiffuseTextureFilePath), textureName, StringComparison.OrdinalIgnoreCase));
 
         return material
-            ?? throw new InvalidOperationException($"Unable to find material using diffuse texture '{textureFileName}'.");
+            ?? throw new InvalidOperationException($"Unable to find material using diffuse texture '{textureName}'.");
     }
 
     private static StaticModelImportedMaterial FindMaterialByDisplayName(
