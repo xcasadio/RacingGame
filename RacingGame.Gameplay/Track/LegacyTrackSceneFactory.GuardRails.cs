@@ -282,38 +282,16 @@ internal static partial class LegacyTrackSceneFactory
 
         private static LitDiffuseMaterial CreateGuardRailMaterial(string trackName, AssetContentManager assetContentManager, string sideName)
         {
-            Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "Leitplanke.png");
-            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "LeitplankeNormal.png");
-            return new LitDiffuseMaterial
-            {
-                Name = $"{trackName}.GuardRailMaterial.{sideName}",
-                BasColor = diffuseTexture,
-                NormalMap = normalTexture,
-                DiffuseColor = diffuseTexture != null ? Color.White : new Color(182, 182, 182),
-                EmissiveColor = new Vector3(0.03f, 0.03f, 0.03f),
-                SpecularColor = new Vector3(0.88f, 0.88f, 0.88f),
-                SpecularPower = 16f,
-                SamplerState = SamplerState.AnisotropicWrap,
-                RasterizerState = RasterizerState.CullCounterClockwise,
-            };
+            (string? diffuseTexturePath, Texture2D? diffuseTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.GuardRailTextureName);
+            (string? normalTexturePath, Texture2D? normalTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.GuardRailNormalTextureName);
+            return RaceMaterialBuilder.Create(RaceMaterialRecipes.ForGuardRail(trackName, sideName, diffuseTexturePath, normalTexturePath), diffuseTexture, normalTexture, null);
         }
 
         private static LitDiffuseMaterial CreateRoadColumnMaterial(string trackName, AssetContentManager assetContentManager)
         {
-            Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "RoadCement.png");
-            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "RoadCementNormal.png");
-            return new LitDiffuseMaterial
-            {
-                Name = $"{trackName}.ColumnMaterial",
-                BasColor = diffuseTexture,
-                NormalMap = normalTexture,
-                DiffuseColor = diffuseTexture != null ? Color.White : new Color(176, 176, 176),
-                EmissiveColor = new Vector3(0.01f, 0.01f, 0.01f),
-                SpecularColor = new Vector3(0.18f),
-                SpecularPower = 8f,
-                SamplerState = SamplerState.AnisotropicWrap,
-                RasterizerState = RasterizerState.CullCounterClockwise,
-            };
+            (string? diffuseTexturePath, Texture2D? diffuseTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.RoadColumnTextureName);
+            (string? normalTexturePath, Texture2D? normalTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.RoadColumnNormalTextureName);
+            return RaceMaterialBuilder.Create(RaceMaterialRecipes.ForRoadColumn(trackName, diffuseTexturePath, normalTexturePath), diffuseTexture, normalTexture, null);
         }
 
         private static Vector3 NormalizeOrFallback(Vector3 vector, Vector3 fallback)

@@ -28,8 +28,6 @@ internal static partial class LegacyTrackSceneFactory
     private static readonly Dictionary<string, Texture2D?> TextureCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, TextureCube?> TextureCubeCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, LegacyTerrainHeightSampler> TerrainCache = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly string[] RoadTextureCandidates = ["Road.png", "track.png", "RoadCement.png"];
-    private static readonly string[] GroundTextureCandidates = ["Landscape.png", "CityGround.png"];
 
     internal static RaceTrackScene Create(string trackName, AssetContentManager assetContentManager)
     {
@@ -398,33 +396,14 @@ internal static partial class LegacyTrackSceneFactory
 
     private static LitDiffuseMaterial CreateRoadMaterial(string trackName, AssetContentManager assetContentManager)
     {
-        Texture2D? roadTexture = LoadProjectTexture(assetContentManager, RoadTextureCandidates);
-        return new LitDiffuseMaterial
-        {
-            Name = $"{trackName}.RoadMaterial",
-            BasColor = roadTexture,
-            DiffuseColor = roadTexture != null ? Color.White : new Color(60, 62, 66),
-            EmissiveColor = new Vector3(0.015f, 0.015f, 0.015f),
-            SpecularColor = new Vector3(0.14f),
-            SpecularPower = 18f,
-            RasterizerState = RasterizerState.CullCounterClockwise,
-            SamplerState = SamplerState.AnisotropicWrap,
-        };
+        (string? roadTexturePath, Texture2D? roadTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.RoadTextureCandidates);
+        return RaceMaterialBuilder.Create(RaceMaterialRecipes.ForRoad(trackName, roadTexturePath), roadTexture, null, null);
     }
 
     private static LitDiffuseMaterial CreateGroundMaterial(string trackName, AssetContentManager assetContentManager)
     {
-        Texture2D? groundTexture = LoadProjectTexture(assetContentManager, GroundTextureCandidates);
-        return new LitDiffuseMaterial
-        {
-            Name = $"{trackName}.GroundMaterial",
-            BasColor = groundTexture,
-            DiffuseColor = groundTexture != null ? Color.White : new Color(182, 166, 118),
-            EmissiveColor = new Vector3(0.01f, 0.01f, 0.008f),
-            SpecularColor = new Vector3(0.05f),
-            SpecularPower = 6f,
-            SamplerState = SamplerState.AnisotropicWrap,
-        };
+        (string? groundTexturePath, Texture2D? groundTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.GroundTextureCandidates);
+        return RaceMaterialBuilder.Create(RaceMaterialRecipes.ForGround(trackName, groundTexturePath), groundTexture, null, null);
     }
 
     private static void ApplyImportedMaterials(StaticModel model, IReadOnlyList<StaticModelImportedMaterial> importedMaterials, string modelName, AssetContentManager assetContentManager)
@@ -448,42 +427,18 @@ internal static partial class LegacyTrackSceneFactory
 
     private static LitDiffuseMaterial CreateImportedRuntimeMaterial(string modelName, StaticModelImportedMaterial importedMaterial, AssetContentManager assetContentManager)
     {
-        RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning(modelName, importedMaterial);
-        Texture2D? diffuseTexture = LoadTexture(importedMaterial.DiffuseTextureFilePath, assetContentManager);
-        Texture2D? normalTexture = LoadTexture(importedMaterial.NormalTextureFilePath, assetContentManager);
-        bool useSceneReflectionCube = tuning.EnableReflection
-            && RaceSkySystem.ShouldUseSceneReflectionCube(importedMaterial.ReflectionTextureFilePath);
-        TextureCube? reflectionCube = null;
-        if (tuning.EnableReflection && !useSceneReflectionCube)
-        {
-            reflectionCube = LoadTextureCube(importedMaterial.ReflectionTextureFilePath, assetContentManager);
-            useSceneReflectionCube = reflectionCube == null;
-        }
+        RaceMaterialRecipe recipe = RaceMaterialRecipes.ForScenery(modelName, importedMaterial);
+        Texture2D? diffuseTexture = LoadTexture(recipe.BaseTextureFilePath, assetContentManager);
+        Texture2D? normalTexture = LoadTexture(recipe.NormalTextureFilePath, assetContentManager);
+        TextureCube? reflectionCube = recipe.ReflectionCubeFilePath != null
+            ? LoadTextureCube(recipe.ReflectionCubeFilePath, assetContentManager)
+            : null;
 
-        LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
-        Vector3 specularColor = tuning.ApplySpecularColor(importedMaterial.SpecularColor);
-        float specularPower = Math.Clamp(tuning.ApplySpecularPower(importedMaterial.SpecularPower), 2f, 48f);
-
-        return new LitDiffuseMaterial
-        {
-            Name = $"{modelName}.{importedMaterial.DisplayName}",
-            BasColor = diffuseTexture,
-            NormalMap = normalTexture,
-            ReflectionCube = reflectionCube,
-            UseSceneReflectionCube = useSceneReflectionCube,
-            DiffuseColor = importedMaterial.DiffuseColor,
-            AmbientColor = presentation.AmbientColor,
-            EmissiveColor = presentation.EmissiveColor,
-            SpecularColor = specularColor,
-            SpecularPower = specularPower,
-            SamplerState = SamplerState.AnisotropicWrap,
-            Queue = presentation.Queue,
-            AlphaCutoff = presentation.AlphaCutoff,
-            RasterizerState = presentation.DisableBackfaceCulling ? RasterizerState.CullNone : null,
-        };
+        return RaceMaterialBuilder.Create(recipe, diffuseTexture, normalTexture, reflectionCube);
     }
 
-    private static Texture2D? LoadProjectTexture(AssetContentManager assetContentManager, params string[] fileNames)
+    // The first of the project textures that loads: its path, which the material recipe takes, and the texture.
+    private static (string? FilePath, Texture2D? Texture) LoadProjectTexture(AssetContentManager assetContentManager, params string[] fileNames)
     {
         foreach (string fileName in fileNames)
         {
@@ -491,11 +446,11 @@ internal static partial class LegacyTrackSceneFactory
             Texture2D? texture = LoadTexture(texturePath, assetContentManager);
             if (texture != null)
             {
-                return texture;
+                return (texturePath, texture);
             }
         }
 
-        return null;
+        return (null, null);
     }
 
     private static Texture2D? LoadTexture(string? texturePath, AssetContentManager assetContentManager)
@@ -566,7 +521,7 @@ internal static partial class LegacyTrackSceneFactory
 
     private static void ApplyFallbackMaterials(StaticModel model, string modelName)
     {
-        Color diffuseColor = InferSceneryColor(modelName);
+        RaceMaterialRecipe recipe = RaceMaterialRecipes.ForSceneryFallback(modelName);
         foreach (StaticModelMesh mesh in model.Meshes)
         {
             if (mesh.Material != null)
@@ -574,49 +529,8 @@ internal static partial class LegacyTrackSceneFactory
                 continue;
             }
 
-            mesh.Material = new LitDiffuseMaterial
-            {
-                DiffuseColor = diffuseColor,
-                EmissiveColor = diffuseColor.ToVector3() * 0.015f,
-                SpecularColor = new Vector3(0.05f),
-                SpecularPower = 4f,
-            };
+            mesh.Material = RaceMaterialBuilder.Create(recipe, null, null, null);
         }
-    }
-
-    private static Color InferSceneryColor(string modelName)
-    {
-        if (modelName.Contains("Palm", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Kaktus", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Tree", StringComparison.OrdinalIgnoreCase))
-        {
-            return new Color(86, 138, 76);
-        }
-
-        if (modelName.Contains("Hotel", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Building", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Casino", StringComparison.OrdinalIgnoreCase))
-        {
-            return new Color(174, 168, 160);
-        }
-
-        if (modelName.Contains("Oil", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Train", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Road", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Sign", StringComparison.OrdinalIgnoreCase))
-        {
-            return new Color(126, 126, 132);
-        }
-
-        if (modelName.Contains("Rock", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Stone", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Ruin", StringComparison.OrdinalIgnoreCase)
-            || modelName.Contains("Sand", StringComparison.OrdinalIgnoreCase))
-        {
-            return new Color(156, 140, 112);
-        }
-
-        return new Color(190, 190, 190);
     }
 
     private static string ResolveAssetFilePath(AssetInfo assetInfo)

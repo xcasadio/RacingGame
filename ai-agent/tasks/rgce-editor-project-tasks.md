@@ -1324,7 +1324,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
 >   - Un premier lancement des captures d'interface a donné 0,27 (`track-selection`), 0,66 (`race-hud`) et 10,7 (`race-finished`), des états animés ou chronométrés. Le lancement suivant a donné 0,00 sur les 10 états.
 > - **Projet d'exemple** : aucun matériau de `Projects/SampleProject` n'a de carte de normales sur un maillage sans tangentes, donc rien n'y change. La capture de `Box.staticModel` est normale.
 
-### ⏳ T5.3 — Recettes de matériaux séparées de leur construction
+### ✅ T5.3 — Recettes de matériaux séparées de leur construction
 
 - **Objectif** : les valeurs de chaque matériau sont calculées par une fonction pure, sans GPU, réutilisée par l'outil de cuisson (T5.4) et par le jeu tant qu'il charge encore les glTF. Aucun changement de rendu.
 - **Fichiers** :
@@ -1339,6 +1339,39 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
   - A4 : export contre `s5/scene-a.json` identique jusqu'aux noms, fonctionnalités comprises. Captures d'interface à 0,00, ce qui couvre le carrousel, et audits des voitures identiques ;
   - **transparence** : une passe des recettes sur les 56 glTF et sur les matériaux écrits en code compte les recettes hors AlphaTest dont l'alpha diffus est inférieur à 255. La note donne ce nombre. S'il n'est pas nul, arrêt.
 - **Commit** : `refactor(racing-casa): compute material values apart from building materials`
+
+> Validation (2026-10-08) :
+> - **Code**, dans `RacingGame.Gameplay/Import/` :
+>   - `RaceMaterialRecipe` : enregistrement immuable, avec les noms d'états (`RaceMaterialStates`) et le rôle de la texture de base (`RaceBaseTextureRole` : `File`, `CarPainted`, `CarUnpainted`) ;
+>   - `RaceMaterialRecipes` : fonctions pures, déplacées telles quelles :
+>     - `ForScenery` et `ForSceneryFallback` ;
+>     - `ForCar` et `ForCarFallback`, avec les règles de peinture, de mélange de réflexion et de carte de normales ;
+>     - `ForPlate` ;
+>     - `ForRoad`, `ForGround`, `ForTerrain`, `ForGuardRail` et `ForRoadColumn` ;
+>   - `RaceMaterialBuilder` (interne) : seul endroit qui traduit une recette et ses textures chargées en `LitDiffuseMaterial` ;
+>   - les fabriques de la piste, de la voiture et du carrousel construisent leurs matériaux par ces recettes.
+>   - Pour les matériaux de piste écrits en code, la couleur diffuse dépend de la texture qui s'est chargée : `LoadProjectTexture` rend le chemin chargé, que la recette prend.
+>   - `rg` ne trouve ni GPU ni asset dans les deux fichiers de recettes.
+> - **Contrôles** :
+>   - `dotnet build RacingGame.slnx` : 0 erreur ;
+>   - `check_gameplay_type_names.py` : 0 collision ;
+>   - export contre `s5/scene-a.json` : identique jusqu'aux noms, fonctionnalités comprises (1 074, 689, 2 156) ;
+>   - captures d'interface à 0,00, `car-selection` compris. Le premier lancement avait perdu `race-finished`, une capture manquante ; le second était propre ;
+>   - audits des voitures identiques à S0 ;
+>   - `--smoke-frontend` : code 0 ;
+>   - `--verify-legacy-import-profile` : code 0 ;
+>   - audit dans le seuil de T4.1 (21 sur 21).
+> - **Transparence (règle d'arrêt)** : une sonde a calculé 116 recettes :
+>   - 85 pour le décor (54 modèles) ;
+>   - 18 pour la voiture (6 matériaux, 3 indices) ;
+>   - 1 pour le plateau ;
+>   - 12 pour les 6 matériaux de piste, avec et sans texture.
+>   Aucune n'a un alpha diffus inférieur à 255 ; les 12 en `AlphaTest` non plus. Aucun glTF n'a de maillage sans matériau.
+> - **Couverture** :
+>   - recettes distinctes, sans compter le nom : 66 pour le décor, 4 pour la voiture (seuls le nom et le rôle de la texture changent d'un indice à l'autre), 1 pour le plateau ;
+>   - aucun glTF ne nomme de cube de réflexion ;
+>   - `Blockade`, `Blockade2` et `Laterne2Sides` ne sont chargés par aucun chemin ;
+>   - 8 autres ne sont nommés que par les `.Track`.
 
 ### ⏳ T5.4 — Outil de cuisson et assets cuits
 

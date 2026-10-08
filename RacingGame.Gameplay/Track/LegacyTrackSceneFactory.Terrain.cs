@@ -2,6 +2,7 @@ using CasaEngine.Framework.Assets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
+using RacingGame.Gameplay.Import;
 using static RacingGame.Gameplay.Track.RaceTrackSpace;
 
 namespace RacingGame.Gameplay.Track;
@@ -133,20 +134,9 @@ internal static partial class LegacyTrackSceneFactory
 
         private static LitDiffuseMaterial CreateTerrainMaterial(string trackName, AssetContentManager assetContentManager)
         {
-            Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "Landscape.png", "CityGround.png");
-            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "LandscapeNormal.png", "CityGroundNormal.png");
-            return new LitDiffuseMaterial
-            {
-                Name = $"{trackName}.TerrainMaterial",
-                BasColor = diffuseTexture,
-                NormalMap = normalTexture,
-                DiffuseColor = diffuseTexture != null ? Color.White : new Color(182, 166, 118),
-                EmissiveColor = new Vector3(0.01f, 0.01f, 0.008f),
-                SpecularColor = new Vector3(0.05f),
-                SpecularPower = 6f,
-                SamplerState = SamplerState.AnisotropicWrap,
-                RasterizerState = RasterizerState.CullCounterClockwise,
-            };
+            (string? diffuseTexturePath, Texture2D? diffuseTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.GroundTextureCandidates);
+            (string? normalTexturePath, Texture2D? normalTexture) = LoadProjectTexture(assetContentManager, RaceMaterialRecipes.TerrainNormalTextureCandidates);
+            return RaceMaterialBuilder.Create(RaceMaterialRecipes.ForTerrain(trackName, diffuseTexturePath, normalTexturePath), diffuseTexture, normalTexture, null);
         }
 
         private static Vector3 CalcLandscapePos(int x, int y, byte[] heights)

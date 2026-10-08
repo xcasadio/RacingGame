@@ -56,8 +56,6 @@ internal sealed class CarSelectionCarousel : IDisposable
     private const float ShadowMaxDistance = 16f;
     private const float ShadowDepthBias = 0.001f;
     private const float ShadowNormalBias = 0.05f;
-    // RacingGame's plate (NormalMapping.fx, ReflectionSpecular) added a Fresnel-weighted sky reflection to its texture.
-    private const float PlateReflectionAmount = 0.35f;
 
     // Fitted to the author's capture at 4:3 (plan rgce-title-car-selection-xna-look-tasks.md, T4.3): front plate edges
     // and bottom, rear car centres, within 6.7 capture pixels on average. RacingGame's code had (1.5, 1, 0) and 5.
@@ -362,22 +360,12 @@ internal sealed class CarSelectionCarousel : IDisposable
             }
 
             StaticModelImportedMaterial importedMaterial = importResult.Materials[mesh.MaterialIndex];
-            LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
-            mesh.Material = new LitDiffuseMaterial
-            {
-                Name = $"{PlateModelName}.{importedMaterial.DisplayName}",
-                BasColor = LoadTexture(textureLoader, importedMaterial.DiffuseTextureFilePath, game),
-                NormalMap = LoadTexture(textureLoader, importedMaterial.NormalTextureFilePath, game),
-                DiffuseColor = importedMaterial.DiffuseColor,
-                AmbientColor = presentation.AmbientColor,
-                EmissiveColor = presentation.EmissiveColor,
-                SpecularColor = importedMaterial.SpecularColor,
-                SpecularPower = Math.Clamp(importedMaterial.SpecularPower, 2f, 48f),
-                SamplerState = SamplerState.AnisotropicWrap,
-                Queue = presentation.Queue,
-                UseSceneReflectionCube = importedMaterial.UsesReflection,
-                ReflectionAddAmount = PlateReflectionAmount,
-            };
+            RaceMaterialRecipe recipe = RaceMaterialRecipes.ForPlate(PlateModelName, importedMaterial);
+            mesh.Material = RaceMaterialBuilder.Create(
+                recipe,
+                LoadTexture(textureLoader, recipe.BaseTextureFilePath, game),
+                LoadTexture(textureLoader, recipe.NormalTextureFilePath, game),
+                null);
             for (int index = 0; index < mesh.SubMeshes.Count; index++)
             {
                 mesh.SubMeshes[index].Material = mesh.Material;

@@ -26,15 +26,11 @@ namespace RacingGame.Gameplay.Components;
 /// </summary>
 internal static class LegacyCarVisualFactory
 {
-    private const string LegacyCarModelName = "Car";
     private const float LegacyCarCollisionLength = RaceCarEntityFactory.CollisionLength;
     private const float LegacyCarCollisionWidth = RaceCarEntityFactory.CollisionWidth;
     private const float LegacyCarCollisionHeight = RaceCarEntityFactory.CollisionHeight;
-    private const float LegacyCarReflectionMultiplyBase = 0.85f;
-    private const float LegacyCarReflectionMultiplyFactor = 0.75f;
-    private const string CarNormalTextureName = "RacerCarNormal";
     private static readonly Color LegacyTextureColorKey = new(255, 0, 255, 0);
-    private static readonly string[] CarDiffuseTextureNames = ["RacerCar", "RacerCar2", "RacerCar3"];
+    private static readonly string[] CarDiffuseTextureNames = RaceMaterialRecipes.CarDiffuseTextureNames;
 
     private static readonly Texture2DLoader TextureLoader = new();
     private static readonly Dictionary<string, Texture2D?> TextureCache = new(StringComparer.OrdinalIgnoreCase);
@@ -161,7 +157,7 @@ internal static class LegacyCarVisualFactory
             if (mesh.MaterialIndex >= 0 && mesh.MaterialIndex < importedMaterials.Count)
             {
                 StaticModelImportedMaterial importedMaterial = importedMaterials[mesh.MaterialIndex];
-                material = CreateImportedRuntimeMaterial(LegacyCarModelName, importedMaterial, carIndex, assetContentManager);
+                material = CreateImportedRuntimeMaterial(importedMaterial, carIndex, assetContentManager);
                 mesh.Material = material;
             }
 
@@ -173,133 +169,28 @@ internal static class LegacyCarVisualFactory
     }
 
     private static LitDiffuseMaterial CreateImportedRuntimeMaterial(
-        string modelName,
         StaticModelImportedMaterial importedMaterial,
         int carIndex,
         AssetContentManager assetContentManager)
     {
-        RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning(modelName, importedMaterial);
-        string? normalTexturePath = ResolveNormalTexturePath(importedMaterial);
+        RaceMaterialRecipe recipe = RaceMaterialRecipes.ForCar(importedMaterial, carIndex, Path.Combine(GetProjectContentPath(), "Textures"));
         Texture2D? diffuseTexture;
-        if (UsesCarDiffuseTexture(importedMaterial.DiffuseTextureFilePath))
+        if (recipe.BaseTextureRole == RaceBaseTextureRole.File)
         {
-            CarPaint? paint = GetCarPaint(carIndex, assetContentManager);
-            diffuseTexture = paint == null ? null : IsPaintMaterial(importedMaterial) ? paint.Painted : paint.Unpainted;
+            diffuseTexture = LoadTexture(recipe.BaseTextureFilePath, assetContentManager);
         }
         else
         {
-            diffuseTexture = LoadTexture(importedMaterial.DiffuseTextureFilePath, assetContentManager);
-        }
-        Texture2D? normalTexture = LoadTexture(normalTexturePath, assetContentManager);
-        bool useSceneReflectionCube = tuning.EnableReflection
-            && RaceSkySystem.ShouldUseSceneReflectionCube(importedMaterial.ReflectionTextureFilePath);
-        TextureCube? reflectionCube = null;
-        if (tuning.EnableReflection && !useSceneReflectionCube)
-        {
-            reflectionCube = LoadTextureCube(importedMaterial.ReflectionTextureFilePath, assetContentManager);
-            useSceneReflectionCube = reflectionCube == null;
+            CarPaint? paint = GetCarPaint(carIndex, assetContentManager);
+            diffuseTexture = paint == null ? null : recipe.BaseTextureRole == RaceBaseTextureRole.CarPainted ? paint.Painted : paint.Unpainted;
         }
 
-        LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
-        Vector3 specularColor = tuning.ApplySpecularColor(importedMaterial.SpecularColor);
-        float specularPower = Math.Clamp(tuning.ApplySpecularPower(importedMaterial.SpecularPower), 2f, 48f);
-        bool useLegacyCarReflectionBlend = UsesLegacyCarReflectionBlend(importedMaterial);
+        Texture2D? normalTexture = LoadTexture(recipe.NormalTextureFilePath, assetContentManager);
+        TextureCube? reflectionCube = recipe.ReflectionCubeFilePath != null
+            ? LoadTextureCube(recipe.ReflectionCubeFilePath, assetContentManager)
+            : null;
 
-        return new LitDiffuseMaterial
-        {
-            Name = $"{modelName}.{importedMaterial.DisplayName}.Car{carIndex}",
-            BasColor = diffuseTexture,
-            NormalMap = normalTexture,
-            ReflectionCube = reflectionCube,
-            UseSceneReflectionCube = useSceneReflectionCube,
-            DiffuseColor = importedMaterial.DiffuseColor,
-            AmbientColor = presentation.AmbientColor,
-            EmissiveColor = presentation.EmissiveColor,
-            SpecularColor = specularColor,
-            SpecularPower = specularPower,
-            ReflectionAddAmount = useLegacyCarReflectionBlend ? 0f : 1f,
-            ReflectionMultiplyBase = useLegacyCarReflectionBlend ? LegacyCarReflectionMultiplyBase : 1f,
-            ReflectionMultiplyFactor = useLegacyCarReflectionBlend ? LegacyCarReflectionMultiplyFactor : 0f,
-            SamplerState = SamplerState.AnisotropicWrap,
-            Queue = presentation.Queue,
-            AlphaCutoff = presentation.AlphaCutoff,
-            RasterizerState = presentation.DisableBackfaceCulling ? RasterizerState.CullNone : null,
-        };
-    }
-
-    private static bool IsPaintMaterial(StaticModelImportedMaterial importedMaterial)
-    {
-        string displayName = importedMaterial.DisplayName;
-        if (displayName.Contains("chrome", StringComparison.OrdinalIgnoreCase)
-            || displayName.Contains("gummi", StringComparison.OrdinalIgnoreCase)
-            || displayName.Contains("glass", StringComparison.OrdinalIgnoreCase)
-            || displayName.Contains("fenster", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        if (displayName.Contains("lack", StringComparison.OrdinalIgnoreCase)
-            || displayName.Contains("paint", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        return importedMaterial.UsesReflection && UsesCarDiffuseTexture(importedMaterial.DiffuseTextureFilePath);
-    }
-
-    private static bool UsesLegacyCarReflectionBlend(StaticModelImportedMaterial importedMaterial)
-    {
-        if (!importedMaterial.UsesReflection)
-        {
-            return false;
-        }
-
-        string effectFileName = Path.GetFileName(importedMaterial.EffectFilePath ?? string.Empty);
-        if (!effectFileName.Equals("NormalMapping.fx", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        string displayName = importedMaterial.DisplayName;
-        return !displayName.Contains("glass", StringComparison.OrdinalIgnoreCase)
-            && !displayName.Contains("fenster", StringComparison.OrdinalIgnoreCase)
-            && !displayName.Contains("gummi", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string? ResolveNormalTexturePath(StaticModelImportedMaterial importedMaterial)
-    {
-        if (UsesCarDiffuseTexture(importedMaterial.DiffuseTextureFilePath)
-            || UsesCarNormalTexture(importedMaterial.NormalTextureFilePath))
-        {
-            return Path.Combine(GetProjectContentPath(), "Textures", CarNormalTextureName + ".png");
-        }
-
-        return importedMaterial.NormalTextureFilePath;
-    }
-
-    private static bool UsesCarDiffuseTexture(string? texturePath)
-    {
-        if (string.IsNullOrWhiteSpace(texturePath))
-        {
-            return false;
-        }
-
-        string textureName = Path.GetFileNameWithoutExtension(texturePath);
-        for (int index = 0; index < CarDiffuseTextureNames.Length; index++)
-        {
-            if (textureName.Equals(CarDiffuseTextureNames[index], StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool UsesCarNormalTexture(string? texturePath)
-    {
-        return !string.IsNullOrWhiteSpace(texturePath)
-            && Path.GetFileNameWithoutExtension(texturePath).Equals(CarNormalTextureName, StringComparison.OrdinalIgnoreCase);
+        return RaceMaterialBuilder.Create(recipe, diffuseTexture, normalTexture, reflectionCube);
     }
 
     private static void ApplyFallbackMaterials(StaticModel model)
@@ -311,15 +202,7 @@ internal static class LegacyCarVisualFactory
                 continue;
             }
 
-            mesh.Material = new LitDiffuseMaterial
-            {
-                Name = $"{LegacyCarModelName}.{mesh.Name}.Fallback",
-                DiffuseColor = new Color(196, 196, 196),
-                AmbientColor = new Vector3(0.16f),
-                EmissiveColor = new Vector3(0.02f),
-                SpecularColor = new Vector3(0.32f),
-                SpecularPower = 12f,
-            };
+            mesh.Material = RaceMaterialBuilder.Create(RaceMaterialRecipes.ForCarFallback(mesh.Name), null, null, null);
         }
     }
 
