@@ -17,13 +17,13 @@ public sealed class VehicleWheelVisualComponent : EntityComponent
     {
         _ = elapsedTime;
 
-        if (Owner is not RacingCarPawn pawn || pawn.World == null)
+        if (Owner.World == null || Owner.GetComponent<RaceCarStateComponent>() == null)
         {
             return;
         }
 
-        VehicleDynamicsComponent? dynamics = pawn.VehicleDynamics;
-        StaticModelComponent? visualComponent = pawn.CarVisualComponent;
+        VehicleDynamicsComponent? dynamics = Owner.GetComponent<VehicleDynamicsComponent>();
+        StaticModelComponent? visualComponent = Owner.CarVisualComponent();
         if (dynamics == null || visualComponent?.StaticModel == null)
         {
             return;

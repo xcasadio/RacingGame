@@ -931,7 +931,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 >   - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
 > - **Éditeur** : une copie du projet, avec la nouvelle DLL, s'ouvre avec le code 0. La section `Logs:` n'a ni « no IPlugin » ni erreur de chargement. Elle garde seulement les deux avertissements connus du déchargement du contexte de scripts, déjà présents en T2.1.
 
-### ⏳ T4.3 — La voiture en entité ordinaire (P6)
+### ✅ T4.3 — La voiture en entité ordinaire (P6)
 
 - **Objectif** : `RacingCarPawn` disparaît. La voiture est une `Entity` avec composants, construite par une fabrique de la DLL, et son état de course est porté par un composant.
 - **Fichiers** :
@@ -944,6 +944,27 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
   - `check_gameplay_type_names.py` : 0 collision ;
   - A4 contre les références de T4.1, dont les audits des voitures identiques à S0. L'export peut renommer les composants de la voiture, mais ses maillages, leurs matrices et leurs matériaux restent identiques.
 - **Commit** : `refactor(racing-casa): build the player car as an entity with components`
+
+> Validation (2026-10-08) :
+> - **Code** :
+>   - `RacingCarPawn` est supprimé ;
+>   - `RaceCarStateComponent` porte les 12 propriétés d'état, avec les mêmes types, valeurs par défaut et visibilités, et les copie dans `Clone()` ;
+>   - `RaceCarEntityFactory.Create()` construit la même hiérarchie d'ancres, le même `BodyVisual` et les mêmes composants, dans le même ordre, plus `RaceCarStateComponent` ;
+>   - les autres membres du pawn deviennent des méthodes d'extension sur `Entity`, dans `RaceCarEntityExtensions` : recherches d'ancres, matrices et positions du corps, avant visuel et de mouvement. Ce fichier n'était pas prévu par le plan ; il garde les appels lisibles ;
+>   - le pawn ne surchargeait rien d'`Entity` ;
+>   - la session expose `PlayerCar` (`Entity`) et `PlayerCarState`, au lieu de `PlayerPawn`. La dynamique met en cache le composant d'état et le recherche à nouveau si son propriétaire change ;
+>   - le nom par défaut passe de « RacingCarPawn » à « RaceCar ». La fabrique du monde le remplaçait déjà par `PlayerCar` : l'export ne change pas.
+> - **Contrôles** :
+>   - `dotnet build RacingGame.slnx` : 0 erreur, 0 avertissement ;
+>   - `rg RacingCarPawn` ne trouve plus rien ;
+>   - `check_gameplay_type_names.py` : 96 types, 0 collision.
+> - **A4 contre T4.1** (`artifacts/editor-project-baseline/s4/t4.3/`) :
+>   - export : 1 074, 689 et 2 156 maillages appariés, 0 renommé, voiture comprise ;
+>   - audit : 21 vues dans le seuil ;
+>   - captures d'interface : 0,00, `race-hud` compris ;
+>   - audits des voitures identiques à S0 ;
+>   - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
+> - **Éditeur** : le projet s'ouvre avec le code 0. La section `Logs:` ne contient que les deux avertissements connus.
 
 ### ⏳ T4.4 — Placements de piste séparés de la génération des maillages
 

@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGame.Gameplay.ViewModels;
 using XnaKeys = Microsoft.Xna.Framework.Input.Keys;
+using RacingGame.Gameplay.Components;
 using RacingGame.Gameplay.Entities;
 using RacingGame.Gameplay.GameFramework;
 using RacingGame.Gameplay.Race;
@@ -114,19 +115,19 @@ internal sealed class RaceHudScreen : RaceXamlScreenBase
             && (gamePad.AJustPressed || gamePad.BJustPressed || gamePad.XJustPressed || gamePad.BackJustPressed || gamePad.StartJustPressed);
     }
 
-    private bool TryGetActiveRace(out RuntimeRaceSession session, out RaceGameMode gameMode, out RacingCarPawn playerPawn)
+    private bool TryGetActiveRace(out RuntimeRaceSession session, out RaceGameMode gameMode, out RaceCarStateComponent carState)
     {
         session = _game.RaceSession;
         gameMode = null!;
-        playerPawn = null!;
+        carState = null!;
 
-        if (!session.IsActive || session.GameMode == null || session.PlayerPawn == null)
+        if (!session.IsActive || session.GameMode == null || session.PlayerCarState == null)
         {
             return false;
         }
 
         gameMode = session.GameMode;
-        playerPawn = session.PlayerPawn;
+        carState = session.PlayerCarState;
         return true;
     }
 
@@ -196,29 +197,29 @@ internal sealed class RaceHudScreen : RaceXamlScreenBase
 
     private int GetHudSpeedDisplay()
     {
-        return TryGetActiveRace(out _, out RaceGameMode gameMode, out RacingCarPawn playerPawn) && !gameMode.IsRaceFinished
-            ? (int)Math.Round(playerPawn.CurrentSpeedMph)
+        return TryGetActiveRace(out _, out RaceGameMode gameMode, out RaceCarStateComponent carState) && !gameMode.IsRaceFinished
+            ? (int)Math.Round(carState.CurrentSpeedMph)
             : 0;
     }
 
     private int GetHudGearDisplay()
     {
-        return TryGetActiveRace(out _, out RaceGameMode gameMode, out RacingCarPawn playerPawn) && !gameMode.IsRaceFinished
-            ? playerPawn.CurrentGear
+        return TryGetActiveRace(out _, out RaceGameMode gameMode, out RaceCarStateComponent carState) && !gameMode.IsRaceFinished
+            ? carState.CurrentGear
             : 1;
     }
 
     private float GetTachometerNeedleValue()
     {
-        if (!TryGetActiveRace(out _, out RaceGameMode gameMode, out RacingCarPawn playerPawn) || gameMode.IsRaceFinished)
+        if (!TryGetActiveRace(out _, out RaceGameMode gameMode, out RaceCarStateComponent carState) || gameMode.IsRaceFinished)
         {
             return 0f;
         }
 
-        float speedRatio = playerPawn.TargetTopSpeedMph <= 0.01f
+        float speedRatio = carState.TargetTopSpeedMph <= 0.01f
             ? 0f
-            : Math.Clamp(playerPawn.CurrentSpeedMph / playerPawn.TargetTopSpeedMph, 0f, 1f);
-        return (0.5f * speedRatio) + (0.5f * playerPawn.TachometerAcceleration);
+            : Math.Clamp(carState.CurrentSpeedMph / carState.TargetTopSpeedMph, 0f, 1f);
+        return (0.5f * speedRatio) + (0.5f * carState.TachometerAcceleration);
     }
 
     private IReadOnlyList<string> GetGameOverLines()

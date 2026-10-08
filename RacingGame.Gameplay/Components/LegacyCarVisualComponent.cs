@@ -31,25 +31,25 @@ public sealed class LegacyCarVisualComponent : EntityComponent
 
     private void TryInitializeVisual()
     {
-        if (_isVisualReady || Owner is not RacingCarPawn pawn || pawn.World == null)
+        if (_isVisualReady || Owner.World == null || Owner.GetComponent<RaceCarStateComponent>() is not { } state)
         {
             return;
         }
 
-        StaticModelComponent? visualComponent = pawn.CarVisualComponent;
+        StaticModelComponent? visualComponent = Owner.CarVisualComponent();
         if (visualComponent == null)
         {
             if (!_hasLoggedFailure)
             {
-                Logs.WriteWarning("Player car visual component is missing from RacingCarPawn hierarchy.");
+                Logs.WriteWarning("Player car visual component is missing from the race car hierarchy.");
                 _hasLoggedFailure = true;
             }
 
             return;
         }
 
-        AssetContentManager assetContentManager = pawn.World.Game.AssetContentManager;
-        StaticModel? model = LegacyCarVisualFactory.LoadConfiguredCarModel(assetContentManager, pawn.SelectedCarIndex, pawn.SelectedCarColorIndex);
+        AssetContentManager assetContentManager = Owner.World.Game.AssetContentManager;
+        StaticModel? model = LegacyCarVisualFactory.LoadConfiguredCarModel(assetContentManager, state.SelectedCarIndex, state.SelectedCarColorIndex);
         if (model == null)
         {
             if (!_hasLoggedFailure)
@@ -63,13 +63,13 @@ public sealed class LegacyCarVisualComponent : EntityComponent
 
         BoundingBox bounds = LegacyCarVisualFactory.GetCarBounds(assetContentManager);
         float scale = LegacyCarVisualFactory.ComputeUniformScale(bounds);
-        float visualPivotLiftY = pawn.VisualPivotComponent?.LocalPosition.Y ?? 0f;
+        float visualPivotLiftY = Owner.VisualPivotComponent()?.LocalPosition.Y ?? 0f;
 
         visualComponent.StaticModel = model;
         visualComponent.LocalScale = new Vector3(scale);
         visualComponent.LocalOrientation = LegacyCarVisualFactory.LegacyCarFacingCorrection;
         visualComponent.LocalPosition = LegacyCarVisualFactory.ComputeGroundedModelOffset(bounds, scale, visualPivotLiftY);
-        visualComponent.InitializeWithWorld(pawn.World);
+        visualComponent.InitializeWithWorld(Owner.World);
 
         _isVisualReady = true;
     }

@@ -27,9 +27,9 @@ namespace RacingGame.Gameplay.Components;
 internal static class LegacyCarVisualFactory
 {
     private const string LegacyCarModelName = "Car";
-    private const float LegacyCarCollisionLength = RacingCarPawn.CollisionLength;
-    private const float LegacyCarCollisionWidth = RacingCarPawn.CollisionWidth;
-    private const float LegacyCarCollisionHeight = RacingCarPawn.CollisionHeight;
+    private const float LegacyCarCollisionLength = RaceCarEntityFactory.CollisionLength;
+    private const float LegacyCarCollisionWidth = RaceCarEntityFactory.CollisionWidth;
+    private const float LegacyCarCollisionHeight = RaceCarEntityFactory.CollisionHeight;
     private const float LegacyCarReflectionMultiplyBase = 0.85f;
     private const float LegacyCarReflectionMultiplyFactor = 0.75f;
     private const string CarNormalTextureName = "RacerCarNormal";

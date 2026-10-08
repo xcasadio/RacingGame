@@ -16,7 +16,9 @@ internal sealed class RuntimeRaceSession
 
     public RacingPlayerController? PlayerController { get; private set; }
 
-    public RacingCarPawn? PlayerPawn { get; private set; }
+    public Entity? PlayerCar { get; private set; }
+
+    public RaceCarStateComponent? PlayerCarState { get; private set; }
 
     public string TrackName { get; private set; } = string.Empty;
 
@@ -44,7 +46,7 @@ internal sealed class RuntimeRaceSession
 
     public VehicleDrivingMode DrivingMode { get; private set; } = VehicleDrivingMode.Arcade;
 
-    public bool IsActive => GameMode != null && PlayerController != null && PlayerPawn != null;
+    public bool IsActive => GameMode != null && PlayerController != null && PlayerCar != null;
 
     public int MovementDebugEntryCount => _movementDebugEntries.Count;
 
@@ -52,11 +54,12 @@ internal sealed class RuntimeRaceSession
         ? "No movement events captured yet."
         : _movementDebugEntries[^1];
 
-    public void Bind(RaceGameMode gameMode, RacingPlayerController playerController, RacingCarPawn playerPawn)
+    public void Bind(RaceGameMode gameMode, RacingPlayerController playerController, Entity playerCar)
     {
         GameMode = gameMode;
         PlayerController = playerController;
-        PlayerPawn = playerPawn;
+        PlayerCar = playerCar;
+        PlayerCarState = playerCar.GetRequiredComponent<RaceCarStateComponent>();
         TrackName = gameMode.SelectedTrackName;
         CarName = gameMode.SelectedCarName;
         DrivingMode = gameMode.DrivingMode;
@@ -68,18 +71,18 @@ internal sealed class RuntimeRaceSession
         ResetMovementDebugEntries();
         AppendMovementDebug("session", $"bound track='{TrackName}' car='{CarName}'");
         AppendMovementDebug("mode", $"drivingMode={DrivingMode}");
-        if (playerPawn.CarProfile != null)
+        if (PlayerCarState.CarProfile != null)
         {
             AppendMovementDebug(
                 "profile",
-                $"id={playerPawn.CarProfile.Id} topSpeedMph={playerPawn.CarProfile.TargetTopSpeedMph:0} massKg={playerPawn.CarProfile.LegacyMassKilograms:0} accel={playerPawn.CarProfile.LegacyMaxAccelerationPerSecond:0.0}");
+                $"id={PlayerCarState.CarProfile.Id} topSpeedMph={PlayerCarState.CarProfile.TargetTopSpeedMph:0} massKg={PlayerCarState.CarProfile.LegacyMassKilograms:0} accel={PlayerCarState.CarProfile.LegacyMaxAccelerationPerSecond:0.0}");
         }
 
-        if (playerPawn.RootComponent != null)
+        if (playerCar.RootComponent != null)
         {
             AppendMovementDebug(
                 "spawn",
-                $"position={FormatVector(playerPawn.RootComponent.Position)} forward={FormatVector(playerPawn.RootComponent.Forward)}");
+                $"position={FormatVector(playerCar.RootComponent.Position)} forward={FormatVector(playerCar.RootComponent.Forward)}");
         }
     }
 
@@ -114,7 +117,8 @@ internal sealed class RuntimeRaceSession
     {
         GameMode = null;
         PlayerController = null;
-        PlayerPawn = null;
+        PlayerCar = null;
+        PlayerCarState = null;
         TrackName = string.Empty;
         CarName = string.Empty;
         TrackSummary = string.Empty;
@@ -155,13 +159,13 @@ internal sealed class RuntimeRaceSession
         builder.AppendLine($"DebugCamera: {IsDebugCameraEnabled}");
         builder.AppendLine($"CircuitOnlyView: {IsCircuitOnlyViewEnabled}");
 
-        if (PlayerPawn?.RootComponent != null)
+        if (PlayerCar?.RootComponent != null && PlayerCarState != null)
         {
-            builder.AppendLine($"PlayerPosition: {FormatVector(PlayerPawn.RootComponent.Position)}");
-            builder.AppendLine($"PlayerForward: {FormatVector(PlayerPawn.RootComponent.Forward)}");
-            builder.AppendLine($"SpeedMph: {PlayerPawn.CurrentSpeedMph:0.0}");
-            builder.AppendLine($"SteeringInput: {PlayerPawn.SteeringInput:0.000}");
-            if (PlayerPawn.VehicleDynamics is { } dynamics)
+            builder.AppendLine($"PlayerPosition: {FormatVector(PlayerCar.RootComponent.Position)}");
+            builder.AppendLine($"PlayerForward: {FormatVector(PlayerCar.RootComponent.Forward)}");
+            builder.AppendLine($"SpeedMph: {PlayerCarState.CurrentSpeedMph:0.0}");
+            builder.AppendLine($"SteeringInput: {PlayerCarState.SteeringInput:0.000}");
+            if (PlayerCar.GetComponent<VehicleDynamicsComponent>() is { } dynamics)
             {
                 builder.AppendLine("VehicleDynamics:");
                 builder.AppendLine(dynamics.BuildDetailedDebugReport());

@@ -129,10 +129,10 @@ internal sealed class CarTopSpeedAuditValidator
 
             case AuditStep.WaitForCountdown:
                 if (CanAdvance(totalTime)
-                    && TryGetActivePawn(out RacingCarPawn countdownPawn)
+                    && TryGetActiveCarState(out RaceCarStateComponent countdownCarState)
                     && _game.RaceSession.GameMode is { CountdownSecondsRemaining: <= 0f, IsPaused: false, IsRaceFinished: false })
                 {
-                    BeginTopSpeedSample(countdownPawn, totalTime);
+                    BeginTopSpeedSample(countdownCarState, totalTime);
                 }
                 break;
 
@@ -152,39 +152,39 @@ internal sealed class CarTopSpeedAuditValidator
         }
     }
 
-    private void BeginTopSpeedSample(RacingCarPawn pawn, TimeSpan totalTime)
+    private void BeginTopSpeedSample(RaceCarStateComponent carState, TimeSpan totalTime)
     {
-        _sampleStartSpeedMph = pawn.CurrentSpeedMph;
-        _sampleEndSpeedMph = pawn.CurrentSpeedMph;
-        _peakSpeedMph = pawn.CurrentSpeedMph;
-        _peakGear = pawn.CurrentGear;
+        _sampleStartSpeedMph = carState.CurrentSpeedMph;
+        _sampleEndSpeedMph = carState.CurrentSpeedMph;
+        _peakSpeedMph = carState.CurrentSpeedMph;
+        _peakGear = carState.CurrentGear;
         _stableDurationSeconds = 0f;
-        _lastStabilitySampleSpeedMph = pawn.CurrentSpeedMph;
+        _lastStabilitySampleSpeedMph = carState.CurrentSpeedMph;
         _lastStabilitySampleAt = totalTime;
         _converged = false;
-        ApplyForcedInput(pawn, 1f, 0f);
+        ApplyForcedInput(carState, 1f, 0f);
         Advance(AuditStep.RunTopSpeedSample, totalTime, "Running long top-speed sample");
     }
 
     private void UpdateTopSpeedSample(TimeSpan totalTime)
     {
-        if (!TryGetActivePawn(out RacingCarPawn pawn))
+        if (!TryGetActiveCarState(out RaceCarStateComponent carState))
         {
             Fail("Car top-speed audit lost the player pawn during the sample.");
             return;
         }
 
-        float steering = ComputeTrackFollowingSteering(pawn);
-        ApplyForcedInput(pawn, 1f, steering);
-        _sampleEndSpeedMph = pawn.CurrentSpeedMph;
-        _peakSpeedMph = Math.Max(_peakSpeedMph, pawn.CurrentSpeedMph);
-        _peakGear = Math.Max(_peakGear, pawn.CurrentGear);
+        float steering = ComputeTrackFollowingSteering(carState);
+        ApplyForcedInput(carState, 1f, steering);
+        _sampleEndSpeedMph = carState.CurrentSpeedMph;
+        _peakSpeedMph = Math.Max(_peakSpeedMph, carState.CurrentSpeedMph);
+        _peakGear = Math.Max(_peakGear, carState.CurrentGear);
 
         float sampleElapsedSeconds = (float)(totalTime - _lastTransitionAt).TotalSeconds;
         if (totalTime - _lastStabilitySampleAt >= TimeSpan.FromSeconds(StabilitySampleIntervalSeconds))
         {
-            float speedDelta = Math.Abs(pawn.CurrentSpeedMph - _lastStabilitySampleSpeedMph);
-            bool nearPeakSpeed = pawn.CurrentSpeedMph >= _peakSpeedMph - 1.0f;
+            float speedDelta = Math.Abs(carState.CurrentSpeedMph - _lastStabilitySampleSpeedMph);
+            bool nearPeakSpeed = carState.CurrentSpeedMph >= _peakSpeedMph - 1.0f;
             if (sampleElapsedSeconds >= MinimumSampleDurationSeconds
                 && speedDelta <= StabilitySpeedDeltaThresholdMph
                 && nearPeakSpeed)
@@ -196,7 +196,7 @@ internal sealed class CarTopSpeedAuditValidator
                 _stableDurationSeconds = 0f;
             }
 
-            _lastStabilitySampleSpeedMph = pawn.CurrentSpeedMph;
+            _lastStabilitySampleSpeedMph = carState.CurrentSpeedMph;
             _lastStabilitySampleAt = totalTime;
         }
 
@@ -218,13 +218,13 @@ internal sealed class CarTopSpeedAuditValidator
 
     private void CaptureCurrentResult(float sampleDurationSeconds)
     {
-        if (!TryGetActivePawn(out RacingCarPawn pawn))
+        if (!TryGetActiveCarState(out RaceCarStateComponent carState))
         {
             Fail("Car top-speed audit could not read the final player pawn state.");
             return;
         }
 
-        CarPerformanceProfile profile = pawn.CarProfile ?? RaceFrontEndCatalog.ResolveCarProfile(pawn.SelectedCarIndex);
+        CarPerformanceProfile profile = carState.CarProfile ?? RaceFrontEndCatalog.ResolveCarProfile(carState.SelectedCarIndex);
         string detailFilePath = Path.Combine(_detailDirectoryPath, $"{profile.Id}-simulation-top-speed.txt");
         Directory.CreateDirectory(_detailDirectoryPath);
         File.WriteAllText(detailFilePath, _game.RaceSession.BuildMovementDebugReport());
@@ -246,16 +246,16 @@ internal sealed class CarTopSpeedAuditValidator
         ClearForcedInput();
     }
 
-    private float ComputeTrackFollowingSteering(RacingCarPawn pawn)
+    private float ComputeTrackFollowingSteering(RaceCarStateComponent carState)
     {
         if (!TryGetTrackPhysics(out RaceTrackPhysicsComponent trackPhysics)
-            || pawn.RootComponent == null
-            || !trackPhysics.TrySampleSurface(pawn.RootComponent.Position, 0, out RaceTrackSurfaceSample surfaceSample))
+            || carState.Owner.RootComponent == null
+            || !trackPhysics.TrySampleSurface(carState.Owner.RootComponent.Position, 0, out RaceTrackSurfaceSample surfaceSample))
         {
             return 0f;
         }
 
-        Vector3 currentForward = FlattenAndNormalize(pawn.GetMovementForward(), surfaceSample.Forward);
+        Vector3 currentForward = FlattenAndNormalize(carState.Owner.GetMovementForward(), surfaceSample.Forward);
         Vector3 targetForward = FlattenAndNormalize(surfaceSample.Forward, currentForward);
         float headingErrorDegrees = ComputeSignedHeadingDeltaDegrees(currentForward, targetForward);
         float normalizedLateralOffset = surfaceSample.HalfWidth <= 0.0001f
@@ -291,32 +291,32 @@ internal sealed class CarTopSpeedAuditValidator
         return false;
     }
 
-    private bool TryGetActivePawn(out RacingCarPawn pawn)
+    private bool TryGetActiveCarState(out RaceCarStateComponent carState)
     {
-        pawn = null!;
+        carState = null!;
 
         if (!_game.RaceSession.IsActive
-            || _game.RaceSession.PlayerPawn == null
+            || _game.RaceSession.PlayerCarState == null
             || _game.GameManager.CurrentWorld is not { } raceWorld
             || !RaceWorldFactory.IsRaceWorld(raceWorld))
         {
             return false;
         }
 
-        pawn = _game.RaceSession.PlayerPawn;
-        return pawn.RootComponent != null;
+        carState = _game.RaceSession.PlayerCarState;
+        return carState.Owner.RootComponent != null;
     }
 
-    private void ApplyForcedInput(RacingCarPawn pawn, float throttle, float steering)
+    private void ApplyForcedInput(RaceCarStateComponent carState, float throttle, float steering)
     {
-        pawn.ForcedControlInput = new VehicleControlInput(throttle, steering);
+        carState.ForcedControlInput = new VehicleControlInput(throttle, steering);
     }
 
     private void ClearForcedInput()
     {
-        if (_game.RaceSession.PlayerPawn != null)
+        if (_game.RaceSession.PlayerCarState != null)
         {
-            _game.RaceSession.PlayerPawn.ForcedControlInput = null;
+            _game.RaceSession.PlayerCarState.ForcedControlInput = null;
         }
     }
 

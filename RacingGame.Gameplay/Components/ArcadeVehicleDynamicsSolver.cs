@@ -44,7 +44,7 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
 
     public void Update(VehicleDynamicsExecutionContext context)
     {
-        RacingCarPawn pawn = context.Pawn;
+        Entity car = context.Car;
         float elapsedTime = context.ElapsedTime;
         float throttle = context.Input.Throttle;
         float steering = context.Input.Steering;
@@ -103,7 +103,7 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         if (Math.Abs(_speedUnitsPerSecond) > 0.05f && Math.Abs(steering) > 0f)
         {
             float steeringScale = Math.Clamp(_speedUnitsPerSecond / tuning.MaxForwardSpeedUnitsPerSecond, -0.75f, 1f);
-            float turnAmount = steering * GetSteeringSensitivityScale(pawn.Controller) * tuning.TurnRateRadiansPerSecond * steeringScale * elapsedTime;
+            float turnAmount = steering * GetSteeringSensitivityScale(car.Controller()) * tuning.TurnRateRadiansPerSecond * steeringScale * elapsedTime;
             _movementForward = VehicleDynamicsMath.RotateDirectionAroundAxis(_movementForward, currentSurface.Up, turnAmount, currentSurface.Forward);
         }
 
@@ -124,7 +124,7 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
 
         if (barrierContact.TouchedBarrier)
         {
-            RaceGamepadVibration.ReportPlayerBarrierContact(pawn, session, barrierContact.ImpactStrength);
+            RaceGamepadVibration.ReportPlayerBarrierContact(car, session, barrierContact.ImpactStrength);
             _speedUnitsPerSecond = ApplyBarrierSpeedPenalty(_speedUnitsPerSecond, trackPhysics, barrierContact.ImpactStrength, elapsedTime);
             nextMovementForward = ProjectDirectionAlongBarrier(nextMovementForward, barrierContact.BarrierNormal, nextSurface.Up, nextSurface.Forward);
         }
@@ -200,7 +200,7 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         if (Math.Abs(_speedUnitsPerSecond) > 0.05f && Math.Abs(steering) > 0f)
         {
             float steeringScale = Math.Clamp(_speedUnitsPerSecond / tuning.MaxForwardSpeedUnitsPerSecond, -0.75f, 1f);
-            float turnAmount = steering * GetSteeringSensitivityScale(context.Pawn.Controller) * tuning.TurnRateRadiansPerSecond * steeringScale * elapsedTime;
+            float turnAmount = steering * GetSteeringSensitivityScale(context.Car.Controller()) * tuning.TurnRateRadiansPerSecond * steeringScale * elapsedTime;
             Quaternion rotation = Quaternion.CreateFromAxisAngle(Vector3.Up, turnAmount);
             currentForward = VehicleDynamicsMath.NormalizeOrFallback(Vector3.Transform(currentForward, rotation), currentForward);
         }
@@ -334,8 +334,8 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
         Vector3 carRight = Vector3.Cross(surface.Up, carForward);
         carRight = VehicleDynamicsMath.NormalizeOrFallback(carRight, surface.Right);
 
-        float halfCarWidth = RacingCarPawn.CollisionWidth * 0.5f;
-        float halfCarLength = RacingCarPawn.CollisionLength * 0.5f;
+        float halfCarWidth = RaceCarEntityFactory.CollisionWidth * 0.5f;
+        float halfCarLength = RaceCarEntityFactory.CollisionLength * 0.5f;
         float lateralExtent =
             Math.Abs(Vector3.Dot(carRight, surface.Right)) * halfCarWidth +
             Math.Abs(Vector3.Dot(carForward, surface.Right)) * halfCarLength;
@@ -404,7 +404,7 @@ internal sealed class ArcadeVehicleDynamicsSolver : IVehicleDynamicsSolver
 
         _lastLoggedThrottle = throttle;
         _lastLoggedSteering = steering;
-        bool inputEnabled = context.Pawn.Controller is RacingPlayerController racingPlayerController && racingPlayerController.IsInputEnable;
+        bool inputEnabled = context.Car.Controller() is RacingPlayerController racingPlayerController && racingPlayerController.IsInputEnable;
         session.AppendMovementDebug(
             "input",
             $"mode=arcade throttle={throttle:0.0} steering={steering:0.0} enabled={inputEnabled}/{inputEnabled} speedUnits={_speedUnitsPerSecond:0.000} pos={FormatVector(context.Chassis.Position)}");

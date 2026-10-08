@@ -97,18 +97,19 @@ public sealed class ChaseCameraRigComponent : EntityComponent
         }
 
         RuntimeRaceSession session = game.RaceSession;
-        RacingCarPawn? pawn = session.PlayerPawn;
+        Entity? car = session.PlayerCar;
+        RaceCarStateComponent? carState = session.PlayerCarState;
         RaceGameMode? gameMode = session.GameMode;
-        if (pawn?.RootComponent == null)
+        if (car?.RootComponent == null || carState == null)
         {
             return;
         }
 
         UpdateZoom(game, session.PlayerController, elapsedTime, gameMode?.IsRaceFinished == true);
 
-        Vector3 anchor = pawn.GetChaseCameraFocusPosition();
-        Vector3 targetForward = NormalizeOrFallback(pawn.GetMovementForward(), pawn.GetVisualForward(), Vector3.Forward);
-        Vector3 targetUp = NormalizeOrFallback(pawn.RootComponent.Up, Vector3.Up);
+        Vector3 anchor = car.GetChaseCameraFocusPosition();
+        Vector3 targetForward = NormalizeOrFallback(car.GetMovementForward(), car.GetVisualForward(), Vector3.Forward);
+        Vector3 targetUp = NormalizeOrFallback(car.RootComponent.Up, Vector3.Up);
         UpdateSmoothedOrientation(targetForward, targetUp, elapsedTime);
 
         if (gameMode?.IsRaceFinished == true)
@@ -117,14 +118,14 @@ public sealed class ChaseCameraRigComponent : EntityComponent
             return;
         }
 
-        UpdateFollowCamera(camera, anchor, pawn, elapsedTime);
+        UpdateFollowCamera(camera, anchor, carState, elapsedTime);
     }
 
-    private void UpdateFollowCamera(CameraLookAtComponent camera, Vector3 anchor, RacingCarPawn pawn, float elapsedTime)
+    private void UpdateFollowCamera(CameraLookAtComponent camera, Vector3 anchor, RaceCarStateComponent carState, float elapsedTime)
     {
-        float speedRatio = pawn.TargetTopSpeedMph <= 0.01f
+        float speedRatio = carState.TargetTopSpeedMph <= 0.01f
             ? 0f
-            : Math.Clamp(pawn.CurrentSpeedMph / pawn.TargetTopSpeedMph, 0f, 1f);
+            : Math.Clamp(carState.CurrentSpeedMph / carState.TargetTopSpeedMph, 0f, 1f);
         float desiredDistance = (FollowDistance + DynamicDistanceBySpeed * speedRatio) * _smoothedZoomFactor;
         float desiredHeight = FollowHeight + DynamicHeightBySpeed * speedRatio + (_smoothedZoomFactor - 1f) * 1.35f;
         float desiredLookAhead = LookAheadDistance + DynamicLookAheadBySpeed * speedRatio;

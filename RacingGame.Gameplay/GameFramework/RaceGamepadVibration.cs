@@ -36,12 +36,12 @@ internal sealed class RaceGamepadVibration
         _isEnabled = isEnabled;
     }
 
-    /// <summary>Reports a guard-rail contact of <paramref name="pawn"/> when it is the race's player car.</summary>
-    public static void ReportPlayerBarrierContact(RacingCarPawn pawn, RuntimeRaceSession? session, float impactStrength)
+    /// <summary>Reports a guard-rail contact of <paramref name="car"/> when it is the race's player car.</summary>
+    public static void ReportPlayerBarrierContact(Entity car, RuntimeRaceSession? session, float impactStrength)
     {
-        if (session?.PlayerPawn is { } playerPawn
-            && ReferenceEquals(playerPawn, pawn)
-            && pawn.World?.Game is IRaceGameHost game)
+        if (session?.PlayerCar is { } playerCar
+            && ReferenceEquals(playerCar, car)
+            && car.World?.Game is IRaceGameHost game)
         {
             game.RaceVibration.ReportBarrierContact(impactStrength);
         }

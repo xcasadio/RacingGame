@@ -35,7 +35,7 @@ public sealed class RaceFlowCoordinatorComponent : EntityComponent
         }
 
         RuntimeRaceSession session = game.RaceSession;
-        if (!session.IsActive || session.GameMode == null || session.PlayerController == null || session.PlayerPawn?.RootComponent == null)
+        if (!session.IsActive || session.GameMode == null || session.PlayerController == null || session.PlayerCar?.RootComponent == null)
         {
             return;
         }
@@ -65,7 +65,7 @@ public sealed class RaceFlowCoordinatorComponent : EntityComponent
 
         session.GameMode.UpdateRaceClock(elapsedTime);
 
-        Vector3 playerPosition = session.PlayerPawn.RootComponent.Position;
+        Vector3 playerPosition = session.PlayerCar.RootComponent.Position;
         if (!_hasPreviousPlayerPosition)
         {
             _previousPlayerPosition = playerPosition;

@@ -270,21 +270,21 @@ public static class RaceWorldFactory
         return entity;
     }
 
-    private static RacingCarPawn CreatePlayerCarEntity(RaceFrontEndState state, CarDefinition car, TrackDefinition track)
+    private static Entity CreatePlayerCarEntity(RaceFrontEndState state, CarDefinition car, TrackDefinition track)
     {
         var profile = car.PerformanceProfile;
-        var pawn = new RacingCarPawn
-        {
-            Name = PlayerCarEntityName,
-            CarLabel = car.Name,
-            TrackLabel = track.Name,
-            SelectedCarIndex = state.SelectedCarIndex,
-            SelectedCarColorIndex = state.SelectedCarColorIndex,
-            CarProfile = profile,
-            DrivingMode = state.SelectedDrivingMode,
-            TargetTopSpeedMph = profile.TargetTopSpeedMph,
-        };
+        Entity playerCar = RaceCarEntityFactory.Create();
+        playerCar.Name = PlayerCarEntityName;
 
-        return pawn;
+        var carState = playerCar.GetComponent<RaceCarStateComponent>()!;
+        carState.CarLabel = car.Name;
+        carState.TrackLabel = track.Name;
+        carState.SelectedCarIndex = state.SelectedCarIndex;
+        carState.SelectedCarColorIndex = state.SelectedCarColorIndex;
+        carState.CarProfile = profile;
+        carState.DrivingMode = state.SelectedDrivingMode;
+        carState.TargetTopSpeedMph = profile.TargetTopSpeedMph;
+
+        return playerCar;
     }
 }

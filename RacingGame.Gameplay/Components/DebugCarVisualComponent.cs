@@ -21,17 +21,17 @@ public sealed class DebugCarVisualComponent : EntityComponent
 
     public override void Update(float elapsedTime)
     {
-        if (Owner is not RacingCarPawn pawn || Owner.World?.Game == null || !Owner.IsVisible)
+        if (Owner.GetComponent<RaceCarStateComponent>() == null || Owner.World?.Game == null || !Owner.IsVisible)
         {
             return;
         }
 
-        if (pawn.CarVisualComponent?.StaticModel != null)
+        if (Owner.CarVisualComponent()?.StaticModel != null)
         {
             return;
         }
 
-        Matrix transform = pawn.GetBodyWorldMatrixNoScale();
+        Matrix transform = Owner.GetBodyWorldMatrixNoScale();
         Span<Vector3> corners = stackalloc Vector3[8]
         {
             new(-HalfExtents.X, -HalfExtents.Y, -HalfExtents.Z),
@@ -62,8 +62,8 @@ public sealed class DebugCarVisualComponent : EntityComponent
         DrawEdge(corners[2], corners[6]);
         DrawEdge(corners[3], corners[7]);
 
-        Vector3 noseStart = pawn.GetBodyWorldPosition();
-        Vector3 noseEnd = noseStart + pawn.GetVisualForward() * 2.2f;
+        Vector3 noseStart = Owner.GetBodyWorldPosition();
+        Vector3 noseEnd = noseStart + Owner.GetVisualForward() * 2.2f;
         Owner.World.Game.Line3dRendererComponent.AddLine(noseStart, noseEnd, Color.Yellow);
     }
 

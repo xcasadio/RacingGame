@@ -6,6 +6,7 @@ using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Worlds;
 using RacingGame.Gameplay.Cars;
+using RacingGame.Gameplay.Components;
 using RacingGame.Gameplay.Entities;
 using RacingGame.Gameplay.GameFramework;
 using RacingGame.Gameplay.Race;
@@ -34,8 +35,8 @@ internal sealed class RuntimeRaceWorldBinder
             return;
         }
 
-        RacingCarPawn? playerPawn = world.Entities.OfType<RacingCarPawn>().FirstOrDefault();
-        if (playerPawn == null)
+        Entity? playerCar = world.Entities.FirstOrDefault(entity => entity.GetComponent<RaceCarStateComponent>() != null);
+        if (playerCar == null)
         {
             _game.RaceSession.Clear();
             return;
@@ -45,9 +46,9 @@ internal sealed class RuntimeRaceWorldBinder
         raceGameMode.Configure(state);
 
         if (TryGetPlayerStart(world) is { } playerStart
-            && playerPawn.RootComponent != null)
+            && playerCar.RootComponent != null)
         {
-            playerPawn.RootComponent.CopyLocalTransformFrom(playerStart.LocalTransform);
+            playerCar.RootComponent.CopyLocalTransformFrom(playerStart.LocalTransform);
         }
 
         var playerControllers = (List<PlayerController>)PlayerControllersField.GetValue(world)!;
@@ -61,14 +62,15 @@ internal sealed class RuntimeRaceWorldBinder
             ControllerId = PlayerIndex.One,
         };
         CarPerformanceProfile selectedProfile = RaceFrontEndCatalog.ResolveCarProfile(state.SelectedCarIndex);
-        playerPawn.CarProfile = selectedProfile;
-        playerPawn.TargetTopSpeedMph = selectedProfile.TargetTopSpeedMph;
-        playerPawn.CarLabel = selectedProfile.Name;
-        playerPawn.DrivingMode = state.SelectedDrivingMode;
+        var carState = playerCar.GetComponent<RaceCarStateComponent>()!;
+        carState.CarProfile = selectedProfile;
+        carState.TargetTopSpeedMph = selectedProfile.TargetTopSpeedMph;
+        carState.CarLabel = selectedProfile.Name;
+        carState.DrivingMode = state.SelectedDrivingMode;
         playerControllers.Add(playerController);
-        playerController.Possess(playerPawn);
+        playerController.Possess(playerCar);
 
-        _game.RaceSession.Bind(raceGameMode, playerController, playerPawn);
+        _game.RaceSession.Bind(raceGameMode, playerController, playerCar);
         _game.GameManager.SyncPlayerViewAssignments();
         world.SetGameplayMode(raceGameMode);
     }

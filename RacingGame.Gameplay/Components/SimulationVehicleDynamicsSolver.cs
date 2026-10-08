@@ -254,7 +254,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
 
         if (touchedGuardRail)
         {
-            RaceGamepadVibration.ReportPlayerBarrierContact(context.Pawn, context.Session, guardRailImpactStrength);
+            RaceGamepadVibration.ReportPlayerBarrierContact(context.Car, context.Session, guardRailImpactStrength);
             context.Chassis.LinearVelocity *= MathF.Pow(context.TrackPhysics.EdgeSpeedRetainFactor, Math.Clamp(context.ElapsedTime * 60f, 0f, 8f));
         }
 
@@ -395,7 +395,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             return true;
         }
 
-        float fallbackMaxDistance = RacingCarPawn.CollisionLength + context.TrackPhysics.ShoulderWidth + WheelSampleRequeryPadding;
+        float fallbackMaxDistance = RaceCarEntityFactory.CollisionLength + context.TrackPhysics.ShoulderWidth + WheelSampleRequeryPadding;
         if (!TrySampleStableSurface(
                 context.TrackPhysics,
                 context.Chassis.Position,
@@ -617,7 +617,7 @@ internal sealed class SimulationVehicleDynamicsSolver : IVehicleDynamicsSolver
             : string.Empty;
         context.Session.AppendMovementDebug(
             "simulation",
-            $"mode=simulation grounded={groundedWheelCount} guardRail={touchedGuardRail}{transmissionDiagnostics} speedUnits={context.Telemetry.SpeedUnitsPerSecond:0.000}/{context.Profile.Simulation.MaxForwardSpeedUnitsPerSecond:0.000} speedMph={context.Telemetry.CurrentSpeedMph:0.0}/{context.Pawn.TargetTopSpeedMph:0.0} throttle={context.Input.Throttle:0.0} steering={context.Input.Steering:0.0} pos={FormatVector(context.Chassis.Position)} forward={FormatVector(context.Chassis.MovementForward)} wheels={VehicleDynamicsMath.BuildWheelDebugSummary(context.WheelStates)}");
+            $"mode=simulation grounded={groundedWheelCount} guardRail={touchedGuardRail}{transmissionDiagnostics} speedUnits={context.Telemetry.SpeedUnitsPerSecond:0.000}/{context.Profile.Simulation.MaxForwardSpeedUnitsPerSecond:0.000} speedMph={context.Telemetry.CurrentSpeedMph:0.0}/{context.State.TargetTopSpeedMph:0.0} throttle={context.Input.Throttle:0.0} steering={context.Input.Steering:0.0} pos={FormatVector(context.Chassis.Position)} forward={FormatVector(context.Chassis.MovementForward)} wheels={VehicleDynamicsMath.BuildWheelDebugSummary(context.WheelStates)}");
     }
 
     private void LogFallbackState(RuntimeRaceSession? session, bool fallbackEnabled, string reason)

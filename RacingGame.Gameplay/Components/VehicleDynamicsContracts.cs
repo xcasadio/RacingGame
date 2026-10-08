@@ -249,7 +249,8 @@ internal sealed class VehicleWheelRuntimeState
 internal sealed class VehicleDynamicsExecutionContext
 {
     public VehicleDynamicsExecutionContext(
-        RacingCarPawn pawn,
+        Entity car,
+        RaceCarStateComponent state,
         float elapsedTime,
         VehicleControlInput input,
         RaceTrackPhysicsComponent? trackPhysics,
@@ -262,7 +263,8 @@ internal sealed class VehicleDynamicsExecutionContext
         VehicleWheelDefinition[] wheelDefinitions,
         VehicleWheelRuntimeState[] wheelStates)
     {
-        Pawn = pawn;
+        Car = car;
+        State = state;
         ElapsedTime = elapsedTime;
         Input = input;
         TrackPhysics = trackPhysics;
@@ -276,7 +278,9 @@ internal sealed class VehicleDynamicsExecutionContext
         WheelStates = wheelStates;
     }
 
-    public RacingCarPawn Pawn { get; }
+    public Entity Car { get; }
+
+    public RaceCarStateComponent State { get; }
 
     public float ElapsedTime { get; }
 

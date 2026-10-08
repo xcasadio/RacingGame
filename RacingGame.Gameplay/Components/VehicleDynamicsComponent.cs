@@ -26,6 +26,8 @@ public sealed class VehicleDynamicsComponent : EntityComponent
     private CarPerformanceProfile? _activeProfile;
     private VehicleDrivingMode _activeDrivingMode = VehicleDrivingMode.Arcade;
     private bool _runtimeInitialized;
+    private Entity? _stateOwner;
+    private RaceCarStateComponent? _state;
 
     public VehicleDynamicsComponent()
     {
@@ -65,25 +67,25 @@ public sealed class VehicleDynamicsComponent : EntityComponent
 
     public override void Update(float elapsedTime)
     {
-        if (Owner is not RacingCarPawn pawn
-            || pawn.RootComponent == null)
+        if (Owner.RootComponent == null
+            || ResolveState() is not { } state)
         {
             return;
         }
 
-        RuntimeRaceSession? session = (pawn.World?.Game as IRaceGameHost)?.RaceSession;
-        RaceTrackPhysicsComponent? trackPhysics = ResolveTrackPhysics(pawn.World, session);
-        bool profileChanged = BindProfile(pawn, session);
+        RuntimeRaceSession? session = (Owner.World?.Game as IRaceGameHost)?.RaceSession;
+        RaceTrackPhysicsComponent? trackPhysics = ResolveTrackPhysics(Owner.World, session);
+        bool profileChanged = BindProfile(state, session);
         bool wasInitialized = _runtimeInitialized;
-        EnsureRuntimeInitialized(pawn, trackPhysics);
+        EnsureRuntimeInitialized(state, trackPhysics);
 
-        VehicleDrivingMode desiredMode = pawn.DrivingMode;
+        VehicleDrivingMode desiredMode = state.DrivingMode;
         bool modeChanged = _activeDrivingMode != desiredMode;
         if (wasInitialized && (modeChanged || profileChanged))
         {
             _activeDrivingMode = desiredMode;
-            ResetRuntimeFromPawn(pawn, trackPhysics);
-            GetSolver(desiredMode).Reset(CreateContext(pawn, 0f, VehicleControlInput.Zero, trackPhysics, session));
+            ResetRuntimeFromPawn(state, trackPhysics);
+            GetSolver(desiredMode).Reset(CreateContext(state, 0f, VehicleControlInput.Zero, trackPhysics, session));
             if (profileChanged && _activeProfile != null)
             {
                 session?.AppendMovementDebug("profile", $"vehicle profile switched to {_activeProfile.Id}.");
@@ -95,33 +97,33 @@ public sealed class VehicleDynamicsComponent : EntityComponent
             }
         }
 
-        if (pawn.Controller is not RacingPlayerController controller
+        if (Owner.Controller() is not RacingPlayerController controller
             || !controller.IsInputEnable)
         {
-            SyncPawnCompatibility(pawn);
+            SyncPawnCompatibility(state);
             return;
         }
 
         VehicleControlInput controlInput;
-        if (pawn.ForcedControlInput.HasValue)
+        if (state.ForcedControlInput.HasValue)
         {
-            controlInput = pawn.ForcedControlInput.Value;
+            controlInput = state.ForcedControlInput.Value;
         }
         else
         {
-            CasaEngine.Framework.Input.InputComponent? input = pawn.World?.Game?.InputComponent;
+            CasaEngine.Framework.Input.InputComponent? input = Owner.World?.Game?.InputComponent;
             if (input == null)
             {
-                SyncPawnCompatibility(pawn);
+                SyncPawnCompatibility(state);
                 return;
             }
 
             controlInput = VehicleInputReader.Read(input, controller);
         }
 
-        VehicleDynamicsExecutionContext context = CreateContext(pawn, elapsedTime, controlInput, trackPhysics, session);
+        VehicleDynamicsExecutionContext context = CreateContext(state, elapsedTime, controlInput, trackPhysics, session);
         GetSolver(_activeDrivingMode).Update(context);
-        ApplyRuntimeToPawn(pawn);
+        ApplyRuntimeToPawn(state);
     }
 
     internal string BuildDebugSummary()
@@ -187,16 +189,28 @@ public sealed class VehicleDynamicsComponent : EntityComponent
         return builder.ToString().TrimEnd();
     }
 
+    private RaceCarStateComponent? ResolveState()
+    {
+        if (_state == null || !ReferenceEquals(_stateOwner, Owner))
+        {
+            _stateOwner = Owner;
+            _state = Owner.GetComponent<RaceCarStateComponent>();
+        }
+
+        return _state;
+    }
+
     private VehicleDynamicsExecutionContext CreateContext(
-        RacingCarPawn pawn,
+        RaceCarStateComponent state,
         float elapsedTime,
         VehicleControlInput input,
         RaceTrackPhysicsComponent? trackPhysics,
         RuntimeRaceSession? session)
     {
-        CarPerformanceProfile profile = _activeProfile ?? ResolveProfile(pawn);
+        CarPerformanceProfile profile = _activeProfile ?? ResolveProfile(state);
         return new VehicleDynamicsExecutionContext(
-            pawn,
+            Owner,
+            state,
             elapsedTime,
             input,
             trackPhysics,
@@ -210,23 +224,23 @@ public sealed class VehicleDynamicsComponent : EntityComponent
             _wheelStates);
     }
 
-    private void EnsureRuntimeInitialized(RacingCarPawn pawn, RaceTrackPhysicsComponent? trackPhysics)
+    private void EnsureRuntimeInitialized(RaceCarStateComponent state, RaceTrackPhysicsComponent? trackPhysics)
     {
         if (_runtimeInitialized)
         {
             return;
         }
 
-        ResetRuntimeFromPawn(pawn, trackPhysics);
-        GetSolver(pawn.DrivingMode).Reset(CreateContext(pawn, 0f, VehicleControlInput.Zero, trackPhysics, (pawn.World?.Game as IRaceGameHost)?.RaceSession));
-        _activeDrivingMode = pawn.DrivingMode;
+        ResetRuntimeFromPawn(state, trackPhysics);
+        GetSolver(state.DrivingMode).Reset(CreateContext(state, 0f, VehicleControlInput.Zero, trackPhysics, (Owner.World?.Game as IRaceGameHost)?.RaceSession));
+        _activeDrivingMode = state.DrivingMode;
         _runtimeInitialized = true;
     }
 
-    private void ResetRuntimeFromPawn(RacingCarPawn pawn, RaceTrackPhysicsComponent? trackPhysics)
+    private void ResetRuntimeFromPawn(RaceCarStateComponent state, RaceTrackPhysicsComponent? trackPhysics)
     {
-        CarPerformanceProfile profile = _activeProfile ?? ResolveProfile(pawn);
-        SceneComponent rootComponent = pawn.RootComponent!;
+        CarPerformanceProfile profile = _activeProfile ?? ResolveProfile(state);
+        SceneComponent rootComponent = Owner.RootComponent!;
         _chassisState.Position = rootComponent.LocalPosition;
         _chassisState.Orientation = rootComponent.LocalOrientation;
         _chassisState.LinearVelocity = Vector3.Zero;
@@ -237,7 +251,7 @@ public sealed class VehicleDynamicsComponent : EntityComponent
         _chassisState.SurfaceSegmentHint = trackPhysics == null ? -1 : 0;
         _chassisState.HasValidSurface = false;
 
-        _telemetry.DrivingMode = pawn.DrivingMode;
+        _telemetry.DrivingMode = state.DrivingMode;
         _telemetry.SpeedUnitsPerSecond = 0f;
         _telemetry.CurrentSpeedMph = 0f;
         _telemetry.SteeringInput = 0f;
@@ -255,45 +269,45 @@ public sealed class VehicleDynamicsComponent : EntityComponent
         for (int index = 0; index < _wheelDefinitions.Length; index++)
         {
             VehicleWheelDefinition definition = _wheelDefinitions[index];
-            VehicleWheelRuntimeState state = _wheelStates[index];
-            state.SurfaceSegmentHint = _chassisState.SurfaceSegmentHint;
-            state.AttachmentPointWorld = _chassisState.Position + VehicleDynamicsMath.TransformLocalOffset(_chassisState.Orientation, definition.LocalAttachmentOffset);
-            state.RotationAngleRadians = 0f;
-            VehicleDynamicsMath.ClearWheelState(definition, state);
+            VehicleWheelRuntimeState wheelState = _wheelStates[index];
+            wheelState.SurfaceSegmentHint = _chassisState.SurfaceSegmentHint;
+            wheelState.AttachmentPointWorld = _chassisState.Position + VehicleDynamicsMath.TransformLocalOffset(_chassisState.Orientation, definition.LocalAttachmentOffset);
+            wheelState.RotationAngleRadians = 0f;
+            VehicleDynamicsMath.ClearWheelState(definition, wheelState);
         }
 
-        SyncPawnCompatibility(pawn);
+        SyncPawnCompatibility(state);
     }
 
-    private void ApplyRuntimeToPawn(RacingCarPawn pawn)
+    private void ApplyRuntimeToPawn(RaceCarStateComponent state)
     {
-        SceneComponent rootComponent = pawn.RootComponent!;
+        SceneComponent rootComponent = Owner.RootComponent!;
         rootComponent.LocalPosition = _chassisState.Position;
         rootComponent.LocalOrientation = Quaternion.Normalize(_chassisState.Orientation);
-        SyncPawnCompatibility(pawn);
+        SyncPawnCompatibility(state);
     }
 
-    private void SyncPawnCompatibility(RacingCarPawn pawn)
+    private void SyncPawnCompatibility(RaceCarStateComponent state)
     {
         if (_activeProfile != null)
         {
-            pawn.CarProfile = _activeProfile;
-            pawn.CarLabel = _activeProfile.Name;
-            pawn.TargetTopSpeedMph = _activeProfile.TargetTopSpeedMph;
+            state.CarProfile = _activeProfile;
+            state.CarLabel = _activeProfile.Name;
+            state.TargetTopSpeedMph = _activeProfile.TargetTopSpeedMph;
         }
 
-        pawn.CurrentSpeedMph = _telemetry.CurrentSpeedMph;
-        pawn.SteeringInput = _telemetry.SteeringInput;
-        pawn.TachometerAcceleration = _telemetry.TachometerAcceleration;
-        pawn.CurrentGear = _telemetry.CurrentGear;
+        state.CurrentSpeedMph = _telemetry.CurrentSpeedMph;
+        state.SteeringInput = _telemetry.SteeringInput;
+        state.TachometerAcceleration = _telemetry.TachometerAcceleration;
+        state.CurrentGear = _telemetry.CurrentGear;
     }
 
-    private bool BindProfile(RacingCarPawn pawn, RuntimeRaceSession? session)
+    private bool BindProfile(RaceCarStateComponent state, RuntimeRaceSession? session)
     {
-        CarPerformanceProfile profile = ResolveProfile(pawn);
-        pawn.CarProfile = profile;
-        pawn.CarLabel = profile.Name;
-        pawn.TargetTopSpeedMph = profile.TargetTopSpeedMph;
+        CarPerformanceProfile profile = ResolveProfile(state);
+        state.CarProfile = profile;
+        state.CarLabel = profile.Name;
+        state.TargetTopSpeedMph = profile.TargetTopSpeedMph;
 
         if (ReferenceEquals(_activeProfile, profile))
         {
@@ -314,9 +328,9 @@ public sealed class VehicleDynamicsComponent : EntityComponent
         return true;
     }
 
-    private static CarPerformanceProfile ResolveProfile(RacingCarPawn pawn)
+    private static CarPerformanceProfile ResolveProfile(RaceCarStateComponent state)
     {
-        return pawn.CarProfile ?? RaceFrontEndCatalog.ResolveCarProfile(pawn.SelectedCarIndex);
+        return state.CarProfile ?? RaceFrontEndCatalog.ResolveCarProfile(state.SelectedCarIndex);
     }
 
     private IVehicleDynamicsSolver GetSolver(VehicleDrivingMode mode)
