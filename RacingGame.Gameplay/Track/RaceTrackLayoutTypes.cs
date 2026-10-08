@@ -2,6 +2,12 @@ using Microsoft.Xna.Framework;
 
 namespace RacingGame.Gameplay.Track;
 
+/// <summary>The spacing of the guard rail posts and of the columns, in legacy units.</summary>
+internal readonly record struct RaceTrackLayoutSettings(float HolderGap, float ColumnsDistance)
+{
+    public static RaceTrackLayoutSettings Default => new(RaceTrackLayout.HolderGap, RaceTrackLayout.ColumnsDistance);
+}
+
 /// <summary>A point of the road spline, in legacy space.</summary>
 internal readonly record struct RaceTrackRoadPoint(
     Vector3 Position,

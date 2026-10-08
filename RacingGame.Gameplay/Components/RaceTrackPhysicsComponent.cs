@@ -1,18 +1,33 @@
+using System.ComponentModel;
+using CasaEngine.Core.Serialization;
 using Microsoft.Xna.Framework;
 using RacingGame.Gameplay.Track;
 
 namespace RacingGame.Gameplay.Components;
 
-internal sealed class RaceTrackPhysicsComponent : EntityComponent
+/// <summary>
+/// The physics of a race track: the road profile the vehicle solvers sample. It computes the profile when it is
+/// initialized, from the same catalogued assets as the generator components.
+/// </summary>
+[DisplayName("Race Track Physics")]
+public sealed class RaceTrackPhysicsComponent : EntityComponent
 {
-    public RaceTrackPhysicsComponent(RaceTrackPhysicsProfile trackPhysicsProfile)
+    /// <summary>The catalogued .Track asset (TrackBeginnerData, TrackAdvancedData or TrackExpertData).</summary>
+    [SerializedProperty("track_asset_id")]
+    public Guid TrackAssetId { get; set; }
+
+    /// <summary>The catalogued landscape height map (Data.LandscapeHeights).</summary>
+    [SerializedProperty("heightmap_asset_id")]
+    public Guid HeightmapAssetId { get; set; }
+
+    public RaceTrackPhysicsComponent()
     {
-        TrackPhysicsProfile = trackPhysicsProfile ?? throw new ArgumentNullException(nameof(trackPhysicsProfile));
     }
 
     private RaceTrackPhysicsComponent(RaceTrackPhysicsComponent other)
         : base(other)
     {
+        SerializedProperties.Copy(other, this);
         TrackPhysicsProfile = other.TrackPhysicsProfile;
         ShoulderWidth = other.ShoulderWidth;
         GuardRailInset = other.GuardRailInset;
@@ -22,7 +37,8 @@ internal sealed class RaceTrackPhysicsComponent : EntityComponent
         ShoulderDeceleration = other.ShoulderDeceleration;
     }
 
-    public RaceTrackPhysicsProfile TrackPhysicsProfile { get; }
+    /// <summary>The road profile; null until the component is initialized, or when its assets cannot be resolved.</summary>
+    internal RaceTrackPhysicsProfile? TrackPhysicsProfile { get; private set; }
 
     public float ShoulderWidth { get; set; } = 2.5f;
 
@@ -41,8 +57,34 @@ internal sealed class RaceTrackPhysicsComponent : EntityComponent
         return new RaceTrackPhysicsComponent(this);
     }
 
-    public bool TrySampleSurface(Vector3 position, int segmentHint, out RaceTrackSurfaceSample sample)
+    public override void InitializeWithWorld(World world)
     {
+        base.InitializeWithWorld(world);
+
+        TrackPhysicsProfile = null;
+        string owner = $"{nameof(RaceTrackPhysicsComponent)} '{Owner?.Name}'";
+        try
+        {
+            if (LegacyTrackSceneFactory.TryResolveTrackSource(owner, TrackAssetId, HeightmapAssetId, out RaceTrackSource? source))
+            {
+                TrackPhysicsProfile = LegacyTrackSceneFactory.ComputeGeneratorLayout(source!, RaceTrackLayoutSettings.Default).PhysicsProfile;
+            }
+        }
+        catch (Exception exception)
+        {
+            Exception cause = exception.GetBaseException();
+            Logs.WriteWarning($"{owner}: the track profile could not be computed: {cause.GetType().Name}: {cause.Message}");
+        }
+    }
+
+    internal bool TrySampleSurface(Vector3 position, int segmentHint, out RaceTrackSurfaceSample sample)
+    {
+        if (TrackPhysicsProfile == null)
+        {
+            sample = default;
+            return false;
+        }
+
         return TrackPhysicsProfile.TrySample(position, segmentHint, out sample);
     }
 }

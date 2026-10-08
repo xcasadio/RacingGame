@@ -49,31 +49,52 @@ internal static partial class LegacyTrackSceneFactory
             new(new Vector3(1f, 0f, 0f), 6.0f / 6.0f, new Vector3(1f, 0f, 0f), new Vector3(0f, 0f, -1f)),
         ];
 
-        internal static IReadOnlyList<Entity> CreateEntities(
+        /// <summary>One side's rail, then its posts: the models a guard rail generator places (none without guard rails).</summary>
+        internal static IReadOnlyList<RaceGeneratedModel> CreateRailModels(
+            string trackName,
+            RaceTrackLayout layout,
+            bool leftSide,
+            AssetContentManager assetContentManager)
+        {
+            var models = new List<RaceGeneratedModel>();
+            if (!layout.HasGuardRails)
+            {
+                return models;
+            }
+
+            models.Add(CreateRailModel(
+                trackName,
+                leftSide ? layout.LeftRailPoints : layout.RightRailPoints,
+                layout.Origin,
+                layout.Settings.HolderGap,
+                assetContentManager,
+                leftSide));
+            models.AddRange(CreateHolderModels(leftSide ? layout.LeftPosts : layout.RightPosts, assetContentManager));
+            return models;
+        }
+
+        /// <summary>The columns' model, then their segments: the models a column generator places (none without columns).</summary>
+        internal static IReadOnlyList<RaceGeneratedModel> CreateColumnModels(
             string trackName,
             RaceTrackLayout layout,
             AssetContentManager assetContentManager)
         {
-            var entities = new List<Entity>();
-            if (!layout.HasGuardRails)
+            if (layout.Columns.Count == 0)
             {
-                return entities;
+                return [];
             }
 
-            entities.Add(CreateRailEntity(trackName, layout.LeftRailPoints, layout.Origin, assetContentManager, leftSide: true));
-            entities.Add(CreateRailEntity(trackName, layout.RightRailPoints, layout.Origin, assetContentManager, leftSide: false));
-
-            entities.AddRange(CreateHolderEntities(trackName, layout.LeftPosts, assetContentManager, leftSide: true));
-            entities.AddRange(CreateHolderEntities(trackName, layout.RightPosts, assetContentManager, leftSide: false));
-            entities.AddRange(CreateColumnEntities(trackName, layout, assetContentManager));
-
-            return entities;
+            var models = new List<RaceGeneratedModel>();
+            models.Add(CreateProceduralColumnsModel(trackName, layout.Columns, layout.Origin, assetContentManager));
+            models.AddRange(CreateColumnSegmentModels(layout.ColumnSegments, assetContentManager));
+            return models;
         }
 
-        private static Entity CreateRailEntity(
+        private static RaceGeneratedModel CreateRailModel(
             string trackName,
             IReadOnlyList<RaceTrackRailPoint> railPoints,
             Vector3 origin,
+            float holderGap,
             AssetContentManager assetContentManager,
             bool leftSide)
         {
@@ -103,7 +124,7 @@ internal static partial class LegacyTrackSceneFactory
 
                 Vector3 nextPosition = railPoints[(index + 1) % railPoints.Count].Position;
                 float distance = Vector3.Distance(nextPosition, railPoint.Position);
-                uTexValue += (1f / RaceTrackLayout.HolderGap) * distance * 2.0f;
+                uTexValue += (1f / holderGap) * distance * 2.0f;
             }
 
             var indices = new uint[(railPoints.Count - 1) * (GuardRailSectionVertices.Length - 1) * 6];
@@ -141,14 +162,13 @@ internal static partial class LegacyTrackSceneFactory
                 Scale = Vector3.One,
             };
 
-            return CreateStaticModelEntity($"Track.GuardRail.{sideName}.{trackName}", model, Matrix.Identity);
+            return new RaceGeneratedModel($"{trackName}.GuardRail.{sideName}", model, Matrix.Identity, CastShadows: true, OwnsBuffers: true);
         }
 
-        private static IReadOnlyList<Entity> CreateHolderEntities(
-            string trackName,
+        // The post model is the factory's cached one: the generator places it but never owns it.
+        private static IReadOnlyList<RaceGeneratedModel> CreateHolderModels(
             IReadOnlyList<RaceTrackModelPlacement> posts,
-            AssetContentManager assetContentManager,
-            bool leftSide)
+            AssetContentManager assetContentManager)
         {
             StaticModel? holderModel = LoadLegacyModel(RaceTrackLayout.GuardRailPostModelName, assetContentManager);
             if (holderModel == null)
@@ -156,34 +176,16 @@ internal static partial class LegacyTrackSceneFactory
                 return [];
             }
 
-            var entities = new List<Entity>();
-            string sideName = leftSide ? "Left" : "Right";
-
-            foreach (RaceTrackModelPlacement post in posts)
+            var models = new List<RaceGeneratedModel>(posts.Count);
+            for (int index = 0; index < posts.Count; index++)
             {
-                entities.Add(CreateStaticModelEntity($"Track.GuardRailHolder.{sideName}.{trackName}.{entities.Count:000}", holderModel, post.Transform));
+                models.Add(new RaceGeneratedModel($"Post.{index:000}", holderModel, posts[index].Transform, CastShadows: true, OwnsBuffers: false));
             }
 
-            return entities;
+            return models;
         }
 
-        private static IReadOnlyList<Entity> CreateColumnEntities(
-            string trackName,
-            RaceTrackLayout layout,
-            AssetContentManager assetContentManager)
-        {
-            if (layout.Columns.Count == 0)
-            {
-                return [];
-            }
-
-            var entities = new List<Entity>();
-            entities.Add(CreateProceduralColumnsEntity(trackName, layout.Columns, layout.Origin, assetContentManager));
-            entities.AddRange(CreateColumnSegmentEntities(trackName, layout.ColumnSegments, assetContentManager));
-            return entities;
-        }
-
-        private static Entity CreateProceduralColumnsEntity(
+        private static RaceGeneratedModel CreateProceduralColumnsModel(
             string trackName,
             IReadOnlyList<RaceTrackColumnPlacement> columns,
             Vector3 origin,
@@ -255,11 +257,11 @@ internal static partial class LegacyTrackSceneFactory
                 Scale = Vector3.One,
             };
 
-            return CreateStaticModelEntity($"Track.Columns.{trackName}", model, Matrix.Identity);
+            return new RaceGeneratedModel($"{trackName}.Columns", model, Matrix.Identity, CastShadows: true, OwnsBuffers: true);
         }
 
-        private static IReadOnlyList<Entity> CreateColumnSegmentEntities(
-            string trackName,
+        // The segment model is the factory's cached one: the generator places it but never owns it.
+        private static IReadOnlyList<RaceGeneratedModel> CreateColumnSegmentModels(
             IReadOnlyList<RaceTrackModelPlacement> segments,
             AssetContentManager assetContentManager)
         {
@@ -269,13 +271,13 @@ internal static partial class LegacyTrackSceneFactory
                 return [];
             }
 
-            var entities = new List<Entity>(segments.Count);
+            var models = new List<RaceGeneratedModel>(segments.Count);
             for (int index = 0; index < segments.Count; index++)
             {
-                entities.Add(CreateStaticModelEntity($"Track.ColumnSegment.{trackName}.{index:000}", segmentModel, segments[index].Transform));
+                models.Add(new RaceGeneratedModel($"Segment.{index:000}", segmentModel, segments[index].Transform, CastShadows: true, OwnsBuffers: false));
             }
 
-            return entities;
+            return models;
         }
 
         private static LitDiffuseMaterial CreateGuardRailMaterial(string trackName, AssetContentManager assetContentManager, string sideName)

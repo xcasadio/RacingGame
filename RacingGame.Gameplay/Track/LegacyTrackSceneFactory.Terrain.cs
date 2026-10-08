@@ -16,9 +16,8 @@ internal static partial class LegacyTrackSceneFactory
         private const float MapHeightFactor = 10f;
         private const float MapZScale = 300f;
 
-        internal static IReadOnlyList<Entity> CreateEntities(string trackName, Vector3 origin, AssetContentManager assetContentManager)
+        internal static RaceGeneratedModel CreateModel(string trackName, Vector3 origin, string filePath, AssetContentManager assetContentManager)
         {
-            string filePath = Path.Combine(GetProjectContentPath(), "LandscapeHeights.data");
             byte[] heights = File.ReadAllBytes(filePath);
             if (heights.Length < GridWidth * GridHeight)
             {
@@ -44,7 +43,7 @@ internal static partial class LegacyTrackSceneFactory
             };
 
             // As in RacingGame, the landscape only receives shadows (Landscape.GenerateShadow).
-            return [CreateStaticModelEntity($"Track.Ground.{trackName}", groundModel, Matrix.Identity, castShadows: false)];
+            return new RaceGeneratedModel($"{trackName}.Ground", groundModel, Matrix.Identity, CastShadows: false, OwnsBuffers: true);
         }
 
         private static VertexPositionNormalTextureTangent[] BuildVertices(byte[] heights, Vector3 origin)

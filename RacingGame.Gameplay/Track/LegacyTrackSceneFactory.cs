@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using static RacingGame.Gameplay.Track.RaceTrackSpace;
+using RacingGame.Gameplay.Components;
 using RacingGame.Gameplay.Import;
 using RacingGame.Gameplay.Race;
 
@@ -19,8 +20,6 @@ internal static partial class LegacyTrackSceneFactory
     // The start light's models: red, yellow and green (RacingGame.Shared/Landscapes/TrackObjectManager.cs).
     internal const string StartLightEntityNamePrefix = "Track.Scenery.StartLight.";
 
-    private static readonly XmlSerializer TrackSerializer = new(typeof(LegacyTrackLayout));
-    private static readonly XmlSerializer CombiSerializer = new(typeof(List<LegacyCombiObject>), new XmlRootAttribute("ArrayOfCombiObject"));
     private static readonly Texture2DLoader TextureLoader = new();
     private static readonly Dictionary<string, LegacyTrackLayout> TrackCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, List<LegacyCombiObject>> CombiCache = new(StringComparer.OrdinalIgnoreCase);
@@ -34,19 +33,33 @@ internal static partial class LegacyTrackSceneFactory
 
     internal static RaceTrackScene Create(string trackName, AssetContentManager assetContentManager)
     {
-        LegacyTrackLayout track = LoadTrackLayout(RaceBootstrapAssets.GetTrackDataAssetName(trackName));
-        LegacyTerrainHeightSampler terrainSampler = LoadTerrainHeightSampler();
+        Guid trackAssetId = GetCatalogAssetId(RaceBootstrapAssets.GetTrackDataAssetName(trackName));
+        Guid heightmapAssetId = GetCatalogAssetId(RaceBootstrapAssets.LandscapeHeightsData);
+        RaceTrackSource source = ResolveTrackSource(trackAssetId, heightmapAssetId);
         RaceTrackLayout layout = RaceTrackLayout.Compute(
             trackName,
-            track,
-            terrainSampler,
+            source.Track,
+            source.Heights,
             LoadCombiModel,
             modelName => LoadLegacyModel(modelName, assetContentManager) != null ? GetLegacyModelSize(modelName) : (float?)null);
 
-        var trackEntities = new List<Entity>();
-        trackEntities.AddRange(LegacyTerrainMeshBuilder.CreateEntities(trackName, layout.Origin, assetContentManager));
-        trackEntities.Add(CreateRoadEntity(trackName, layout.RoadPoints, layout.Origin, assetContentManager));
-        trackEntities.AddRange(LegacyTrackGuardRailBuilder.CreateEntities(trackName, layout, assetContentManager));
+        // The track's geometry is rebuilt by generator components from the same catalogued assets; the layout above
+        // only drives what stays assembled here: the scenery, the checkpoints and the start.
+        var trackEntities = new List<Entity>
+        {
+            CreateGeneratorEntity($"Track.Ground.{trackName}", new RaceTerrainGeneratorComponent(), trackAssetId, heightmapAssetId),
+            CreateGeneratorEntity($"Track.Road.{trackName}", new RaceRoadGeneratorComponent(), trackAssetId, heightmapAssetId),
+        };
+        if (layout.HasGuardRails)
+        {
+            trackEntities.Add(CreateGeneratorEntity($"Track.GuardRail.Left.{trackName}", new RaceGuardRailGeneratorComponent { Side = RaceGuardRailSide.Left }, trackAssetId, heightmapAssetId));
+            trackEntities.Add(CreateGeneratorEntity($"Track.GuardRail.Right.{trackName}", new RaceGuardRailGeneratorComponent { Side = RaceGuardRailSide.Right }, trackAssetId, heightmapAssetId));
+        }
+
+        if (layout.Columns.Count > 0)
+        {
+            trackEntities.Add(CreateGeneratorEntity($"Track.Columns.{trackName}", new RaceColumnGeneratorComponent(), trackAssetId, heightmapAssetId));
+        }
 
         var sceneryEntities = new List<Entity>();
         for (int index = 0; index < layout.Scenery.Count; index++)
@@ -63,23 +76,38 @@ internal static partial class LegacyTrackSceneFactory
 
         LoadStartLightModels(assetContentManager);
 
-        return new RaceTrackScene(trackEntities, sceneryEntities, layout.PlayerStartPose, layout.CheckpointTriggers, layout.PhysicsProfile);
+        return new RaceTrackScene(trackEntities, sceneryEntities, layout.PlayerStartPose, layout.CheckpointTriggers, trackAssetId, heightmapAssetId);
     }
 
-    private static LegacyTrackLayout LoadTrackLayout(string assetName)
+    private static Entity CreateGeneratorEntity(string name, RaceTrackGeneratorComponent generator, Guid trackAssetId, Guid heightmapAssetId)
+    {
+        generator.TrackAssetId = trackAssetId;
+        generator.HeightmapAssetId = heightmapAssetId;
+
+        var entity = new Entity
+        {
+            Name = name,
+        };
+        entity.ApplyExplicitPolicies(EntityPolicySet.StaticDecoration);
+        entity.RootComponent = generator;
+        return entity;
+    }
+
+    private static Guid GetCatalogAssetId(string assetName)
+    {
+        AssetInfo? assetInfo = AssetCatalog.Get(assetName);
+        return assetInfo?.Id ?? throw new InvalidOperationException($"Asset '{assetName}' is not registered in AssetInfos.json.");
+    }
+
+    private static LegacyTrackLayout LoadTrackLayout(string assetName, string fileName)
     {
         if (TrackCache.TryGetValue(assetName, out LegacyTrackLayout? cachedLayout))
         {
             return cachedLayout;
         }
 
-        string fileName = ResolveAssetPath(assetName);
         using var stream = File.OpenRead(fileName);
-        if (TrackSerializer.Deserialize(stream) is not LegacyTrackLayout layout)
-        {
-            throw new InvalidOperationException($"Unable to deserialize track asset '{assetName}'.");
-        }
-
+        LegacyTrackLayout layout = LegacyTrackFileReader.ReadTrack(stream);
         TrackCache[assetName] = layout;
         return layout;
     }
@@ -99,7 +127,7 @@ internal static partial class LegacyTrackSceneFactory
         }
 
         using var stream = File.OpenRead(fileName);
-        List<LegacyCombiObject> combiObjects = CombiSerializer.Deserialize(stream) as List<LegacyCombiObject> ?? [];
+        List<LegacyCombiObject> combiObjects = LegacyTrackFileReader.ReadCombiObjects(stream);
         CombiCache[combiName] = combiObjects;
         return combiObjects;
     }
@@ -154,7 +182,7 @@ internal static partial class LegacyTrackSceneFactory
         model.RootNode = correctedRoot;
     }
 
-    private static Entity CreateRoadEntity(string trackName, IReadOnlyList<RaceTrackRoadPoint> roadPoints, Vector3 origin, AssetContentManager assetContentManager)
+    internal static RaceGeneratedModel CreateRoadModel(string trackName, IReadOnlyList<RaceTrackRoadPoint> roadPoints, Vector3 origin, AssetContentManager assetContentManager)
     {
         var vertices = new Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture[roadPoints.Count * 5];
 
@@ -200,7 +228,7 @@ internal static partial class LegacyTrackSceneFactory
             MeshIndex = 0,
         };
 
-        return CreateStaticModelEntity($"Track.Road.{trackName}", roadModel, Matrix.Identity);
+        return new RaceGeneratedModel($"{trackName}.Road", roadModel, Matrix.Identity, CastShadows: true, OwnsBuffers: true);
     }
 
     private static Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture CreateRoadVertex(RaceTrackRoadPoint point, float lateralFactor, float textureV, Vector3 origin)
@@ -356,9 +384,8 @@ internal static partial class LegacyTrackSceneFactory
         return false;
     }
 
-    private static LegacyTerrainHeightSampler LoadTerrainHeightSampler()
+    private static LegacyTerrainHeightSampler LoadTerrainHeightSampler(string filePath)
     {
-        string filePath = Path.Combine(GetProjectContentPath(), "LandscapeHeights.data");
         if (TerrainCache.TryGetValue(filePath, out LegacyTerrainHeightSampler? cachedSampler))
         {
             return cachedSampler;
@@ -592,14 +619,8 @@ internal static partial class LegacyTrackSceneFactory
         return new Color(190, 190, 190);
     }
 
-    private static string ResolveAssetPath(string assetName)
+    private static string ResolveAssetFilePath(AssetInfo assetInfo)
     {
-        AssetInfo? assetInfo = AssetCatalog.Get(assetName);
-        if (assetInfo == null)
-        {
-            throw new InvalidOperationException($"Asset '{assetName}' is not registered in AssetInfos.json.");
-        }
-
         return Path.Combine(GetProjectContentPath(), assetInfo.FileName.Replace('/', Path.DirectorySeparatorChar));
     }
 
@@ -617,7 +638,8 @@ internal sealed record RaceTrackScene(
     IReadOnlyList<Entity> SceneryEntities,
     RaceTrackStartPose PlayerStartPose,
     IReadOnlyList<RaceCheckpointTriggerDefinition> CheckpointTriggers,
-    RaceTrackPhysicsProfile PhysicsProfile);
+    Guid TrackAssetId,
+    Guid HeightmapAssetId);
 
 [XmlRoot("TrackData")]
 public sealed class LegacyTrackLayout

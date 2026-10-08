@@ -1008,7 +1008,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 >   - captures d'interface : 0,00 ;
 >   - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
 
-### ⏳ T4.5 — Composants générateurs (D5)
+### ✅ T4.5 — Composants générateurs (D5)
 
 - **Objectif** : la route, les rails et leurs poteaux, les colonnes et leurs segments, le terrain et la physique de piste se reconstruisent à partir des assets de données, dans le jeu comme dans l'éditeur.
 - **Fichiers**, dans `RacingGame.Gameplay/Components/` :
@@ -1037,6 +1037,52 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
     - captures d'interface à 0,00 ;
     - `--smoke-frontend` à 0.
 - **Commit** : `feat(racing-casa): rebuild the track geometry with generator components`
+
+> Validation (2026-10-08) :
+> - **Code**, dans `RacingGame.Gameplay/Components/` :
+>   - une base abstraite publique, `RaceTrackGeneratorComponent`, qui porte :
+>     - les deux ids ;
+>     - une signature des réglages (`record struct`, sans allocation), comparée à chaque `Update` ;
+>     - la reconstruction ;
+>     - la libération des tampons GPU ;
+>   - les 4 générateurs : `RaceTerrainGeneratorComponent`, `RaceRoadGeneratorComponent`, `RaceGuardRailGeneratorComponent` (`side`, `holder_gap`) et `RaceColumnGeneratorComponent` (`columns_distance`) ;
+>   - `RaceGeneratedModelComponent`, en `[Browsable(false)]` ;
+>   - `RaceGuardRailSide`.
+> - **Ce que les générateurs possèdent** :
+>   - ils libèrent les tampons des maillages procéduraux qu'ils créent (terrain, route, rails, colonnes), à la reconstruction et au détachement ;
+>   - ils ne libèrent jamais les modèles des poteaux et des segments ni les textures, qui appartiennent aux caches. Ces enfants portent `OwnsBuffers=false` ;
+>   - avant de générer, ils retirent les enfants générés qu'ils trouvent, et `Clone()` ne garde que les réglages ;
+>   - ils implémentent `IEntityPolicyDefaultsProvider` pour être mis à jour dans l'éditeur. Dans le jeu, les entités restent `StaticDecoration` ;
+>   - `GetBoundingBox` rend les bornes de ce qu'ils dessinent ;
+>   - un id absent ou inconnu écrit un seul avertissement nommant le propriétaire, puis le générateur ne produit rien.
+> - **Physique** : `RaceTrackPhysicsComponent` est public, avec un constructeur sans paramètre et les deux ids, et calcule son profil à `InitializeWithWorld`.
+> - **Calcul des placements** :
+>   - `RaceTrackLayout.Compute` prend des `RaceTrackLayoutSettings` (15 et 33 par défaut) et `includeScenery` ;
+>   - `RaceBootstrapAssets.TryGetTrackName` retrouve le nom d'une piste à partir de son asset.
+> - **Fabriques** : celles du jeu assemblent la course avec ces composants, sous les mêmes noms d'entités. Les entités `Track.GuardRailHolder.*` et `Track.ColumnSegment.*` deviennent les enfants générés de leurs rails et colonnes.
+> - **Fichier ajouté hors plan, `LegacyTrackFileReader.cs`** :
+>   - dans l'éditeur, `XmlSerializer` échoue sur un type de la DLL de gameplay, chargée dans un contexte collectible : « A non-collectible assembly may not reference a collectible assembly ». Un lecteur `XDocument` le remplace pour les `.Track` et les `.CombiModel` ;
+>   - comparé à `XmlSerializer` sur les 3 `.Track` et les 10 `.CombiModel`, il donne des résultats identiques, matrices comprises.
+> - **Défaut ancien relevé**, gardé tel quel pour la parité (voir « Points ouverts », O7) : les éléments des fichiers (`WidthHelper`, `RoadHelper`, `CombiObject`) ne correspondent pas aux noms que `XmlSerializer` attendait (`LegacyWidthHelper`, `LegacyRoadHelper`, `LegacyCombiObject`). Le jeu actuel ignore donc :
+>   - les aides de largeur et de route, d'où l'absence des palmiers, des lanternes et des tunnels ;
+>   - le contenu des CombiModel.
+> - **Contrôles** :
+>   - `dotnet build RacingGame.slnx` : 0 erreur, 0 avertissement ;
+>   - `check_gameplay_type_names.py` : 115 types, 0 collision.
+> - **A4 contre T4.1** (`artifacts/editor-project-baseline/s4/t4.5/`) :
+>   - **export** : 0 maillage non apparié (1 074, 689, 2 156). Les renommages sont exactement les poteaux et les segments devenus enfants :
+>     - Advanced : 902 (742 poteaux, 160 segments) ;
+>     - Beginner : 556 (455 poteaux, 101 segments) ;
+>     - Expert : 1 866 (1 529 poteaux, 337 segments) ;
+>     - aucun autre renommage ;
+>   - **audit** : 21 vues, au plus 0,001 ;
+>   - **audits des voitures** identiques à S0, ce qui valide la physique de piste ;
+>   - **captures d'interface** : 0,00 ;
+>   - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0.
+> - **Éditeur**, essai préparatoire de T4.6 sur une copie : un monde de 7 entités (les générateurs, une lumière, la physique) s'ouvre avec le code 0. La section `Logs:` ne contient que les deux avertissements connus.
+>   - La capture lue montre le terrain, la route, les rails et leurs poteaux, et l'inspecteur montre le générateur et ses enfants générés.
+>   - Avec `holder_gap` à 45, le rail gauche compte 76 poteaux au lieu de 455.
+>   - Un `--save-project` garde les réglages et n'écrit aucun enfant généré.
 
 ### ⏳ T4.6 — Monde de test des générateurs dans l'éditeur
 
@@ -1080,6 +1126,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 | O4 | PNG d'interface hérités non portés : `HelpScreenWindows`, `HelpScreenXbox360`, `OptionsScreenXbox360`, `MouseCursor`. Faut-il compter aussi la copie brute de `GameFont.png` ? Elle est proposée, D4 voulant « tout porter ». | S3 |
 | O5 | Les cartes de normales héritées gardent la disposition `agb`, et le jeu actuel les lit telles quelles. Le chantier conserve exactement ces pixels, sans réencodage. | S3, S5 |
 | O6 | **Levé (T0.2).** Le panneau Logs de l'éditeur restait vide sur les captures d'automatisation. Sur décision de l'auteur, il a été corrigé (MGUI `4e94d7e8`, CasaEngine `c0f3343`), et l'option `--logs-filter` (`4ce5ea0`) met l'avertissement à l'écran. La sonde `pluginprobe`, d'abord proposée, n'a pas été retenue. | T0.1, T1.2 |
+| O7 | Défaut ancien relevé en T4.5 : les éléments `WidthHelper`, `RoadHelper` et `CombiObject` des `.Track` et des `.CombiModel` ne correspondent pas aux types que lisait `XmlSerializer` (`LegacyWidthHelper`, `LegacyRoadHelper`, `LegacyCombiObject`). Le jeu ignore donc les aides de largeur et de route (palmiers, lanternes, tunnels) et le contenu des CombiModel. Le chantier garde ce comportement pour la parité ; le corriger change le rendu, c'est un chantier à part. | Après le chantier |
 
 ## Hors périmètre
 

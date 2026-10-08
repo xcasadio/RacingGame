@@ -104,7 +104,7 @@ public static class RaceWorldFactory
         };
 
         world.AddEntity(CreateCameraEntity(enableChaseCamera: true));
-        world.AddEntity(CreateRaceRootEntity(trackScene.PhysicsProfile));
+        world.AddEntity(CreateRaceRootEntity(trackScene.TrackAssetId, trackScene.HeightmapAssetId));
 
         // The Shadows option: the race world renders shadow maps, cast by its key light.
         world.EnvironmentSettings.Shadows.Enabled = state.EnableShadows;
@@ -233,7 +233,7 @@ public static class RaceWorldFactory
         };
     }
 
-    private static Entity CreateRaceRootEntity(RaceTrackPhysicsProfile physicsProfile)
+    private static Entity CreateRaceRootEntity(Guid trackAssetId, Guid heightmapAssetId)
     {
         var entity = new Entity
         {
@@ -245,7 +245,11 @@ public static class RaceWorldFactory
             SpatialPolicy.StaticIndex,
             RenderDynamicPolicy.Static));
 
-        entity.AddComponent(new RaceTrackPhysicsComponent(physicsProfile));
+        entity.AddComponent(new RaceTrackPhysicsComponent
+        {
+            TrackAssetId = trackAssetId,
+            HeightmapAssetId = heightmapAssetId,
+        });
         entity.AddComponent(new RaceFlowCoordinatorComponent());
         entity.AddComponent(new RaceCourseDebugComponent());
         return entity;

@@ -81,8 +81,10 @@ internal sealed class RaceTrackLayout
         IReadOnlyList<RaceTrackModelPlacement> scenery,
         IReadOnlyList<RaceCheckpointTriggerDefinition> checkpointTriggers,
         RaceTrackStartPose playerStartPose,
-        RaceTrackPhysicsProfile physicsProfile)
+        RaceTrackPhysicsProfile physicsProfile,
+        RaceTrackLayoutSettings settings)
     {
+        Settings = settings;
         TrackName = trackName;
         Origin = origin;
         RoadPoints = roadPoints;
@@ -99,6 +101,9 @@ internal sealed class RaceTrackLayout
     }
 
     public string TrackName { get; }
+
+    /// <summary>The post and column spacing this layout was computed with.</summary>
+    public RaceTrackLayoutSettings Settings { get; }
 
     /// <summary>The runtime-space point the track is centered on: every runtime position is relative to it.</summary>
     public Vector3 Origin { get; }
@@ -138,6 +143,8 @@ internal sealed class RaceTrackLayout
     /// <param name="trackName">The track's name; it seeds the scenery's random sequence.</param>
     /// <param name="track">The track's .Track layout.</param>
     /// <param name="terrainSampler">The landscape height map.</param>
+    /// <param name="settings">The spacing of the guard rail posts and of the columns; null for the legacy values.</param>
+    /// <param name="includeScenery">False skips the scenery placements (a generator component does not use them).</param>
     /// <param name="loadCombiModel">Returns the objects of a CombiModel (empty for an unknown one).</param>
     /// <param name="getModelSize">
     /// Returns the size of a scenery model, or null when the model is unavailable: it is then skipped.
@@ -148,8 +155,11 @@ internal sealed class RaceTrackLayout
         LegacyTrackLayout track,
         LegacyTerrainHeightSampler terrainSampler,
         Func<string, IReadOnlyList<LegacyCombiObject>> loadCombiModel,
-        Func<string, float?> getModelSize)
+        Func<string, float?> getModelSize,
+        RaceTrackLayoutSettings? settings = null,
+        bool includeScenery = true)
     {
+        RaceTrackLayoutSettings layoutSettings = settings ?? RaceTrackLayoutSettings.Default;
         List<LegacyTrackPoint> splinePoints = BuildRoadSplinePoints(track, terrainSampler);
         var roadPoints = new List<RaceTrackRoadPoint>(splinePoints.Count);
         foreach (LegacyTrackPoint splinePoint in splinePoints)
@@ -190,18 +200,21 @@ internal sealed class RaceTrackLayout
         {
             leftRailPoints = BuildRailPoints(roadPoints, leftSide: true);
             rightRailPoints = BuildRailPoints(roadPoints, leftSide: false);
-            leftPosts = BuildPostPlacements(leftRailPoints, origin);
-            rightPosts = BuildPostPlacements(rightRailPoints, origin);
-            columns = BuildColumnPlacements(roadPoints, terrainSampler);
+            leftPosts = BuildPostPlacements(leftRailPoints, origin, layoutSettings.HolderGap);
+            rightPosts = BuildPostPlacements(rightRailPoints, origin, layoutSettings.HolderGap);
+            columns = BuildColumnPlacements(roadPoints, terrainSampler, layoutSettings.ColumnsDistance);
             columnSegments = BuildColumnSegmentPlacements(columns, origin);
         }
 
-        foreach (LegacyNeutralObject neutralObject in track.NeutralsObjects)
+        if (includeScenery)
         {
-            AddSceneryPlacement(placementState, neutralObject.modelName, neutralObject.matrix);
-        }
+            foreach (LegacyNeutralObject neutralObject in track.NeutralsObjects)
+            {
+                AddSceneryPlacement(placementState, neutralObject.modelName, neutralObject.matrix);
+            }
 
-        AddHelperDrivenSceneryPlacements(trackName, roadPoints, track.RoadHelpers, placementState);
+            AddHelperDrivenSceneryPlacements(trackName, roadPoints, track.RoadHelpers, placementState);
+        }
 
         return new RaceTrackLayout(
             trackName,
@@ -216,10 +229,12 @@ internal sealed class RaceTrackLayout
             placementState.Placements,
             checkpointTriggers,
             playerStartPose,
-            physicsProfile);
+            physicsProfile,
+            layoutSettings);
     }
 
-    private static Vector3 ComputeOrigin(IReadOnlyList<Vector3> trackPoints)
+    /// <summary>The runtime-space point a track is centered on, from its .Track points alone.</summary>
+    internal static Vector3 ComputeOrigin(IReadOnlyList<Vector3> trackPoints)
     {
         float minX = trackPoints.Min(static point => point.X);
         float maxX = trackPoints.Max(static point => point.X);
@@ -685,7 +700,7 @@ internal sealed class RaceTrackLayout
         return railPoints;
     }
 
-    private static List<RaceTrackModelPlacement> BuildPostPlacements(IReadOnlyList<RaceTrackRailPoint> railPoints, Vector3 origin)
+    private static List<RaceTrackModelPlacement> BuildPostPlacements(IReadOnlyList<RaceTrackRailPoint> railPoints, Vector3 origin, float holderGap)
     {
         var placements = new List<RaceTrackModelPlacement>();
         float lastHolderGap = 0f;
@@ -712,7 +727,7 @@ internal sealed class RaceTrackLayout
 
                 Matrix runtimeTransform = ConvertLegacyTransform(legacyTransform, origin);
                 placements.Add(new RaceTrackModelPlacement(GuardRailPostModelName, runtimeTransform));
-                lastHolderGap += HolderGap;
+                lastHolderGap += holderGap;
             }
 
             lastHolderGap -= distance;
@@ -721,10 +736,10 @@ internal sealed class RaceTrackLayout
         return placements;
     }
 
-    private static List<RaceTrackColumnPlacement> BuildColumnPlacements(IReadOnlyList<RaceTrackRoadPoint> roadPoints, LegacyTerrainHeightSampler terrainSampler)
+    private static List<RaceTrackColumnPlacement> BuildColumnPlacements(IReadOnlyList<RaceTrackRoadPoint> roadPoints, LegacyTerrainHeightSampler terrainSampler, float columnsDistance)
     {
         var columns = new List<RaceTrackColumnPlacement>();
-        float lastColumnsDistance = ColumnsDistance;
+        float lastColumnsDistance = columnsDistance;
 
         for (int index = 0; index < roadPoints.Count; index++)
         {
@@ -762,7 +777,7 @@ internal sealed class RaceTrackLayout
                     columns.Add(new RaceTrackColumnPlacement(columnPoint, topSpace, bottomSpace, groundHeight));
                 }
 
-                lastColumnsDistance += ColumnsDistance;
+                lastColumnsDistance += columnsDistance;
             }
 
             lastColumnsDistance -= distance;
