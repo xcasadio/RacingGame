@@ -552,7 +552,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 
 ## Phase 3 — Comparaison avec l'original et clôture
 
-### ⏳ T3.1 — Références « après », comparaison avec l'original et contrôle visuel
+### 🧪 T3.1 — Références « après », comparaison avec l'original et contrôle visuel
 
 - **Objectif** : D2 et P7.
 - **Étapes** :
@@ -591,6 +591,36 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
   - largeurs de route égales à l'original à 1e-4 (sonde) ;
   - **contrôle visuel de l'auteur** : la tâche reste 🧪 jusqu'à son retour.
 - **Commit** : `test(racing-casa): record the references after reading the track helpers`
+
+> Validation (2026-10-09), à `12d4f5b`. La tâche reste 🧪 jusqu'au contrôle visuel de l'auteur.
+> - **Références `artifacts/o7-track-helpers/after/`**, avec les mêmes modes que `before/` (`o7_refs.sh` du scratchpad), réglages de l'auteur restaurés à l'identique :
+>   - `track-audit-a/` et `-b/` : 30 vues sur 30 dans le seuil de 0,5 l'une de l'autre ;
+>   - `scene-a.json` et `-b.json` identiques (1 372, 953, 2 829 enregistrements). L'export est aussi identique à celui de T2.1 ;
+>   - audits des voitures identiques à `before/` et à S0 ;
+>   - `--smoke-frontend` et `--verify-legacy-import-profile` : code 0 ;
+>   - planches des vues `helper-*` : `before/helper-views.png` et `after/helper-views.png`.
+> - **`before/` contre `after/`**, par piste (Advanced / Beginner / Expert) : les écarts sont exactement ceux de T1.2, T1.3 et T2.1, rien d'autre.
+>   - Entités `Track.Scenery.*` : 108 → 323, 68 → 265, 202 → 729.
+>   - Maillages en moins :
+>     - route 1, rails 2 ;
+>     - poteaux 558 / 362 / 966 ;
+>     - bannières 7 / 5 / 12 et panneaux 40 / 21 / 91, déplacés par la largeur ;
+>     - les objets en trop (`Windmill`, `AlphaTrain`, `Building5`).
+>   - Maillages en plus :
+>     - leurs remplaçants ;
+>     - les objets des CombiModel ;
+>     - les palmiers et les lanternes ;
+>     - le tunnel, un maillage de plus sous `Track.Road.<piste>`.
+>   - Les modèles des bannières et des panneaux gardent leur ordre (76 / 29 / 151).
+>   - Audit : 25 vues sur 30 changent. Les 5 vues inchangées sont les `terrain-overview` d'Advanced et d'Expert, puis `terrain-overview`, `chase-road-only` et `road-only-start` de Beginner.
+>   - Captures d'interface : toutes dans le seuil de 2,0 (`race-hud` à 1,00, dû au chronomètre).
+> - **Original, dans les deux sens**, `TrackPlacementExporter` sur `after/scene-a.json` :
+>   - `missingInLive` = 0 et `modelMismatch` = 0 sur les 3 pistes, avec les 4 écarts anciens par piste aux mêmes valeurs ;
+>   - `additional-scenery:` ne contient que `Banner*`, `Sign*`, `StartLight`, `AlphaPalm*` et `Laterne`, aux comptes de T1.3. `Windmill`, `AlphaTrain` et `Building5` n'y sont plus ;
+>   - `additional-other:` est celle de T2.1 (et de `before/`) : `<piste>.Columns`, `<piste>.GuardRail.Left` et `<piste>.GuardRail.Right`.
+> - **Largeurs** : égales à l'original à 1,9e-6 près, en chaque point des 3 pistes (`o7/probe-read` contre `after/original/`).
+> - **Liste du contrôle visuel**, écrite à l'étape 3 ci-dessus, à regarder à côté des vues `helper-*` de `after/`. Elle comprend maintenant la luminosité des tunnels (O3).
+> - **Question à l'auteur** : le contrôle visuel dans le jeu d'origine, selon cette liste, et la réponse à O3. Ses remarques deviendront des points ouverts ou des tâches.
 
 ### ⏳ T3.2 — ADR, documentation, plan éditeur et vérification
 
