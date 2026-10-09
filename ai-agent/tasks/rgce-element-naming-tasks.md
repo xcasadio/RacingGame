@@ -270,7 +270,7 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
 - Commit : `feat(racing-casa): name the components the game creates`
 
 > Validation (2026-10-09) :
-> - 25 créations de composants nommées `Name = nameof(<Type>)` dans 4 fichiers : `RaceWorldFactory` (caméra, `ChaseCameraRig`, `DebugFreeCamera`, lumières, `PlayerStart`, `RaceTrackPhysics`, `RaceFlowCoordinator`, `RaceCourseDebug`, `RaceCheckpointTrigger`), `RaceCarEntityFactory` (5 composants de la voiture), `LegacyTrackSceneFactory` (5 générateurs, dont les 2 glissières, et le `StaticModel` du décor), `CarSelectionCarousel` (lumière, caméra, `StaticModel` de `AddModelEntity`). Aucune entité ni composant déjà nommé par son rôle n'est touché. `VisualFrameName` vaut `WheelFrontLeft`, `WheelFrontRight`, `WheelBackLeft`, `WheelBackRight` : aucun nom de type, donc aucune collision.
+> - 23 sites de création de composants nommés `Name = nameof(<Type>)` dans 4 fichiers (corrigé à la clôture : la note disait 25) : `RaceWorldFactory` (caméra, `ChaseCameraRig`, `DebugFreeCamera`, lumières, `PlayerStart`, `RaceTrackPhysics`, `RaceFlowCoordinator`, `RaceCourseDebug`, `RaceCheckpointTrigger`), `RaceCarEntityFactory` (5 composants de la voiture), `LegacyTrackSceneFactory` (5 générateurs, dont les 2 glissières, et le `StaticModel` du décor), `CarSelectionCarousel` (lumière, caméra, `StaticModel` de `AddModelEntity`). Aucune entité ni composant déjà nommé par son rôle n'est touché. `VisualFrameName` vaut `WheelFrontLeft`, `WheelFrontRight`, `WheelBackLeft`, `WheelBackRight` : aucun nom de type, donc aucune collision.
 > - `dotnet build RacingGame.slnx` : 0 erreur.
 > - `--export-track-runtime-scene` (`artifacts/element-naming/t2.2/scene.json`) : `rg -c 'Object [0-9a-f-]{36}'` rend 0 (aucune correspondance, contre 5 118 segments avant) sur 5 154 `ComponentPath`. `compare_race_scene_exports.py` contre `before/scene.json` : 0 enregistrement sans partenaire, 0 problème de piste.
 > - `--capture-ui-screens` : 9 états à 0,00 contre `before/ui` ; `race-finished` à 13,99, la dérive connue de O2 (sous-module à `6ed0ef3f7`). Contre le contrôle `t1.1-ctrl` (même sous-module) : les 10 états à 0,00.
@@ -298,7 +298,7 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
 
 > Validation (2026-10-09) :
 > - `git add CasaEngine` : `git diff --cached` ne montre que le pointeur `7a5320b6a` → `6ed0ef3f7` (plus ce plan à l'index du commit). `dotnet build RacingGame.slnx` : 0 erreur.
-> - Éditeur sur des copies (`artifacts` non utilisé, copies dans le bloc-notes `naming/t3.1/`) : `--open-asset Worlds/Test/TrackBeginnerGenerators.world` : `OPENED exit=0`. La capture lue montre la hiérarchie des 7 entités et, pour `Track.Road.Beginner`, l'inspecteur avec le composant racine « Race Road Generator », ses deux « Static Model » et leurs « Sub Mesh » sous leur nom d'affichage, sans `Object <guid>`. Le monde de test n'est pas encore modifié par ce plan (T2.x) : ses composants gardent leur nom stocké, l'affichage vient du nom par défaut de l'éditeur.
+> - Éditeur sur des copies (`artifacts` non utilisé, copies dans le bloc-notes `naming/t3.1/`) : `--open-asset Worlds/Test/TrackBeginnerGenerators.world` : `OPENED exit=0`. La capture lue montre la hiérarchie des 7 entités et, pour `Track.Road.Beginner`, l'inspecteur avec le composant racine « Race Road Generator », ses deux « Static Model » et leurs « Sub Mesh » sous leur nom d'affichage, sans `Object <guid>`. (Corrigé à la clôture : la copie ouverte est le monde committé par T2.1, dont les composants portent le nom de leur type ; l'inspecteur montre le nom d'affichage seul, car P5 du plan CasaEngine masque un nom égal au type. T3.3 l'a vérifié de nouveau.)
 > - `capture_editor_screen.ps1` sur `MainMenu` : `OK`. La capture lue montre la hiérarchie sans ligne sans nom : `Window wndMainMenu`, `OverlayPanel pnlRoot`, `Image imgBackground`, `imgLogo`, `Border pnlBand`, `StackPanel pnlButtons`, puis `pnlPlaySlot`, `pnlPlayBody`, `Button btnPlay`, `pnlPlayFace`, `imgPlayGlyph`, `pnlPlayRing`, `imgPlayLabel`, et la même suite pour Highscores et Options ; l'aperçu du menu s'affiche normalement.
 > - Sonde de clonage (`naming/cloneprobe/`, projet console qui référence `RacingGame.Gameplay.csproj` et `CasaEngine.csproj`, non versionnée) : 21 types, tous constructibles hors du jeu : `CameraLookAtComponent`, `ChaseCameraRigComponent`, `DebugFreeCameraComponent`, `LightComponent`, `PlayerStartComponent`, `RaceTrackPhysicsComponent`, `RaceFlowCoordinatorComponent`, `RaceCourseDebugComponent`, `RaceCheckpointTriggerComponent`, `VehicleDynamicsComponent`, `LegacyCarVisualComponent`, `VehicleWheelVisualComponent`, `DebugCarVisualComponent`, `RaceCarStateComponent`, `RaceTerrainGeneratorComponent`, `RaceRoadGeneratorComponent`, `RaceGuardRailGeneratorComponent`, `RaceColumnGeneratorComponent`, `RaceGeneratedModelComponent`, `StaticModelComponent`, `RacingCarAnchorComponent`. Pour chacun : nom donné, pose dans une entité (racine pour un `SceneComponent` ; enfant de la racine pour un `SceneComponent` ; `Components` pour les autres), `entity.Clone()`, comparaison du nom : **les 21 noms sont gardés** (`ALL KEPT`, code 0, `naming/cloneprobe/run-new.txt`).
 > - Écart au plan (contrôle négatif) : le plan prévoyait « la même sonde sur l'ancien pointeur ». La sonde appelle plutôt `component.Clone()` directement sur chaque type (le chemin sans le correctif T1.3, c'est-à-dire l'ancien comportement de chaque site de clonage) : **les 21 noms sont perdus** (`Object <guid>`), ce qui montre que la sonde détecte le défaut.
@@ -323,12 +323,31 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
 > - Liens vérifiés par `rg` : le chemin de l'ADR-0075 de CasaEngine, le fichier de l'ADR, la ligne d'index et le plan cités existent. Docs seulement : pas de build.
 
 
-### ⏳ T3.3 — Vérification indépendante
+### ✅ T3.3 — Vérification indépendante
 
 - Objectif : une passe `verifier` fraîche sur tout le plan, contre la validation globale.
 - Étapes : lui donner ce plan, la plage de commits, les références de T0.1. Le jeu et l'éditeur sont lancés par un seul agent à la fois.
 - Validation : verdict CONFIRMED, ou constats traités selon leur priorité (P0 à P2 corrigés, P3 et P4 reportés ici).
 - Commit : `docs(racing-casa): close the element naming plan` (plan et index seulement).
+
+> Validation (2026-10-09) : workflow avec un vérificateur frais, seul à lancer le jeu et l'éditeur, et deux relectures en lecture seule (écrans ; composants, monde, pointeur et docs).
+> - **Vérificateur : CONFIRMED.**
+>   - build 0 erreur ; `check_ui_element_names.py` : 9 écrans, 273 éléments, 0 faute ;
+>   - les 273 noms recalculés par un analyseur indépendant égalent la table, dans l'ordre ;
+>   - chaque nom cherché par le code (littéraux, préfixes et plages d'indices des view models) existe dans son XAML, et `rg` ne trouve plus d'ancien nom ;
+>   - `--smoke-frontend` : code 0, sans avertissement ;
+>   - export : 0 enregistrement sans partenaire, et 0 segment `Object <guid>` contre 5 118 avant. Les 15 chemins qui contiennent encore `Object0x` sont des nœuds de modèles (D2) ;
+>   - monde de test : ouvert dans l'éditeur, et deux `--save-project` donnent les octets du dépôt ;
+>   - sonde de clonage : 21 types gardent leur nom. La même sonde construite sur CasaEngine `7a5320b6a` échoue (32 noms perdus) ;
+>   - pointeur `6ed0ef3f7` committé.
+> - **Captures** : 9 états à 0,00 contre `before/ui`. `race-finished` est à 13,99 (arrière-plan 3D seulement).
+>   - Contrôles du vérificateur : moteur ancien contre moteur nouveau, et dll et contenu d'avant les noms contre ceux d'après, donnent 0,00 sur les 10 états. Les noms et le correctif moteur ne changent donc aucun pixel.
+>   - Contrôle de la session principale (10:51) : la configuration exacte de T0.1 (`CasaEngine.dll` de `7a5320b6a`, dll et contenu de `4f5377e`) donne aussi 13,99 contre `before/ui`.
+>   - La cause donnée par les notes de T1.1, T1.2 et T2.2 (le pointeur) est donc réfutée. C'est la référence `race-finished` de 09:46, identique à celle de O7, qui ne se reproduit plus depuis 10:13 (O2).
+> - **Relectures** : aucun P0 à P2.
+>   - Notes de T2.2 (compte) et de T3.1 (monde de test) : corrigées ci-dessus.
+>   - Reportés : O3 (le script ne vérifie pas qu'il couvre bien 9 écrans, P4) et O4 (deux phrases inexactes de l'ADR-0020, question à l'auteur).
+> - Hors plan : une autre session a committé `d4e8f51de` dans le sous-module (enveloppe `StackPanel`, O2 du plan CasaEngine). Le pointeur de RacingGame reste à `6ed0ef3f7`, et `git status` montre le sous-module modifié.
 
 ---
 
@@ -339,7 +358,9 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
 | O1 | Coup d'œil de l'auteur sur la hiérarchie des écrans et des composants dans l'éditeur. | T1.2, T3.1 |
-| O2 | Les références de T0.1 datent du pointeur `7a5320b6a` ; avec le sous-module à `6ed0ef3f7`, l'état `race-finished` s'écarte de 13,99 (arrière-plan 3D, hors interface), avec ou sans les noms. Refaire les références au pointeur de T3.1, ou comparer chaque tâche à un contrôle au même sous-module. | T1.1, T1.2, T2.2 |
+| O2 | L'état `race-finished` des captures s'écarte de 13,99 de la référence de T0.1 (arrière-plan 3D : caméra et décor décalés, interface identique). L'écart est le même quelle que soit la version des dll du jeu, du contenu et du moteur, y compris la configuration exacte de T0.1 relancée à 10:51. Tous les lancements depuis 10:13 sont identiques entre eux (0,00), et la référence de 09:46 est identique à celle de O7. Cause hors de ce plan, non identifiée : à chercher à part, puis refaire la référence `race-finished`. | T1.1, T1.2, T2.2, T3.3 |
+| O3 | Avis P4 reporté : `check_ui_element_names.py` ne vérifie pas qu'il couvre 9 écrans. Un écran déplacé hors du motif de fichiers passerait sans bruit. | T1.2 |
+| O4 | Question à l'auteur. L'ADR-0020 contient deux phrases inexactes, signalées par les relectures :<br>- le contexte (ligne 11) dit que le code cherche les noms `face*`, ce qu'aucun code ne faisait ;<br>- les conséquences (ligne 36) attribuent l'écart `race-finished` au pointeur, ce que les contrôles réfutent (O2).<br>Une ADR ne se réécrit pas : faut-il corriger celle-ci, écrite le jour même et jamais utilisée depuis, ou laisser l'erreur et la noter dans une nouvelle ADR ? | T3.2 |
 
 ## Hors périmètre
 
