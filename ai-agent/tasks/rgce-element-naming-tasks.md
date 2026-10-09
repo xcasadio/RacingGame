@@ -279,7 +279,7 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
 
 ## Phase 3 — Pointeur, documentation, vérification
 
-### ⏳ T3.1 — Pointeur CasaEngine aux noms par défaut de l'éditeur
+### 🧪 T3.1 — Pointeur CasaEngine aux noms par défaut de l'éditeur
 
 - Objectif : RacingGame suit la fin du plan CasaEngine `editor-default-names-tasks.md`.
 - Prérequis : T1.1 à T1.4 de ce plan CasaEngine faits.
@@ -295,6 +295,14 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
     - Attendu : tous les noms gardés. La même sonde, construite sur l'ancien pointeur, échoue sur chaque type.
     - Un type qui ne se construit pas hors du jeu est listé avec l'erreur. Le test moteur de T1.3 couvre sa forme de `Clone()`.
 - Commit : `chore(casaengine): give new editor elements and components default names`
+
+> Validation (2026-10-09) :
+> - `git add CasaEngine` : `git diff --cached` ne montre que le pointeur `7a5320b6a` → `6ed0ef3f7` (plus ce plan à l'index du commit). `dotnet build RacingGame.slnx` : 0 erreur.
+> - Éditeur sur des copies (`artifacts` non utilisé, copies dans le bloc-notes `naming/t3.1/`) : `--open-asset Worlds/Test/TrackBeginnerGenerators.world` : `OPENED exit=0`. La capture lue montre la hiérarchie des 7 entités et, pour `Track.Road.Beginner`, l'inspecteur avec le composant racine « Race Road Generator », ses deux « Static Model » et leurs « Sub Mesh » sous leur nom d'affichage, sans `Object <guid>`. Le monde de test n'est pas encore modifié par ce plan (T2.x) : ses composants gardent leur nom stocké, l'affichage vient du nom par défaut de l'éditeur.
+> - `capture_editor_screen.ps1` sur `MainMenu` : `OK`. La capture lue montre la hiérarchie sans ligne sans nom : `Window wndMainMenu`, `OverlayPanel pnlRoot`, `Image imgBackground`, `imgLogo`, `Border pnlBand`, `StackPanel pnlButtons`, puis `pnlPlaySlot`, `pnlPlayBody`, `Button btnPlay`, `pnlPlayFace`, `imgPlayGlyph`, `pnlPlayRing`, `imgPlayLabel`, et la même suite pour Highscores et Options ; l'aperçu du menu s'affiche normalement.
+> - Sonde de clonage (`naming/cloneprobe/`, projet console qui référence `RacingGame.Gameplay.csproj` et `CasaEngine.csproj`, non versionnée) : 21 types, tous constructibles hors du jeu : `CameraLookAtComponent`, `ChaseCameraRigComponent`, `DebugFreeCameraComponent`, `LightComponent`, `PlayerStartComponent`, `RaceTrackPhysicsComponent`, `RaceFlowCoordinatorComponent`, `RaceCourseDebugComponent`, `RaceCheckpointTriggerComponent`, `VehicleDynamicsComponent`, `LegacyCarVisualComponent`, `VehicleWheelVisualComponent`, `DebugCarVisualComponent`, `RaceCarStateComponent`, `RaceTerrainGeneratorComponent`, `RaceRoadGeneratorComponent`, `RaceGuardRailGeneratorComponent`, `RaceColumnGeneratorComponent`, `RaceGeneratedModelComponent`, `StaticModelComponent`, `RacingCarAnchorComponent`. Pour chacun : nom donné, pose dans une entité (racine pour un `SceneComponent` ; enfant de la racine pour un `SceneComponent` ; `Components` pour les autres), `entity.Clone()`, comparaison du nom : **les 21 noms sont gardés** (`ALL KEPT`, code 0, `naming/cloneprobe/run-new.txt`).
+> - Écart au plan (contrôle négatif) : le plan prévoyait « la même sonde sur l'ancien pointeur ». La sonde appelle plutôt `component.Clone()` directement sur chaque type (le chemin sans le correctif T1.3, c'est-à-dire l'ancien comportement de chaque site de clonage) : **les 21 noms sont perdus** (`Object <guid>`), ce qui montre que la sonde détecte le défaut.
+> - Reste (O1) : coup d'œil de l'auteur sur la hiérarchie dans l'éditeur.
 
 ### ⏳ T3.2 — ADR et documentation
 
