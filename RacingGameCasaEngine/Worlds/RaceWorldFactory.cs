@@ -146,14 +146,14 @@ public static class RaceWorldFactory
         };
         cameraEntity.ApplyExplicitPolicies(EntityPolicySet.DynamicDefault);
 
-        var cameraComponent = new CameraLookAtComponent();
+        var cameraComponent = new CameraLookAtComponent { Name = nameof(CameraLookAtComponent) };
         cameraComponent.SetPositionAndTarget(new Vector3(0f, 6f, -18f), Vector3.Zero);
         cameraEntity.RootComponent = cameraComponent;
 
         if (enableChaseCamera)
         {
-            cameraEntity.AddComponent(new ChaseCameraRigComponent());
-            cameraEntity.AddComponent(new DebugFreeCameraComponent());
+            cameraEntity.AddComponent(new ChaseCameraRigComponent { Name = nameof(ChaseCameraRigComponent) });
+            cameraEntity.AddComponent(new DebugFreeCameraComponent { Name = nameof(DebugFreeCameraComponent) });
         }
 
         return cameraEntity;
@@ -168,6 +168,7 @@ public static class RaceWorldFactory
                 Name = light.Name,
                 RootComponent = new LightComponent
                 {
+                    Name = nameof(LightComponent),
                     Type = LightType.Directional,
                     LocalOrientation = CreateOrientationFromForward(light.Direction),
                     Color = Color.White,
@@ -217,7 +218,7 @@ public static class RaceWorldFactory
         var entity = new Entity
         {
             Name = PlayerStartEntityName,
-            RootComponent = new PlayerStartComponent(),
+            RootComponent = new PlayerStartComponent { Name = nameof(PlayerStartComponent) },
         };
         entity.ApplyExplicitPolicies(EntityPolicySet.StaticDecoration);
 
@@ -247,11 +248,12 @@ public static class RaceWorldFactory
 
         entity.AddComponent(new RaceTrackPhysicsComponent
         {
+            Name = nameof(RaceTrackPhysicsComponent),
             TrackAssetId = trackAssetId,
             HeightmapAssetId = heightmapAssetId,
         });
-        entity.AddComponent(new RaceFlowCoordinatorComponent());
-        entity.AddComponent(new RaceCourseDebugComponent());
+        entity.AddComponent(new RaceFlowCoordinatorComponent { Name = nameof(RaceFlowCoordinatorComponent) });
+        entity.AddComponent(new RaceCourseDebugComponent { Name = nameof(RaceCourseDebugComponent) });
         return entity;
     }
 
@@ -262,6 +264,7 @@ public static class RaceWorldFactory
             Name = name,
             RootComponent = new RaceCheckpointTriggerComponent
             {
+                Name = nameof(RaceCheckpointTriggerComponent),
                 HalfWidth = checkpointTrigger.HalfWidth,
                 HalfHeight = checkpointTrigger.HalfHeight,
                 HalfDepth = checkpointTrigger.HalfDepth,

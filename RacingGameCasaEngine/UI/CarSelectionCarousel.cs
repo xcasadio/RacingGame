@@ -103,6 +103,7 @@ internal sealed class CarSelectionCarousel : IDisposable
 
         _light = new LightComponent
         {
+            Name = nameof(LightComponent),
             Type = LightType.Directional,
             LocalOrientation = RaceWorldFactory.CreateOrientationFromForward(LightDirection),
             Color = Color.White,
@@ -121,7 +122,7 @@ internal sealed class CarSelectionCarousel : IDisposable
         }
 
         _cameraEntity = new Entity { Name = "Carousel.Camera" };
-        _camera = new CameraLookAtComponent();
+        _camera = new CameraLookAtComponent { Name = nameof(CameraLookAtComponent) };
         _cameraEntity.RootComponent = _camera;
         _cameraEntity.Initialize();
         _cameraEntity.InitializeWithWorld(_world);
@@ -328,7 +329,7 @@ internal sealed class CarSelectionCarousel : IDisposable
 
     private StaticModelComponent AddModelEntity(string name, StaticModel? model, Guid staticModelAssetId = default)
     {
-        var component = new StaticModelComponent { StaticModel = model };
+        var component = new StaticModelComponent { Name = nameof(StaticModelComponent), StaticModel = model };
         if (staticModelAssetId != Guid.Empty)
         {
             // The cooked plate, shared by the engine between the three plates: no paint, nothing to own.

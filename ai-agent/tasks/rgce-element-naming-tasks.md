@@ -250,7 +250,7 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
 > - `--save-project` deux fois de suite sur la même copie : `cmp` avec le fichier du dépôt identique après chaque enregistrement (mêmes octets).
 > - Captures locales sous le dossier de scratch `naming/t2.1/` (ignoré par git).
 
-### ⏳ T2.2 — Composants créés par le code nommés
+### ✅ T2.2 — Composants créés par le code nommés
 
 - Objectif : P4.
 - Fichiers :
@@ -268,6 +268,14 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
   - `--capture-ui-screens` et `UiCaptureCompare` contre T0.1 : 10 états dans le seuil (carrousel, HUD) ;
   - `--smoke-frontend` code 0 sans avertissement.
 - Commit : `feat(racing-casa): name the components the game creates`
+
+> Validation (2026-10-09) :
+> - 25 créations de composants nommées `Name = nameof(<Type>)` dans 4 fichiers : `RaceWorldFactory` (caméra, `ChaseCameraRig`, `DebugFreeCamera`, lumières, `PlayerStart`, `RaceTrackPhysics`, `RaceFlowCoordinator`, `RaceCourseDebug`, `RaceCheckpointTrigger`), `RaceCarEntityFactory` (5 composants de la voiture), `LegacyTrackSceneFactory` (5 générateurs, dont les 2 glissières, et le `StaticModel` du décor), `CarSelectionCarousel` (lumière, caméra, `StaticModel` de `AddModelEntity`). Aucune entité ni composant déjà nommé par son rôle n'est touché. `VisualFrameName` vaut `WheelFrontLeft`, `WheelFrontRight`, `WheelBackLeft`, `WheelBackRight` : aucun nom de type, donc aucune collision.
+> - `dotnet build RacingGame.slnx` : 0 erreur.
+> - `--export-track-runtime-scene` (`artifacts/element-naming/t2.2/scene.json`) : `rg -c 'Object [0-9a-f-]{36}'` rend 0 (aucune correspondance, contre 5 118 segments avant) sur 5 154 `ComponentPath`. `compare_race_scene_exports.py` contre `before/scene.json` : 0 enregistrement sans partenaire, 0 problème de piste.
+> - `--capture-ui-screens` : 9 états à 0,00 contre `before/ui` ; `race-finished` à 13,99, la dérive connue de O2 (sous-module à `6ed0ef3f7`). Contre le contrôle `t1.1-ctrl` (même sous-module) : les 10 états à 0,00.
+> - `--smoke-frontend` : code 0, aucun avertissement ni erreur ; réglages restaurés à l'identique à chaque lancement.
+> - Captures et exports locaux dans `artifacts/element-naming/t2.2/` (ignoré par git).
 
 ## Phase 3 — Pointeur, documentation, vérification
 

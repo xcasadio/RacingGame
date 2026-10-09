@@ -35,18 +35,18 @@ internal static partial class LegacyTrackSceneFactory
         // only drives what stays assembled here: the scenery, the checkpoints and the start.
         var trackEntities = new List<Entity>
         {
-            CreateGeneratorEntity($"Track.Ground.{trackName}", new RaceTerrainGeneratorComponent(), trackAssetId, heightmapAssetId),
-            CreateGeneratorEntity($"Track.Road.{trackName}", new RaceRoadGeneratorComponent(), trackAssetId, heightmapAssetId),
+            CreateGeneratorEntity($"Track.Ground.{trackName}", new RaceTerrainGeneratorComponent { Name = nameof(RaceTerrainGeneratorComponent) }, trackAssetId, heightmapAssetId),
+            CreateGeneratorEntity($"Track.Road.{trackName}", new RaceRoadGeneratorComponent { Name = nameof(RaceRoadGeneratorComponent) }, trackAssetId, heightmapAssetId),
         };
         if (layout.HasGuardRails)
         {
-            trackEntities.Add(CreateGeneratorEntity($"Track.GuardRail.Left.{trackName}", new RaceGuardRailGeneratorComponent { Side = RaceGuardRailSide.Left }, trackAssetId, heightmapAssetId));
-            trackEntities.Add(CreateGeneratorEntity($"Track.GuardRail.Right.{trackName}", new RaceGuardRailGeneratorComponent { Side = RaceGuardRailSide.Right }, trackAssetId, heightmapAssetId));
+            trackEntities.Add(CreateGeneratorEntity($"Track.GuardRail.Left.{trackName}", new RaceGuardRailGeneratorComponent { Name = nameof(RaceGuardRailGeneratorComponent), Side = RaceGuardRailSide.Left }, trackAssetId, heightmapAssetId));
+            trackEntities.Add(CreateGeneratorEntity($"Track.GuardRail.Right.{trackName}", new RaceGuardRailGeneratorComponent { Name = nameof(RaceGuardRailGeneratorComponent), Side = RaceGuardRailSide.Right }, trackAssetId, heightmapAssetId));
         }
 
         if (layout.Columns.Count > 0)
         {
-            trackEntities.Add(CreateGeneratorEntity($"Track.Columns.{trackName}", new RaceColumnGeneratorComponent(), trackAssetId, heightmapAssetId));
+            trackEntities.Add(CreateGeneratorEntity($"Track.Columns.{trackName}", new RaceColumnGeneratorComponent { Name = nameof(RaceColumnGeneratorComponent) }, trackAssetId, heightmapAssetId));
         }
 
         var sceneryEntities = new List<Entity>();
@@ -285,6 +285,7 @@ internal static partial class LegacyTrackSceneFactory
 
         var component = new StaticModelComponent
         {
+            Name = nameof(StaticModelComponent),
             StaticModelAssetId = staticModelAssetId,
             CastShadows = true,
         };

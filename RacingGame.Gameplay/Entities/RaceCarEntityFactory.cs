@@ -35,11 +35,11 @@ public static class RaceCarEntityFactory
         car.ApplyExplicitPolicies(EntityPolicySet.DynamicDefault);
         car.RootComponent = CreateComponentHierarchy();
         EnsureVisualComponent(car);
-        car.AddComponent(new VehicleDynamicsComponent());
-        car.AddComponent(new LegacyCarVisualComponent());
-        car.AddComponent(new VehicleWheelVisualComponent());
-        car.AddComponent(new DebugCarVisualComponent());
-        car.AddComponent(new RaceCarStateComponent());
+        car.AddComponent(new VehicleDynamicsComponent { Name = nameof(VehicleDynamicsComponent) });
+        car.AddComponent(new LegacyCarVisualComponent { Name = nameof(LegacyCarVisualComponent) });
+        car.AddComponent(new VehicleWheelVisualComponent { Name = nameof(VehicleWheelVisualComponent) });
+        car.AddComponent(new DebugCarVisualComponent { Name = nameof(DebugCarVisualComponent) });
+        car.AddComponent(new RaceCarStateComponent { Name = nameof(RaceCarStateComponent) });
         return car;
     }
 
