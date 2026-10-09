@@ -1,6 +1,6 @@
 # ADR-0017: RacingGame.Gameplay holds the game code, and generator components rebuild the track
 
-- **Status**: Accepted
+- **Status**: Accepted; superseded in part by ADR-0019 (reading of the legacy helper and CombiModel items)
 - **Date**: 2026-10-08
 - **Source**: this chantier: `ai-agent/tasks/rgce-editor-project-tasks.md`, decisions D1, D2 and D5 (author answers, 2026-10-08), proposals P5, P6 and P9 (validated with the plan), tasks T4.1 to T4.6
 

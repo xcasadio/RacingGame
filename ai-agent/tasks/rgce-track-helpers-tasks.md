@@ -622,7 +622,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 > - **Liste du contrôle visuel**, écrite à l'étape 3 ci-dessus, à regarder à côté des vues `helper-*` de `after/`. Elle comprend maintenant la luminosité des tunnels (O3).
 > - **Question à l'auteur** : le contrôle visuel dans le jeu d'origine, selon cette liste, et la réponse à O3. Ses remarques deviendront des points ouverts ou des tâches.
 
-### ⏳ T3.2 — ADR, documentation, plan éditeur et vérification
+### ✅ T3.2 — ADR, documentation, plan éditeur et vérification
 
 - **Fichiers** :
   - `docs/decisions/00NN-rgce-reads-the-legacy-track-helpers.md` (P8) et l'index des ADR ;
@@ -636,6 +636,30 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
   - le monde de test s'ouvre et s'enregistre à l'identique.
   Il prend la claim, le diff de `before/` et les commits du chantier.
 - **Commit** : `docs(adr): record the legacy track helpers read by RacingGameCasaEngine`
+
+> Validation (2026-10-09) :
+> - **ADR-0019** (`docs/decisions/0019-rgce-reads-the-legacy-track-helpers.md`) consigne :
+>   - la lecture des aides et des CombiModel ;
+>   - D3 ;
+>   - les tunnels et leur matériau à id constant ;
+>   - les outils de parité ;
+>   - le départ des références de S6 depuis `after/` ;
+>   - O3.
+>   Elle remplace en partie l'ADR-0017, pour la lecture des fichiers hérités : le statut de l'ADR-0017 et l'index le disent.
+> - **README** :
+>   - `RacingGameCasaEngine/Assets/README.md` : le générateur de route construit aussi les tunnels, les aides sont lues, et le matériau des tunnels est une constante ;
+>   - README de l'outil de cuisson : le rôle `RoadTunnel` et `ForRoadTunnel`.
+> - **Plan éditeur** : O7 passe à « Levé », avec un renvoi à ce plan, et S6 part des références `after/`. L'index des plans (`ai-agent/README.md`) est mis à jour.
+> - **Vérificateur indépendant : CONFIRMED**, sans aucun constat (sorties dans `verify-o7/` du scratchpad). Un seul processus de jeu ou d'éditeur à la fois, et les réglages de l'auteur restaurés à l'identique.
+>   - **Lecture** : le vérificateur a lu les fichiers avec les types du jeu d'origine lui-même (`RacingGame.Tracks.TrackData`, `TrackCombiModels.CombiObject`, par `XmlSerializer`). La lecture de RGCE en donne exactement les mêmes valeurs, flottants compris (vidages identiques octet pour octet).
+>   - **Écarts** : un export neuf est identique à `after/`. Sa propre catégorisation retrouve, étape par étape, les écarts de T1.2, T1.3 et T2.1 et eux seuls, et rien pour le terrain, les colonnes, le feu, la bannière de départ, le départ, la voiture ni les autres objets neutres.
+>   - **Tunnels** : la géométrie est conforme ligne à ligne à `Track.cs:464-588` et `TrackVertex.cs:89-220`.
+>   - **Audits des voitures** : identiques.
+>   - **Original** : `missingInLive` = 0, `modelMismatch` = 0, les 4 écarts anciens, et rien en trop hors panneaux, bannières, feu, palmiers et lanternes. Largeurs à 1,9e-6 près, par sa propre sonde.
+>   - **Éditeur et outil de cuisson** : le monde de test s'ouvre. Deux `--save-project` donnent les octets committés, sans enfant généré. Les nouveaux assets s'ouvrent, et une cuisson sur une copie ne change aucun octet.
+>   - **Outils et docs** : les deux corrections d'outil sont justes (`TrackLine.cs:597-599` répète bien `Count - 2` ; préfixe `StaticModel.`), et les faits de l'ADR-0019 et des docs sont exacts.
+>   - **Non lancés**, comme le brief le permettait : les captures d'audit et d'interface, le smoke et le profil d'import. Ces contrôles ont été faits à chaque tâche.
+> - **Reste** : le contrôle visuel de l'auteur (T3.1 🧪) et O3. Le plan reste dans `ai-agent/tasks/` jusque-là.
 
 ---
 

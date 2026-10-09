@@ -19,7 +19,7 @@ The default `--content` is `RacingGameCasaEngine/Content` of the repository that
 |---|---|---|---|
 | One per glTF | `Models/<Name>.staticModel` | `StaticModel.<Name>` | `staticmodel` |
 | One per model material | `Materials/Models/<Name>/<Slot>.material` | `Material.<Name>.<Slot>` | `material` |
-| One per track material (`Road`, `Ground`, `Terrain`, `GuardRail`, `RoadColumn`) | `Materials/Track/<Role>.material` | `Material.Track.<Role>` | `material` |
+| One per track material (`Road`, `Ground`, `Terrain`, `GuardRail`, `RoadColumn`, `RoadTunnel`) | `Materials/Track/<Role>.material` | `Material.Track.<Role>` | `material` |
 | One per image a cooked material uses | `Textures/<Name>.texture` | `Texture.<Name>` | `texture` |
 
 - Files are written with the editor serializers (`EditorAssetWriterService`), so the editor re-saves them unchanged.
@@ -30,7 +30,7 @@ The default `--content` is `RacingGameCasaEngine/Content` of the repository that
   the glTF (`LegacyTrackSceneFactory.ApplyLegacyModelRootCorrection`, removed in T5.5 once the game loaded the cooked models), named
   `<Name>.LegacyRootCorrection`. Each mesh points to its material by `material_asset_id`.
 - **Materials**: definition `lit-diffuse`, with the values of `RaceMaterialRecipes` (`ForScenery`, `ForCar` with car index 0, `ForPlate`,
-  and `ForRoad`, `ForGround`, `ForTerrain`, `ForGuardRail`, `ForRoadColumn` with the first texture candidate that exists). A render state the
+  and `ForRoad`, `ForGround`, `ForTerrain`, `ForGuardRail`, `ForRoadColumn`, `ForRoadTunnel` with the first texture candidate that exists). A render state the
   game leaves `null` is written as the state the renderer applies: blend `Opaque`, depth `Default`, rasterizer `CullCounterClockwise`,
   sampler `AnisotropicClamp`. The slots of the car that sample the car texture (painted or not) use `Texture.RacerCar`; the game replaces it
   at run time (T5.6). `<Slot>` is the display name of the glTF material, with a numeric suffix if two materials of a model share it.

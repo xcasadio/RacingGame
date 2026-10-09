@@ -91,18 +91,20 @@ Run-time state that is not cooked:
 
 - **Car paint.** Each car index takes a private copy of `StaticModel.Car`. The slots that sample the car texture (base texture `Texture.RacerCar` in the cooked material) get, in that copy only, a copy of their material with a new id and the painted or unpainted texture of `CarPaint`, which re-colours the `RacerCar*` image for the chosen colour. The painted-or-not rule is the one of the legacy game, applied to the slot name; the cooker's `--verify` checks it against the recipes.
 - **Start light.** `RaceStartLight` switches its component between `StaticModel.StartLight`, `StartLight2` and `StartLight3` during the countdown.
-- **Track generators.** The road, terrain, rail and column meshes are still built in code; their material comes from `material_asset_id`, a cooked `Material.Track.<Role>` by default.
+- **Track generators.** The road, tunnel, terrain, rail and column meshes are still built in code; their material comes from `material_asset_id`, a cooked `Material.Track.<Role>` by default. The tunnels always use `Material.Track.RoadTunnel`, which the road generator holds as a constant, not as a serialized property.
 
 ## Track generator components
 
 The race track is not stored as meshes. Four components of `RacingGame.Gameplay` rebuild it from the data assets, in the game and in the editor. Each one is the root component of its own entity:
 
 - `RaceTerrainGeneratorComponent`: the ground, from the heightmap;
-- `RaceRoadGeneratorComponent`: the road;
+- `RaceRoadGeneratorComponent`: the road, and its tunnels (the `Tunnel` spans of the road helpers);
 - `RaceGuardRailGeneratorComponent`: one side of the guard rail, with its posts;
 - `RaceColumnGeneratorComponent`: the columns and their segments.
 
 `RaceTrackPhysicsComponent` is not a generator: it computes the track profile that the car physics reads, from the same two ids.
+
+The `.Track` and `.CombiModel` files are read as the original game reads them ([ADR-0019](../../docs/decisions/0019-rgce-reads-the-legacy-track-helpers.md)): the width helpers set the road widths, the road helpers place the palms, laterns and tunnels, and the CombiModel groups place their objects.
 
 - Serialized settings:
   - `track_asset_id`: the `.Track` asset, a `track` entry of `AssetInfos.json` (`TrackBeginnerData`, `TrackAdvancedData`, `TrackExpertData`);
