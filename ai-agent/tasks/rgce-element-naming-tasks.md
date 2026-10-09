@@ -194,7 +194,7 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
 > - `--capture-ui-screens` contre `before/ui` : 9 états à 0,00 ; `race-finished` à 13,99 (au-dessus de 2,0), identique à la relance (`t1.1b`). Cause : l'arrière-plan 3D (caméra et ombres), pas l'interface. Le sous-module CasaEngine est maintenant à `6ed0ef3f7`, alors que les références datent de `7a5320b6a`. Preuve : le contrôle `t1.1-ctrl` (mes modifications retirées, même sous-module) donne le même 13,99 contre `before/ui`, et `t1.1-ctrl` contre `t1.1b` donne 0,00 sur les 10 états. Les noms ne changent donc aucun pixel. Les références devraient être refaites au pointeur de T3.1 (voir Points ouverts).
 > - Captures locales dans `artifacts/element-naming/{t1.1,t1.1b,t1.1-ctrl}/` (ignoré par git).
 
-### ⏳ T1.2 — Tous les éléments nommés, et le contrôle versionné
+### 🧪 T1.2 — Tous les éléments nommés, et le contrôle versionné
 
 - Objectif : les 273 noms de la table et le script de P6.
 - Fichiers :
@@ -210,6 +210,17 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
   - `--smoke-frontend` code 0 sans avertissement ; `--capture-ui-screens` et `UiCaptureCompare` contre T0.1 : 10 états dans le seuil ;
   - `scripts/capture_editor_screen.ps1` sur `CarSelection` et `RaceHud`, sur une copie du contenu : capture lue, hiérarchie sans ligne sans nom, diagnostics sans erreur.
 - Commit : `feat(racing-casa): name every element of the screens`
+
+> Validation (2026-10-09) :
+> - `scripts/check_ui_element_names.py` (nouveau, `expat` comme le moteur d'`xml.etree`, pour avoir la ligne de chaque balise) : avant les noms, code 1, 273 éléments, 181 sans nom, aucune autre faute (c'est ce que prévoyait l'étape 2) ; après, code 0, 9 écrans, 273 éléments, 0 faute.
+> - Sur une copie de `Help.xaml` où un nom est rendu identique à un autre et un préfixe faux (`txtSection0Title`) : code 1, deux lignes fautives avec le fichier, la ligne et le type.
+> - 181 attributs `Name` insérés juste après le nom de balise (script de scratch, par décalage d'octets, `git diff` : 9 fichiers, 181 lignes). Preuve : pour chacune des 181 lignes changées, retirer `Name="..."` de la nouvelle ligne redonne l'ancienne exactement. Les noms obtenus sont égaux, écran par écran et dans l'ordre, à la table du plan (273 noms ; les 92 noms existants étaient déjà ceux de T1.1).
+> - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement hors du sous-module. `Assets/README.md` : une ligne sur la règle et le script.
+> - `--smoke-frontend` : code 0, aucun avertissement ni erreur, réglages restaurés à l'identique (`artifacts/element-naming/t1.2/smoke.txt`).
+> - `--capture-ui-screens` contre `before/ui` : 9 états à 0,00 ; `race-finished` à 13,99, identique à la relance (`t1.2b`), même cause que T1.1 (O2 : sous-module à `6ed0ef3f7`, références à `7a5320b6a`). Contre le contrôle `t1.1-ctrl` (même sous-module, sans noms) : les 10 états à 0,00, sur `t1.2` comme sur `t1.2b`. Les noms ne changent aucun pixel.
+> - Export de scène `t1.2/scene.json` contre `before/scene.json` : 0 enregistrement sans partenaire, 0 problème de piste.
+> - Éditeur sur des copies (contenu et éditeur copiés, `.casaeditor` supprimé) : `capture_editor_screen.ps1` sur `CarSelection` et `RaceHud`, code 0, diagnostics sans erreur. Captures lues : chaque ligne de la hiérarchie affiche `Type nom` (`Window wndCarSelection`, `OverlayPanel pnlRoot`, `Image imgSwatch0`… `imgLeftArrow` ; `Window wndRaceHud`, `Border pnlLaps`, `TextBlock lblCurrentLapTime`… `lblTopTime2`) ; aucune ligne sans nom parmi les lignes visibles. Le panneau ne montre que la première vingtaine de lignes : le reste de la hiérarchie est à voir par l'auteur (O1).
+> - Captures locales dans `artifacts/element-naming/{t1.2,t1.2b}/` et sous le dossier de scratch (ignorés par git).
 
 ## Phase 2 — Mondes et composants
 

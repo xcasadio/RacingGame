@@ -1,4 +1,4 @@
-<Window xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core"
+<Window Name="wndHighscores" xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core"
         xmlns:dataBinding="clr-namespace:MGUI.Core.UI.DataBinding;assembly=MGUI.Core"
         Width="1280" Height="720" ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
@@ -10,26 +10,26 @@
     at draw time as TextureFont did, and colours the tabs and lines. Nothing takes MGUI's focus: HighscoresScreen reads
     the keyboard, the mouse and the gamepad itself.
   -->
-  <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+  <OverlayPanel Name="pnlRoot" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <!-- Menu decoration (RaceMenuDecorationViewModel): background, then the bouncing logo placed by the view model. -->
-    <Image SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
+    <Image Name="imgBackground" SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
            HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-    <Image SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgLogo" SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Decoration.LogoMargin}"
            Width="{dataBinding:MGBinding Path=Decoration.LogoWidth}" Height="{dataBinding:MGBinding Path=Decoration.LogoHeight}" />
     <!-- Band: black at 0.683 opacity (the atlas texel's 205/255 drawn at 0.85), full width. -->
-    <Border BorderThickness="0" Background="rgba(0,0,0,174)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Top"
+    <Border Name="pnlBand" BorderThickness="0" Background="rgba(0,0,0,174)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Top"
             Margin="{dataBinding:MGBinding Path=BandMargin}" Height="{dataBinding:MGBinding Path=BandHeightPixels}" />
     <!-- "HIGHSCORES" header (headers.png HeaderHighscoresGfxRect). -->
-    <Image SourceName="Ui.Highscores.Header" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgHeader" SourceName="Ui.Highscores.Header" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Header.Margin}" Width="{dataBinding:MGBinding Path=Header.Width}" Height="{dataBinding:MGBinding Path=Header.Height}" />
     <!-- The two one-pixel lines under the tabs, in RacingGame's colour (192,192,192,128) passed as it is. -->
-    <Border BorderThickness="0" Background="rgba(192,192,192,128)" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Border Name="pnlSeparator" BorderThickness="0" Background="rgba(192,192,192,128)" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
             Margin="{dataBinding:MGBinding Path=Separator.Margin}" Width="{dataBinding:MGBinding Path=Separator.Width}" Height="{dataBinding:MGBinding Path=Separator.Height}" />
     <!-- B BACK, grown and outlined in orange while the mouse is over it. -->
-    <Image SourceName="Ui.Button.Back" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgBackButton" SourceName="Ui.Button.Back" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" />
-    <Image SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgBackHighlight" SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" Visibility="{dataBinding:MGBinding Path=BackButton.HighlightVisibility}" />
     <!-- Level tabs, coloured by the screen: yellow when selected, white under the mouse, light grey otherwise. -->
     <TextBlock Name="lblTab0" Text="Beginner" FontFamily="GameFont" Foreground="rgb(211,211,211)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"

@@ -1,4 +1,4 @@
-<Window xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core"
+<Window Name="wndOptions" xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core"
         xmlns:dataBinding="clr-namespace:MGUI.Core.UI.DataBinding;assembly=MGUI.Core"
         Width="1280" Height="720" ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
@@ -12,65 +12,65 @@
     chosen resolution and driving mode. Nothing takes MGUI's focus: OptionsScreen reads the keyboard, the typed text, the
     mouse and the gamepad itself.
   -->
-  <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+  <OverlayPanel Name="pnlRoot" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <!-- Menu decoration (RaceMenuDecorationViewModel): background, then the bouncing logo placed by the view model. -->
-    <Image SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
+    <Image Name="imgBackground" SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
            HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-    <Image SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgLogo" SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Decoration.LogoMargin}"
            Width="{dataBinding:MGBinding Path=Decoration.LogoWidth}" Height="{dataBinding:MGBinding Path=Decoration.LogoHeight}" />
     <!-- Band: black at 0.683 opacity (the atlas texel's 205/255 drawn at 0.85), full width. -->
-    <Border BorderThickness="0" Background="rgba(0,0,0,174)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Top"
+    <Border Name="pnlBand" BorderThickness="0" Background="rgba(0,0,0,174)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Top"
             Margin="{dataBinding:MGBinding Path=BandMargin}" Height="{dataBinding:MGBinding Path=BandHeightPixels}" />
     <!-- "OPTIONS" header (headers.png HeaderOptionsGfxRect), then the original's name field. -->
-    <Image SourceName="Ui.Options.Header" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgHeader" SourceName="Ui.Options.Header" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Header.Margin}" Width="{dataBinding:MGBinding Path=Header.Width}" Height="{dataBinding:MGBinding Path=Header.Height}" />
-    <Image SourceName="Ui.Options.NameField" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgNameField" SourceName="Ui.Options.NameField" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=NameField.Margin}" Width="{dataBinding:MGBinding Path=NameField.Width}" Height="{dataBinding:MGBinding Path=NameField.Height}" />
     <!-- Options: the round button (SelectionRadioButtonGfxRect), grey while off, orange while on. -->
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgFullscreenButton" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=FullscreenButton.Margin}" Width="{dataBinding:MGBinding Path=FullscreenButton.Width}" Height="{dataBinding:MGBinding Path=FullscreenButton.Height}" TextureColor="rgba(180,180,180,120)" Visibility="{dataBinding:MGBinding Path=FullscreenButton.Visibility}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgFullscreenHighlight" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=FullscreenButton.Margin}" Width="{dataBinding:MGBinding Path=FullscreenButton.Width}" Height="{dataBinding:MGBinding Path=FullscreenButton.Height}" TextureColor="rgba(255,156,0,160)" Visibility="{dataBinding:MGBinding Path=FullscreenButton.HighlightVisibility}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgVSyncButton" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=VSyncButton.Margin}" Width="{dataBinding:MGBinding Path=VSyncButton.Width}" Height="{dataBinding:MGBinding Path=VSyncButton.Height}" TextureColor="rgba(180,180,180,120)" Visibility="{dataBinding:MGBinding Path=VSyncButton.Visibility}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgVSyncHighlight" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=VSyncButton.Margin}" Width="{dataBinding:MGBinding Path=VSyncButton.Width}" Height="{dataBinding:MGBinding Path=VSyncButton.Height}" TextureColor="rgba(255,156,0,160)" Visibility="{dataBinding:MGBinding Path=VSyncButton.HighlightVisibility}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgPostEffectsButton" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=PostEffectsButton.Margin}" Width="{dataBinding:MGBinding Path=PostEffectsButton.Width}" Height="{dataBinding:MGBinding Path=PostEffectsButton.Height}" TextureColor="rgba(180,180,180,120)" Visibility="{dataBinding:MGBinding Path=PostEffectsButton.Visibility}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgPostEffectsHighlight" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=PostEffectsButton.Margin}" Width="{dataBinding:MGBinding Path=PostEffectsButton.Width}" Height="{dataBinding:MGBinding Path=PostEffectsButton.Height}" TextureColor="rgba(255,156,0,160)" Visibility="{dataBinding:MGBinding Path=PostEffectsButton.HighlightVisibility}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgShadowsButton" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=ShadowsButton.Margin}" Width="{dataBinding:MGBinding Path=ShadowsButton.Width}" Height="{dataBinding:MGBinding Path=ShadowsButton.Height}" TextureColor="rgba(180,180,180,120)" Visibility="{dataBinding:MGBinding Path=ShadowsButton.Visibility}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgShadowsHighlight" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=ShadowsButton.Margin}" Width="{dataBinding:MGBinding Path=ShadowsButton.Width}" Height="{dataBinding:MGBinding Path=ShadowsButton.Height}" TextureColor="rgba(255,156,0,160)" Visibility="{dataBinding:MGBinding Path=ShadowsButton.HighlightVisibility}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgShowFpsButton" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=ShowFpsButton.Margin}" Width="{dataBinding:MGBinding Path=ShowFpsButton.Width}" Height="{dataBinding:MGBinding Path=ShowFpsButton.Height}" TextureColor="rgba(180,180,180,120)" Visibility="{dataBinding:MGBinding Path=ShowFpsButton.Visibility}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgShowFpsHighlight" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=ShowFpsButton.Margin}" Width="{dataBinding:MGBinding Path=ShowFpsButton.Width}" Height="{dataBinding:MGBinding Path=ShowFpsButton.Height}" TextureColor="rgba(255,156,0,160)" Visibility="{dataBinding:MGBinding Path=ShowFpsButton.HighlightVisibility}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgVibrationButton" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=VibrationButton.Margin}" Width="{dataBinding:MGBinding Path=VibrationButton.Width}" Height="{dataBinding:MGBinding Path=VibrationButton.Height}" TextureColor="rgba(180,180,180,120)" Visibility="{dataBinding:MGBinding Path=VibrationButton.Visibility}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgVibrationHighlight" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=VibrationButton.Margin}" Width="{dataBinding:MGBinding Path=VibrationButton.Width}" Height="{dataBinding:MGBinding Path=VibrationButton.Height}" TextureColor="rgba(255,156,0,160)" Visibility="{dataBinding:MGBinding Path=VibrationButton.HighlightVisibility}" />
     <!-- Sliders: the original's track, then the round handle. -->
-    <Image SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSoundTrack" SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=SoundTrack.Margin}" Width="{dataBinding:MGBinding Path=SoundTrack.Width}" Height="{dataBinding:MGBinding Path=SoundTrack.Height}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSoundHandle" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=SoundHandle.Margin}" Width="{dataBinding:MGBinding Path=SoundHandle.Width}" Height="{dataBinding:MGBinding Path=SoundHandle.Height}" />
-    <Image SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgMusicTrack" SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=MusicTrack.Margin}" Width="{dataBinding:MGBinding Path=MusicTrack.Width}" Height="{dataBinding:MGBinding Path=MusicTrack.Height}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgMusicHandle" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=MusicHandle.Margin}" Width="{dataBinding:MGBinding Path=MusicHandle.Width}" Height="{dataBinding:MGBinding Path=MusicHandle.Height}" />
-    <Image SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSensitivityTrack" SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=SensitivityTrack.Margin}" Width="{dataBinding:MGBinding Path=SensitivityTrack.Width}" Height="{dataBinding:MGBinding Path=SensitivityTrack.Height}" />
-    <Image SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSensitivityHandle" SourceName="Ui.Button.Radio" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=SensitivityHandle.Margin}" Width="{dataBinding:MGBinding Path=SensitivityHandle.Width}" Height="{dataBinding:MGBinding Path=SensitivityHandle.Height}" />
     <!-- The selection arrow (SelectionArrowGfxRect), then B BACK, grown and outlined in orange while the mouse is over it. -->
-    <Image SourceName="Ui.CarSelection.Arrow" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSelectionArrow" SourceName="Ui.CarSelection.Arrow" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Arrow.Margin}" Width="{dataBinding:MGBinding Path=Arrow.Width}" Height="{dataBinding:MGBinding Path=Arrow.Height}" />
-    <Image SourceName="Ui.Button.Back" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgBackButton" SourceName="Ui.Button.Back" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" />
-    <Image SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgBackHighlight" SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" Visibility="{dataBinding:MGBinding Path=BackButton.HighlightVisibility}" />
     <!-- Texts, in GameFont at its native size, scaled at draw time by OptionsScreen. -->
     <TextBlock Name="lblRow0" Text="Player Name" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"

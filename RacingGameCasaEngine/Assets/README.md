@@ -8,6 +8,7 @@ Runtime assets are resolved from `RacingGameCasaEngine/Content`.
 - Asset names must stay stable and unique because gameplay code resolves them by logical name first.
 - `file_name` values stay relative to `Content` and always use `/` or simple folder segments.
 - Game-specific JSON data lives with the game project, not inside `CasaEngine`.
+- Every MGUI element of `Content/UI/Screens/*/*.xaml` has a `Name`, unique in its screen, with the prefix of its type (`wnd` Window, `pnl` OverlayPanel/StackPanel/Border, `img` Image, `lbl` TextBlock, `btn` Button). `python scripts/check_ui_element_names.py` checks it.
 
 ## Suggested folders
 

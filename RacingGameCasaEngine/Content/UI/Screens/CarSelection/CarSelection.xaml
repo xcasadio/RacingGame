@@ -1,4 +1,4 @@
-<Window xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core"
+<Window Name="wndCarSelection" xmlns="clr-namespace:MGUI.Core.UI.XAML;assembly=MGUI.Core"
         xmlns:dataBinding="clr-namespace:MGUI.Core.UI.DataBinding;assembly=MGUI.Core"
         Width="1280" Height="720" ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"
         WindowStyle="None" IsTitleBarVisible="False" IsUserResizable="False"
@@ -10,76 +10,76 @@
     CarSelectionScreen scales them at draw time as TextureFont did. Nothing takes MGUI's focus: CarSelectionScreen reads
     the keyboard, the mouse and the gamepad itself.
   -->
-  <OverlayPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+  <OverlayPanel Name="pnlRoot" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <!-- Menu decoration (RaceMenuDecorationViewModel): background, then the bouncing logo placed by the view model. -->
-    <Image SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
+    <Image Name="imgBackground" SourceName="Ui.Menu.Background" Stretch="Fill" Opacity="0.85" IsHitTestVisible="False"
            HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-    <Image SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgLogo" SourceName="Ui.Menu.Logo" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Decoration.LogoMargin}"
            Width="{dataBinding:MGBinding Path=Decoration.LogoWidth}" Height="{dataBinding:MGBinding Path=Decoration.LogoHeight}" />
     <!-- Band: black at 0.683 opacity (the atlas texel's 205/255 drawn at 0.85), full width. -->
-    <Border BorderThickness="0" Background="rgba(0,0,0,174)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Top"
+    <Border Name="pnlBand" BorderThickness="0" Background="rgba(0,0,0,174)" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Top"
             Margin="{dataBinding:MGBinding Path=BandMargin}" Height="{dataBinding:MGBinding Path=BandHeightPixels}" />
     <!-- "CHOOSE YOUR CAR" header (headers.png HeaderChooseCarGfxRect). -->
-    <Image SourceName="Ui.CarSelection.Header" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgHeader" SourceName="Ui.CarSelection.Header" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Header.Margin}" Width="{dataBinding:MGBinding Path=Header.Width}" Height="{dataBinding:MGBinding Path=Header.Height}" />
     <!-- Colour squares: ColorSelection.png tinted with each colour; the selected one is larger. -->
-    <Image SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSwatch0" SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Swatch0.Rect.Margin}" Width="{dataBinding:MGBinding Path=Swatch0.Rect.Width}" Height="{dataBinding:MGBinding Path=Swatch0.Rect.Height}" TextureColor="{dataBinding:MGBinding Path=Swatch0.TextureColor}" />
-    <Image SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSwatch1" SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Swatch1.Rect.Margin}" Width="{dataBinding:MGBinding Path=Swatch1.Rect.Width}" Height="{dataBinding:MGBinding Path=Swatch1.Rect.Height}" TextureColor="{dataBinding:MGBinding Path=Swatch1.TextureColor}" />
-    <Image SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSwatch2" SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Swatch2.Rect.Margin}" Width="{dataBinding:MGBinding Path=Swatch2.Rect.Width}" Height="{dataBinding:MGBinding Path=Swatch2.Rect.Height}" TextureColor="{dataBinding:MGBinding Path=Swatch2.TextureColor}" />
-    <Image SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSwatch3" SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Swatch3.Rect.Margin}" Width="{dataBinding:MGBinding Path=Swatch3.Rect.Width}" Height="{dataBinding:MGBinding Path=Swatch3.Rect.Height}" TextureColor="{dataBinding:MGBinding Path=Swatch3.TextureColor}" />
-    <Image SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSwatch4" SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Swatch4.Rect.Margin}" Width="{dataBinding:MGBinding Path=Swatch4.Rect.Width}" Height="{dataBinding:MGBinding Path=Swatch4.Rect.Height}" TextureColor="{dataBinding:MGBinding Path=Swatch4.TextureColor}" />
-    <Image SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSwatch5" SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Swatch5.Rect.Margin}" Width="{dataBinding:MGBinding Path=Swatch5.Rect.Width}" Height="{dataBinding:MGBinding Path=Swatch5.Rect.Height}" TextureColor="{dataBinding:MGBinding Path=Swatch5.TextureColor}" />
-    <Image SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSwatch6" SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Swatch6.Rect.Margin}" Width="{dataBinding:MGBinding Path=Swatch6.Rect.Width}" Height="{dataBinding:MGBinding Path=Swatch6.Rect.Height}" TextureColor="{dataBinding:MGBinding Path=Swatch6.TextureColor}" />
-    <Image SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSwatch7" SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Swatch7.Rect.Margin}" Width="{dataBinding:MGBinding Path=Swatch7.Rect.Width}" Height="{dataBinding:MGBinding Path=Swatch7.Rect.Height}" TextureColor="{dataBinding:MGBinding Path=Swatch7.TextureColor}" />
-    <Image SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSwatch8" SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Swatch8.Rect.Margin}" Width="{dataBinding:MGBinding Path=Swatch8.Rect.Width}" Height="{dataBinding:MGBinding Path=Swatch8.Rect.Height}" TextureColor="{dataBinding:MGBinding Path=Swatch8.TextureColor}" />
-    <Image SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSwatch9" SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Swatch9.Rect.Margin}" Width="{dataBinding:MGBinding Path=Swatch9.Rect.Width}" Height="{dataBinding:MGBinding Path=Swatch9.Rect.Height}" TextureColor="{dataBinding:MGBinding Path=Swatch9.TextureColor}" />
-    <Image SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSwatch10" SourceName="Ui.CarSelection.Swatch" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Swatch10.Rect.Margin}" Width="{dataBinding:MGBinding Path=Swatch10.Rect.Width}" Height="{dataBinding:MGBinding Path=Swatch10.Rect.Height}" TextureColor="{dataBinding:MGBinding Path=Swatch10.TextureColor}" />
     <!-- Property bars (OptionsScreenWindows.png), as wide as their value. -->
-    <Image SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgStatBar0" SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Stat0.Bar.Margin}" Width="{dataBinding:MGBinding Path=Stat0.Bar.Width}" Height="{dataBinding:MGBinding Path=Stat0.Bar.Height}" Visibility="{dataBinding:MGBinding Path=Stat0.Bar.Visibility}" />
-    <Image SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgStatBar1" SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Stat1.Bar.Margin}" Width="{dataBinding:MGBinding Path=Stat1.Bar.Width}" Height="{dataBinding:MGBinding Path=Stat1.Bar.Height}" Visibility="{dataBinding:MGBinding Path=Stat1.Bar.Visibility}" />
-    <Image SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgStatBar2" SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Stat2.Bar.Margin}" Width="{dataBinding:MGBinding Path=Stat2.Bar.Width}" Height="{dataBinding:MGBinding Path=Stat2.Bar.Height}" Visibility="{dataBinding:MGBinding Path=Stat2.Bar.Visibility}" />
-    <Image SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgStatBar3" SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Stat3.Bar.Margin}" Width="{dataBinding:MGBinding Path=Stat3.Bar.Width}" Height="{dataBinding:MGBinding Path=Stat3.Bar.Height}" Visibility="{dataBinding:MGBinding Path=Stat3.Bar.Visibility}" />
-    <Image SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgStatBar4" SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Stat4.Bar.Margin}" Width="{dataBinding:MGBinding Path=Stat4.Bar.Width}" Height="{dataBinding:MGBinding Path=Stat4.Bar.Height}" Visibility="{dataBinding:MGBinding Path=Stat4.Bar.Visibility}" />
-    <Image SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgStatBar5" SourceName="Ui.CarSelection.StatBar" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=Stat5.Bar.Margin}" Width="{dataBinding:MGBinding Path=Stat5.Bar.Width}" Height="{dataBinding:MGBinding Path=Stat5.Bar.Height}" Visibility="{dataBinding:MGBinding Path=Stat5.Bar.Visibility}" />
     <!-- Selection arrows (buttons.png SelectionArrowGfxRect, pointing right); the left one is drawn mirrored. -->
-    <Image SourceName="Ui.CarSelection.Arrow" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgLeftArrow" SourceName="Ui.CarSelection.Arrow" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=LeftArrow.Margin}" Width="{dataBinding:MGBinding Path=LeftArrow.Width}" Height="{dataBinding:MGBinding Path=LeftArrow.Height}">
       <Image.RenderTransform>
         <RenderTransform Scale="-1,1" Origin="0.5,0.5" />
       </Image.RenderTransform>
     </Image>
-    <Image SourceName="Ui.CarSelection.Arrow" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgRightArrow" SourceName="Ui.CarSelection.Arrow" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=RightArrow.Margin}" Width="{dataBinding:MGBinding Path=RightArrow.Width}" Height="{dataBinding:MGBinding Path=RightArrow.Height}" />
     <!-- A SELECT and B BACK, grown and outlined in orange while the mouse is over them. -->
-    <Image SourceName="Ui.Button.Select" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSelectButton" SourceName="Ui.Button.Select" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=SelectButton.Margin}" Width="{dataBinding:MGBinding Path=SelectButton.Width}" Height="{dataBinding:MGBinding Path=SelectButton.Height}" />
-    <Image SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgSelectHighlight" SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=SelectButton.Margin}" Width="{dataBinding:MGBinding Path=SelectButton.Width}" Height="{dataBinding:MGBinding Path=SelectButton.Height}" Visibility="{dataBinding:MGBinding Path=SelectButton.HighlightVisibility}" />
-    <Image SourceName="Ui.Button.Back" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgBackButton" SourceName="Ui.Button.Back" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" />
-    <Image SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Image Name="imgBackHighlight" SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" Visibility="{dataBinding:MGBinding Path=BackButton.HighlightVisibility}" />
     <!-- The cars, drawn over the sprites as RacingGame drew them after its UI sprites: CarSelectionCarousel's render target,
          as large as the screen. -->
-    <Image Source="{dataBinding:MGBinding Path=CarouselImage}" Stretch="Fill" IsHitTestVisible="False"
+    <Image Name="imgCar" Source="{dataBinding:MGBinding Path=CarouselImage}" Stretch="Fill" IsHitTestVisible="False"
            HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
     <!-- Texts, in GameFont at its native size, scaled at draw time by CarSelectionScreen. -->
     <TextBlock Name="lblCarColor" Text="Car Color: " FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
