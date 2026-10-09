@@ -14,7 +14,7 @@
         "render_dynamic_policy": "Static",
         "root_component": {
           "id": "0db5a9fa-8af2-4506-8fbf-17e18396b32d",
-          "name": "Object 0db5a9fa-8af2-4506-8fbf-17e18396b32d",
+          "name": "RaceRoadGeneratorComponent",
           "type": "RaceRoadGeneratorComponent",
           "local_transform": {
             "position": {
@@ -55,7 +55,7 @@
         "render_dynamic_policy": "Static",
         "root_component": {
           "id": "5c8edd70-682d-40b3-92a0-bec37a9cbc91",
-          "name": "Object 5c8edd70-682d-40b3-92a0-bec37a9cbc91",
+          "name": "RaceGuardRailGeneratorComponent",
           "type": "RaceGuardRailGeneratorComponent",
           "local_transform": {
             "position": {
@@ -98,7 +98,7 @@
         "render_dynamic_policy": "Static",
         "root_component": {
           "id": "72603472-25c1-4494-8ac1-bd02f38dc89b",
-          "name": "Object 72603472-25c1-4494-8ac1-bd02f38dc89b",
+          "name": "RaceGuardRailGeneratorComponent",
           "type": "RaceGuardRailGeneratorComponent",
           "local_transform": {
             "position": {
@@ -141,7 +141,7 @@
         "render_dynamic_policy": "Static",
         "root_component": {
           "id": "323f50a9-e2ed-4842-96e2-6ba0f69ed064",
-          "name": "Object 323f50a9-e2ed-4842-96e2-6ba0f69ed064",
+          "name": "RaceColumnGeneratorComponent",
           "type": "RaceColumnGeneratorComponent",
           "local_transform": {
             "position": {
@@ -183,7 +183,7 @@
         "render_dynamic_policy": "Static",
         "root_component": {
           "id": "afa9f332-2e78-4c99-b090-4e3f0534db16",
-          "name": "Object afa9f332-2e78-4c99-b090-4e3f0534db16",
+          "name": "RaceTerrainGeneratorComponent",
           "type": "RaceTerrainGeneratorComponent",
           "local_transform": {
             "position": {
@@ -224,7 +224,7 @@
         "render_dynamic_policy": "Static",
         "root_component": {
           "id": "711e9904-739c-4e86-9f16-943c4eb7f0f4",
-          "name": "Object 711e9904-739c-4e86-9f16-943c4eb7f0f4",
+          "name": "LightComponent",
           "type": "LightComponent",
           "local_transform": {
             "position": {

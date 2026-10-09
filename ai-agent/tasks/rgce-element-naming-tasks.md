@@ -224,7 +224,7 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
 
 ## Phase 2 — Mondes et composants
 
-### ⏳ T2.1 — Composants du monde de test nommés
+### ✅ T2.1 — Composants du monde de test nommés
 
 - Objectif : P4 pour les 6 composants racines `Object <guid>` de `TrackBeginnerGenerators.world`.
 - Fichiers : `RacingGameCasaEngine/Content/Worlds/Test/TrackBeginnerGenerators.world`.
@@ -242,6 +242,13 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
   - `--save-project` sur une copie : deux enregistrements donnent les mêmes octets que le fichier committé ;
   - `python scripts/generate_rgce_content_assets.py --check` sans écart.
 - Commit : `chore(racing-casa): name the components of the generators test world`
+
+> Validation (2026-10-09) :
+> - `jq` : plus aucun nom `Object ` dans `TrackBeginnerGenerators.world` ; `git diff` : 6 lignes changées (les 6 `name` des composants racines, dans l'ordre route, glissières x2, colonnes, terrain, lumière), ids et réglages inchangés, fins de ligne CRLF du fichier conservées.
+> - `python scripts/generate_rgce_content_assets.py --check` : 0 fichier non catalogué.
+> - Éditeur sur des copies (contenu et éditeur copiés, `.casaeditor` supprimé) : `editor_open.ps1 --open-asset Worlds/Test/TrackBeginnerGenerators.world` code 0, `Logs:` sans erreur (deux avertissements de déchargement de l'assembly de scripts, sans rapport). Capture lue : hiérarchie `World.Test.TrackBeginnerGenerators` avec ses 7 entités, inspecteur de `Track.Road.Beginner` avec `Race Road Generator` et ses modèles ; le monde s'ouvre.
+> - `--save-project` deux fois de suite sur la même copie : `cmp` avec le fichier du dépôt identique après chaque enregistrement (mêmes octets).
+> - Captures locales sous le dossier de scratch `naming/t2.1/` (ignoré par git).
 
 ### ⏳ T2.2 — Composants créés par le code nommés
 
