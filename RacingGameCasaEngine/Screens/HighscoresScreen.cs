@@ -64,10 +64,10 @@ internal sealed class HighscoresScreen : RaceXamlScreenBase
                 $"Highscores.xaml has {RaceHighscoresViewModel.LevelCount} level tabs; the catalogue has {RaceFrontEndCatalog.Tracks.Count} tracks.");
         }
 
-        _tabTexts = FindTexts("txtTab", RaceHighscoresViewModel.LevelCount);
-        _rankTexts = FindTexts("txtRank", RaceHighscoresViewModel.RowCount);
-        _nameTexts = FindTexts("txtName", RaceHighscoresViewModel.RowCount);
-        _texts = [.. _tabTexts, .. _rankTexts, .. _nameTexts, .. FindTexts("txtTime", RaceHighscoresViewModel.RowCount)];
+        _tabTexts = FindTexts("lblTab", RaceHighscoresViewModel.LevelCount);
+        _rankTexts = FindTexts("lblRank", RaceHighscoresViewModel.RowCount);
+        _nameTexts = FindTexts("lblName", RaceHighscoresViewModel.RowCount);
+        _texts = [.. _tabTexts, .. _rankTexts, .. _nameTexts, .. FindTexts("lblTime", RaceHighscoresViewModel.RowCount)];
         foreach (MGTextBlock text in _texts)
         {
             text.RenderTransform.Origin = Vector2.Zero;

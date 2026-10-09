@@ -171,7 +171,7 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
 
 ## Phase 1 — Écrans
 
-### ⏳ T1.1 — Noms existants harmonisés avec la convention
+### ✅ T1.1 — Noms existants harmonisés avec la convention
 
 - Objectif : P3, dans les XAML et dans le code qui les cherche.
 - Fichiers :
@@ -186,6 +186,13 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
   - `--smoke-frontend` : code 0, sans avertissement. Un nom cherché et absent y laisse un avertissement ou une erreur de chargement ;
   - `--capture-ui-screens`, puis `UiCaptureCompare` contre T0.1 : 10 états dans le seuil.
 - Commit : `refactor(racing-casa): name the referenced screen elements after the CasaEngine convention`
+
+> Validation (2026-10-09) :
+> - 85 attributs `Name` changés dans les 5 XAML (`git diff` : 85 lignes), rien d'autre ; 4 écrans C# mis à jour (`CarSelectionScreen`, `HelpScreen`, `HighscoresScreen`, `OptionsScreen`). Aucun commentaire ne citait les anciens noms ; `MainMenuScreen` et `PauseScreen` cherchent `btn*` et ne changent pas.
+> - `dotnet build RacingGame.slnx` : 0 erreur. `rg -n '"txt|"face|txtSection|txtStat|txtTab' RacingGameCasaEngine` (hors `bin/` et `obj/`) : rien.
+> - `--smoke-frontend` : code 0, aucun avertissement ni erreur, réglages restaurés à l'identique (`artifacts/element-naming/t1.1/smoke.txt`).
+> - `--capture-ui-screens` contre `before/ui` : 9 états à 0,00 ; `race-finished` à 13,99 (au-dessus de 2,0), identique à la relance (`t1.1b`). Cause : l'arrière-plan 3D (caméra et ombres), pas l'interface. Le sous-module CasaEngine est maintenant à `6ed0ef3f7`, alors que les références datent de `7a5320b6a`. Preuve : le contrôle `t1.1-ctrl` (mes modifications retirées, même sous-module) donne le même 13,99 contre `before/ui`, et `t1.1-ctrl` contre `t1.1b` donne 0,00 sur les 10 états. Les noms ne changent donc aucun pixel. Les références devraient être refaites au pointeur de T3.1 (voir Points ouverts).
+> - Captures locales dans `artifacts/element-naming/{t1.1,t1.1b,t1.1-ctrl}/` (ignoré par git).
 
 ### ⏳ T1.2 — Tous les éléments nommés, et le contrôle versionné
 
@@ -293,6 +300,7 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
 | O1 | Coup d'œil de l'auteur sur la hiérarchie des écrans et des composants dans l'éditeur. | T1.2, T3.1 |
+| O2 | Les références de T0.1 datent du pointeur `7a5320b6a` ; avec le sous-module à `6ed0ef3f7`, l'état `race-finished` s'écarte de 13,99 (arrière-plan 3D, hors interface), avec ou sans les noms. Refaire les références au pointeur de T3.1, ou comparer chaque tâche à un contrôle au même sous-module. | T1.1, T1.2, T2.2 |
 
 ## Hors périmètre
 

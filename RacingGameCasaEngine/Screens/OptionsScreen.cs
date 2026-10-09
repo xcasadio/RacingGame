@@ -82,13 +82,13 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
         _viewModel.ResolutionLabel3 = labels[3];
         _viewModel.ResolutionLabel4 = labels[4];
 
-        _resolutionTexts = FindTexts("txtResolution", RaceOptionsViewModel.ResolutionCount);
-        _drivingModeTexts = [FindControl<MGTextBlock>("txtArcade"), FindControl<MGTextBlock>("txtSimulation")];
+        _resolutionTexts = FindTexts("lblResolution", RaceOptionsViewModel.ResolutionCount);
+        _drivingModeTexts = [FindControl<MGTextBlock>("lblArcade"), FindControl<MGTextBlock>("lblSimulation")];
         _texts =
         [
-            .. FindTexts("txtLabel", RaceOptionsViewModel.RowCount), FindControl<MGTextBlock>("txtName"), .. _resolutionTexts,
-            .. _drivingModeTexts, FindControl<MGTextBlock>("txtSoundValue"), FindControl<MGTextBlock>("txtMusicValue"),
-            FindControl<MGTextBlock>("txtSensitivityValue"),
+            .. FindTexts("lblRow", RaceOptionsViewModel.RowCount), FindControl<MGTextBlock>("lblPlayerName"), .. _resolutionTexts,
+            .. _drivingModeTexts, FindControl<MGTextBlock>("lblSoundValue"), FindControl<MGTextBlock>("lblMusicValue"),
+            FindControl<MGTextBlock>("lblSensitivityValue"),
         ];
         foreach (MGTextBlock text in _texts)
         {

@@ -73,51 +73,51 @@
     <Image SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" Visibility="{dataBinding:MGBinding Path=BackButton.HighlightVisibility}" />
     <!-- Texts, in GameFont at its native size, scaled at draw time by OptionsScreen. -->
-    <TextBlock Name="txtLabel0" Text="Player Name" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRow0" Text="Player Name" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Label0.Margin}" />
-    <TextBlock Name="txtLabel1" Text="Resolution" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRow1" Text="Resolution" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Label1.Margin}" />
-    <TextBlock Name="txtLabel2" Text="Driving Mode" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRow2" Text="Driving Mode" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Label2.Margin}" />
-    <TextBlock Name="txtLabel3" Text="Fullscreen" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRow3" Text="Fullscreen" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Label3.Margin}" />
-    <TextBlock Name="txtLabel4" Text="Vertical Sync" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRow4" Text="Vertical Sync" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Label4.Margin}" />
-    <TextBlock Name="txtLabel5" Text="Post Screen Effects" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRow5" Text="Post Screen Effects" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Label5.Margin}" />
-    <TextBlock Name="txtLabel6" Text="Shadows" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRow6" Text="Shadows" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Label6.Margin}" />
-    <TextBlock Name="txtLabel7" Text="Show FPS" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRow7" Text="Show FPS" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Label7.Margin}" />
-    <TextBlock Name="txtLabel8" Text="Gamepad Vibration" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRow8" Text="Gamepad Vibration" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Label8.Margin}" />
-    <TextBlock Name="txtLabel9" Text="Sound Volume" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRow9" Text="Sound Volume" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Label9.Margin}" />
-    <TextBlock Name="txtLabel10" Text="Music Volume" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRow10" Text="Music Volume" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Label10.Margin}" />
-    <TextBlock Name="txtLabel11" Text="Controller Sensitivity" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRow11" Text="Controller Sensitivity" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Label11.Margin}" />
-    <TextBlock Name="txtName" Text="{dataBinding:MGBinding Path=NameDisplay}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblPlayerName" Text="{dataBinding:MGBinding Path=NameDisplay}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=NameText.Margin}" />
-    <TextBlock Name="txtResolution0" Text="{dataBinding:MGBinding Path=ResolutionLabel0}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblResolution0" Text="{dataBinding:MGBinding Path=ResolutionLabel0}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ResolutionText0.Margin}" />
-    <TextBlock Name="txtResolution1" Text="{dataBinding:MGBinding Path=ResolutionLabel1}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblResolution1" Text="{dataBinding:MGBinding Path=ResolutionLabel1}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ResolutionText1.Margin}" />
-    <TextBlock Name="txtResolution2" Text="{dataBinding:MGBinding Path=ResolutionLabel2}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblResolution2" Text="{dataBinding:MGBinding Path=ResolutionLabel2}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ResolutionText2.Margin}" />
-    <TextBlock Name="txtResolution3" Text="{dataBinding:MGBinding Path=ResolutionLabel3}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblResolution3" Text="{dataBinding:MGBinding Path=ResolutionLabel3}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ResolutionText3.Margin}" />
-    <TextBlock Name="txtResolution4" Text="{dataBinding:MGBinding Path=ResolutionLabel4}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblResolution4" Text="{dataBinding:MGBinding Path=ResolutionLabel4}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ResolutionText4.Margin}" />
-    <TextBlock Name="txtArcade" Text="Arcade" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblArcade" Text="Arcade" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ArcadeText.Margin}" />
-    <TextBlock Name="txtSimulation" Text="Simulation" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblSimulation" Text="Simulation" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=SimulationText.Margin}" />
-    <TextBlock Name="txtSoundValue" Text="{dataBinding:MGBinding Path=SoundValue}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblSoundValue" Text="{dataBinding:MGBinding Path=SoundValue}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=SoundValueText.Margin}" />
-    <TextBlock Name="txtMusicValue" Text="{dataBinding:MGBinding Path=MusicValue}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblMusicValue" Text="{dataBinding:MGBinding Path=MusicValue}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=MusicValueText.Margin}" />
-    <TextBlock Name="txtSensitivityValue" Text="{dataBinding:MGBinding Path=SensitivityValue}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblSensitivityValue" Text="{dataBinding:MGBinding Path=SensitivityValue}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=SensitivityValueText.Margin}" />
   </OverlayPanel>
 </Window>

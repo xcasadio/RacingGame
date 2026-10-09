@@ -29,7 +29,7 @@ namespace RacingGameCasaEngine.Screens;
 internal sealed class CarSelectionScreen : RaceXamlScreenBase
 {
     private const float StickThreshold = 0.5f;
-    private static readonly string[] TextNames = ["txtColorLabel", "txtStat0", "txtStat1", "txtStat2", "txtStat3", "txtStat4", "txtStat5"];
+    private static readonly string[] TextNames = ["lblCarColor", "lblStat0", "lblStat1", "lblStat2", "lblStat3", "lblStat4", "lblStat5"];
 
     private readonly RacingGameCasaEngineGame _game;
     private readonly RaceFrontEndState _state;

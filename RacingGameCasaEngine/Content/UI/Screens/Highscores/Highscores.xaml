@@ -32,72 +32,72 @@
     <Image SourceName="Ui.Button.Highlight" Stretch="Fill" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
            Margin="{dataBinding:MGBinding Path=BackButton.Margin}" Width="{dataBinding:MGBinding Path=BackButton.Width}" Height="{dataBinding:MGBinding Path=BackButton.Height}" Visibility="{dataBinding:MGBinding Path=BackButton.HighlightVisibility}" />
     <!-- Level tabs, coloured by the screen: yellow when selected, white under the mouse, light grey otherwise. -->
-    <TextBlock Name="txtTab0" Text="Beginner" FontFamily="GameFont" Foreground="rgb(211,211,211)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblTab0" Text="Beginner" FontFamily="GameFont" Foreground="rgb(211,211,211)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Tab0.Margin}" />
-    <TextBlock Name="txtTab1" Text="Advanced" FontFamily="GameFont" Foreground="rgb(211,211,211)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblTab1" Text="Advanced" FontFamily="GameFont" Foreground="rgb(211,211,211)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Tab1.Margin}" />
-    <TextBlock Name="txtTab2" Text="Expert" FontFamily="GameFont" Foreground="rgb(211,211,211)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblTab2" Text="Expert" FontFamily="GameFont" Foreground="rgb(211,211,211)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Tab2.Margin}" />
     <!-- Board lines: rank and name coloured by the screen (white under the mouse), the time always yellow. -->
-    <TextBlock Name="txtRank0" Text="{dataBinding:MGBinding Path=Row0.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRank0" Text="{dataBinding:MGBinding Path=Row0.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row0.RankText.Margin}" />
-    <TextBlock Name="txtName0" Text="{dataBinding:MGBinding Path=Row0.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblName0" Text="{dataBinding:MGBinding Path=Row0.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row0.NameText.Margin}" />
-    <TextBlock Name="txtTime0" Text="{dataBinding:MGBinding Path=Row0.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblTime0" Text="{dataBinding:MGBinding Path=Row0.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row0.TimeText.Margin}" />
-    <TextBlock Name="txtRank1" Text="{dataBinding:MGBinding Path=Row1.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRank1" Text="{dataBinding:MGBinding Path=Row1.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row1.RankText.Margin}" />
-    <TextBlock Name="txtName1" Text="{dataBinding:MGBinding Path=Row1.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblName1" Text="{dataBinding:MGBinding Path=Row1.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row1.NameText.Margin}" />
-    <TextBlock Name="txtTime1" Text="{dataBinding:MGBinding Path=Row1.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblTime1" Text="{dataBinding:MGBinding Path=Row1.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row1.TimeText.Margin}" />
-    <TextBlock Name="txtRank2" Text="{dataBinding:MGBinding Path=Row2.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRank2" Text="{dataBinding:MGBinding Path=Row2.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row2.RankText.Margin}" />
-    <TextBlock Name="txtName2" Text="{dataBinding:MGBinding Path=Row2.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblName2" Text="{dataBinding:MGBinding Path=Row2.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row2.NameText.Margin}" />
-    <TextBlock Name="txtTime2" Text="{dataBinding:MGBinding Path=Row2.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblTime2" Text="{dataBinding:MGBinding Path=Row2.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row2.TimeText.Margin}" />
-    <TextBlock Name="txtRank3" Text="{dataBinding:MGBinding Path=Row3.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRank3" Text="{dataBinding:MGBinding Path=Row3.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row3.RankText.Margin}" />
-    <TextBlock Name="txtName3" Text="{dataBinding:MGBinding Path=Row3.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblName3" Text="{dataBinding:MGBinding Path=Row3.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row3.NameText.Margin}" />
-    <TextBlock Name="txtTime3" Text="{dataBinding:MGBinding Path=Row3.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblTime3" Text="{dataBinding:MGBinding Path=Row3.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row3.TimeText.Margin}" />
-    <TextBlock Name="txtRank4" Text="{dataBinding:MGBinding Path=Row4.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRank4" Text="{dataBinding:MGBinding Path=Row4.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row4.RankText.Margin}" />
-    <TextBlock Name="txtName4" Text="{dataBinding:MGBinding Path=Row4.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblName4" Text="{dataBinding:MGBinding Path=Row4.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row4.NameText.Margin}" />
-    <TextBlock Name="txtTime4" Text="{dataBinding:MGBinding Path=Row4.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblTime4" Text="{dataBinding:MGBinding Path=Row4.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row4.TimeText.Margin}" />
-    <TextBlock Name="txtRank5" Text="{dataBinding:MGBinding Path=Row5.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRank5" Text="{dataBinding:MGBinding Path=Row5.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row5.RankText.Margin}" />
-    <TextBlock Name="txtName5" Text="{dataBinding:MGBinding Path=Row5.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblName5" Text="{dataBinding:MGBinding Path=Row5.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row5.NameText.Margin}" />
-    <TextBlock Name="txtTime5" Text="{dataBinding:MGBinding Path=Row5.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblTime5" Text="{dataBinding:MGBinding Path=Row5.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row5.TimeText.Margin}" />
-    <TextBlock Name="txtRank6" Text="{dataBinding:MGBinding Path=Row6.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRank6" Text="{dataBinding:MGBinding Path=Row6.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row6.RankText.Margin}" />
-    <TextBlock Name="txtName6" Text="{dataBinding:MGBinding Path=Row6.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblName6" Text="{dataBinding:MGBinding Path=Row6.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row6.NameText.Margin}" />
-    <TextBlock Name="txtTime6" Text="{dataBinding:MGBinding Path=Row6.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblTime6" Text="{dataBinding:MGBinding Path=Row6.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row6.TimeText.Margin}" />
-    <TextBlock Name="txtRank7" Text="{dataBinding:MGBinding Path=Row7.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRank7" Text="{dataBinding:MGBinding Path=Row7.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row7.RankText.Margin}" />
-    <TextBlock Name="txtName7" Text="{dataBinding:MGBinding Path=Row7.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblName7" Text="{dataBinding:MGBinding Path=Row7.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row7.NameText.Margin}" />
-    <TextBlock Name="txtTime7" Text="{dataBinding:MGBinding Path=Row7.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblTime7" Text="{dataBinding:MGBinding Path=Row7.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row7.TimeText.Margin}" />
-    <TextBlock Name="txtRank8" Text="{dataBinding:MGBinding Path=Row8.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRank8" Text="{dataBinding:MGBinding Path=Row8.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row8.RankText.Margin}" />
-    <TextBlock Name="txtName8" Text="{dataBinding:MGBinding Path=Row8.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblName8" Text="{dataBinding:MGBinding Path=Row8.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row8.NameText.Margin}" />
-    <TextBlock Name="txtTime8" Text="{dataBinding:MGBinding Path=Row8.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblTime8" Text="{dataBinding:MGBinding Path=Row8.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row8.TimeText.Margin}" />
-    <TextBlock Name="txtRank9" Text="{dataBinding:MGBinding Path=Row9.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblRank9" Text="{dataBinding:MGBinding Path=Row9.Rank}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row9.RankText.Margin}" />
-    <TextBlock Name="txtName9" Text="{dataBinding:MGBinding Path=Row9.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblName9" Text="{dataBinding:MGBinding Path=Row9.Name}" FontFamily="GameFont" Foreground="rgb(200,200,200)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row9.NameText.Margin}" />
-    <TextBlock Name="txtTime9" Text="{dataBinding:MGBinding Path=Row9.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblTime9" Text="{dataBinding:MGBinding Path=Row9.Time}" FontFamily="GameFont" Foreground="rgb(255,255,0)" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Row9.TimeText.Margin}" />
   </OverlayPanel>
 </Window>

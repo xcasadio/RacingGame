@@ -82,19 +82,19 @@
     <Image Source="{dataBinding:MGBinding Path=CarouselImage}" Stretch="Fill" IsHitTestVisible="False"
            HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
     <!-- Texts, in GameFont at its native size, scaled at draw time by CarSelectionScreen. -->
-    <TextBlock Name="txtColorLabel" Text="Car Color: " FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblCarColor" Text="Car Color: " FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=ColorLabel.Margin}" />
-    <TextBlock Name="txtStat0" Text="{dataBinding:MGBinding Path=Stat0.Label}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblStat0" Text="{dataBinding:MGBinding Path=Stat0.Label}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Stat0.Text.Margin}" />
-    <TextBlock Name="txtStat1" Text="{dataBinding:MGBinding Path=Stat1.Label}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblStat1" Text="{dataBinding:MGBinding Path=Stat1.Label}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Stat1.Text.Margin}" />
-    <TextBlock Name="txtStat2" Text="{dataBinding:MGBinding Path=Stat2.Label}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblStat2" Text="{dataBinding:MGBinding Path=Stat2.Label}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Stat2.Text.Margin}" />
-    <TextBlock Name="txtStat3" Text="{dataBinding:MGBinding Path=Stat3.Label}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblStat3" Text="{dataBinding:MGBinding Path=Stat3.Label}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Stat3.Text.Margin}" />
-    <TextBlock Name="txtStat4" Text="{dataBinding:MGBinding Path=Stat4.Label}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblStat4" Text="{dataBinding:MGBinding Path=Stat4.Label}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Stat4.Text.Margin}" />
-    <TextBlock Name="txtStat5" Text="{dataBinding:MGBinding Path=Stat5.Label}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
+    <TextBlock Name="lblStat5" Text="{dataBinding:MGBinding Path=Stat5.Label}" FontFamily="GameFont" Foreground="White" Padding="0" WrapText="False" ClipToBounds="False" IsHitTestVisible="False"
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{dataBinding:MGBinding Path=Stat5.Text.Margin}" />
   </OverlayPanel>
 </Window>

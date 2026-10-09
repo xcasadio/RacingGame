@@ -59,9 +59,9 @@ internal sealed class HelpScreen : RaceXamlScreenBase
             slot.Title = sections[i].Title;
             slot.Line0 = sections[i].Lines[0];
             slot.Line1 = sections[i].Lines[1];
-            _titles[i] = FindControl<MGTextBlock>($"txtSection{i}Title");
-            _lines[2 * i] = FindControl<MGTextBlock>($"txtSection{i}Line0");
-            _lines[2 * i + 1] = FindControl<MGTextBlock>($"txtSection{i}Line1");
+            _titles[i] = FindControl<MGTextBlock>($"lblSection{i}Title");
+            _lines[2 * i] = FindControl<MGTextBlock>($"lblSection{i}Line0");
+            _lines[2 * i + 1] = FindControl<MGTextBlock>($"lblSection{i}Line1");
         }
 
         foreach (MGTextBlock text in _titles.Concat(_lines))
