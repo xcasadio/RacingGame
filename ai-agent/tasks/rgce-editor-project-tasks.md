@@ -263,7 +263,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
   - A4 identique aux références ;
   - chaque `.staticModel`, `.material` et `.texture` s'ouvre dans l'éditeur.
 
-### S6 — Mondes en assets (à détailler)
+### S6 — Mondes en assets (détaillée en Phase 6)
 
 - **Résultat** :
   - Un export unique écrit les mondes :
@@ -1563,6 +1563,204 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
 >     - la plage de commits du brief était fausse. S5 va de `a553a75` à `8e45f6f`, et T5.1 à T5.2 précèdent `2b622d6`. Cela ne change rien au résultat ;
 >     - `Material.Track.Ground` est cuit, mais le jeu ne s'en sert pas. Déjà noté en T5.5, et les docs ne disent pas le contraire.
 
+## Phase 6 — Mondes en assets (S6)
+
+> Brouillon (2026-10-09), écrit après la clôture de S5 et l'exécution du plan O7. À relire par un vérificateur de plan avant toute exécution.
+>
+> Première relecture : **REVISE**, avec un blocage. Le plan ne disait pas comment l'outil remplit les références d'entités d'un monde sans initialiser les entités. `SaveWorld` n'écrit que `World._entityReferences`, et les voies publiques initialisent les entités. Correction : P12, T6.2 et T6.3 décrivent le mécanisme (réflexion dans l'outil, sans changer le moteur), la mise en place sans jeu et la taille des modèles.
+>
+> Seconde relecture : **REVISE**, avec deux blocages ; le premier est levé. Dispositions :
+> - **B1, aller-retour de `PlayerCar.entity` : corrigé.** `--save-project` ne réécrit pas un `.entity` ouvert sans modification (`GameEditor.cs:5942-5950`), donc le contrôle passait à vide. T6.3 garde `--save-project` pour les mondes, qui deviennent le monde courant à l'ouverture. Pour la voiture, une sonde réécrit vraiment le fichier, et l'enregistrement par l'éditeur devient une étape manuelle écrite.
+> - **B2, ciel : corrigé.** P14 laissait le ciel hors des mondes, contre D2 et le résultat de S6. Désormais, les mondes de course portent la cubemap du ciel dans leur `environment` (P14), et le jeu la lit.
+> Une dernière relecture, de clôture, suit. Un nouveau REVISE met S6 en pause, avec une question à l'auteur.
+>
+> Relecture de clôture : **REVISE**. B1 est levé, mais le ciel (B2) ne l'est qu'à moitié : les mondes écrits portent l'id, sans rien qui prouve que le jeu s'en sert.
+> - `CarSelectionCarousel.cs:98` demande le cube de réflexion de la course au front-end, avant tout monde de course.
+> - Le cube partagé est mis en cache au premier essai, par un seul drapeau et un chemin fixe (`RacingGameCasaEngineGame.cs:327-336`). Le premier chemin qui le charge fixe donc le ciel pour toute la session.
+> - La parité A4 de T6.4 passe aussi si le jeu ignore l'id.
+> **S6 est en pause (2026-10-09)** : la règle de relecture interdit une nouvelle boucle sans l'auteur. Question O9 dans « Points ouverts ». Aucune tâche de S6 n'est commencée.
+
+Faits relevés pour cette phase (2026-10-09), à `2fa7ac7`. Les sources :
+- deux découvertes en lecture seule, rangées dans `s6-disc2/` du scratchpad, sur une première découverte (`s6-disc/`) faite avant S5 et O7 ;
+- les fichiers relus en session.
+
+- **Assemblage actuel des mondes, en code** :
+  - **front-end** : `RaceWorldFactory.CreateFrontEndWorld` (`RacingGameCasaEngine/Worlds/RaceWorldFactory.cs:82-93`), monde `RacingGameCasaEngine.FrontEndWorld` avec deux entités :
+    - `BootstrapCamera` : `CameraLookAtComponent` en (0, 6, −18), cible (0, 0, 0), `DynamicDefault` ;
+    - `PlayerStart` : `PlayerStartComponent` en (0, 0, −4), `StaticDecoration`.
+  - **course** : `CreateRaceWorld` (`:95-139`), monde `RacingGameCasaEngine.RaceWorld.<piste>`. Entités, dans l'ordre :
+    1. `BootstrapCamera`, avec `ChaseCameraRigComponent` et `DebugFreeCameraComponent` ;
+    2. `RaceRoot` (Static, EveryFrame, StaticIndex, Static), sans racine, avec `RaceTrackPhysicsComponent` (ids de la piste), `RaceFlowCoordinatorComponent` et `RaceCourseDebugComponent` ;
+    3. les ombres de l'environnement : activées selon l'option, 4 096, 150, biais 0,001 et 0,1 ;
+    4. trois lumières directionnelles blanches, `Light.Key` (0,92, spéculaire, seule à projeter des ombres quand l'option est active), `Light.Fill` (0,71) et `Light.Back` (0,36, spéculaire) ;
+    5. les générateurs de `LegacyTrackSceneFactory.Create` (`RacingGame.Gameplay/Track/LegacyTrackSceneFactory.cs:22-65`) ;
+    6. le décor `Track.Scenery.<Modèle>.<index:000>`, `StaticModelComponent` par `StaticModelAssetId`, ombres projetées ;
+    7. `Checkpoint.<n:00>` (`RaceCheckpointTriggerComponent`, demi-dimensions calculées) ;
+    8. `PlayerStart` à la pose de départ ;
+    9. `PlayerCar` : `RaceCarEntityFactory.Create()`, puis l'état choisi (`:277-293`).
+  - **carrousel** : `CarSelectionCarousel` (`RacingGameCasaEngine/UI/CarSelectionCarousel.cs`) construit son propre monde `FrontEnd.CarSelectionCarousel` :
+    - `Carousel.Light` ;
+    - `Carousel.Plate.<i>` (`StaticModel.CarSelectionPlate`, sans ombre) ;
+    - `Carousel.Car.<i>` (modèles peints, à l'exécution) ;
+    - une caméra hors du monde, en (0, 2,75, −10,45) vers (0, −1, 0) ;
+    - les positions et rotations sont recalculées à chaque image.
+- **Chargement par le moteur** :
+  - `GameManager.SetWorldToLoad(string)` → `UpdateWorld` :
+    - résout le chemin par `AssetCatalog.GetByFileName` (clé exacte), et lève une exception s'il est inconnu ;
+    - vide le monde sortant (`World.Clear`), ce que `SetWorldToLoad(World)` ne fait pas ;
+    - appelle `LoadCopy<World>`, `LoadContent`, `BeginPlay`, puis `WorldLoaded` (`GameManager.cs:84-152`).
+  - Le premier monde exige `FirstWorldLoaded` quand aucun monde n'est posé (`GameManager.cs:73-81`). `Program.cs:49` ne fixe que `ProjectName`, et le fichier projet nomme `Worlds/Editor.world`, réservé à l'éditeur.
+  - Un monde ou une entité chargés prennent **le nom de leur entrée de catalogue** (`AssetContentManager.cs:235-240`). `IsRaceWorld` (préfixe) et l'égalité avec `FrontEndWorldName` servent dans 7 validateurs, le jeu et le lieur.
+  - `World.SpawnEntity<T>(string assetName)` cherche l'entrée par son **nom** de catalogue, fait `LoadCopy` puis `Clone`, et met l'entité en file : elle n'entre dans le monde qu'à la prochaine mise à jour (`World.cs:153-173,774-802`).
+  - `runtimeContext.ProjectSettings`, que `Program.cs` règle, est l'objet que lit `GameManager` (`GameSettings.ProjectSettings`, `EngineRuntimeContext.cs:55`).
+- **Ce qu'un enregistrement garde** (`CasaEngine.EditorServices/EditorEntityJsonSerializer.cs`) :
+  - le transform et les enfants de tout `SceneComponent` ;
+  - les cas propres aux lumières (complets), aux caméras 3D (sans la cible), aux `StaticModelComponent` (id du modèle, ombres) et aux `PlayerStartComponent` ;
+  - pour les autres composants, l'id, le nom et le type, puis les `[SerializedProperty]` ;
+  - une racine absente est écrite `"null"`, comme `Track.Physics` du monde de test.
+- **Pertes** pour les mondes du jeu, toutes deux sans attribut :
+  - les demi-dimensions des checkpoints (défauts 6 / 4 / 2,5 ; le jeu les calcule) ;
+  - `RacingCarAnchorComponent.AnchorId`, par lequel la voiture retrouve ses ancres.
+  `[SerializedProperty]` accepte `string`, `float` et `Quaternion` (`SerializedProperties.cs:43-47`). Les autres composants sont créés avec leurs valeurs par défaut, et la cible de `BootstrapCamera` est l'origine, la valeur par défaut.
+- **Ce que le jeu règle à l'exécution, après le chargement** (`RacingGameCasaEngineGame.cs:255-263`) :
+  - le lieur de course : le contrôleur, `Possess`, la session, et le profil et le mode de la voiture ;
+  - le ciel, avec son cube de réflexion à l'exécution ;
+  - les options d'affichage, le curseur et la visibilité.
+  L'option des ombres et la lumière clé ne sont réglées qu'à la création du monde (`RaceWorldFactory.cs:110-118,176`).
+  - **Ciel** : `ConfigureCurrentWorldSky` (`RacingGameCasaEngineGame.cs:273-303,323-346`) :
+    - remet `SpecularEnvironmentCubemapAssetId` à vide ;
+    - charge `Textures/SkyCubeMap.dds` par son chemin (`RaceSkySystem.ResolveLegacySharedSkyCubePath`), avec `TextureCubeLoader` ;
+    - en fait le cube de réflexion et le pipeline de ciel des mondes de course (`LegacySkyCubeViewPipeline`, teinte 232). Un ciel procédural prend le relais si le fichier manque.
+    Le catalogue a l'entrée `Texture.SkyCubeMap` (`Textures/SkyCubeMap.dds`). `WorldEnvironmentSettings` enregistre `specular_cubemap_asset_id`, que le résolveur d'environnement du moteur utilise quand il n'est pas vide (`EnvironmentResolver.cs:54-55`). `LegacyCarVisualComponent` lit l'indice et la couleur de la voiture à son `InitializeWithWorld` (`:18-22,52`).
+- **Ids** : `ObjectBase.Id` vaut `Guid.NewGuid()` par défaut, avec un setter privé. L'outil de cuisson fixe déjà les ids d'assets par réflexion (uuid5, `CookPlan.cs:233`) et écrit par `EditorAssetWriterService.SaveAsset`.
+- **Écriture d'un monde** :
+  - `EditorAssetWriterService.SaveAsset` passe par `EditorAssetJsonSerializer` (cas `World` et `Entity`). `EditorEntityJsonSerializer.SaveWorld` n'écrit que la liste privée `World._entityReferences`, qu'il lit par réflexion (`EditorEntityJsonSerializer.cs:18,21-38,162-165`). Il ignore donc les entités ajoutées par `World.AddEntity`, qui ne sont qu'en file (`World.cs:168-173`) ;
+  - une référence en ligne (`asset_id` vide) écrit son entité par `SaveEntity` (`:167-185`). `EntityReference.Entity` a un setter interne (`EntityReference.cs:17`) ;
+  - la seule voie publique qui remplit cette liste, `EditorWorldEditingService.AddEntity` → `World.AddEntityReferenceImmediate` (`World.cs:1015-1025`), appelle `Initialize` et `InitializeWithWorld`. Sans jeu, `StaticModelComponent.InitializeWithWorld` échouerait sur `world.Game.AssetContentManager` (`StaticModelComponent.cs:202-220`), et les générateurs construiraient leurs maillages ;
+  - `LegacyTrackSceneFactory` lit le catalogue global (`AssetCatalog`, `LegacyTrackSceneFactory.cs:24-25,83`, `.Models.cs:41`) et les fichiers sous `EngineEnvironment.ProjectPath` (`:398-403`). Pendant l'écriture, l'outil de cuisson fait pointer ce chemin vers un dossier temporaire (`Cooker.cs:54-77`) ;
+  - la taille d'un modèle vient de `ComputeLegacyModelSize`, privée (`LegacyTrackSceneFactory.cs:326`), sur le `StaticModel` qu'`Acquire` charge (`.Models.cs:61-78`). L'outil sait déjà charger un `.staticModel` sans jeu, par `StaticModel.Load` du JSON (`Verifier.cs:97-98`).
+- **Catalogue** : `generate_rgce_content_assets.py` catalogue les `Worlds/**/*.world` en `World.<chemin>` et vérifie que l'id du fichier est celui de l'entrée. Il n'a aucune règle pour `.entity`.
+- **Éditeur** : `--save-project` enregistre les documents modifiés (entités comprises) et le monde courant. `--open-asset` passe par `TryOpenEditorAsset`. L'ouverture d'un `.entity` par l'automatisation n'a pas encore été éprouvée.
+
+### Propositions de S6
+
+| Réf | Proposition |
+|---|---|
+| P11 | **Constructeurs dans la DLL.** La construction des entités des mondes passe de `RaceWorldFactory` (exe) à `RacingGame.Gameplay` (`Race/RaceWorldTemplates.cs`), sans changer une valeur. Le jeu s'en sert jusqu'à T6.4, puis seul l'outil d'écriture s'en sert. `LegacyTrackSceneFactory.Create` reçoit la fonction de taille des modèles en paramètre. |
+| P12 | **Outil d'écriture** : `RgceAssetCooker --worlds`, qui référence déjà `RacingGame.Gameplay` et les sérialiseurs de l'éditeur. Il écrit :<br>• `Worlds/FrontEnd.world` ;<br>• `Worlds/Race/TrackBeginner.world`, `TrackAdvanced.world` et `TrackExpert.world` ;<br>• `Worlds/CarSelection.world` ;<br>• `Entities/PlayerCar.entity`.<br>La taille des modèles vient des `.staticModel` cuits, par le calcul du jeu (`ComputeLegacyModelSize`). Les ids sont des uuid5 du nom de l'asset, de l'entité et du chemin du composant : un second lancement n'écrit rien. Un nouveau lancement écrase les modifications faites dans l'éditeur, comme pour les assets cuits (ADR-0018).<br>**Mécanisme**, sans changer le moteur :<br>• pour chaque entité des constructeurs, dans leur ordre, l'outil crée une `EntityReference` en ligne (`AssetId` vide) ;<br>• il lui donne son entité par réflexion (setter interne de `Entity`), puis l'ajoute par réflexion à `World._entityReferences`, le champ que lit le sérialiseur de l'éditeur ;<br>• aucune entité n'est initialisée : ni `World.AddEntity`, ni `EditorWorldEditingService`.<br>**Sans jeu** : l'outil charge le catalogue global (`AssetCatalog.Load`) et fait pointer `EngineEnvironment.ProjectPath` vers `Content` pendant le calcul. Il calcule tous les mondes d'abord, puis les écrit par le dossier temporaire de l'outil.<br>**Taille des modèles** : `StaticModel.Load` du `.staticModel` cuit, puis `ComputeLegacyModelSize`. Ce sont le même fichier et le même calcul que le jeu, qui passe par `Acquire`. |
+| P13 | **Nom des mondes** : un monde chargé porte le nom de son entrée. Les constantes deviennent ces noms : `FrontEndWorldName` = `World.FrontEnd`, et le préfixe des courses `World.Race.`, d'où `World.Race.TrackBeginner`. Les noms d'entités ne changent pas. |
+| P14 | **Ombres et ciel** :<br>• **ombres** : un monde enregistré porte les ombres activées, et sa lumière clé en projette. `OnWorldLoaded` applique ensuite l'option des ombres aux deux, comme le faisait la création ;<br>• **ciel** (D2) : chaque monde de course porte dans son `environment` `specular_cubemap_asset_id` = l'id de `Texture.SkyCubeMap`. Le front-end et le carrousel n'en portent pas ;<br>• à `OnWorldLoaded`, `ConfigureCurrentWorldSky` lit cet id et résout son fichier par le catalogue. Il charge ce cube comme aujourd'hui, en fait le cube de réflexion et le pipeline de ciel, puis remet l'id à vide comme aujourd'hui. Le moteur ne charge donc pas le cube lui-même, et l'image ne change pas ;<br>• un monde de course sans id prend le ciel procédural, comme aujourd'hui quand le fichier manque. Changer l'id dans l'éditeur change donc le ciel de la course. |
+| P15 | **Voiture** (P6) : les mondes de course n'ont pas de `PlayerCar`. Le lieur appelle `SpawnEntity<Entity>("Entity.PlayerCar")`, renomme l'entité `PlayerCar` et règle son état (indice, couleur, piste, profil, mode, vitesse) avant qu'elle n'entre dans le monde, puis la possède. |
+| P16 | **Carrousel** : `CarSelection.world` contient `Carousel.Light` et les trois `Carousel.Plate.<i>`. Le carrousel le charge par `LoadCopy<World>`. Restent en code :<br>• les voitures, peintes à l'exécution ;<br>• la caméra, dont la cible n'est pas enregistrée ;<br>• le placement à chaque image ;<br>• le cube de réflexion, celui de la course, que le carrousel reçoit du jeu. |
+| P17 | **Catalogue** : `generate_rgce_content_assets.py` catalogue aussi `Entities/**/*.entity` en `Entity.<chemin>`, avec la même vérification d'id que pour les mondes. |
+
+### Prérequis, risques et arrêts de S6
+
+- **Prérequis** : S5 close (✅) ; plan O7 exécuté, références `artifacts/o7-track-helpers/after/` (T3.1 en 🧪 pour le seul contrôle visuel de l'auteur).
+- **Références de parité** : `after/` (export, audit, audits des voitures, captures d'interface), avec le témoin construit à `HEAD` quand les captures d'interface sont bruitées.
+- **Arrêts** (en plus de ceux de l'enveloppe) :
+  - un écart inexpliqué de l'export par maillage ou de `TrackPlacementExporter` contre `after/` ;
+  - un audit des voitures qui change ;
+  - un champ perdu à l'aller-retour d'un monde ;
+  - un `.entity` que l'automatisation de l'éditeur n'ouvre pas : la tâche reste en 🧪, avec l'étape manuelle écrite.
+- **Risques** :
+  - **`World.Clear`** au changement de monde : le jeu ne vidait jamais le monde de course. Il faut vérifier les tampons des générateurs, les sons et la physique au retour au front-end, par le smoke et deux courses enchaînées ;
+  - **coût de chargement** : Expert compte 729 entités de décor en JSON ;
+  - **clone** : `SpawnEntity` clone la voiture, et chaque composant doit copier son état (`Clone` des composants de la voiture) ;
+  - **noms courts** : les nouveaux types repassent `check_gameplay_type_names.py`.
+
+### ⏳ T6.1 — Champs perdus à l'enregistrement
+
+- **Objectif** : un checkpoint et une ancre de voiture gardent leurs valeurs après un aller-retour d'enregistrement.
+- **Fichiers** :
+  - `RacingGame.Gameplay/Components/RaceCheckpointTriggerComponent.cs` : `[SerializedProperty("half_width")]`, `half_height` et `half_depth` ;
+  - `RacingGame.Gameplay/Components/RacingCarAnchorComponent.cs` : `[SerializedProperty("anchor_id")]`.
+- **Validation** :
+  - build à 0 erreur ;
+  - une sonde du scratchpad enregistre puis recharge, par les sérialiseurs de l'éditeur et `Entity.Load`, un checkpoint aux demi-dimensions non par défaut et la voiture de `RaceCarEntityFactory.Create()` : mêmes valeurs, mêmes ancres ;
+  - le jeu ne change pas : export identique à `after/scene-a.json`, et smoke à 0.
+- **Commit** : `feat(racing-casa): save the checkpoint extents and the car anchor ids`
+
+### ⏳ T6.2 — Construction des mondes dans la DLL (P11)
+
+- **Objectif** : le jeu construit ses mondes avec du code de `RacingGame.Gameplay`, que l'outil d'écriture pourra appeler. Le rendu et le jeu ne changent pas.
+- **Fichiers** :
+  - `RacingGame.Gameplay/Race/RaceWorldTemplates.cs` (nouveau) : les entités du front-end, et celles d'une course sans la voiture, avec les valeurs exactes de `RaceWorldFactory` (caméra, `RaceRoot`, ombres, lumières, générateurs, décor, checkpoints, départ). Les lumières sont paramétrées par l'option des ombres ;
+  - `LegacyTrackSceneFactory.Create(trackName, getModelSize)` : la taille des modèles devient un paramètre, et le jeu passe celle d'aujourd'hui. `ComputeLegacyModelSize` passe de `private` à `internal`, pour l'outil (`InternalsVisibleTo("RgceAssetCooker")`) ;
+  - `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs` : il appelle ces constructeurs, puis ajoute la voiture comme aujourd'hui.
+- **Validation** :
+  - build à 0 erreur ; `check_gameplay_type_names.py` à 0 ;
+  - A4 contre `after/` : export identique, audit dans le seuil de 0,5, audits des voitures identiques, captures d'interface (témoin à `HEAD` si bruit), smoke et `--verify-legacy-import-profile` à 0.
+- **Commit** : `refactor(racing-casa): build the world entities in RacingGame.Gameplay`
+
+### ⏳ T6.3 — Les mondes et la voiture écrits en assets (P12, P16, P17)
+
+- **Objectif** : les cinq mondes et `PlayerCar.entity` existent, catalogués, et s'ouvrent dans l'éditeur sans perte (A3).
+- **Fichiers** :
+  - `scripts/RgceAssetCooker/` :
+    - `Program.cs` : l'option `--worlds` ;
+    - `WorldWriter.cs` (nouveau) : le mécanisme de P12 (références par réflexion, ids uuid5, catalogue global, chemin du projet, taille des modèles) ;
+    - le README ;
+  - `scripts/generate_rgce_content_assets.py` : `Entities/**/*.entity` (P17) ;
+  - `RacingGameCasaEngine/Content/Worlds/FrontEnd.world`, `Worlds/Race/Track*.world`, `Worlds/CarSelection.world`, `Entities/PlayerCar.entity`, et le catalogue.
+- **Validation** :
+  - build de l'outil à 0 erreur ;
+  - un second lancement n'écrit rien, et `generate_rgce_content_assets.py --check` est à 0 ;
+  - **outil** : son journal ne contient aucune exception ni erreur d'initialisation ;
+  - **nombre d'entités** : chaque `.world` écrit a autant d'entrées `entity_references` que ses constructeurs font d'entités. Le front-end en a 2. Une course compte la caméra, `RaceRoot`, 3 lumières, ses générateurs, son décor (323 / 265 / 729, Advanced / Beginner / Expert), ses 3 checkpoints et `PlayerStart`. `CarSelection.world` en a 4 ;
+  - **contenu** : une sonde compare chaque monde écrit, rechargé par `World.Load`, aux entités que construisent les constructeurs de T6.2. Mêmes noms dans le même ordre, mêmes composants, transforms à 1e-6 près, mêmes ids de modèles, mêmes valeurs de lumières, d'ombres et de checkpoints. Chaque monde de course porte `specular_cubemap_asset_id` = `Texture.SkyCubeMap`, le front-end et le carrousel un id vide ;
+  - **décor contre `after/`** : pour chaque piste, les entités `Track.Scenery.*` du monde écrit ont les modèles et les transforms de l'export `after/scene-a.json` ;
+  - **éditeur (A3)**, sur des copies de l'éditeur et du contenu :
+    - chaque monde et la voiture s'ouvrent avec le code 0 ;
+    - les captures des copies réduites (0,02) sont lues ;
+    - **mondes** : chaque `.world` ouvert devient le monde courant, et deux `--save-project` le réécrivent avec les octets de l'outil, sans champ perdu (comparaison JSON) ;
+    - **voiture** : `--save-project` ne réécrit pas un `.entity` ouvert sans modification. Une sonde du scratchpad charge donc `PlayerCar.entity` par `Entity.Load` (le chargeur du moteur), puis le réenregistre deux fois par `EditorAssetWriterService.SaveAsset` dans une copie. Elle compare les octets à ceux de l'outil et les champs en JSON, ancres comprises ;
+    - **enregistrement de la voiture par l'éditeur lui-même** : étape manuelle écrite dans la note (ouvrir `PlayerCar.entity`, modifier un champ puis le rétablir, enregistrer, comparer les octets). La tâche reste en 🧪 jusqu'à ce que l'auteur l'ait faite, ce qui ne bloque pas T6.4.
+    Si l'automatisation n'ouvre pas le `.entity`, ce contrôle rejoint l'étape manuelle.
+  - Le jeu ne charge pas encore ces fichiers : rien ne change à l'exécution.
+- **Commit** : `feat(racing-casa): write the worlds and the player car as assets`
+
+### ⏳ T6.4 — Le jeu charge le front-end et les courses (P13, P14, P15)
+
+- **Objectif** : le jeu charge `FrontEnd.world` et les trois courses par le catalogue. La voiture vient de `PlayerCar.entity`. Rendu et jeu inchangés.
+- **Fichiers** :
+  - `RacingGameCasaEngine/Program.cs` : `runtimeContext.ProjectSettings.FirstWorldLoaded = "Worlds/FrontEnd.world"`, sans toucher au fichier projet, qui garde `Worlds/Editor.world` pour l'éditeur ;
+  - `RacingGameCasaEngineGame.cs` et `RaceFrontEndFlow` : `SetWorldToLoad(chemin)`, avec la course choisie par le nom de la piste ;
+  - `RaceWorldFactory` : les noms de P13. La construction des mondes en code disparaît ; les aides de nom et de visibilité restent ;
+  - `RuntimeRaceWorldBinder` : la voiture par `SpawnEntity`, puis réglée avant d'entrer dans le monde (P15) ;
+  - `OnWorldLoaded` : l'option des ombres et la lumière clé, et `ConfigureCurrentWorldSky`, qui prend son cube de l'id du monde (P14) ;
+  - les validateurs, s'ils testent un nom de monde autrement que par ces constantes.
+- **Validation** :
+  - build à 0 erreur ;
+  - A4 contre `after/` :
+    - export identique (noms, matrices, matériaux), voiture comprise ;
+    - audit dans le seuil de 0,5 ;
+    - audits des voitures identiques ;
+    - captures d'interface (témoin à `HEAD` si bruit) ;
+  - `TrackPlacementExporter` : les lignes de `after/` ;
+  - `--smoke-frontend`, qui enchaîne front-end et course, et `--verify-legacy-import-profile` : code 0 ;
+  - une sonde enchaîne deux courses puis revient au front-end : aucune erreur dans le journal, aucun son de course après le retour ;
+  - l'option des ombres désactivée : la course n'a ni carte d'ombres ni lumière qui en projette.
+- **Commit** : `feat(racing-casa): load the front end and race worlds from the catalogue`
+
+### ⏳ T6.5 — Le carrousel charge `CarSelection.world` (P16)
+
+- **Fichiers** : `RacingGameCasaEngine/UI/CarSelectionCarousel.cs`.
+- **Validation** :
+  - build à 0 erreur ;
+  - capture `car-selection` égale à `after/` (ou au témoin à `HEAD`) ;
+  - smoke à 0.
+- **Commit** : `feat(racing-casa): load the car selection lights and plates from a world`
+
+### ⏳ T6.6 — ADR, documentation et clôture de S6
+
+- **Fichiers** :
+  - une ADR des mondes en assets (P11 à P17), et son index ;
+  - `RacingGameCasaEngine/Assets/README.md` : les mondes, la voiture, l'outil, l'aller-retour ;
+  - ce plan.
+- **Validation** : vérificateur indépendant de S6, CONFIRMED.
+- **Commit** : `docs(adr): record the worlds and the player car as assets`
+
 ---
 
 ## Points ouverts
@@ -1576,6 +1774,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
 | O5 | Les cartes de normales héritées gardent la disposition `agb`, et le jeu actuel les lit telles quelles. Le chantier conserve exactement ces pixels, sans réencodage. | S3, S5 |
 | O6 | **Levé (T0.2).** Le panneau Logs de l'éditeur restait vide sur les captures d'automatisation. Sur décision de l'auteur, il a été corrigé (MGUI `4e94d7e8`, CasaEngine `c0f3343`), et l'option `--logs-filter` (`4ce5ea0`) met l'avertissement à l'écran. La sonde `pluginprobe`, d'abord proposée, n'a pas été retenue. | T0.1, T1.2 |
 | O7 | **Levé (2026-10-09), par le plan [rgce-track-helpers-tasks.md](rgce-track-helpers-tasks.md) et l'ADR-0019.** Les aides et les CombiModel sont lus comme dans l'original. Il reste le contrôle visuel de l'auteur (T3.1 🧪) et la luminosité des tunnels (O3 de ce plan). **Décidé (D9) : corrigé avant S6.** Défaut ancien relevé en T4.5 : les éléments `WidthHelper`, `RoadHelper` et `CombiObject` des `.Track` et des `.CombiModel` ne correspondent pas aux types que lisait `XmlSerializer` (`LegacyWidthHelper`, `LegacyRoadHelper`, `LegacyCombiObject`). Le jeu ignore donc les aides de largeur et de route (palmiers, lanternes, tunnels) et le contenu des CombiModel. Le chantier garde ce comportement pour la parité ; le corriger change le rendu, c'est un chantier à part. | Après le chantier |
+| O9 | **S6 en pause (2026-10-09).** Le détail de S6 a eu trois relectures, toutes REVISE ; les deux premières ont été corrigées (Phase 6). Reste le ciel (P14) : les mondes de course portent `specular_cubemap_asset_id` = `Texture.SkyCubeMap`, mais rien ne prouve que le jeu s'en sert. Le carrousel charge le cube de la course au front-end, et ce cube est mis en cache par chemin, au premier essai.<br>**Correction proposée**, non relue :<br>(a) le cube du carrousel vient de l'entrée `Texture.SkyCubeMap`, résolue par le catalogue ;<br>(b) le cache des cubes est indexé par id d'asset ;<br>(c) T6.4 ajoute une sonde qui charge une course avec l'id vidé (ciel procédural), puis avec l'id réel (le cube), et montre que les images diffèrent ; la parité A4 se fait avec l'id réel.<br>**Autre voie** : restreindre D2 pour le ciel. Il resterait réglé en code, les mondes ne porteraient pas de cubemap, et le résultat de S6 serait corrigé.<br>**Question à l'auteur** : appliquer (a) à (c), avec une relecture puis l'exécution de S6 ; restreindre D2 pour le ciel ; ou relire le plan d'abord ? | S6 |
 | O8 | **Levé (2026-10-08) : l'auteur a demandé une dernière relecture du brouillon corrigé, rendue READY, puis l'exécution.** S5 en pause (2026-10-08). Le détail de S5 a eu trois relectures, toutes REVISE ; les deux dernières ont relevé des P1, et la règle d'arrêt interdit de les lever par une nouvelle boucle sans l'auteur. Les blocages sont tous corrigés dans le brouillon (`s5_plan.md` du scratchpad). Ils portent sur trois points : (1) le compilateur nomme les états de rendu que le jeu laisse vides ; (2) la conception de la voiture et de sa peinture ; (3) les fonctionnalités de rendu d'un matériau compilé ignorent le maillage, d'où une carte de normales sans tangentes. Le point (3) demande une correction de CasaEngine (`RenderFeatureResolver`, `RenderItem.Features`) et un export qui enregistre les fonctionnalités et le matériau de chaque sous-maillage. S6 et S7 dépendent de S5. Question à l'auteur : relancer une revue sur le brouillon corrigé puis exécuter S5, ou relire le plan d'abord. | S5 |
 
 ## Hors périmètre
