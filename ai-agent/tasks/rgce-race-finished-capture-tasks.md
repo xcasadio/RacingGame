@@ -22,7 +22,7 @@ Preuves détaillées, sonde et journaux : dossier de notes partagé `o2-race-fin
   - la référence de 09:46 (`artifacts/element-naming/before/ui`) est **identique (0,00)** à l'image après 72 pas ;
   - les captures depuis 10:13 (`artifacts/element-naming/verify/ui`) sont **identiques (0,00)** à l'image après 74 pas ;
   - l'écart de 13,88 entre elles est celui de 2 pas.
-- **La cadence seule change le résultat.** Avec une pause artificielle en fin de `Draw` (sonde, rien d'autre ne change), le validateur capture 74 pas (0 ms), 71 (12 ms), 72 (16 ms, **identique à la référence de 09:46**) ou 73 pas (20 ms). Les 9 autres états sont statiques et restent à 0,00.
+- **La cadence seule change le résultat.** Avec une pause artificielle en fin de `Draw` (sonde, rien d'autre ne change), le validateur capture 74 pas (0 ms), 71 (12 ms), 72 (16 ms, **identique à la référence de 09:46**) ou 73 pas (20 ms). Les 9 autres états ne dépendent pas de l'orbite ; ils ont leurs propres petites variantes de cadence, sous le seuil en temps normal (O4, constaté le 2026-10-15).
 - **Le phénomène est ancien.** Historique de `Screenshots/` : entre 00:18 et 00:33, sans aucun commit entre-temps, `race-finished` a pris 4 images différentes en 16 lancements (dont des lancements concurrents) ; de 01:36 à 09:46, 4 lancements sur 5 donnent 72 pas ; de 10:13 à 10:51, les 12 lancements donnent 74 pas, comme les 3 de 14:27 à 14:31 (dont 2 instrumentés). Les journaux Windows ne montrent pas ce qui a changé la cadence entre 09:46 et 10:13. La cause *exacte* du basculement de ce matin n'est pas retrouvable ; le mécanisme, lui, est établi.
 
 ## État vérifié du dépôt (2026-10-09)
@@ -74,7 +74,7 @@ Preuves détaillées, sonde et journaux : dossier de notes partagé `o2-race-fin
 > - Sonde reconstruite sur le nouveau bin (sous-module à `87fc5f01b`, comme l'arbre de travail), pause en fin de `Draw` de 0, 12, 16 et 20 ms : `race-finished` identique (0,00) dans les 4 lancements.
 >   - Pourtant le draw lu montre chaque fois un autre pas : 73, 72, 71 et 70 pas après l'arrivée.
 >   - Les images lues en fin de `Draw` de 70 à 76 pas sont toutes identiques (0,00).
->   - La position de la caméra se stabilise une dizaine d'updates après l'arrivée (variations de quelques centièmes de millimètre avant), puis reste identique bit à bit sur les 77 updates qui précèdent la capture.
+>   - La position de la caméra se stabilise une dizaine d'updates après l'arrivée (variations de quelques centièmes de millimètre avant), puis reste identique bit à bit de l'update 1004 jusqu'à la fin du journal, soit les 62 updates qui précèdent la capture (update 1066).
 > - Témoin sans correctif (même bin, ancienne `RacingGame.Gameplay.dll`, pause de 12 ms) : 71 pas. L'image est identique à celle de 71 pas du 2026-10-09, et s'écarte de 33,69 de l'image figée.
 > - `--capture-ui-screens` du build du dépôt contre `artifacts/element-naming/verify/ui` : 9 états à 0,00. `race-finished` change une fois (33,22 : nouvelle pose, caméra derrière la voiture) et vaut exactement (0,00) l'image des lancements de sonde figés.
 > - `--smoke-frontend` : code 0, `Smoke validation completed successfully`, aucun avertissement ni erreur.
@@ -85,7 +85,7 @@ Preuves détaillées, sonde et journaux : dossier de notes partagé `o2-race-fin
 > - Deux lancements sur 9 ont expiré à `race-finished` : le témoin U0, sans correctif, et le premier lancement du dépôt. Le jeu est revenu au menu juste après l'arrivée, comme dans O2. Relancé : code 0. Voir O3.
 > - Écart à la validation globale : le lancement retenu a ses 9 états à 0,00, mais d'autres lancements montrent de petites variantes dues à la cadence sur d'autres états. Voir O4.
 
-### ⏳ T1.2 — Nouvelle référence et clôture de O2
+### ✅ T1.2 — Nouvelle référence et clôture de O2
 
 - Objectif : une référence `race-finished` reproductible, et O2 clos avec sa cause.
 - Fichiers : `ai-agent/tasks/rgce-element-naming-tasks.md` (O2 : cause et lien vers ce plan), `ai-agent/README.md`, ce plan.
@@ -96,6 +96,25 @@ Preuves détaillées, sonde et journaux : dossier de notes partagé `o2-race-fin
 - Validation : comparaisons ci-dessus ; verdict CONFIRMED.
 - Commit : `docs(racing-casa): record the deterministic race-finished capture`
 
+> Validation (2026-10-15) :
+> - Références : deux lancements de `--capture-ui-screens` du build du dépôt (`ui-run-20261015-080937` et `-080959`) copiés dans `artifacts/race-finished-capture/{ref-a,ref-b}/ui`.
+>   - `UiCaptureCompare` ref-a contre ref-b : 10 états dans le seuil ; `race-finished` à 0,00.
+>   - `UiCaptureCompare` `verify/ui` contre ref-a : 9 états dans le seuil, `race-finished` au-dessus (33,14 / 33,53 / 32,99 : la nouvelle pose, attendue une fois). Rapports dans `artifacts/race-finished-capture/compare-*`.
+> - **Écart à l'étape 1** (« 10 états à 0,00 entre eux ; 9 états à 0,00 contre `verify/ui` ») : non tenu, à cause des variantes de cadence d'O4, qui existaient avant le correctif.
+>   - ref-a contre ref-b : track-selection 0,23.
+>   - ref-a contre `verify/ui` : options 0,34, help 0,18, car-selection 0,72, race-hud 0,65.
+>   - Je n'ai pas relancé jusqu'à obtenir une paire à 0,00 : cela aurait masqué O4.
+>   - Références retenues : ref-a pour `race-finished` seulement ; `artifacts/element-naming/verify/ui` reste la référence des 9 autres états, la variante la plus fréquente.
+> - O2 du plan de nommage clos : cause, correctif `c887e95`, références à utiliser. Lignes de `ai-agent/README.md` mises à jour.
+> - Passe `verifier` fraîche : **CONFIRMED** sur 5 affirmations.
+>   - C1 : `race-finished` identique (0,00) à ref-a avec 5 et 16 ms de pause par draw, alors que la capture lit 74 et 71 pas.
+>   - C2 : build du dépôt identique à ref-a, 9 états à 0,00 contre `verify/ui`.
+>   - C3 : jeu normal inchangé, d'après la lecture de `c887e95`.
+>   - C4 : `--smoke-frontend` à code 0, sans avertissement.
+>   - C5 : notes exactes, sauf un décompte (77 au lieu de 62 updates), corrigé ci-dessus.
+>   - Critique de complétude en parallèle, deux contradicteurs par constat : 3 constats retenus (décompte, phrase de la section Cause, libellés des points ouverts), tous corrigés ici, et 2 contestés, dont la précision d'O4, corrigée. Le dernier contesté vise le message du commit `c887e95`, « dès la première image » : je ne réécris pas un commit, et la note de T1.1 donne le comportement mesuré. 6 autres constats ont été réfutés.
+> - Docs seulement dans cette tâche : pas de build.
+
 ---
 
 ## Points ouverts
@@ -103,6 +122,6 @@ Preuves détaillées, sonde et journaux : dossier de notes partagé `o2-race-fin
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
 | O1 | ~~Arbitrage de D1, D2 et D3 par l'auteur.~~ Réglé le 2026-10-15 : options recommandées. | T1.1, T1.2 |
+| O2 | Observation hors plan : un lancement de sonde (pause de 8 ms) a quitté la course juste après l'arrivée, puis a échoué au délai de `race-finished`. Le journal montre un retour au menu sans action du validateur : cela correspond à une vraie touche ou un clic reçu par la fenêtre (« Press Space, Enter, … click … »). Non approfondi ; repris et précisé par O3. | — |
 | O3 | Lancements qui expirent à `race-finished` (1 sur 7 le 2026-10-09, 2 sur 9 le 2026-10-15, avec ou sans correctif) : le jeu revient au menu juste après l'arrivée. `RaceHudScreen.IsDismissPressed` (`RacingGameCasaEngine/Screens/RaceHudScreen.cs:98-116`) accepte un clic gauche. `MonoGameWindowInputSource` ignore le clavier quand la fenêtre est inactive (`GetKeyboardState`), mais pas la souris (`GetMouseState`) : un vrai clic sur la fenêtre du jeu suffit probablement. L'entrée exacte n'a pas été journalisée. Hors périmètre : à traiter à part (ignorer l'entrée réelle pendant une automation). | — |
-| O4 | D'autres états ont aussi des variantes dues à la cadence, sous le seuil de 2,0 de `UiCaptureCompare` : main-menu 0,67, car-selection 0,72, track-selection 0,23, race-hud 0,65, options 0,34, help 0,19 à 0,57 en temps normal, jusqu'à 2,06 (race-hud) sous fort ralentissement artificiel. Chacune est identique au pixel à un lancement de l'ancien moteur du 2026-10-09 : ni ce correctif ni le sous-module ne les causent. Mécanisme probablement le même (image lue en retard, état pas tout à fait figé), non établi. Hors périmètre (option C de D1). | — |
-| O2 | Observation hors plan : un lancement de sonde (pause de 8 ms) a quitté la course juste après l'arrivée, puis a échoué au délai de `race-finished`. Le journal montre un retour au menu sans action du validateur : cela correspond à une vraie touche ou un clic reçu par la fenêtre (« Press Space, Enter, … click … »). Non approfondi. | — |
+| O4 | D'autres états ont aussi des variantes dues à la cadence. Valeurs en moyenne RGB des écarts absolus (la mesure de `cmp.py` ; `UiCaptureCompare` donne un écart par canal, seuil 2,0) :<br>- en temps normal, sous le seuil : main-menu 0,67, car-selection 0,72, track-selection 0,23, race-hud 0,65, options 0,34, help 0,18 à 0,19 ;<br>- sous ralentissement artificiel (sonde) : aussi splash 0,64, pause 0,33, main-menu 0,82, help 0,57, et race-hud jusqu'à 2,06, **au-dessus** du seuil (2,09 sur le canal R).<br>Chacune des valeurs de temps normal est identique au pixel à un lancement de l'ancien moteur du 2026-10-09 : ni ce correctif ni le sous-module ne les causent. Après correctif, 2 des 4 captures complètes du build du dépôt ont leurs 9 états à 0,00 contre `verify/ui`. Mécanisme probablement le même (image lue en retard, état pas tout à fait figé), non établi. Hors périmètre (option C de D1). | — |
