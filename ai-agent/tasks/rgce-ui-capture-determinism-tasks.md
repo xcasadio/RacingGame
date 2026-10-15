@@ -200,12 +200,21 @@ Chaque expérience est un interrupteur de la sonde ; le reste du code est celui 
 
 ---
 
+## Intégration à `remaster` (2026-10-15)
+
+- À la demande de l'auteur (« fais l'avance rapide de remaster »). `remaster` avait reçu entre-temps les 8 commits du plan de l'entrée en automation (`642cbc9` à `8f9a39d`). Les 4 commits de ce plan ont été rebasés dessus, conflits de documentation seulement (`ai-agent/README.md`, O3 et O4 du plan `race-finished`), puis `remaster` a été avancé en avance rapide.
+- Revalidation sur la branche rebasée :
+  - `dotnet build RacingGame.slnx` : 0 erreur, aucun avertissement dans `RacingGameCasaEngine` ni `RacingGame.Gameplay`.
+  - Sonde à 0 et 20 ms par draw, et un lancement du build : 3 lancements propres, identiques au pixel à `artifacts/ui-capture-determinism/ref-a/ui`, sauf 1 à 3 pixels isolés du carrousel (O3). Chaque capture de la sonde est l'update `c`, 1 079 draws pour 1 080 updates.
+  - `--smoke-frontend` : code 0, « Automation mode: the player input is ignored. », aucun avertissement ni erreur.
+  - La référence `ref-a` reste valable.
+
 ## Points ouverts
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
 | O1 | ~~Arbitrage de D1 → D4 par l'auteur.~~ Réglé le 2026-10-15 : options recommandées. | T1.1 → T1.3 |
-| O2 | Entrées réelles pendant la capture (O3 du plan `race-finished`). Un curseur sur la fenêtre change le survol (variante pause 0,33). Le 2026-10-15 entre 09:04 et 09:19, 4 lancements sur 14 de cette enquête ont reçu de vraies entrées, aucune venant de la sonde :<br>- S20 et M0 ont quitté `race-finished` environ 1 s après l'arrivée ;<br>- C20 a repris la course après la pause (choc contre une barrière), est revenu aux menus et a changé 4 fois la couleur de la voiture ;<br>- X20 a quitté l'écran titre 1 s après le démarrage, puis la fenêtre s'est fermée (code 0).<br>Hors périmètre ; une autre session y travaille. Tant que ce n'est pas réglé, ne pas toucher la souris ni le clavier pendant les lancements de référence. | T1.3 |
+| O2 | Entrées réelles pendant la capture (O3 du plan `race-finished`). Un curseur sur la fenêtre change le survol (variante pause 0,33). Le 2026-10-15 entre 09:04 et 09:19, 4 lancements sur 14 de cette enquête ont reçu de vraies entrées, aucune venant de la sonde :<br>- S20 et M0 ont quitté `race-finished` environ 1 s après l'arrivée ;<br>- C20 a repris la course après la pause (choc contre une barrière), est revenu aux menus et a changé 4 fois la couleur de la voiture ;<br>- X20 a quitté l'écran titre 1 s après le démarrage, puis la fenêtre s'est fermée (code 0).<br>Hors périmètre ; une autre session y travaille. Tant que ce n'est pas réglé, ne pas toucher la souris ni le clavier pendant les lancements de référence.<br>**Réglé** par le plan de l'entrée en automation ([rgce-automation-input-tasks.md](rgce-automation-input-tasks.md), `d89ddf4` et `5f78ac2`, ADR-0021 et ADR-0022), intégré à `remaster` avant ce plan : sous les modes automation, aucune entrée réelle n'atteint le jeu. | T1.3 |
 | O3 | car-selection : quelques pixels isolés (1 à 9 observés) varient d'un lancement à l'autre à la même update, dans le carrousel 3D. Sans rapport avec la cadence, sous le seuil. À reprendre seulement si une égalité exacte est exigée. | T1.3 |
 
 ## Hors périmètre
