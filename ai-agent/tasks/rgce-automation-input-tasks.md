@@ -117,7 +117,7 @@ Propositions P1 → P4 de l'agent, retenues telles quelles par l'auteur le 2026-
 > - Avant la correction d'`OptionsScreen`, une première série sur le code de T1.1 avait déjà donné 8 lancements de maintien à code 0 (7 vrais clics pendant les maintiens, aucun reçu par le jeu) et les 6 modes à code 0.
 > - Jeu normal : nouveau code atteint seulement sous `IsAutomation` (lecture et revue) ; la vérification manuelle reste à l'auteur (validation globale).
 
-### ⏳ T1.2 — Captures contre les références
+### ✅ T1.2 — Captures contre les références
 
 - Objectif : montrer que les captures ne changent pas, ou expliquer chaque écart.
 - Sources : deux lancements de `--capture-ui-screens` copiés dans `artifacts/automation-input/{run-a,run-b}/ui` (ignoré par git), rapports `UiCaptureCompare`.
@@ -126,6 +126,14 @@ Propositions P1 → P4 de l'agent, retenues telles quelles par l'auteur le 2026-
   2. Écart au-dessus du seuil : chercher s'il vient du survol (D3) ou d'O4 ; ne prendre une nouvelle référence qu'avec sa cause écrite.
 - Validation : rapports dans `artifacts/automation-input/compare-*` ; note sous la tâche.
 - Commit : `docs(racing-casa): record the captures with the player input ignored` (ce plan seulement, les artefacts ne sont pas suivis).
+
+> Validation (2026-10-15) :
+> - Captures : les deux lancements `--capture-ui-screens` du build final de T1.1 (`ui-run-20261015-093815` et `-093838`), copiés dans `artifacts/automation-input/{run-a,run-b}/ui` du checkout principal (ignoré par git). Rapports `UiCaptureCompare` dans `artifacts/automation-input/compare-*` ; écart par canal R, G, B, seuil 2,0.
+> - **run-b** : identique au pixel aux références. Les 9 états valent 0,00 contre `artifacts/element-naming/verify/ui`, et `race-finished` vaut 0,00 contre `artifacts/race-finished-capture/ref-a/ui`. L'état souris vide de D3, position (0, 0), ne survole donc rien.
+> - **run-a** : `race-finished` à 0,00 contre ref-a ; 6 des 9 autres états à 0,00 contre `verify/ui`. Les 3 écarts, tous dans le seuil, sont help (0,22 / 0,19 / 0,15), car-selection (0,75 / 0,70 / 0,71) et track-selection (0,27 / 0,23 / 0,18). Leur moyenne RGB (0,19, 0,72 et 0,23) est celle des variantes de cadence déjà relevées par O4 du plan `race-finished`, et le help et la car-selection de run-a sont identiques (0,00) à ceux de ref-a.
+> - `race-finished` contre `verify/ui` : 33,14 / 33,53 / 32,99 dans les deux lancements, la pose figée de `c887e95`, attendue.
+> - Aucune nouvelle référence : aucun écart ne vient de ce chantier.
+> - **O4 ci-dessous** : ces variantes persistent alors qu'aucune entrée n'atteint plus le jeu. Le curseur réel n'en est donc pas la cause.
 
 ### ⏳ T1.3 — ADR, clôture d'O3 et vérification
 
@@ -147,7 +155,7 @@ Propositions P1 → P4 de l'agent, retenues telles quelles par l'auteur le 2026-
 | O1 | ~~Arbitrage de P1 → P4 par l'auteur.~~ Réglé le 2026-10-15 : options recommandées (D1 → D4). | T1.1 → T1.3 |
 | O2 | **Hors périmètre, à décider** : en jeu normal aussi, un clic gauche dans une autre application est vu par le jeu. Il ferme le panneau d'arrivée, le Splash et l'aide, qui ne testent pas la position. Correction possible dans CasaEngine (`MonoGameWindowInputSource.GetMouseState` : boutons relâchés quand la fenêtre n'a pas le focus de la souris), à traiter dans le dépôt du moteur. | — |
 | O3 | **Hors périmètre** : `IsActive` reste vrai quand la fenêtre n'a jamais eu le focus, donc la suppression du clavier de `MonoGameWindowInputSource` ne se déclenche pas dans ce cas. Sans effet constaté ici (aucune touche journalisée), à signaler avec O2. | — |
-| O4 | Lien possible avec O4 du plan `race-finished` (petites variantes de cadence) : les écrans à survol lisent la position réelle du curseur. Non établi ; T1.2 le mesurera. | T1.2 |
+| O4 | ~~Lien possible avec O4 du plan `race-finished` : les écrans à survol lisent la position réelle du curseur.~~ Écarté par T1.2 : les mêmes variantes (help, car-selection, track-selection) persistent sans aucune entrée. O4 du plan `race-finished` reste ouvert, sans lien avec l'entrée. | T1.2 |
 
 ## Hors périmètre
 
