@@ -102,7 +102,8 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
     public override void Show()
     {
         PlaySound(MenuSound.ScreenClick);
-        if (!_isReadingText)
+        // The window raises the typed text itself, outside the input source an automation run empties (ADR-0021).
+        if (!_isReadingText && !_game.IgnoresPlayerInput)
         {
             _game.Window.TextInput += OnTextInput;
             _isReadingText = true;

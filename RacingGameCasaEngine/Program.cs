@@ -78,6 +78,11 @@ public static class Program
             CarTopSpeedAuditTrackName = GetOptionValue(args, "--car-top-speed-audit-track"),
         };
 
+        if (launchOptions.IsAutomation)
+        {
+            AutomationPlayerInput.Ignore(runtimeContext);
+        }
+
         using var game = new RacingGameCasaEngineGame(runtimeContext, displaySettingsPath, frontEndOptionsPath, launchOptions)
         {
             Arguments = args,

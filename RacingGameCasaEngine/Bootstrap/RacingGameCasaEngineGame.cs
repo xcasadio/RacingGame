@@ -44,6 +44,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
     private readonly TrackRuntimeSceneExportValidator? _trackRuntimeSceneExportValidator;
     private readonly string _displaySettingsFileName;
     private readonly string _frontEndOptionsFileName;
+    private readonly bool _ignorePlayerInput;
     private IViewRenderPipeline? _raceSkyViewPipeline;
     private TextureCube? _raceSkyFallbackReflectionCube;
     private TextureCube? _raceSkySharedCube;
@@ -67,6 +68,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
         launchOptions ??= new RaceLaunchOptions();
         _displaySettingsFileName = displaySettingsFileName;
         _frontEndOptionsFileName = frontEndOptionsFileName;
+        _ignorePlayerInput = launchOptions.IsAutomation;
 
         ExecutionPolicy = new GameplayExecutionPolicy
         {
@@ -121,6 +123,9 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
     }
 
     internal RuntimeRaceSession RaceSession { get; }
+
+    /// <summary>True during an automation mode: the player input does not reach the game (ADR-0021).</summary>
+    internal bool IgnoresPlayerInput => _ignorePlayerInput;
 
     /// <summary>Gamepad vibration on guard-rail hits (Gamepad Vibration option).</summary>
     internal RaceGamepadVibration RaceVibration { get; }
@@ -195,6 +200,12 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
         GameSettings.ProjectSettings.IsFixedTimeStep = true;
 
         base.Initialize();
+
+        // The window input is already empty (Program); the gamepad is read through the input component's own provider.
+        if (_ignorePlayerInput)
+        {
+            AutomationPlayerInput.Ignore(InputComponent);
+        }
     }
 
     protected override void LoadContentPrivate()

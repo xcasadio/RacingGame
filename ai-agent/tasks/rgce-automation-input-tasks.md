@@ -1,7 +1,7 @@
 # Plan agent IA — Les modes automation de RGCE ignorent l'entrée réelle
 
 Plan court issu de l'enquête sur le point ouvert O3 de [rgce-race-finished-capture-tasks.md](rgce-race-finished-capture-tasks.md) (2026-10-15).
-Les points P1 → P4 sont des **propositions de l'agent, à arbitrer par l'auteur** : aucune modification de code avant son approbation.
+Les décisions D1 → D4 ci-dessous ont été arbitrées par l'auteur le 2026-10-15 (« P1 à P4 comme recommandé, fais-le ») : **ce plan les applique, il ne les rediscute pas**.
 
 Ce fichier doit être mis à jour pendant le travail : l'icône au début de chaque tâche indique son statut courant.
 
@@ -40,29 +40,28 @@ Sonde de bloc-notes : copie des sources de `RacingGameCasaEngine` sur le bin du 
 
 - Branche `claude/jolly-clarke-c20266` (worktree), avancée sans commit propre sur `remaster` `200a66d` (`git merge --ff-only remaster`). Sous-module `CasaEngine` non initialisé dans le worktree (`git submodule status` : `-6ed0ef3f7`). Le checkout principal (`remaster`) a son sous-module à `87fc5f01b` (autre session), `.serena/` et `log.txt` non suivis : **ne pas les indexer**.
 - **Lecteurs d'entrée réelle du jeu**, tous exposés pendant une automation :
-  - écrans : `SplashScreen.cs:61-67` et `HelpScreen.cs:114-116` (n'importe quel clic gauche, sans position), `MainMenuScreen.cs:87-122`, `CarSelectionScreen.cs:105-182`, `TrackSelectionScreen.cs:85-151`, `HighscoresScreen.cs:99-152`, `OptionsScreen.cs:153-269`, `RaceHudScreen.cs:98-116` ; boutons MGUI de `PauseScreen.cs:39` ;
+  - écrans : `SplashScreen.cs:61-67` et `HelpScreen.cs:114-116` (n'importe quel clic gauche, sans position), texte tapé lu directement sur `Window.TextInput` par `OptionsScreen.cs:102-110, 130-149` (**trouvé par la revue de T1.1**, hors de la source de fenêtre), `MainMenuScreen.cs:87-122`, `CarSelectionScreen.cs:105-182`, `TrackSelectionScreen.cs:85-151`, `HighscoresScreen.cs:99-152`, `OptionsScreen.cs:153-269`, `RaceHudScreen.cs:98-116` ; boutons MGUI de `PauseScreen.cs:39` ;
   - survol à la position réelle du curseur : `MainMenuScreen.cs:91`, `TrackSelectionScreen.cs:99-116, 177`, `CarSelectionScreen.cs:233`, `HighscoresScreen.cs:207`, `OptionsScreen.cs:353`, `HelpScreen.cs:131` ;
   - jeu : conduite `RacingGame.Gameplay/Components/VehicleInputReader.cs:17-82`, pause sur Échap ou Start/Back `RaceFlowCoordinatorComponent.cs:99-115`, caméra `ChaseCameraRigComponent.cs:171-176`, caméra libre `DebugFreeCameraComponent.cs:60-83`, raccourcis F1, F2, F3, F5 `RacingGameCasaEngine/Bootstrap/RacingGameCasaEngineGame.cs:356-392`.
 - **Aucun validateur ne lit l'entrée réelle** : `rg "InputComponent|KeyboardManager|MouseManager|GamePad" RacingGameCasaEngine/Bootstrap/*Validator.cs` ne trouve rien. Ils pilotent le front-end par les méthodes `…ForAutomation` de `RaceFrontEndFlow.cs:120-141` et la voiture par `ForcedControlInput` (`CarProfileAuditValidator.cs:292`, `CarTopSpeedAuditValidator.cs:312`).
 - **Point d'entrée possible sans toucher au moteur** :
   - `Program.cs:47-48` crée le `EngineRuntimeContext` avant le jeu ; `WindowInputSource` y est public et modifiable (`CasaEngine/CasaEngine/Framework/Application/EngineRuntimeContext.cs:34`) ;
   - `CasaEngineGame` ne crée la source MonoGame que si elle est nulle (`??=`) et enveloppe toute source dans `FrameCachedWindowInputSource` (`CasaEngineGame.cs:444-450`) ; `WindowInputSnapshot.Empty` est l'état « aucune entrée » du moteur (`Framework/Input/IWindowInputSource.cs:12`) ;
-  - la manette passe à part : `InputComponent` est créé dans `CasaEngineGame.Initialize` (`CasaEngineGame.cs:403`) et lit `IGamePadStateProvider` (`InputComponent.cs:45-50, 99`), remplaçable par `SetProviders`.
+  - la manette passe à part : `InputComponent` est créé dans `CasaEngineGame.Initialize` (`CasaEngineGame.cs:403`) et lit `IGamePadStateProvider` (`InputComponent.cs:45-50, 99`), remplaçable par `SetProviders` ;
+  - **trouvé à l'exécution de T1.1** : MGUI lit aussi la manette directement chez MonoGame (`CasaEngine/MGUI/MGUI.Shared/Input/GamePad/GamePadTracker.cs:100`) pour la navigation au focus (`MGUI.Core/UI/Navigation/UIFocusNavigationService.cs:270-295`, appelé par `MGUI.Core/UI/MGDesktop.cs:1582`), sans passer par la source de fenêtre. Le suivi a un interrupteur public `GamePadTracker.Enabled` (`:41`), atteint par `MGDesktop.InputTracker` (`MGUI.Core/UI/MGDesktop.cs:93`). Chaque `UIRoot` est créé par `RuntimeContext.UIViewRuntimeFactory` (`CasaEngineGame.cs:149, 782-787`), que `Program.cs:48` pose déjà : un décorateur RGCE de cette fabrique peut couper ce suivi sans toucher au sous-module (D1 : « boutons MGUI »).
 - Modes automation qui créent le jeu : les 6 de `RaceLaunchOptions` (`Bootstrap/RaceLaunchOptions.cs:5-15`, lus dans `Program.cs:22-29, 67-79`). `--verify-legacy-import-profile` sort avant la création du jeu (`Program.cs:39-43`).
 - Pas de projet de test pour RGCE (`RacingGame.slnx`) ; précédent d'ADR pour un comportement des modes automation : ADR-0004 (`docs/decisions/0004-rgce-saves-user-settings-only-from-options.md`).
 
 ## Décisions verrouillées
 
-Aucune pour l'instant : P1 → P4 ci-dessous attendent l'arbitrage de l'auteur (O1).
+Propositions P1 → P4 de l'agent, retenues telles quelles par l'auteur le 2026-10-15.
 
-## Points à valider par l'auteur
-
-| Réf | Proposition de l'agent | Alternatives |
+| Réf | Décision | Alternatives écartées |
 |---|---|---|
-| P1 | **Une source d'entrée vide pour tout le processus** quand un mode automation tourne : `Program.cs` pose `runtimeContext.WindowInputSource` sur une source RGCE qui renvoie toujours l'état vide, avant de créer le jeu ; le jeu remplace aussi le fournisseur de manette par un fournisseur vide après `base.Initialize()`. Écrans, conduite, pause, raccourcis, boutons MGUI et survol ignorent alors le joueur, sans un test par écran ni changement du sous-module. | **B** : garde dans chaque écran (fermeture et navigation), par un drapeau de `RaceFrontEndState`. 9 fichiers, et ne couvre ni la conduite, ni Échap, ni F1–F5, ni les boutons de la pause, ni le survol ; chaque nouvel écran doit y penser. **C** : correction dans CasaEngine seulement (boutons de souris ignorés quand la fenêtre n'a pas le focus de la souris). Protège aussi le jeu normal, mais change le sous-module et ne protège pas une automation dont la fenêtre reçoit elle-même des entrées. |
-| P2 | Les **6 modes** qui créent le jeu : `--smoke-frontend`, `--capture-ui-screens`, `--capture-track-audit`, `--capture-car-profile-audit`, `--capture-car-top-speed-audit`, `--export-track-runtime-scene`. | Seulement `--capture-ui-screens`. |
-| P3 | État souris fourni : `WindowInputSnapshot.Empty` du moteur (position (0, 0), aucun bouton). Les captures diront si (0, 0) survole quelque chose. | Une position hors de la zone client. |
-| P4 | **ADR-0021 courte**, comme ADR-0004 pour l'autre comportement des modes automation. | Doc XML seulement. |
+| D1 | **Une source d'entrée vide pour tout le processus** quand un mode automation tourne : `Program.cs` pose `runtimeContext.WindowInputSource` sur une source RGCE qui renvoie toujours l'état vide, avant de créer le jeu ; le jeu remplace aussi le fournisseur de manette par un fournisseur vide après `base.Initialize()`. Écrans, conduite, pause, raccourcis, boutons MGUI et survol ignorent alors le joueur, sans un test par écran ni changement du sous-module. | **B** : garde dans chaque écran (fermeture et navigation), par un drapeau de `RaceFrontEndState`. 9 fichiers, et ne couvre ni la conduite, ni Échap, ni F1–F5, ni les boutons de la pause, ni le survol ; chaque nouvel écran doit y penser. **C** : correction dans CasaEngine seulement (boutons de souris ignorés quand la fenêtre n'a pas le focus de la souris). Protège aussi le jeu normal, mais change le sous-module et ne protège pas une automation dont la fenêtre reçoit elle-même des entrées. |
+| D2 | Les **6 modes** qui créent le jeu : `--smoke-frontend`, `--capture-ui-screens`, `--capture-track-audit`, `--capture-car-profile-audit`, `--capture-car-top-speed-audit`, `--export-track-runtime-scene`. | Seulement `--capture-ui-screens`. |
+| D3 | État souris fourni : `WindowInputSnapshot.Empty` du moteur (position (0, 0), aucun bouton). Les captures diront si (0, 0) survole quelque chose. | Une position hors de la zone client. |
+| D4 | **ADR-0021 courte**, comme ADR-0004 pour l'autre comportement des modes automation. | Doc XML seulement. |
 
 ## Règles d'exécution pour l'agent
 
@@ -86,24 +85,37 @@ Aucune pour l'instant : P1 → P4 ci-dessous attendent l'arbitrage de l'auteur (
 - `dotnet build RacingGame.slnx` : 0 erreur.
 - Sonde de maintien (série H) reconstruite sur le code corrigé, qui lit en plus le bouton gauche brut de MonoGame (`Mouse.GetState(Window)`) : au moins un clic réel pendant le maintien, ordinaire ou volontaire de l'auteur, est journalisé brut, n'atteint pas `MouseManager`, ne ferme pas le panneau, et la capture finit à code 0. Sans clic réel pendant un maintien, la tâche reste 🧪.
 - Les 6 modes automation : code 0, aucun avertissement ni erreur nouveaux ; une ligne de journal indique que l'entrée du joueur est ignorée.
-- `--capture-ui-screens`, deux lancements, `scripts/UiCaptureCompare` contre `artifacts/race-finished-capture/ref-a/ui` (`race-finished`) et `artifacts/element-naming/verify/ui` (9 autres états) : dans le seuil, ou tout écart expliqué (survol à (0, 0), P3).
+- `--capture-ui-screens`, deux lancements, `scripts/UiCaptureCompare` contre `artifacts/race-finished-capture/ref-a/ui` (`race-finished`) et `artifacts/element-naming/verify/ui` (9 autres états) : dans le seuil, ou tout écart expliqué (survol à (0, 0), D3).
 - Jeu normal (sans option) : l'entrée réelle marche comme avant (vérification manuelle de l'auteur, 🧪).
 
 ---
 
 ## Phase 1 — Entrée ignorée pendant l'automation
 
-### ⏳ T1.1 — Source d'entrée vide pendant les modes automation
+### ✅ T1.1 — Source d'entrée vide pendant les modes automation
 
-- Objectif : sous un des modes de P2, le jeu ne reçoit aucune entrée réelle (P1, P3).
-- Fichiers : `RacingGameCasaEngine/Bootstrap/RaceLaunchOptions.cs` (propriété qui dit si un mode automation tourne), `RacingGameCasaEngine/Bootstrap/AutomationInputSource.cs` (nouveau : source de fenêtre et fournisseur de manette vides), `RacingGameCasaEngine/Program.cs` (pose la source avant `new RacingGameCasaEngineGame`), `RacingGameCasaEngine/Bootstrap/RacingGameCasaEngineGame.cs` (manette vide après `base.Initialize()`, une ligne de journal).
+- Objectif : sous un des modes de D2, le jeu ne reçoit aucune entrée réelle (D1, D3).
+- Fichiers : `RacingGameCasaEngine/Bootstrap/RaceLaunchOptions.cs` (propriété qui dit si un mode automation tourne), `RacingGameCasaEngine/Bootstrap/AutomationPlayerInput.cs` (nouveau : source de fenêtre, clavier, souris et manette vides ; fabrique d'UI qui coupe le suivi de manette de MGUI), `RacingGameCasaEngine/Program.cs` (pose les deux avant `new RacingGameCasaEngineGame`), `RacingGameCasaEngine/Bootstrap/RacingGameCasaEngineGame.cs` (manette vide après `base.Initialize()`, propriété `IgnoresPlayerInput`), `RacingGameCasaEngine/Screens/OptionsScreen.cs` (pas d'abonnement à `Window.TextInput` en mode automation).
 - Étapes :
   1. Initialiser le sous-module du worktree ; build de référence.
   2. Source vide : `IWindowInputSource.GetSnapshot()` renvoie `WindowInputSnapshot.Empty` ; `IGamePadStateProvider.GetState` renvoie l'état par défaut (non connecté). Vérifier dans le code moteur que `FrameCachedWindowInputSource` et le routeur n'exigent rien de plus.
-  3. `Program.cs` : si un mode automation tourne, `runtimeContext.WindowInputSource = new AutomationInputSource()` avant de créer le jeu.
-  4. `Initialize` du jeu : en mode automation, `InputComponent.SetProviders` avec la source enveloppée et la manette vide ; `Logs.WriteInfo` une fois.
+  3. Fabrique d'UI : enveloppe la fabrique MGUI et met `Desktop.InputTracker.GamePad.Enabled` à faux sur chaque `UIRoot` créé.
+  4. `Program.cs` : si un mode automation tourne, pose la source vide et la fabrique avant de créer le jeu ; `Logs.WriteInfo` une fois.
+  5. `Initialize` du jeu : en mode automation, `InputComponent.SetProviders` avec les fournisseurs vides.
+  6. `OptionsScreen.Show` : pas d'abonnement à `Window.TextInput` quand le jeu ignore le joueur (constat de la revue).
 - Validation : build ; sonde de maintien reconstruite sur ce code, avec au moins un clic réel pendant un maintien (validation globale) ; les 6 modes à code 0.
 - Commit : `fix(racing-casa): ignore the player input under the automation modes`
+
+> Validation (2026-10-15) :
+> - Sous-modules du worktree initialisés sans réseau, depuis les dépôts du checkout principal (règles `insteadOf` passées en `-c`) : `6ed0ef3f7`, `4e94d7e8`, `9c0da031` ; SHA-1 de `.git/config` inchangé.
+> - `dotnet build RacingGame.slnx` : 0 erreur, avant et après le changement. `RacingGameCasaEngine` recompilé seul : 0 avertissement, 0 erreur.
+> - Le bin du worktree n'avait pas les 93 fichiers de contenu générés par CasaEngine (shaders `.xnb`, polices, icônes), que `dotnet build` ne produit pas : premier essai en échec au chargement (`ContentLoadException`, `Content/Shaders/DebugPrimitiveColor.xnb`). Copiés depuis le bin du checkout principal, dossier de sortie ignoré par git. Le reste du contenu est identique, aux fins de ligne près (26 fichiers texte).
+> - **Revue adverse** en lecture seule (4 angles : contournements, ordre d'initialisation, régression en jeu normal, conformité ; 3 contradicteurs par constat) : un seul constat, trouvé par les 4 angles et confirmé 3 fois sur 3 (P3/P4). `OptionsScreen` lisait le texte tapé directement sur `Window.TextInput`. Corrigé : pas d'abonnement quand `IgnoresPlayerInput` est vrai. Tout le reste a été vérifié sain : ordre de pose dans `Program` et le constructeur, `??=`, aucune autre création de `UIRoot`, aucun autre abonnement aux événements de fenêtre dans RGCE ni dans `RacingGame.Gameplay`, jeu normal inchangé, éditeur non concerné.
+> - **Sur les octets finaux**, par le helper (un seul processus, réglages restaurés à l'identique après chaque lancement, aucune entrée simulée) :
+>   - sonde de maintien reconstruite sur ce code, 6 lancements : code 0. 16 vrais clics de l'auteur lus bruts par `Mouse.GetState(Window)`, dont 12 pendant le panneau d'arrivée (lancements 3 à 5), certains avec le curseur dans la zone client. Aucun n'atteint `MouseManager` (`gameLeftJustPressed=True` : 0), aucune fermeture du panneau. `ReturnToFrontEnd` n'est appelé que par le validateur ;
+>   - les 6 modes sur le build du worktree, code 0, la ligne `Automation mode: the player input is ignored.` dans chaque journal, 0 avertissement et 0 erreur : `--capture-ui-screens` ×2, `--smoke-frontend` (`Smoke validation completed successfully`), `--capture-track-audit` (30 captures), `--capture-car-profile-audit` (6 scénarios), `--capture-car-top-speed-audit` (3 scénarios), `--export-track-runtime-scene` (3 pistes). Sorties des audits redirigées dans le bloc-notes.
+> - Avant la correction d'`OptionsScreen`, une première série sur le code de T1.1 avait déjà donné 8 lancements de maintien à code 0 (7 vrais clics pendant les maintiens, aucun reçu par le jeu) et les 6 modes à code 0.
+> - Jeu normal : nouveau code atteint seulement sous `IsAutomation` (lecture et revue) ; la vérification manuelle reste à l'auteur (validation globale).
 
 ### ⏳ T1.2 — Captures contre les références
 
@@ -111,16 +123,16 @@ Aucune pour l'instant : P1 → P4 ci-dessous attendent l'arbitrage de l'auteur (
 - Sources : deux lancements de `--capture-ui-screens` copiés dans `artifacts/automation-input/{run-a,run-b}/ui` (ignoré par git), rapports `UiCaptureCompare`.
 - Étapes :
   1. Comparer run-a et run-b entre eux, puis aux références de la validation globale.
-  2. Écart au-dessus du seuil : chercher s'il vient du survol (P3) ou d'O4 ; ne prendre une nouvelle référence qu'avec sa cause écrite.
+  2. Écart au-dessus du seuil : chercher s'il vient du survol (D3) ou d'O4 ; ne prendre une nouvelle référence qu'avec sa cause écrite.
 - Validation : rapports dans `artifacts/automation-input/compare-*` ; note sous la tâche.
 - Commit : `docs(racing-casa): record the captures with the player input ignored` (ce plan seulement, les artefacts ne sont pas suivis).
 
 ### ⏳ T1.3 — ADR, clôture d'O3 et vérification
 
-- Objectif : décision enregistrée (P4), O3 clos, vérification indépendante.
-- Fichiers : `docs/decisions/0021-…md` et l'index des ADR (si P4), `ai-agent/tasks/rgce-race-finished-capture-tasks.md` (O3 : cause et lien vers ce plan), `ai-agent/README.md`, ce plan.
+- Objectif : décision enregistrée (D4), O3 clos, vérification indépendante.
+- Fichiers : `docs/decisions/0021-…md` et l'index des ADR (D4), `ai-agent/tasks/rgce-race-finished-capture-tasks.md` (O3 : cause et lien vers ce plan), `ai-agent/README.md`, ce plan.
 - Étapes :
-  1. ADR-0021 avec le skill `adr`, si P4 est retenu.
+  1. ADR-0021 avec le skill `adr`, (D4).
   2. O3 : cause (bouton de souris global, `IsActive` sans focus, panneau fermé par tout clic) et correctif.
   3. Passe `verifier` fraîche sur T1.1 et T1.2.
 - Validation : verdict CONFIRMED ; docs seulement, pas de build.
@@ -132,7 +144,7 @@ Aucune pour l'instant : P1 → P4 ci-dessous attendent l'arbitrage de l'auteur (
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
-| O1 | Arbitrage de P1 → P4 par l'auteur. | T1.1 → T1.3 |
+| O1 | ~~Arbitrage de P1 → P4 par l'auteur.~~ Réglé le 2026-10-15 : options recommandées (D1 → D4). | T1.1 → T1.3 |
 | O2 | **Hors périmètre, à décider** : en jeu normal aussi, un clic gauche dans une autre application est vu par le jeu. Il ferme le panneau d'arrivée, le Splash et l'aide, qui ne testent pas la position. Correction possible dans CasaEngine (`MonoGameWindowInputSource.GetMouseState` : boutons relâchés quand la fenêtre n'a pas le focus de la souris), à traiter dans le dépôt du moteur. | — |
 | O3 | **Hors périmètre** : `IsActive` reste vrai quand la fenêtre n'a jamais eu le focus, donc la suppression du clavier de `MonoGameWindowInputSource` ne se déclenche pas dans ce cas. Sans effet constaté ici (aucune touche journalisée), à signaler avec O2. | — |
 | O4 | Lien possible avec O4 du plan `race-finished` (petites variantes de cadence) : les écrans à survol lisent la position réelle du curseur. Non établi ; T1.2 le mesurera. | T1.2 |

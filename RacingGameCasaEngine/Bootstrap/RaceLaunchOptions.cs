@@ -21,4 +21,12 @@ internal sealed class RaceLaunchOptions
     public string? CarTopSpeedAuditFilePath { get; init; }
 
     public string? CarTopSpeedAuditTrackName { get; init; }
+
+    /// <summary>True when one of the automation modes runs: the game then ignores the player input (ADR-0021).</summary>
+    public bool IsAutomation => ValidateFrontEndNavigation
+        || CaptureTrackAudit
+        || CaptureUiScreens
+        || CaptureCarProfileAudit
+        || CaptureCarTopSpeedAudit
+        || ExportTrackRuntimeScene;
 }
