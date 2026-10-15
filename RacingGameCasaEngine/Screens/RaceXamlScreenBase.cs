@@ -41,8 +41,9 @@ internal abstract class RaceXamlScreenBase : XamlUIScreenBase
     }
 
     /// <summary>Places the menu logo for the current viewport and time, as the code-built menu screens did every frame.</summary>
-    protected void UpdateMenuDecoration(RaceMenuDecorationViewModel decoration, double totalSeconds)
+    /// <param name="pinBounce">Holds the logo at its size of time 0, for the capture automation.</param>
+    protected void UpdateMenuDecoration(RaceMenuDecorationViewModel decoration, double totalSeconds, bool pinBounce)
     {
-        decoration.Update(Root.Metrics.ViewportSize.X, Root.Metrics.ViewportSize.Y, totalSeconds);
+        decoration.Update(Root.Metrics.ViewportSize.X, Root.Metrics.ViewportSize.Y, totalSeconds, pinBounce);
     }
 }

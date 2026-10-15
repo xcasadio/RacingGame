@@ -1,7 +1,7 @@
 # Plan agent IA — Captures UI déterministes (O4)
 
 Plan court issu de l'enquête sur le point ouvert O4 de [rgce-race-finished-capture-tasks.md](rgce-race-finished-capture-tasks.md) (2026-10-15).
-Les décisions D1 → D4 sont **proposées** ci-dessous : elles attendent l'arbitrage de l'auteur. Aucun code n'est modifié avant son approbation.
+Les décisions D1 → D4 ont été arbitrées par l'auteur le 2026-10-15 (« fais le, options recommandées ») : **ce plan les applique, il ne les rediscute pas**.
 
 Ce fichier doit être mis à jour pendant le travail : l'icône au début de chaque tâche indique son statut courant.
 
@@ -70,25 +70,27 @@ Chaque expérience est un interrupteur de la sonde ; le reste du code est celui 
 ## État vérifié du dépôt (2026-10-15)
 
 - Branche `remaster`, HEAD `200a66d`. Arbre de travail principal : sous-module `CasaEngine` modifié (pointeur à `87fc5f01b`, autre session), `.serena/` et `log.txt` non suivis. **Ne pas les indexer.**
-- Ce plan est commité sur la branche `claude/interesting-chatterjee-f24e78` : `remaster` en avance rapide, plus ce plan. L'auteur l'intègre à `remaster` par avance rapide, ou indique une autre branche.
+- Ce plan est commité sur la branche `claude/interesting-chatterjee-f24e78` : `remaster` en avance rapide, plus ce plan.
+- Le worktree de cette session n'avait pas le sous-module `CasaEngine` : il y est cloné depuis le dépôt local, au commit `87fc5f01b` de l'arbre principal (MGUI `4e94d7e8`, NvgSharp `9c0da031`), sans changer le pointeur enregistré ni la configuration du dépôt.
 - `PinScreenAnimations` est lu par les écrans Splash, Options, CarSelection et TrackSelection, et par la caméra d'arrivée. HelpScreen et HighscoresScreen ne reçoivent pas l'état du front-end (`RaceFrontEndFlow.cs:63-64`).
 - `RaceTitleViewModel.Update(…, bool pinBlink)` (`RacingGame.Gameplay/ViewModels/RaceTitleViewModel.cs:113`) est le modèle d'un paramètre de figeage.
 - `MaxElapsedTime` n'est réglé nulle part dans RacingGameCasaEngine ni CasaEngine : la sonde lit 500 ms, pour un pas fixe de 16,6667 ms (`RacingGameCasaEngineGame.cs:195`).
 - La capture lit le back buffer pendant un `Update` (`RacingGameCasaEngineGame.cs:480-490`). Le commentaire de `DrawCount` (`:402`) dit « the last presented frame » ; c'est en fait l'avant-dernière.
 - Une autre session travaille sur O3 (worktree `jolly-clarke`) et lance aussi le jeu : les lancements doivent rester un à la fois.
 
-## Décisions proposées (à arbitrer par l'auteur)
+## Décisions verrouillées
 
 | Réf | Décision | Alternatives écartées |
 |---|---|---|
-| D1 | **Figer le rebond du logo sous capture** (recommandé) : quand `PinScreenAnimations` est levé, le logo garde la taille du temps 0 (facteur 1,005, celle de la première image du menu). Application de la règle d'ADR-0009. Suffit pour les 7 écrans du front-end, quelle que soit l'image lue. | Ne pas figer : les 7 écrans ne sont déterministes qu'avec D2, et sur une autre machine (autre tampon d'échange) ils redeviendraient variables. |
-| D2 | **Capturer l'image de l'update de capture** (recommandé) : lire le back buffer en fin du `Draw` qui suit l'update de capture (option C de D1 du plan `race-finished`). Sous `--capture-ui-screens` seulement, une update par draw (`MaxElapsedTime = TargetElapsedTime`) : le jeu ralentit au lieu de rattraper. Seule voie qui rende race-hud déterministe sans changer ce qu'il montre. | B : une update par draw seulement, lecture inchangée. Une ligne, et déterministe sur cette machine (expérience ci-dessus), mais l'image reste celle de `c − 2`, un décalage qui dépend du tampon d'échange du pilote (avant-dernier draw avec un double tampon). C : option C seule : insuffisante, une update de rattrapage entre l'update `c` et son draw donne `c + 1`. D : figer la course sous capture (voiture tenue, chrono arrêté) : change ce que race-hud montre. |
+| D1 | **Figer le rebond du logo sous capture** : quand `PinScreenAnimations` est levé, le logo garde la taille du temps 0 (facteur 1,005, celle de la première image du menu). Application de la règle d'ADR-0009. Suffit pour les 7 écrans du front-end, quelle que soit l'image lue. | Ne pas figer : les 7 écrans ne sont déterministes qu'avec D2, et sur une autre machine (autre tampon d'échange) ils redeviendraient variables. |
+| D2 | **Capturer l'image de l'update de capture** : lire le back buffer en fin du `Draw` qui suit l'update de capture (option C de D1 du plan `race-finished`). Sous `--capture-ui-screens` seulement, une update par draw (`MaxElapsedTime = TargetElapsedTime`) : le jeu ralentit au lieu de rattraper. Seule voie qui rende race-hud déterministe sans changer ce qu'il montre. | B : une update par draw seulement, lecture inchangée. Une ligne, et déterministe sur cette machine (expérience ci-dessus), mais l'image reste celle de `c − 2`, un décalage qui dépend du tampon d'échange du pilote (avant-dernier draw avec un double tampon). C : option C seule : insuffisante, une update de rattrapage entre l'update `c` et son draw donne `c + 1`. D : figer la course sous capture (voiture tenue, chrono arrêté) : change ce que race-hud montre. |
 | D3 | **Une nouvelle référence des 10 états** (`artifacts/ui-capture-determinism/ref-a/ui`) remplace `artifacts/element-naming/verify/ui` et `artifacts/race-finished-capture/ref-a/ui`. Les 7 écrans du front-end changent une fois (logo du temps 0), race-hud aussi (update `c` au lieu de `c − 2`). | Garder deux dossiers de référence. |
 | D4 | **Pas de nouvelle ADR.** D1 applique la règle d'ADR-0009 (doc XML de `PinScreenAnimations`). D2 est un détail de l'outil de capture, documenté dans la doc XML du validateur et le README de `UiCaptureCompare`. | ADR-0021 courte pour D2. |
 
 ## Règles d'exécution pour l'agent
 
-- **Branche `remaster`** (celle des plans RGCE en cours), après intégration de ce plan. Ne jamais committer sur `main` ni pousser.
+- **Branche `claude/interesting-chatterjee-f24e78`** (worktree de cette session : `remaster` + ce plan). L'auteur avance `remaster` dessus en fin de plan. Ne jamais committer sur `main` ni pousser.
+  - Écart au plan proposé, qui prévoyait `remaster` directement : l'arbre de travail principal reste intact (modifications de l'auteur et d'autres sessions).
 - **Une seule tâche à la fois**, icône `🚧` puis `✅`, `🧪` ou `⚠️`, note de validation sous la tâche, **un commit par tâche** incluant ce fichier.
 - **Un seul processus de jeu ou d'éditeur à la fois**, lancé par un helper qui sauvegarde et restaure `display-settings.json` et `front-end-options.json`, et qui attend qu'aucun autre processus du jeu ou de l'éditeur ne tourne. Aucune entrée clavier ou souris simulée.
 - Build : `dotnet build RacingGame.slnx`. `git add` fichier par fichier.
@@ -113,7 +115,7 @@ Chaque expérience est un interrupteur de la sonde ; le reste du code est celui 
 
 ## Phase 1 — Captures déterministes
 
-### ⏳ T1.1 — Figer le rebond du logo sous capture
+### ✅ T1.1 — Figer le rebond du logo sous capture
 
 - Objectif : sous `PinScreenAnimations`, le logo des 7 écrans du front-end garde la taille du temps 0 (D1).
 - Fichiers :
@@ -129,13 +131,24 @@ Chaque expérience est un interrupteur de la sonde ; le reste du code est celui 
 - Validation : build ; sonde à 0, 16 et 20 ms : les 7 écrans identiques (0,00) entre les lancements ; `--smoke-frontend` code 0.
 - Commit : `fix(racing-casa): pin the menu logo bounce under the UI capture`
 
+> Validation (2026-10-15) :
+> - `dotnet build RacingGame.slnx` : 0 erreur. Aucun avertissement dans `RacingGameCasaEngine` ni `RacingGame.Gameplay` ; ceux du build viennent du sous-module, de `RacingGame.PipelineExtension`, `RacingGame` et `RacingGame.Shared`, déjà présents.
+> - Sonde reconstruite sur ce build, pause en fin de `Draw` de 0, 16 et 20 ms : les 7 écrans du front-end identiques (0,00) entre les 3 lancements, alors que la capture lit `c − 2`, `c − 3` ou `c − 4` selon l'état et la cadence. Ils sont aussi identiques à l'expérience « logo figé » de l'enquête. race-hud varie encore (1,67 à `c − 5`) : c'est T1.2.
+> - `--smoke-frontend` : code 0, « Smoke validation completed successfully », aucun avertissement ni erreur.
+> - Relecture adverse en lecture seule (3 angles : exhaustivité, conventions, régressions ; 3 contradicteurs par constat) : aucun défaut fonctionnel.
+>   - Corrigés (P4) : `pinBounce` documenté par une balise `<param>` dans `UpdateMenuDecoration`, comme les autres paramètres de figeage ; ligne de doc de `PinScreenAnimations` remise à la largeur du bloc ; fins de ligne CRLF rétablies dans la copie de travail de 2 fichiers (le contenu commité n'en dépend pas).
+>   - Reporté à T1.2, qui touche ce fichier : le README de `UiCaptureCompare` cite encore le rebond du logo parmi les zones qui diffèrent d'un lancement à l'autre.
+>   - Rejeté : modifier ADR-0009 (décision D4, comme pour l'orbite de `c887e95`).
+> - Le lancement à 20 ms a reçu une vraie entrée après l'arrivée (retour au menu, voir O2) : ses 9 premiers états restent valides.
+> - Pas de test unitaire : aucun projet de test ne couvre `RacingGame.Gameplay` ni `RacingGameCasaEngine`.
+
 ### ⏳ T1.2 — Capturer l'image de l'update de capture
 
 - Objectif : chaque capture est l'image de l'update où le validateur la demande, quelle que soit la cadence (D2).
 - Fichiers :
   - `RacingGameCasaEngine/Bootstrap/RacingGameCasaEngineGame.cs` : demande de capture lue en fin de `Draw`, avant `Present`. L'écriture du PNG est partagée avec `CaptureScreenshotWithStem`, qui reste utilisée par F2 et les autres validateurs. Commentaire de `DrawCount` corrigé.
   - `RacingGameCasaEngine/Bootstrap/UiScreenCaptureValidator.cs` : la capture est demandée, puis le validateur attend le fichier avant d'avancer. `MaxElapsedTime = TargetElapsedTime` au démarrage. Doc XML de la classe.
-  - `scripts/UiCaptureCompare/README.md` : section Capture.
+  - `scripts/UiCaptureCompare/README.md` : sections Capture et Metric (le rebond du logo, la rotation de l'aperçu 3D et le chrono n'y diffèrent plus d'un lancement à l'autre).
 - Étapes :
   1. Jeu : une demande de capture en attente, servie à la fin du prochain `Draw` ; le chemin du fichier est rendu au validateur.
   2. Validateur : `CaptureAndAdvance` demande la capture ; l'update suivante déplace le fichier et avance l'étape. Le délai global existant couvre une capture jamais servie.
@@ -162,7 +175,7 @@ Chaque expérience est un interrupteur de la sonde ; le reste du code est celui 
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
-| O1 | Arbitrage de D1 → D4 par l'auteur. | T1.1 → T1.3 |
+| O1 | ~~Arbitrage de D1 → D4 par l'auteur.~~ Réglé le 2026-10-15 : options recommandées. | T1.1 → T1.3 |
 | O2 | Entrées réelles pendant la capture (O3 du plan `race-finished`). Un curseur sur la fenêtre change le survol (variante pause 0,33). Le 2026-10-15 entre 09:04 et 09:19, 4 lancements sur 14 de cette enquête ont reçu de vraies entrées, aucune venant de la sonde :<br>- S20 et M0 ont quitté `race-finished` environ 1 s après l'arrivée ;<br>- C20 a repris la course après la pause (choc contre une barrière), est revenu aux menus et a changé 4 fois la couleur de la voiture ;<br>- X20 a quitté l'écran titre 1 s après le démarrage, puis la fenêtre s'est fermée (code 0).<br>Hors périmètre ; une autre session y travaille. Tant que ce n'est pas réglé, ne pas toucher la souris ni le clavier pendant les lancements de référence. | T1.3 |
 | O3 | car-selection : 1 à 7 pixels isolés varient d'un lancement à l'autre à la même update, dans le carrousel 3D. Sans rapport avec la cadence, sous le seuil. À reprendre seulement si une égalité exacte est exigée. | T1.3 |
 

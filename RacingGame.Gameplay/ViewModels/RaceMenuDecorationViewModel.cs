@@ -60,9 +60,13 @@ public sealed class RaceMenuDecorationViewModel : RaceViewModelBase
         set => SetProperty(ref _logoHeight, value);
     }
 
-    public void Update(int viewportWidth, int viewportHeight, double totalSeconds)
+    /// <summary>Places the logo for the viewport and the bounce of the moment.</summary>
+    /// <param name="totalSeconds">The game's total time, as RacingGame's <c>BaseGame.TotalTime</c>.</param>
+    /// <param name="pinBounce">Holds the logo at its size of time 0, for the capture automation.</param>
+    public void Update(int viewportWidth, int viewportHeight, double totalSeconds, bool pinBounce)
     {
-        float bounceSize = 1.005f + (float)Math.Sin(totalSeconds / 0.46f) * 0.045f * (float)Math.Cos(totalSeconds / 0.285f);
+        double time = pinBounce ? 0.0 : totalSeconds;
+        float bounceSize = 1.005f + (float)Math.Sin(time / 0.46f) * 0.045f * (float)Math.Cos(time / 0.285f);
         float widthFactor = viewportWidth / ReferenceWidth;
         float heightFactor = viewportHeight / ReferenceHeight;
         float middleX = (ReferenceLogoX + ReferenceLogoWidth / 2f) * widthFactor;

@@ -60,7 +60,7 @@ internal sealed class MainMenuScreen : RaceXamlScreenBase
     {
         window.WindowDataContext = _viewModel;
         _viewModel.Reset(_state.SelectedMainMenuButton);
-        UpdateMenuDecoration(_viewModel.Decoration, 0.0);
+        UpdateMenuDecoration(_viewModel.Decoration, 0.0, _state.PinScreenAnimations);
         UpdateMenuLayout(0.0);
 
         _buttons = new MGButton[EntryNames.Length];
@@ -78,7 +78,7 @@ internal sealed class MainMenuScreen : RaceXamlScreenBase
     {
         double elapsedSeconds = gameTime.ElapsedGameTime.TotalSeconds;
         HandleInput(elapsedSeconds);
-        UpdateMenuDecoration(_viewModel.Decoration, gameTime.TotalGameTime.TotalSeconds);
+        UpdateMenuDecoration(_viewModel.Decoration, gameTime.TotalGameTime.TotalSeconds, _state.PinScreenAnimations);
         UpdateMenuLayout(elapsedSeconds);
     }
 

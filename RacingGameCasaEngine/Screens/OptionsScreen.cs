@@ -350,7 +350,7 @@ internal sealed class OptionsScreen : RaceXamlScreenBase
     // RacingGame's TextureFont did.
     private void UpdateLayout(double totalSeconds)
     {
-        UpdateMenuDecoration(_viewModel.Decoration, totalSeconds);
+        UpdateMenuDecoration(_viewModel.Decoration, totalSeconds, _state.PinScreenAnimations);
         Point mouse = _game.InputComponent.MouseManager.Position;
         var values = new RaceOptionsValues(
             _state.PlayerName,

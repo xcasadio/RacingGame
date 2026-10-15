@@ -22,6 +22,7 @@ namespace RacingGameCasaEngine.Screens;
 internal sealed class HelpScreen : RaceXamlScreenBase
 {
     private readonly RacingGameCasaEngineGame _game;
+    private readonly RaceFrontEndState _state;
     private readonly Action _back;
     private readonly RaceHelpViewModel _viewModel = new();
     private MGTextBlock[] _titles = [];
@@ -31,10 +32,11 @@ internal sealed class HelpScreen : RaceXamlScreenBase
     private bool _isLeaving;
     private Point _lastMouse = new(-1, -1);
 
-    public HelpScreen(AssetContentManager assetContentManager, RacingGameCasaEngineGame game, Action back)
+    public HelpScreen(AssetContentManager assetContentManager, RacingGameCasaEngineGame game, RaceFrontEndState state, Action back)
         : base(assetContentManager, "Screen.Help")
     {
         _game = game;
+        _state = state;
         _back = back;
     }
 
@@ -127,7 +129,7 @@ internal sealed class HelpScreen : RaceXamlScreenBase
     // as TextureFont did: the titles at full size, the lines at RaceHelpViewModel.LineScale.
     private void UpdateLayout(double totalSeconds)
     {
-        UpdateMenuDecoration(_viewModel.Decoration, totalSeconds);
+        UpdateMenuDecoration(_viewModel.Decoration, totalSeconds, _state.PinScreenAnimations);
         Point mouse = _game.InputComponent.MouseManager.Position;
         _viewModel.Update(Root.Metrics.ViewportSize.X, Root.Metrics.ViewportSize.Y, mouse.X, mouse.Y);
 

@@ -32,6 +32,7 @@ internal sealed class HighscoresScreen : RaceXamlScreenBase
     private const string WidestTime = "5:67:89";
 
     private readonly RacingGameCasaEngineGame _game;
+    private readonly RaceFrontEndState _state;
     private readonly Action _back;
     private readonly RaceHighscoresViewModel _viewModel = new();
     private MGTextBlock[] _texts = [];
@@ -45,10 +46,11 @@ internal sealed class HighscoresScreen : RaceXamlScreenBase
     private Point _lastMouse = new(-1, -1);
     private float _lastStickX;
 
-    public HighscoresScreen(AssetContentManager assetContentManager, RacingGameCasaEngineGame game, Action back)
+    public HighscoresScreen(AssetContentManager assetContentManager, RacingGameCasaEngineGame game, RaceFrontEndState state, Action back)
         : base(assetContentManager, "Screen.Highscores")
     {
         _game = game;
+        _state = state;
         _back = back;
     }
 
@@ -203,7 +205,7 @@ internal sealed class HighscoresScreen : RaceXamlScreenBase
     // TextureFont and Highscores.Render did.
     private void UpdateLayout(double totalSeconds)
     {
-        UpdateMenuDecoration(_viewModel.Decoration, totalSeconds);
+        UpdateMenuDecoration(_viewModel.Decoration, totalSeconds, _state.PinScreenAnimations);
         Point mouse = _game.InputComponent.MouseManager.Position;
         _viewModel.Update(Root.Metrics.ViewportSize.X, Root.Metrics.ViewportSize.Y, mouse.X, mouse.Y, _game.MeasureGameFontText(WidestTime));
 

@@ -15,8 +15,8 @@ internal sealed class RaceFrontEndState
 
     /// <summary>
     /// Set by the UI capture automation (--capture-ui-screens): the time-driven animations that would make two runs differ
-    /// (the title's blink, the car carousel's spin, the selection arrows' swing, the chase camera's finish orbit) hold a
-    /// fixed pose (ADR-0009). Not saved.
+    /// (the title's blink, the menu logo's bounce, the car carousel's spin, the selection arrows' swing, the chase camera's
+    /// finish orbit) hold a fixed pose (ADR-0009). Not saved.
     /// </summary>
     public bool PinScreenAnimations { get; set; }
 

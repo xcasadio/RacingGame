@@ -229,7 +229,7 @@ internal sealed class CarSelectionScreen : RaceXamlScreenBase
     // Lays the screen out for the viewport, the time and the mouse, and scales the texts as RacingGame's TextureFont did.
     private void UpdateLayout(double totalSeconds)
     {
-        UpdateMenuDecoration(_viewModel.Decoration, totalSeconds);
+        UpdateMenuDecoration(_viewModel.Decoration, totalSeconds, _state.PinScreenAnimations);
         Point mouse = _game.InputComponent.MouseManager.Position;
         (int plateLeft, int plateRight) = _game.CarSelectionCarousel.FrontPlateEdges;
         _viewModel.Update(Root.Metrics.ViewportSize.X, Root.Metrics.ViewportSize.Y, totalSeconds, _state.PinScreenAnimations, mouse.X, mouse.Y, plateLeft, plateRight);

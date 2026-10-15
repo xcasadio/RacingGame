@@ -70,7 +70,7 @@ internal sealed class SplashScreen : RaceXamlScreenBase
     // Lays the decoration, the band and the sprite out for the viewport and the time, as RacingGame did every frame.
     private void UpdateLayout(double totalSeconds)
     {
-        UpdateMenuDecoration(_viewModel.Decoration, totalSeconds);
+        UpdateMenuDecoration(_viewModel.Decoration, totalSeconds, _state.PinScreenAnimations);
         _viewModel.Update(Root.Metrics.ViewportSize.X, Root.Metrics.ViewportSize.Y, totalSeconds, _state.PinScreenAnimations);
     }
 }

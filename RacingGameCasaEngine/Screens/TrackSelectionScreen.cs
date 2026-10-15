@@ -173,7 +173,7 @@ internal sealed class TrackSelectionScreen : RaceXamlScreenBase
     // Lays the screen out for the viewport, the time and the mouse, as RacingGame did every frame.
     private void UpdateLayout(double elapsedSeconds, double totalSeconds)
     {
-        UpdateMenuDecoration(_viewModel.Decoration, totalSeconds);
+        UpdateMenuDecoration(_viewModel.Decoration, totalSeconds, _state.PinScreenAnimations);
         Point mouse = _game.InputComponent.MouseManager.Position;
         _viewModel.Update(Root.Metrics.ViewportSize.X, Root.Metrics.ViewportSize.Y, elapsedSeconds, _state.PinScreenAnimations, mouse.X, mouse.Y);
     }
