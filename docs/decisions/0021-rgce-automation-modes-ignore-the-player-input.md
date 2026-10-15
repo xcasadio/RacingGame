@@ -1,6 +1,6 @@
 # ADR-0021: RacingGameCasaEngine's automation modes ignore the player input
 
-- **Status**: Accepted
+- **Status**: Accepted; completed by ADR-0022
 - **Date**: 2026-10-15
 - **Source**: this chantier: `ai-agent/tasks/rgce-automation-input-tasks.md`, decisions D1 to D4 (author approval, 2026-10-15), from open point O3 of `ai-agent/tasks/rgce-race-finished-capture-tasks.md`
 
