@@ -17,7 +17,7 @@ Ce plan ne livre pas : la correction du même défaut en jeu normal (voir O2 et 
 
 ## Cause établie (enquête du 2026-10-15)
 
-Sonde de bloc-notes : copie des sources de `RacingGameCasaEngine` sur le bin du checkout principal (build du 2026-10-15 07:56, celui de la validation de `c887e95`), jamais dans le dépôt. Elle journalise chaque changement des boutons de souris, des touches, des manettes et du focus, avec la position du curseur, le processus de la fenêtre sous le curseur et celui de la fenêtre au premier plan, l'entrée qui ferme le panneau d'arrivée et la pile d'appel de `ReturnToFrontEnd`. Lancements par un helper qui sauvegarde et restaure `display-settings.json` et `front-end-options.json` (SHA-1 identique après chaque lancement), un seul processus de jeu ou d'éditeur à la fois, aucune entrée simulée. 19 lancements de `--capture-ui-screens` le 2026-10-15 entre 08:48 et 09:03 : T1 (contrôle), B1 à B10, H1 à H8. Journaux, résultats et sources de la sonde : dossier `o3/` du bloc-notes de cette session (`logs/`, `results.txt`, `probe-src/`, `probe-src-hold/`).
+Sonde de bloc-notes : copie des sources de `RacingGameCasaEngine` sur le bin du checkout principal (build du 2026-10-15 07:56, celui de la validation de `c887e95`), jamais dans le dépôt. Elle journalise chaque changement des boutons de souris, des touches, des manettes et du focus, avec la position du curseur, le processus de la fenêtre sous le curseur et celui de la fenêtre au premier plan, l'entrée qui ferme le panneau d'arrivée et la pile d'appel de `ReturnToFrontEnd`. Lancements par un helper qui sauvegarde et restaure `display-settings.json` et `front-end-options.json` (SHA-1 identique après chaque lancement), un seul processus de jeu ou d'éditeur à la fois, aucune entrée simulée. 19 lancements de `--capture-ui-screens` le 2026-10-15 entre 08:48 et 09:03 : T1 (contrôle), B1 à B10, H1 à H8. Journaux, résultats, helpers et sources des sondes, avant et après correctif : `artifacts/automation-input/evidence/` du checkout principal (ignoré par git : `logs/`, `results.txt`, `run_rgce.sh`, `probe/probe-src*`), copie du dossier `o3/` du bloc-notes de cette session.
 
 - **Le panneau d'arrivée se ferme sur n'importe quel clic gauche.** Course finie, `RaceHudScreen.Update` appelle `_returnToMenu` dès que `IsDismissPressed` est vrai (`RacingGameCasaEngine/Screens/RaceHudScreen.cs:59-63`) : Entrée, Espace, Échap, `MouseManager.LeftButtonJustPressed`, ou A/B/X/Back/Start de la manette du joueur (`:98-116`). Aucun test de position ni de focus. `_returnToMenu` est `RaceFrontEndFlow.ReturnToFrontEnd`, qui charge le monde du front-end puis le menu principal (`Bootstrap/RaceFrontEndFlow.cs:65, 104-108`).
 - **Le jeu voit les boutons de souris de tout le bureau.**
@@ -111,11 +111,14 @@ Propositions P1 → P4 de l'agent, retenues telles quelles par l'auteur le 2026-
 > - `dotnet build RacingGame.slnx` : 0 erreur, avant et après le changement. `RacingGameCasaEngine` recompilé seul : 0 avertissement, 0 erreur.
 > - Le bin du worktree n'avait pas les 93 fichiers de contenu générés par CasaEngine (shaders `.xnb`, polices, icônes), que `dotnet build` ne produit pas : premier essai en échec au chargement (`ContentLoadException`, `Content/Shaders/DebugPrimitiveColor.xnb`). Copiés depuis le bin du checkout principal, dossier de sortie ignoré par git. Le reste du contenu est identique, aux fins de ligne près (26 fichiers texte).
 > - **Revue adverse** en lecture seule (4 angles : contournements, ordre d'initialisation, régression en jeu normal, conformité ; 3 contradicteurs par constat) : un seul constat, trouvé par les 4 angles et confirmé 3 fois sur 3 (P3/P4). `OptionsScreen` lisait le texte tapé directement sur `Window.TextInput`. Corrigé : pas d'abonnement quand `IgnoresPlayerInput` est vrai. Tout le reste a été vérifié sain : ordre de pose dans `Program` et le constructeur, `??=`, aucune autre création de `UIRoot`, aucun autre abonnement aux événements de fenêtre dans RGCE ni dans `RacingGame.Gameplay`, jeu normal inchangé, éditeur non concerné.
-> - **Sur les octets finaux**, par le helper (un seul processus, réglages restaurés à l'identique après chaque lancement, aucune entrée simulée) :
+> - **Sur le code final** (seul un commentaire XML de `AutomationPlayerInput.cs` a été ajouté ensuite ; le vérificateur a relancé les 6 modes sur la DLL finale, T1.3), par le helper (un seul processus, réglages restaurés à l'identique après chaque lancement, aucune entrée simulée) :
 >   - sonde de maintien reconstruite sur ce code, 6 lancements : code 0. 16 vrais clics de l'auteur lus bruts par `Mouse.GetState(Window)`, dont 12 pendant le panneau d'arrivée (lancements 3 à 5), certains avec le curseur dans la zone client. Aucun n'atteint `MouseManager` (`gameLeftJustPressed=True` : 0), aucune fermeture du panneau. `ReturnToFrontEnd` n'est appelé que par le validateur ;
 >   - les 6 modes sur le build du worktree, code 0, la ligne `Automation mode: the player input is ignored.` dans chaque journal, 0 avertissement et 0 erreur : `--capture-ui-screens` ×2, `--smoke-frontend` (`Smoke validation completed successfully`), `--capture-track-audit` (30 captures), `--capture-car-profile-audit` (6 scénarios), `--capture-car-top-speed-audit` (3 scénarios), `--export-track-runtime-scene` (3 pistes). Sorties des audits redirigées dans le bloc-notes.
 > - Avant la correction d'`OptionsScreen`, une première série sur le code de T1.1 avait déjà donné 8 lancements de maintien à code 0 (7 vrais clics pendant les maintiens, aucun reçu par le jeu) et les 6 modes à code 0.
+> - **Manette, preuve au runtime** (FIXHOLD2-2, code de T1.1 avant la correction d'`OptionsScreen`, qui ne touche pas la manette) : pendant le maintien, la manette `P0` de l'auteur, qui jouait à une autre application au premier plan, a envoyé Start deux fois puis B (updates 2108, 2156, 2194). Ce sont des boutons de fermeture du panneau (`RaceHudScreen.cs:112-116`). Le panneau est resté ouvert, et `ReturnToFrontEnd` n'a été appelé que par le validateur.
+> - **Clavier, texte tapé et événements adressés à la fenêtre** : couverts par la lecture du code et la revue, sans preuve au runtime. Dans les lancements après correctif, la fenêtre du jeu n'a jamais été au premier plan : aucun clic ne l'a visée, aucune touche ne l'a atteinte.
 > - Jeu normal : nouveau code atteint seulement sous `IsAutomation` (lecture et revue) ; la vérification manuelle reste à l'auteur (validation globale).
+> - Après les lancements, le build de RGCE seul de 09:42:47 a de nouveau retiré du bin les shaders et les icônes copiés (dossiers modifiés à 09:42:48 ; mécanisme non établi). Fichiers recopiés ensuite. Un build de RGCE peut donc demander de recopier ces 93 fichiers avant de lancer le jeu depuis le worktree.
 
 ### ✅ T1.2 — Captures contre les références
 
@@ -135,7 +138,7 @@ Propositions P1 → P4 de l'agent, retenues telles quelles par l'auteur le 2026-
 > - Aucune nouvelle référence : aucun écart ne vient de ce chantier.
 > - **O4 ci-dessous** : ces variantes persistent alors qu'aucune entrée n'atteint plus le jeu. Le curseur réel n'en est donc pas la cause.
 
-### ⏳ T1.3 — ADR, clôture d'O3 et vérification
+### ✅ T1.3 — ADR, clôture d'O3 et vérification
 
 - Objectif : décision enregistrée (D4), O3 clos, vérification indépendante.
 - Fichiers : `docs/decisions/0021-…md` et l'index des ADR (D4), `ai-agent/tasks/rgce-race-finished-capture-tasks.md` (O3 : cause et lien vers ce plan), `ai-agent/README.md`, ce plan.
@@ -144,7 +147,28 @@ Propositions P1 → P4 de l'agent, retenues telles quelles par l'auteur le 2026-
   2. O3 : cause (bouton de souris global, `IsActive` sans focus, panneau fermé par tout clic) et correctif.
   3. Passe `verifier` fraîche sur T1.1 et T1.2.
 - Validation : verdict CONFIRMED ; docs seulement, pas de build.
-- Commit : `docs(racing-casa): record that the automation modes ignore the player input`
+- Commit : `docs(adr): record that the automation modes ignore the player input` (ADR, skill `adr`), puis `docs(racing-casa): close the automation input plan` (plans et index).
+
+> Validation (2026-10-15) :
+> - ADR-0021 (`Accepted`) et sa ligne d'index ; O3 du plan `race-finished` clos avec sa cause et le correctif ; lignes de `ai-agent/README.md` à jour.
+> - **Vérificateur frais : CONFIRMED** sur les 5 affirmations (couverture des entrées, 6 modes, jeu normal inchangé, captures, exactitude des notes).
+>   - Son premier lancement depuis le bin du worktree a échoué au chargement (`ContentLoadException`) : le build de 09:42:47 avait retiré les shaders copiés (voir la note de T1.1). Il a ensuite tout lancé depuis une copie du bin du worktree complétée des 93 fichiers (DLL finale, même SHA-1). Les 6 modes : code 0, ligne d'entrée ignorée présente, 0 avertissement, 0 erreur, réglages restaurés à l'identique.
+>   - Sa capture fraîche (`ui-run-20261015-094901`) : `race-finished` à 0,00 contre ref-a ; les 9 autres états dans le seuil contre `verify/ui`. Écarts par canal : main-menu 0,70 / 0,66 / 0,65, options 0,39 / 0,34 / 0,28, help 0,22 / 0,19 / 0,15, race-hud 1,22 / 1,21 / 1,16 ; les autres à 0,00. Contre ref-a, ce race-hud vaut 0,70 / 0,70 / 0,67, une valeur connue d'O4.
+>   - Ses 3 remarques P4 : contenu du bin (fichiers recopiés), race-hud à 1,22 (dans le seuil, variante de cadence, O4), formulation « octets finaux » (reformulée dans la note de T1.1).
+> - **Critique de complétude** en lecture seule, 2 contradicteurs par écart :
+>   - 6 écarts confirmés par les deux contradicteurs. Deux étaient classés P3 :
+>     - l'état de la fenêtre agit encore sur la cadence d'un lancement : reporté en **O5**, hors D1 ;
+>     - pas de preuve au runtime pour le clavier : reclassé P4 par les contradicteurs, la note de T1.1 et l'ADR disent maintenant « par lecture du code ».
+>   - Quatre étaient des P4 :
+>     - preuve manette au runtime non citée : citée (FIXHOLD2-2) ;
+>     - preuves seulement dans le bloc-notes : copiées dans `artifacts/automation-input/evidence/` ;
+>     - phrases plus larges que les mesures : l'ADR et l'index donnent les chiffres exacts, et `ForcedControlInput` est limité aux audits voiture ;
+>     - liste `IsAutomation` tenue à la main : consigne ajoutée à l'ADR.
+>   - 2 écarts contestés, 1 voix sur 2 :
+>     - la vibration de la manette reste active : notée dans l'ADR ;
+>     - T1.1 marquée ✅ sans la vérification manuelle du jeu normal : T1.1 reste ✅, car ses critères n'incluent pas cette vérification, qui reste ouverte dans la validation globale.
+>   - 1 écart réfuté.
+> - Aucun code touché dans cette tâche : pas de build.
 
 ---
 
@@ -155,7 +179,8 @@ Propositions P1 → P4 de l'agent, retenues telles quelles par l'auteur le 2026-
 | O1 | ~~Arbitrage de P1 → P4 par l'auteur.~~ Réglé le 2026-10-15 : options recommandées (D1 → D4). | T1.1 → T1.3 |
 | O2 | **Hors périmètre, à décider** : en jeu normal aussi, un clic gauche dans une autre application est vu par le jeu. Il ferme le panneau d'arrivée, le Splash et l'aide, qui ne testent pas la position. Correction possible dans CasaEngine (`MonoGameWindowInputSource.GetMouseState` : boutons relâchés quand la fenêtre n'a pas le focus de la souris), à traiter dans le dépôt du moteur. | — |
 | O3 | **Hors périmètre** : `IsActive` reste vrai quand la fenêtre n'a jamais eu le focus, donc la suppression du clavier de `MonoGameWindowInputSource` ne se déclenche pas dans ce cas. Sans effet constaté ici (aucune touche journalisée), à signaler avec O2. | — |
-| O4 | ~~Lien possible avec O4 du plan `race-finished` : les écrans à survol lisent la position réelle du curseur.~~ Écarté par T1.2 : les mêmes variantes (help, car-selection, track-selection) persistent sans aucune entrée. O4 du plan `race-finished` reste ouvert, sans lien avec l'entrée. | T1.2 |
+| O4 | ~~Lien possible avec O4 du plan `race-finished` : les écrans à survol lisent la position réelle du curseur.~~ Écarté par T1.2 : les mêmes variantes (help, car-selection, track-selection) persistent sans aucune entrée ; le curseur n'en est pas la cause. O4 du plan `race-finished` reste ouvert. La cadence peut encore dépendre de l'état de la fenêtre (O5). | T1.2 |
+| O5 | **Hors périmètre, à décider** (relevé par la critique de complétude de T1.3) : l'état de la fenêtre agit encore sur un lancement d'automation, sans être une entrée au sens de D1. MonoGame dort 20 ms par image quand la fenêtre est inactive (`Game.Tick`, `InactiveSleepTime` à 0,02 s par défaut, décompilé ; aucun code du dépôt ne le change), et le focus change en cours de lancement (FIXHOLD2-6 et -8, `focus change: active=False`). Cela change la cadence, donc peut-être les variantes d'O4. La fenêtre est aussi redimensionnable (`AllowUserResizing = true`, `RacingGameCasaEngineGame.cs:198`). Pistes : `InactiveSleepTime` à zéro et redimensionnement interdit sous `IsAutomation`, ou consigne de ne pas toucher à la fenêtre pendant un lancement. | — |
 
 ## Hors périmètre
 
