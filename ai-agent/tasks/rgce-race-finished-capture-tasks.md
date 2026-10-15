@@ -1,7 +1,7 @@
 # Plan agent IA — Capture `race-finished` déterministe
 
 Plan court issu de l'enquête sur le point ouvert O2 de [rgce-element-naming-tasks.md](rgce-element-naming-tasks.md) (2026-10-09).
-Les décisions D1 → D3 sont **proposées** ci-dessous : elles attendent l'arbitrage de l'auteur. Aucun code n'est modifié avant son approbation.
+Les décisions D1 → D3 ont été arbitrées par l'auteur le 2026-10-15 (« fais le » : options recommandées) : **ce plan les applique, il ne les rediscute pas**.
 
 Ce fichier doit être mis à jour pendant le travail : l'icône au début de chaque tâche indique son statut courant.
 
@@ -31,11 +31,11 @@ Preuves détaillées, sonde et journaux : dossier de notes partagé `o2-race-fin
 - `RaceGameMode.Configure(RaceFrontEndState state)` reçoit l'état du front-end au lancement de la course (`RacingGame.Gameplay/GameFramework/RaceGameMode.cs:47-65`) ; `ChaseCameraRigComponent` lit déjà `session.GameMode` (`:99-119`).
 - Précédent : sous `--capture-ui-screens`, le clignotement, la rotation et le balancement sont figés « so that two runs give the same image » (ADR-0008 `:38`, ADR-0009 `:40`).
 
-## Décisions proposées (à arbitrer par l'auteur)
+## Décisions verrouillées
 
-| Réf | Proposition | Alternatives |
+| Réf | Décision | Alternatives écartées |
 |---|---|---|
-| D1 | **Figer l'orbite d'arrivée sous capture** (recommandé) : quand `PinScreenAnimations` est levé, l'angle d'orbite reste fixe et la pose est appliquée sans lissage. L'image ne dépend plus du draw lu. | B : refaire seulement la référence (ne corrige rien : l'image rebasculera dès que la cadence change). C : en plus de A, capturer en fin de `Draw` dans tous les validateurs (supprime le décalage d'une image ; plus large, touche la piste d'audit). |
+| D1 | **Figer l'orbite d'arrivée sous capture** : quand `PinScreenAnimations` est levé, l'angle d'orbite reste fixe et la pose est appliquée sans lissage. L'image ne dépend plus du draw lu. | B : refaire seulement la référence (ne corrige rien : l'image rebasculera dès que la cadence change). C : en plus de A, capturer en fin de `Draw` dans tous les validateurs (supprime le décalage d'une image ; plus large, touche la piste d'audit). |
 | D2 | Angle figé = **0** : caméra derrière la voiture, à `FinishOrbitDistance` et `FinishOrbitHeight`. | Un autre angle fixe (par exemple le côté de la voiture, comme les images actuelles, vers 1,8 rad). |
 | D3 | **Pas de nouvelle ADR** : application de la règle d'ADR-0009 ; la doc XML de `PinScreenAnimations` cite l'orbite. | ADR-0021 courte. |
 
@@ -58,7 +58,7 @@ Preuves détaillées, sonde et journaux : dossier de notes partagé `o2-race-fin
 
 ## Phase 1 — Capture déterministe
 
-### ⏳ T1.1 — Figer l'orbite d'arrivée sous capture
+### ✅ T1.1 — Figer l'orbite d'arrivée sous capture
 
 - Objectif : sous `PinScreenAnimations`, la caméra d'arrivée prend une pose fixe (D1, D2), atteinte dès la première image.
 - Fichiers : `RacingGame.Gameplay/GameFramework/RaceGameMode.cs` (garder `state.PinScreenAnimations` dans `Configure`), `RacingGame.Gameplay/Components/ChaseCameraRigComponent.cs` (angle fixe et pose sans lissage quand le mode est figé), `RacingGame.Gameplay/Race/RaceFrontEndState.cs` (doc XML).
@@ -68,6 +68,22 @@ Preuves détaillées, sonde et journaux : dossier de notes partagé `o2-race-fin
   3. Doc XML de `PinScreenAnimations` : ajouter l'orbite d'arrivée.
 - Validation : build ; sonde 0/12/16/20 ms (validation globale) ; `--smoke-frontend` code 0.
 - Commit : `fix(racing-casa): pin the finish orbit camera under the UI capture`
+
+> Validation (2026-10-15) :
+> - `dotnet build RacingGame.slnx` : 0 erreur. Avertissements seulement dans `RacingGame.PipelineExtension` et le sous-module, déjà présents avant.
+> - Sonde reconstruite sur le nouveau bin (sous-module à `87fc5f01b`, comme l'arbre de travail), pause en fin de `Draw` de 0, 12, 16 et 20 ms : `race-finished` identique (0,00) dans les 4 lancements.
+>   - Pourtant le draw lu montre chaque fois un autre pas : 73, 72, 71 et 70 pas après l'arrivée.
+>   - Les images lues en fin de `Draw` de 70 à 76 pas sont toutes identiques (0,00).
+>   - La position de la caméra se stabilise une dizaine d'updates après l'arrivée (variations de quelques centièmes de millimètre avant), puis reste identique bit à bit sur les 77 updates qui précèdent la capture.
+> - Témoin sans correctif (même bin, ancienne `RacingGame.Gameplay.dll`, pause de 12 ms) : 71 pas. L'image est identique à celle de 71 pas du 2026-10-09, et s'écarte de 33,69 de l'image figée.
+> - `--capture-ui-screens` du build du dépôt contre `artifacts/element-naming/verify/ui` : 9 états à 0,00. `race-finished` change une fois (33,22 : nouvelle pose, caméra derrière la voiture) et vaut exactement (0,00) l'image des lancements de sonde figés.
+> - `--smoke-frontend` : code 0, `Smoke validation completed successfully`, aucun avertissement ni erreur.
+> - Relecture adverse en lecture seule (4 angles : déterminisme, régression, conformité, cas limites ; 2 contradicteurs par constat) : aucun constat retenu.
+>   - Le seul constat soulevé (P4 : citation d'ADR-0009 à côté de l'orbite) a été réfuté par les deux contradicteurs : c'est la décision D3.
+>   - Vérifié aussi : en jeu normal, l'orbite et le lissage sont inchangés ; le seul endroit qui lève le drapeau est `UiScreenCaptureValidator` ; l'éditeur et les autres modes d'automation ne sont pas touchés.
+> - Pas de test unitaire : aucun projet de test ne couvre `RacingGame.Gameplay` dans ce dépôt.
+> - Deux lancements sur 9 ont expiré à `race-finished` : le témoin U0, sans correctif, et le premier lancement du dépôt. Le jeu est revenu au menu juste après l'arrivée, comme dans O2. Relancé : code 0. Voir O3.
+> - Écart à la validation globale : le lancement retenu a ses 9 états à 0,00, mais d'autres lancements montrent de petites variantes dues à la cadence sur d'autres états. Voir O4.
 
 ### ⏳ T1.2 — Nouvelle référence et clôture de O2
 
@@ -86,5 +102,7 @@ Preuves détaillées, sonde et journaux : dossier de notes partagé `o2-race-fin
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
-| O1 | Arbitrage de D1, D2 et D3 par l'auteur. | T1.1, T1.2 |
+| O1 | ~~Arbitrage de D1, D2 et D3 par l'auteur.~~ Réglé le 2026-10-15 : options recommandées. | T1.1, T1.2 |
+| O3 | Lancements qui expirent à `race-finished` (1 sur 7 le 2026-10-09, 2 sur 9 le 2026-10-15, avec ou sans correctif) : le jeu revient au menu juste après l'arrivée. `RaceHudScreen.IsDismissPressed` (`RacingGameCasaEngine/Screens/RaceHudScreen.cs:98-116`) accepte un clic gauche. `MonoGameWindowInputSource` ignore le clavier quand la fenêtre est inactive (`GetKeyboardState`), mais pas la souris (`GetMouseState`) : un vrai clic sur la fenêtre du jeu suffit probablement. L'entrée exacte n'a pas été journalisée. Hors périmètre : à traiter à part (ignorer l'entrée réelle pendant une automation). | — |
+| O4 | D'autres états ont aussi des variantes dues à la cadence, sous le seuil de 2,0 de `UiCaptureCompare` : main-menu 0,67, car-selection 0,72, track-selection 0,23, race-hud 0,65, options 0,34, help 0,19 à 0,57 en temps normal, jusqu'à 2,06 (race-hud) sous fort ralentissement artificiel. Chacune est identique au pixel à un lancement de l'ancien moteur du 2026-10-09 : ni ce correctif ni le sous-module ne les causent. Mécanisme probablement le même (image lue en retard, état pas tout à fait figé), non établi. Hors périmètre (option C de D1). | — |
 | O2 | Observation hors plan : un lancement de sonde (pause de 8 ms) a quitté la course juste après l'arrivée, puis a échoué au délai de `race-finished`. Le journal montre un retour au menu sans action du validateur : cela correspond à une vraie touche ou un clic reçu par la fenêtre (« Press Space, Enter, … click … »). Non approfondi. | — |

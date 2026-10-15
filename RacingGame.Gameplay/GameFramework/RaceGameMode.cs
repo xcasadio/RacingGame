@@ -44,6 +44,12 @@ public sealed class RaceGameMode : GameplayMode
 
 	public bool IsPaused { get; private set; }
 
+	/// <summary>
+	/// Copied from <see cref="RaceFrontEndState.PinScreenAnimations"/> by <see cref="Configure"/>: under the UI capture the
+	/// chase camera's finish orbit holds a fixed pose, so that two runs give the same race-finished image (ADR-0009).
+	/// </summary>
+	internal bool PinScreenAnimations { get; private set; }
+
 	internal void Configure(RaceFrontEndState state)
 	{
 		PlayerName = state.PlayerName;
@@ -62,6 +68,7 @@ public sealed class RaceGameMode : GameplayMode
 		_completedLapTimesSeconds.Clear();
 		IsRaceFinished = false;
 		IsPaused = false;
+		PinScreenAnimations = state.PinScreenAnimations;
 	}
 
 	public override void Start()

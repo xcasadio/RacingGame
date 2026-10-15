@@ -114,7 +114,7 @@ public sealed class ChaseCameraRigComponent : EntityComponent
 
         if (gameMode?.IsRaceFinished == true)
         {
-            UpdateFinishOrbit(camera, anchor, elapsedTime);
+            UpdateFinishOrbit(camera, anchor, elapsedTime, gameMode.PinScreenAnimations);
             return;
         }
 
@@ -134,12 +134,21 @@ public sealed class ChaseCameraRigComponent : EntityComponent
         ApplyCameraPose(camera, desiredPosition, lookTarget, elapsedTime);
     }
 
-    private void UpdateFinishOrbit(CameraLookAtComponent camera, Vector3 anchor, float elapsedTime)
+    private void UpdateFinishOrbit(CameraLookAtComponent camera, Vector3 anchor, float elapsedTime, bool isPinned)
     {
-        _finishOrbitAngle += FinishOrbitSpeedRadiansPerSecond * elapsedTime;
-        if (_finishOrbitAngle > MathHelper.TwoPi)
+        // Under the UI capture the orbit stays behind the car and the pose is applied at once: the captured frame may show
+        // an earlier update than the current one, and the image must not depend on which (ADR-0009).
+        if (isPinned)
         {
-            _finishOrbitAngle -= MathHelper.TwoPi;
+            _finishOrbitAngle = 0f;
+        }
+        else
+        {
+            _finishOrbitAngle += FinishOrbitSpeedRadiansPerSecond * elapsedTime;
+            if (_finishOrbitAngle > MathHelper.TwoPi)
+            {
+                _finishOrbitAngle -= MathHelper.TwoPi;
+            }
         }
 
         float orbitDistance = Math.Max(FinishOrbitDistance, FollowDistance * _smoothedZoomFactor + DynamicDistanceBySpeed * 0.75f);
@@ -148,7 +157,7 @@ public sealed class ChaseCameraRigComponent : EntityComponent
         Vector3 orbitOffset = Vector3.TransformNormal(baseOffset, orbitRotation);
         Vector3 desiredPosition = anchor + orbitOffset + _smoothedUp * FinishOrbitHeight;
         Vector3 lookTarget = anchor + _smoothedUp * 0.9f;
-        ApplyCameraPose(camera, desiredPosition, lookTarget, elapsedTime);
+        ApplyCameraPose(camera, desiredPosition, lookTarget, elapsedTime, isPinned);
     }
 
     private void UpdateZoom(IRaceGameHost game, RacingPlayerController? playerController, float elapsedTime, bool isRaceFinished)
@@ -217,9 +226,9 @@ public sealed class ChaseCameraRigComponent : EntityComponent
         _smoothedUp = NormalizeOrFallback(Vector3.Cross(_smoothedForward, right), _smoothedUp, Vector3.Up);
     }
 
-    private void ApplyCameraPose(CameraLookAtComponent camera, Vector3 desiredPosition, Vector3 lookTarget, float elapsedTime)
+    private void ApplyCameraPose(CameraLookAtComponent camera, Vector3 desiredPosition, Vector3 lookTarget, float elapsedTime, bool snapToPose = false)
     {
-        if (!_hasInitializedPosition)
+        if (!_hasInitializedPosition || snapToPose)
         {
             _smoothedPosition = desiredPosition;
             _hasInitializedPosition = true;
