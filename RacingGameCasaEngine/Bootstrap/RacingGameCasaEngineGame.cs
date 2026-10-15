@@ -195,16 +195,21 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
     protected override void Initialize()
     {
         GameSettings.ProjectSettings.WindowTitle = "RacingGameCasaEngine";
-        GameSettings.ProjectSettings.AllowUserResizing = true;
+        // An automation run keeps the size its validator sets: the user cannot resize or maximize the window (ADR-0022).
+        GameSettings.ProjectSettings.AllowUserResizing = !_ignorePlayerInput;
         GameSettings.ProjectSettings.IsMouseVisible = true;
         GameSettings.ProjectSettings.IsFixedTimeStep = true;
 
         base.Initialize();
 
-        // The window input is already empty (Program); the gamepad is read through the input component's own provider.
         if (_ignorePlayerInput)
         {
+            // The window input is already empty (Program); the gamepad is read through the input component's own provider.
             AutomationPlayerInput.Ignore(InputComponent);
+
+            // MonoGame sleeps InactiveSleepTime (20 ms) every tick while the window is inactive, which would change the
+            // cadence of the run whenever the window loses the focus (ADR-0022).
+            InactiveSleepTime = TimeSpan.Zero;
         }
     }
 

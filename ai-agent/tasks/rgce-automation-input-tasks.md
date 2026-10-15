@@ -62,6 +62,7 @@ Propositions P1 → P4 de l'agent, retenues telles quelles par l'auteur le 2026-
 | D2 | Les **6 modes** qui créent le jeu : `--smoke-frontend`, `--capture-ui-screens`, `--capture-track-audit`, `--capture-car-profile-audit`, `--capture-car-top-speed-audit`, `--export-track-runtime-scene`. | Seulement `--capture-ui-screens`. |
 | D3 | État souris fourni : `WindowInputSnapshot.Empty` du moteur (position (0, 0), aucun bouton). Les captures diront si (0, 0) survole quelque chose. | Une position hors de la zone client. |
 | D4 | **ADR-0021 courte**, comme ADR-0004 pour l'autre comportement des modes automation. | Doc XML seulement. |
+| D5 | **O5, arbitré par l'auteur le 2026-10-15** (« InactiveSleepTime à zéro et redimensionnement bloqué, fais-le ») : sous `IsAutomation`, `Game.InactiveSleepTime` vaut zéro, pour qu'une perte de focus ne ralentisse plus le lancement, et la fenêtre n'est plus redimensionnable par l'utilisateur. Enregistré dans une ADR-0022 courte qui complète l'ADR-0021. | Consigne de ne pas toucher à la fenêtre pendant un lancement. |
 
 ## Règles d'exécution pour l'agent
 
@@ -172,6 +173,45 @@ Propositions P1 → P4 de l'agent, retenues telles quelles par l'auteur le 2026-
 
 ---
 
+## Phase 2 — État de la fenêtre pendant l'automation (O5, D5)
+
+### ✅ T2.1 — Pas de pause d'inactivité ni de redimensionnement sous automation
+
+- Objectif : sous un des modes de D2, la cadence ne dépend plus du focus de la fenêtre, et l'utilisateur ne peut plus redimensionner ni agrandir la fenêtre ; la taille posée par le validateur s'applique toujours.
+- Fichiers : `RacingGameCasaEngine/Bootstrap/RacingGameCasaEngineGame.cs`.
+- Faits vérifiés :
+  - `Game.Tick` dort `InactiveSleepTime` à chaque tick quand `!IsActive` et que le délai vaut au moins 1 ms ; la valeur par défaut est 0,02 s, et le setter public refuse seulement une valeur négative (MonoGame DesktopGL 3.8.5.1 décompilé) ;
+  - aucun code du dépôt ni de CasaEngine ne le change, et rien n'écoute `Activated` ou `Deactivated` (`rg`) ;
+  - `CasaEngineGame` applique `Window.AllowUserResizing` une seule fois, depuis `RuntimeContext.ProjectSettings.AllowUserResizing` (`CasaEngine/CasaEngine/Framework/Application/CasaEngineGame.cs:482`). RGCE le met à vrai dans son `Initialize`, avant `base.Initialize()` (`RacingGameCasaEngineGame.cs:198`). `SdlGameWindow` le garde au travers des changements de taille (`Sdl.Window.SetResizable`).
+- Étapes :
+  1. `Initialize` : `AllowUserResizing` vaut `!_ignorePlayerInput`.
+  2. Après `base.Initialize()`, sous `_ignorePlayerInput` : `InactiveSleepTime = TimeSpan.Zero`.
+  3. Sonde A/B (copie de bloc-notes, jamais dans le dépôt) : fenêtre forcée inactive par réflexion sur `Platform.IsActive` pendant 10 s, updates et draws par seconde, `InactiveSleepTime`, drapeau SDL redimensionnable et style Win32 de la fenêtre. A = code de `d89ddf4`, B = code de cette tâche.
+- Validation : build ; sonde A/B (A : moins de draws par seconde pendant l'inactivité et fenêtre redimensionnable ; B : même cadence active ou non, et fenêtre non redimensionnable) ; les 6 modes à code 0, dont `--smoke-frontend`, qui change la résolution par programme ; deux `--capture-ui-screens` contre les références.
+- Commit : `fix(racing-casa): keep the automation runs independent of the window state`
+
+> Validation (2026-10-15) :
+> - `RacingGameCasaEngine` recompilé : 0 avertissement, 0 erreur. Le bin du worktree a gardé ses 93 fichiers de contenu copiés cette fois.
+> - **Sonde A/B**, 2 lancements `--capture-ui-screens` par variante, par le helper. Fenêtre forcée inactive des updates 300 à 900, par réflexion sur `Platform.IsActive` (aucune entrée simulée). Journaux `O5A-*` et `O5B-*`.
+>   - A, code de `d89ddf4` : `InactiveSleepTime` à 20 ms. Course au point stable, fenêtre inactive (updates 650 à 880) : 33,8 à 37,7 draws/s pour 59 à 68 updates/s, soit 0,55 à 0,57 draw par update. Exemple : 38,6 draws/s pour 60,3 updates/s à l'update 778. `AllowUserResizing`, le drapeau SDL redimensionnable et le style Win32 (`WS_THICKFRAME`, `WS_MAXIMIZEBOX`) valent vrai tout au long du lancement.
+>   - B, code de cette tâche : `InactiveSleepTime` à 0. Même fenêtre inactive : 60,0 draws/s pour 60,0 updates/s (updates 779 et 839), soit 0,86 draw par update en moyenne sur la plage, rattrapage du chargement compris. Les quatre indicateurs de redimensionnement valent faux tout au long du lancement, y compris après la taille de capture 1920×1080 posée par le validateur.
+>   - Dans A1 et B1, la fenêtre a aussi perdu le focus d'elle-même vers la 2e et la 3e seconde : la situation que D5 vise.
+> - **Les 6 modes** sur le build du worktree (`REPO4-*`) : code 0, ligne d'entrée ignorée présente, 0 avertissement, 0 erreur, réglages restaurés à l'identique. `--smoke-frontend` change la résolution par programme et la vérifie : le redimensionnement par programme marche toujours.
+> - **Captures** (`ui-run-20261015-102940` et `-103003`, copiées dans `artifacts/automation-input/{run-c,run-d}/ui`, rapports `compare-*`) : run-c et run-d identiques entre elles (0,00 partout) ; les 9 états à 0,00 contre `verify/ui` dans les deux ; `race-finished` à 0,00 contre ref-a (33,14 / 33,53 / 32,99 contre `verify/ui`, la pose figée attendue).
+
+### ⏳ T2.2 — ADR-0022, clôture d'O5 et vérification
+
+- Objectif : D5 enregistrée, O5 clos, vérification indépendante.
+- Fichiers : `docs/decisions/0022-…md`, l'index des ADR et l'ADR-0021 (statut : complétée par l'ADR-0022), `ai-agent/README.md`, ce plan.
+- Étapes :
+  1. ADR-0022 avec le skill `adr`.
+  2. O5 clos.
+  3. Revue adverse et passe `verifier` fraîche sur T2.1.
+- Validation : verdict CONFIRMED ; docs seulement, pas de build.
+- Commit : `docs(adr): record that the automation runs ignore the window state`, puis `docs(racing-casa): close the window state point of the automation input plan`
+
+---
+
 ## Points ouverts
 
 | Réf | Sujet | Tâche concernée |
@@ -180,7 +220,7 @@ Propositions P1 → P4 de l'agent, retenues telles quelles par l'auteur le 2026-
 | O2 | **Hors périmètre, à décider** : en jeu normal aussi, un clic gauche dans une autre application est vu par le jeu. Il ferme le panneau d'arrivée, le Splash et l'aide, qui ne testent pas la position. Correction possible dans CasaEngine (`MonoGameWindowInputSource.GetMouseState` : boutons relâchés quand la fenêtre n'a pas le focus de la souris), à traiter dans le dépôt du moteur. | — |
 | O3 | **Hors périmètre** : `IsActive` reste vrai quand la fenêtre n'a jamais eu le focus, donc la suppression du clavier de `MonoGameWindowInputSource` ne se déclenche pas dans ce cas. Sans effet constaté ici (aucune touche journalisée), à signaler avec O2. | — |
 | O4 | ~~Lien possible avec O4 du plan `race-finished` : les écrans à survol lisent la position réelle du curseur.~~ Écarté par T1.2 : les mêmes variantes (help, car-selection, track-selection) persistent sans aucune entrée ; le curseur n'en est pas la cause. O4 du plan `race-finished` reste ouvert. La cadence peut encore dépendre de l'état de la fenêtre (O5). | T1.2 |
-| O5 | **Hors périmètre, à décider** (relevé par la critique de complétude de T1.3) : l'état de la fenêtre agit encore sur un lancement d'automation, sans être une entrée au sens de D1. MonoGame dort 20 ms par image quand la fenêtre est inactive (`Game.Tick`, `InactiveSleepTime` à 0,02 s par défaut, décompilé ; aucun code du dépôt ne le change), et le focus change en cours de lancement (FIXHOLD2-6 et -8, `focus change: active=False`). Cela change la cadence, donc peut-être les variantes d'O4. La fenêtre est aussi redimensionnable (`AllowUserResizing = true`, `RacingGameCasaEngineGame.cs:198`). Pistes : `InactiveSleepTime` à zéro et redimensionnement interdit sous `IsAutomation`, ou consigne de ne pas toucher à la fenêtre pendant un lancement. | — |
+| O5 | **Arbitré le 2026-10-15 (D5), traité par la phase 2.** Relevé par la critique de complétude de T1.3 : l'état de la fenêtre agit encore sur un lancement d'automation, sans être une entrée au sens de D1. MonoGame dort 20 ms par image quand la fenêtre est inactive (`Game.Tick`, `InactiveSleepTime` à 0,02 s par défaut, décompilé ; aucun code du dépôt ne le change), et le focus change en cours de lancement (FIXHOLD2-6 et -8, `focus change: active=False`). Cela change la cadence, donc peut-être les variantes d'O4. La fenêtre est aussi redimensionnable (`AllowUserResizing = true`, `RacingGameCasaEngineGame.cs:198`). Pistes : `InactiveSleepTime` à zéro et redimensionnement interdit sous `IsAutomation`, ou consigne de ne pas toucher à la fenêtre pendant un lancement. | — |
 
 ## Hors périmètre
 
