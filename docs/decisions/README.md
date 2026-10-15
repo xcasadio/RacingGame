@@ -34,3 +34,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0018 | RacingGameCasaEngine's models, materials and textures are cooked assets | Accepted | 2026-10-08 |
 | ADR-0019 | RacingGameCasaEngine reads the legacy track helpers and CombiModel items | Accepted | 2026-10-08 |
 | ADR-0020 | RacingGameCasaEngine names every screen element and every component | Accepted | 2026-10-09 |
+| ADR-0021 | RacingGameCasaEngine's automation modes ignore the player input | Accepted | 2026-10-15 |
