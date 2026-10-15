@@ -53,7 +53,7 @@ Notations : `c` est l'update dans laquelle le validateur capture un état. Elle 
   3. **pause : rien ne change au moment de la capture.** La voiture est arrêtée. La caméra converge encore pendant la pause, mais seulement jusqu'à l'update 942 environ, bien avant la capture (961). Les images de `c − 8` à `c` sont identiques.
   4. **race-finished : figé** depuis `c887e95`.
 - **La variante pause 0,33 d'O4 ne vient pas de la cadence.** Dans le lancement U12 du 2026-10-15, le bouton « Back to main menu » est en survol : le vrai curseur était sur la fenêtre du jeu. C'est le mécanisme d'O3 (entrées réelles pendant une automation). Pendant cette enquête, 4 lancements sur 14 ont reçu de vraies entrées (voir O2) ; leurs états d'avant la perturbation restent exploitables.
-- **Résidu sans rapport avec la cadence :** à la même update, car-selection diffère parfois de 1 à 7 pixels isolés d'un lancement à l'autre (écart maximal 26, dans le carrousel 3D). Moyenne 0,00, loin du seuil.
+- **Résidu sans rapport avec la cadence :** à la même update, car-selection diffère parfois de quelques pixels isolés d'un lancement à l'autre (1 à 7 pendant l'enquête, jusqu'à 9 lors de la vérification ; écart maximal 26, dans le carrousel 3D). Moyenne 0,00, loin du seuil.
 
 ## Preuves des correctifs (sonde, même bin)
 
@@ -170,8 +170,9 @@ Chaque expérience est un interrupteur de la sonde ; le reste du code est celui 
 >   - Rejetés (0 contradicteur sur 3) : 5 remarques de style ou de placement.
 > - Vraies entrées (O2) : à 0 et 12 ms, les premiers lancements ont quitté `race-finished` juste après l'arrivée, et l'un s'est fermé. Leurs 9 premiers états sont identiques aux autres ; relancés, ils sont propres.
 > - `CaptureScreenshotWithStem` garde son comportement pour F2 et `TrackMigrationCaptureValidator`. `MaxElapsedTime` n'est changé que par le validateur de capture UI.
+> - Écart aux étapes 1 et 2 (relevé par la critique de complétude de T1.3) : le validateur n'attend pas le fichier pour avancer. Il avance l'étape dès la demande, ce qui garde la chronologie d'avant et celle des prototypes, et compte la capture à l'update suivante. Une capture jamais servie fait échouer la demande suivante (« still pending ») ou le compte final de 10, en plus du délai global. Le message « Captured <état> » est écrit à la demande.
 
-### ⏳ T1.3 — Nouvelle référence et clôture d'O4
+### ✅ T1.3 — Nouvelle référence et clôture d'O4
 
 - Objectif : une référence des 10 états reproductible, et O4 clos avec sa cause (D3).
 - Fichiers : ce plan, `ai-agent/tasks/rgce-race-finished-capture-tasks.md` (O4 : cause et lien vers ce plan), `ai-agent/README.md`.
@@ -183,6 +184,20 @@ Chaque expérience est un interrupteur de la sonde ; le reste du code est celui 
 - Validation : comparaisons ci-dessus ; verdict CONFIRMED.
 - Commit : `docs(racing-casa): record the deterministic UI captures`
 
+> Validation (2026-10-15) :
+> - Références : deux lancements de `--capture-ui-screens` du build de cette branche (`ui-run-20261015-103915` et `-104320`), copiés dans `artifacts/ui-capture-determinism/{ref-a,ref-b}/ui`. Rapports : `artifacts/ui-capture-determinism/compare-*`.
+>   - `UiCaptureCompare` ref-a contre ref-b : 10 états à 0,00 sur les 3 canaux. Au pixel, identiques, sauf 6 pixels isolés du carrousel de car-selection (O3).
+>   - `verify/ui` contre ref-a : pause à 0,00. Changent une fois, comme prévu (D3) : les 7 écrans du front-end (logo du temps 0 : splash 2,04 et main-menu 3,05 sur le canal R, au-dessus du seuil ; les autres de 0,45 à 1,21), race-hud 1,17 (update `c` au lieu de `c − 2`) et race-finished 33,14 (l'ancienne pose d'orbite de `verify/ui`).
+>   - `race-finished-capture/ref-a` contre ref-a : race-finished et pause à 0,00.
+>   - ref-a est identique au pixel aux lancements de la sonde de T1.2 à 0 et 16 ms.
+> - Vraies entrées (O2) : 2 lancements sur 4 ont quitté `race-finished` juste après l'arrivée ; leurs 9 premiers états sont identiques à ref-a (au carrousel près). J'ai relancé jusqu'à obtenir deux lancements propres.
+> - O4 du plan `race-finished` clos : cause, correctifs, référence à utiliser désormais. Lignes de `ai-agent/README.md` mises à jour.
+> - Passe `verifier` fraîche : **CONFIRMED** sur 6 affirmations (déterminisme, références, jeu normal et autres appelants inchangés, gestion des échecs, smoke et build, documentation).
+>   - Reproduit indépendamment : un lancement de sonde à 33 ms par draw, une cadence jamais utilisée. 1 079 draws pour 1 080 updates, chaque capture à l'update `c`, 9 états identiques au pixel à ref-a, car-selection à 9 pixels isolés près. Aussi `--smoke-frontend` (code 0) et le build (0 erreur).
+>   - Remarques P4 : le résidu du carrousel atteint 9 pixels (texte corrigé : « quelques pixels isolés ») ; les chemins d'échec de la sauvegarde ne sont vérifiés que par lecture du code (reporté : pas d'injection de faute).
+>   - Critique de complétude en parallèle, 3 contradicteurs par constat : 1 constat retenu (P4 : l'écart entre les étapes de T1.2 et le code, noté sous T1.2) ; 7 réfutés, dont la section « Reference captures » du README de `UiCaptureCompare` et les références du plan de l'éditeur.
+> - Docs seulement dans cette tâche : pas de build.
+
 ---
 
 ## Points ouverts
@@ -191,7 +206,7 @@ Chaque expérience est un interrupteur de la sonde ; le reste du code est celui 
 |---|---|---|
 | O1 | ~~Arbitrage de D1 → D4 par l'auteur.~~ Réglé le 2026-10-15 : options recommandées. | T1.1 → T1.3 |
 | O2 | Entrées réelles pendant la capture (O3 du plan `race-finished`). Un curseur sur la fenêtre change le survol (variante pause 0,33). Le 2026-10-15 entre 09:04 et 09:19, 4 lancements sur 14 de cette enquête ont reçu de vraies entrées, aucune venant de la sonde :<br>- S20 et M0 ont quitté `race-finished` environ 1 s après l'arrivée ;<br>- C20 a repris la course après la pause (choc contre une barrière), est revenu aux menus et a changé 4 fois la couleur de la voiture ;<br>- X20 a quitté l'écran titre 1 s après le démarrage, puis la fenêtre s'est fermée (code 0).<br>Hors périmètre ; une autre session y travaille. Tant que ce n'est pas réglé, ne pas toucher la souris ni le clavier pendant les lancements de référence. | T1.3 |
-| O3 | car-selection : 1 à 7 pixels isolés varient d'un lancement à l'autre à la même update, dans le carrousel 3D. Sans rapport avec la cadence, sous le seuil. À reprendre seulement si une égalité exacte est exigée. | T1.3 |
+| O3 | car-selection : quelques pixels isolés (1 à 9 observés) varient d'un lancement à l'autre à la même update, dans le carrousel 3D. Sans rapport avec la cadence, sous le seuil. À reprendre seulement si une égalité exacte est exigée. | T1.3 |
 
 ## Hors périmètre
 
