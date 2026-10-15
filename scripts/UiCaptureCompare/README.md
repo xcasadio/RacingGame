@@ -17,7 +17,7 @@ Compares two runs of the RacingGameCasaEngine UI capture (`RacingGameCasaEngine.
 9. `pause`
 10. `race-finished`
 
-For each state, it captures the back buffer once the state has held for one second. It writes the captures to `%LOCALAPPDATA%\CasaEngine\RacingGameCasaEngine\Screenshots\ui-run-<yyyyMMdd-HHmmss>\ui-<state>.png`, one file per state, and logs that folder.
+For each state, once the state has held for one second, it captures the back buffer at the end of the draw that follows the capture update, before the frame is presented. The run allows one update per draw (no catch-up update: the game slows down instead), so the image is the one of the capture update whatever the frame pacing. It writes the captures to `%LOCALAPPDATA%\CasaEngine\RacingGameCasaEngine\Screenshots\ui-run-<yyyyMMdd-HHmmss>\ui-<state>.png`, one file per state, and logs that folder.
 
 ## Usage
 
@@ -42,11 +42,10 @@ The output folder receives:
 
 Mean absolute difference per R, G, B channel, on 8-bit sRGB values (0-255), over the whole image. One "level" is 1 on that scale.
 
-Animated areas differ between two runs of the same build:
+Two runs of the same build give the same images: the logo bounce, the carousel spin and the other time-driven animations are pinned, and the race timer is captured at the capture update. What can still differ:
 
-- logo bounce;
-- rotating 3D car preview;
-- race timer.
+- a few isolated pixels of the 3D car carousel on `car-selection`;
+- real mouse or keyboard input reaching the game window during a run (hover, clicks).
 
 Judge those areas on the sheets.
 

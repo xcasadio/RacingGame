@@ -142,7 +142,7 @@ Chaque expérience est un interrupteur de la sonde ; le reste du code est celui 
 > - Le lancement à 20 ms a reçu une vraie entrée après l'arrivée (retour au menu, voir O2) : ses 9 premiers états restent valides.
 > - Pas de test unitaire : aucun projet de test ne couvre `RacingGame.Gameplay` ni `RacingGameCasaEngine`.
 
-### ⏳ T1.2 — Capturer l'image de l'update de capture
+### ✅ T1.2 — Capturer l'image de l'update de capture
 
 - Objectif : chaque capture est l'image de l'update où le validateur la demande, quelle que soit la cadence (D2).
 - Fichiers :
@@ -156,6 +156,20 @@ Chaque expérience est un interrupteur de la sonde ; le reste du code est celui 
   4. Doc XML et README.
 - Validation : build ; sonde reconstruite à 0, 12, 16 et 20 ms : les 10 états identiques (0,00) entre les lancements, autant de draws que d'updates dans le journal ; `--smoke-frontend` code 0.
 - Commit : `fix(racing-casa): capture each UI state at the end of the draw of its update`
+
+> Validation (2026-10-15) :
+> - `dotnet build RacingGame.slnx` : 0 erreur ; aucun avertissement dans `RacingGameCasaEngine` ni `RacingGame.Gameplay`.
+> - Sonde reconstruite sur ce build, pause en fin de `Draw` de 0, 12, 16 et 20 ms. Elle ne garde que le marqueur et le journal, posés après la capture.
+>   - 1 079 draws pour 1 080 updates dans chaque lancement : aucune update de rattrapage. Chaque capture est l'image de l'update `c`.
+>   - Les 10 états sont identiques au pixel entre les 4 lancements, sauf 1 à 3 pixels isolés de car-selection dans 2 lancements (le résidu du carrousel 3D, O3).
+>   - Ils sont aussi identiques au pixel aux prototypes de l'enquête : race-hud, pause et race-finished à l'expérience « option C et une update par draw », les 7 écrans du front-end à l'expérience « logo figé ». race-finished vaut 0,00 contre `ref-a`.
+> - `--smoke-frontend` : code 0, « Smoke validation completed successfully », aucun avertissement ni erreur.
+> - Relecture adverse en lecture seule (3 angles : déroulé de la capture, régressions, documentation ; 3 contradicteurs par constat) : rien sur le chemin normal.
+>   - Corrigé (P3, régression de la détection d'échec) : un PNG dont l'écriture échoue une fois le fichier créé aurait été compté comme une capture réussie, car le validateur testait l'existence du fichier. Le jeu expose maintenant le résultat de la sauvegarde (`IsEndOfDrawScreenshotSaved`), que le validateur lit. Ce chemin d'échec n'a pas été provoqué ; le chemin de réussite a servi dans chaque lancement (10 captures comptées).
+>   - Corrigés (P4) : `cref` vers `PinScreenAnimations` qualifiée ; doc de `DrawCount` ramenée à la machine mesurée (le décalage dépend du pilote) ; doc de la classe du validateur nuancée par les résidus du README.
+>   - Rejetés (0 contradicteur sur 3) : 5 remarques de style ou de placement.
+> - Vraies entrées (O2) : à 0 et 12 ms, les premiers lancements ont quitté `race-finished` juste après l'arrivée, et l'un s'est fermé. Leurs 9 premiers états sont identiques aux autres ; relancés, ils sont propres.
+> - `CaptureScreenshotWithStem` garde son comportement pour F2 et `TrackMigrationCaptureValidator`. `MaxElapsedTime` n'est changé que par le validateur de capture UI.
 
 ### ⏳ T1.3 — Nouvelle référence et clôture d'O4
 

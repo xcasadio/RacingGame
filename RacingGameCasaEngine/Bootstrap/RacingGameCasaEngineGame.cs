@@ -415,13 +415,43 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
         IsMouseVisible = !debugCameraActive && RuntimeContext.ProjectSettings.IsMouseVisible;
     }
 
-    /// <summary>Number of completed draws. A capture reads the last presented frame, so automation waits on draws, not on game time.</summary>
+    private string? _endOfDrawScreenshotPath;
+
+    /// <summary>
+    /// Number of completed draws. <see cref="CaptureScreenshotWithStem"/>, called during an update, reads a frame already presented
+    /// (on the machine measured, the draw before the last; this depends on the driver's swap chain), so automation that uses
+    /// it waits on draws, not on game time.
+    /// </summary>
     internal long DrawCount { get; private set; }
+
+    /// <summary>True from <see cref="RequestScreenshotAtEndOfDraw"/> until the next draw has tried to save the screenshot.</summary>
+    internal bool IsEndOfDrawScreenshotPending => _endOfDrawScreenshotPath is not null;
+
+    /// <summary>Whether the last screenshot asked with <see cref="RequestScreenshotAtEndOfDraw"/> was saved; false while it is pending.</summary>
+    internal bool IsEndOfDrawScreenshotSaved { get; private set; }
+
+    /// <summary>
+    /// Saves the back buffer as a PNG at <paramref name="filePath"/> at the end of the next draw, before the frame is presented.
+    /// Unlike <see cref="CaptureScreenshotWithStem"/>, the image is the one drawn for the latest update, whatever the frame pacing
+    /// (provided each draw follows a single update). A failed save is logged and leaves <see cref="IsEndOfDrawScreenshotSaved"/>
+    /// false; a partial file may remain.
+    /// </summary>
+    internal void RequestScreenshotAtEndOfDraw(string filePath)
+    {
+        _endOfDrawScreenshotPath = filePath;
+        IsEndOfDrawScreenshotSaved = false;
+    }
 
     protected override void Draw(GameTime gameTime)
     {
         base.Draw(gameTime);
         DrawCount++;
+
+        if (_endOfDrawScreenshotPath is { } screenshotPath)
+        {
+            _endOfDrawScreenshotPath = null;
+            IsEndOfDrawScreenshotSaved = SaveBackBuffer(screenshotPath);
+        }
     }
 
     internal void SetDebugCameraEnabled(bool enabled)
@@ -498,19 +528,32 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
         try
         {
             string screenshotDirectory = Path.Combine(GetUserDataDirectory(), "Screenshots");
-            Directory.CreateDirectory(screenshotDirectory);
-
-            int width = GraphicsDevice.PresentationParameters.BackBufferWidth;
-            int height = GraphicsDevice.PresentationParameters.BackBufferHeight;
-            byte[] backBuffer = new byte[width * height * 4];
-            GraphicsDevice.GetBackBufferData(backBuffer);
-
             string effectiveStem = string.IsNullOrWhiteSpace(fileStem)
                 ? "screenshot"
                 : fileStem;
             string filePath = Path.Combine(
                 screenshotDirectory,
                 $"{effectiveStem}-{DateTime.Now:yyyyMMdd-HHmmssfff}.png");
+
+            return SaveBackBuffer(filePath) ? filePath : string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Logs.WriteException(ex);
+            return string.Empty;
+        }
+    }
+
+    private bool SaveBackBuffer(string filePath)
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+
+            int width = GraphicsDevice.PresentationParameters.BackBufferWidth;
+            int height = GraphicsDevice.PresentationParameters.BackBufferHeight;
+            byte[] backBuffer = new byte[width * height * 4];
+            GraphicsDevice.GetBackBufferData(backBuffer);
 
             using var screenshot = new Texture2D(
                 GraphicsDevice,
@@ -523,12 +566,12 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
             using FileStream stream = File.Create(filePath);
             screenshot.SaveAsPng(stream, width, height);
             Logs.WriteInfo($"Screenshot saved: {filePath}");
-            return filePath;
+            return true;
         }
         catch (Exception ex)
         {
             Logs.WriteException(ex);
-            return string.Empty;
+            return false;
         }
     }
 

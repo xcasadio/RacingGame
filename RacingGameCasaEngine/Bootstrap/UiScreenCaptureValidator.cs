@@ -6,8 +6,13 @@ namespace RacingGameCasaEngine.Bootstrap;
 
 /// <summary>
 /// --capture-ui-screens: walks the 10 UI states (front-end screens, race HUD, pause, race finished) through the flow's
-/// automation entry points, captures the back buffer of each once it has settled, and moves the captures into a folder of
+/// automation entry points, captures the back buffer of each once it has settled, and writes the captures into a folder of
 /// their own (Screenshots/ui-run-&lt;timestamp&gt;/ui-&lt;state&gt;.png) so scripts/UiCaptureCompare can compare two runs.
+/// A capture is taken at the end of the draw that follows the capture update, before the frame is presented, and the run
+/// allows one update per draw (no catch-up update: the game slows down instead). The image is therefore the one of the capture
+/// update whatever the frame pacing; with the time-driven animations pinned
+/// (<see cref="RacingGame.Gameplay.Race.RaceFrontEndState.PinScreenAnimations"/>), two runs give the same images, apart from
+/// the residuals listed in scripts/UiCaptureCompare/README.md.
 /// The run uses a fixed windowed back buffer of <see cref="CaptureWidth"/> x <see cref="CaptureHeight"/>, applied without saving it,
 /// so captures do not depend on the persisted display settings. The front-end state is set to the same display settings, so the
 /// options applied again when the race world loads keep that size; nothing is saved (ADR-0004).
@@ -57,6 +62,8 @@ internal sealed class UiScreenCaptureValidator
     private TimeSpan? _readySince;
     private bool _started;
     private int _captureCount;
+    private string? _pendingCapturePath;
+    private string _pendingCaptureState = string.Empty;
 
     public UiScreenCaptureValidator(RacingGameCasaEngineGame game, RaceFrontEndFlow flow)
     {
@@ -85,6 +92,10 @@ internal sealed class UiScreenCaptureValidator
             _flow.State.SelectedResolutionIndex = RacingGameCasaEngineGame.GetResolutionIndex(CaptureWidth, CaptureHeight);
             _flow.State.IsFullscreen = false;
             _flow.State.EnableVSync = current.IsVSyncEnabled;
+
+            // One update per draw, no catch-up update, so the draw that follows the capture update shows that update
+            // whatever the frame pacing (the game slows down instead of catching up).
+            _game.MaxElapsedTime = _game.TargetElapsedTime;
             Logs.WriteInfo($"UI screen capture started, run folder {_runDirectory}");
         }
 
@@ -96,6 +107,12 @@ internal sealed class UiScreenCaptureValidator
         if (totalTime - _startedAt > Timeout)
         {
             Fail($"UI screen capture timed out at step {_step}.");
+            return;
+        }
+
+        ResolvePendingCapture();
+        if (_step == CaptureStep.Failed)
+        {
             return;
         }
 
@@ -273,17 +290,37 @@ internal sealed class UiScreenCaptureValidator
 
     private void CaptureAndAdvance(string stateName, CaptureStep nextStep, TimeSpan totalTime)
     {
-        string capturePath = _game.CaptureScreenshotWithStem($"ui-{stateName}");
-        if (string.IsNullOrWhiteSpace(capturePath))
+        if (_pendingCapturePath is not null)
         {
-            Fail($"UI screen capture failed for state '{stateName}'.");
+            Fail($"UI screen capture of state '{_pendingCaptureState}' was still pending when '{stateName}' was requested.");
             return;
         }
 
         Directory.CreateDirectory(_runDirectory);
-        File.Move(capturePath, Path.Combine(_runDirectory, $"ui-{stateName}.png"), overwrite: true);
-        _captureCount++;
+        _pendingCapturePath = Path.Combine(_runDirectory, $"ui-{stateName}.png");
+        _pendingCaptureState = stateName;
+        _game.RequestScreenshotAtEndOfDraw(_pendingCapturePath);
         Advance(nextStep, totalTime, $"Captured {stateName}");
+    }
+
+    // The draw that follows the request saves the capture; it is counted once that draw has run.
+    private void ResolvePendingCapture()
+    {
+        if (_pendingCapturePath is null || _game.IsEndOfDrawScreenshotPending)
+        {
+            return;
+        }
+
+        string stateName = _pendingCaptureState;
+        _pendingCapturePath = null;
+        if (_game.IsEndOfDrawScreenshotSaved)
+        {
+            _captureCount++;
+        }
+        else
+        {
+            Fail($"UI screen capture failed for state '{stateName}'.");
+        }
     }
 
     private void Advance(CaptureStep nextStep, TimeSpan totalTime, string message)
