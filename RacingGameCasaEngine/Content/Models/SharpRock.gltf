@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 174,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 2088,
+      "byteOffset": 5424,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 2088,
-      "byteOffset": 2088,
+      "byteOffset": 7512,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 1392,
-      "byteOffset": 4176,
+      "byteOffset": 9600,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 2640,
-      "byteOffset": 5568,
+      "byteOffset": 2784,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2784,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 8208,
+      "byteLength": 10992,
       "uri": "SharpRock.bin"
     }
   ],
@@ -198,7 +212,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

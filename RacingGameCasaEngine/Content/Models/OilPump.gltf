@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 638,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 7656,
+      "byteOffset": 10208,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 7656,
-      "byteOffset": 7656,
+      "byteOffset": 17864,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 5104,
-      "byteOffset": 15312,
+      "byteOffset": 31472,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 5952,
-      "byteOffset": 20416,
+      "byteOffset": 25520,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 10208,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 26368,
+      "byteLength": 36576,
       "uri": "OilPump.bin"
     }
   ],
@@ -197,7 +211,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

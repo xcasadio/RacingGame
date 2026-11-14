@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 516,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 6192,
+      "byteOffset": 14688,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 6192,
-      "byteOffset": 6192,
+      "byteOffset": 20880,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 4128,
-      "byteOffset": 12384,
+      "byteOffset": 27072,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 6432,
-      "byteOffset": 16512,
+      "byteOffset": 8256,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 8256,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 22944,
+      "byteLength": 31200,
       "uri": "OilTanks.bin"
     }
   ],
@@ -197,7 +211,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

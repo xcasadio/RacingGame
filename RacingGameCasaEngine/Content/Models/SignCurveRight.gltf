@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 96,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 1152,
+      "byteOffset": 1536,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 1152,
-      "byteOffset": 1152,
+      "byteOffset": 2688,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 768,
-      "byteOffset": 2304,
+      "byteOffset": 3840,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 624,
-      "byteOffset": 3072,
+      "byteOffset": 4608,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1536,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 3696,
+      "byteLength": 5232,
       "uri": "SignCurveRight.bin"
     }
   ],
@@ -197,7 +211,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

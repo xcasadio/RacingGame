@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 243,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 2916,
+      "byteOffset": 7824,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 2916,
-      "byteOffset": 2916,
+      "byteOffset": 10740,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 1944,
-      "byteOffset": 5832,
+      "byteOffset": 13656,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 3936,
-      "byteOffset": 7776,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3888,
+      "byteOffset": 3936,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 11712,
+      "byteLength": 15600,
       "uri": "KaktusBenny.bin"
     }
   ],
@@ -197,7 +211,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

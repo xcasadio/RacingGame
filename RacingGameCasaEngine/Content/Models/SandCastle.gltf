@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 1560,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 18720,
+      "byteOffset": 24960,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 18720,
-      "byteOffset": 18720,
+      "byteOffset": 43680,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 12480,
-      "byteOffset": 37440,
+      "byteOffset": 62400,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 11856,
-      "byteOffset": 49920,
+      "byteOffset": 74880,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 24960,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 61776,
+      "byteLength": 86736,
       "uri": "SandCastle.bin"
     }
   ],
@@ -197,7 +211,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 103,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 1236,
+      "byteOffset": 1648,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 1236,
-      "byteOffset": 1236,
+      "byteOffset": 2884,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 824,
-      "byteOffset": 2472,
+      "byteOffset": 4120,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 816,
-      "byteOffset": 3296,
+      "byteOffset": 4944,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1648,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 4112,
+      "byteLength": 5760,
       "uri": "GuardRailHolder.bin"
     }
   ],
@@ -197,7 +211,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

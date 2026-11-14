@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 356,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 4272,
+      "byteOffset": 5696,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 4272,
-      "byteOffset": 4272,
+      "byteOffset": 9968,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 2848,
-      "byteOffset": 8544,
+      "byteOffset": 17840,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 3600,
-      "byteOffset": 11392,
+      "byteOffset": 14240,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 5696,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 14992,
+      "byteLength": 20688,
       "uri": "Hydrant.bin"
     }
   ],
@@ -197,7 +211,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

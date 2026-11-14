@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 189,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 2268,
+      "byteOffset": 6096,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 2268,
-      "byteOffset": 2268,
+      "byteOffset": 8364,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 1512,
-      "byteOffset": 4536,
+      "byteOffset": 10632,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 3072,
-      "byteOffset": 6048,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3024,
+      "byteOffset": 3072,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 9120,
+      "byteLength": 12144,
       "uri": "Kaktus.bin"
     }
   ],
@@ -198,7 +212,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

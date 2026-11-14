@@ -122,60 +122,88 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 8,
+      "componentType": 5126,
+      "count": 127,
+      "type": "VEC4"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 9,
+      "componentType": 5126,
+      "count": 240,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 1524,
+      "byteOffset": 18256,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 1524,
-      "byteOffset": 1524,
+      "byteOffset": 19780,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 1016,
-      "byteOffset": 3048,
+      "byteOffset": 21304,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 1632,
-      "byteOffset": 4064,
+      "byteOffset": 16624,
       "target": 34963
     },
     {
       "buffer": 0,
       "byteLength": 2880,
-      "byteOffset": 5696,
+      "byteOffset": 6912,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 2880,
-      "byteOffset": 8576,
+      "byteOffset": 9792,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 1920,
-      "byteOffset": 11456,
+      "byteOffset": 14704,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 3072,
-      "byteOffset": 13376,
+      "byteOffset": 3840,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2032,
+      "byteOffset": 12672,
+      "byteStride": 16,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3840,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 16448,
+      "byteLength": 22320,
       "uri": "AlphaPalm3.bin"
     }
   ],
@@ -368,7 +396,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 8
           },
           "indices": 3,
           "material": 0
@@ -381,7 +410,8 @@
           "attributes": {
             "POSITION": 4,
             "NORMAL": 5,
-            "TEXCOORD_0": 6
+            "TEXCOORD_0": 6,
+            "TANGENT": 9
           },
           "indices": 7,
           "material": 1

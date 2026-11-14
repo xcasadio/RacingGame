@@ -118,3 +118,9 @@ Found while reviewing the lighting plan, decision in ADR-0016.
 - Only the meshes the port generates were affected (terrain, guard rails, columns, road underside, tunnels, city ground). The imported models have no tangents in their glTF files, so the engine does not use their normal maps at all: a new divergence, M6, whose fix is in the engine (glTF reader and converter).
 - The 55 normal maps are now written in the standard layout. The mapping comes from reading the two shaders; the pictures cannot confirm it until the light direction and the ambient term match the original (lighting slice).
 - Not checked: the car selection carousel (its plate has a normal map).
+
+## Update: tangents of the imported models (2026-11-14)
+
+M6 is closed (ADR-0016, follow-up). The engine reads the glTF `TANGENT` attribute, the converter writes the original's tangents, and the 56 models are regenerated: imported models are now normal-mapped, with a tangent space measured equal to the original's. Signs, ruins and building faces are no longer flat. What still differs on them is the light itself (direction, ambient, shadows): the lighting slice.
+
+Left as reported by the independent check, not fixed: the engine reader drops a `TANGENT` accessor of the wrong size without a warning, and keeps a zero-length tangent as it is. Neither can happen with the converter's output.

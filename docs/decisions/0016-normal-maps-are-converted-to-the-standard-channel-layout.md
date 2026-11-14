@@ -30,3 +30,12 @@ Normal maps used only by generated meshes are converted by the same tool (`--nor
 - The 49 converted normal maps change, and 6 are added (`LandscapeNormal`, `CityGroundNormal`, `RoadCementNormal`, `RoadBackNormal`, `RoadTunnelNormal`, `RoadNormal`).
 - The mapping is derived from the two shaders. The bench pictures do not prove it yet: the port's light direction and ambient term still differ from the original's (next slice), so a picture comparison cannot separate a right decoding from a wrong one.
 - Imported models still ignore their normal maps. Giving them tangents is an engine change (glTF reader and converter), to plan in the engine's repository. Those tangents must follow the original's processor (`RacingGameModelProcessor.GenerateTangents`: tangent along increasing U) with `w = 1`, so that this conversion stays right for them.
+
+## Follow-up: tangents of the imported models (2026-11-14)
+
+Done the same day, at the author's request.
+
+- CasaEngine reads the optional glTF `TANGENT` attribute (CasaEngine `9c57de77`, branch `chantier/gltf-static-tangents`).
+- `LegacyModelGltfConverter` writes a `TANGENT` on every primitive whose material has a normal texture: direction of increasing U accumulated per triangle without weighting, made orthogonal to the vertex normal, `w = +1`. A vertex whose triangles all have degenerate UVs gets `cross(normal, +X)`.
+- Measured against the tangent channel of the original's built models (`.xnb`): the glTF model space equals the original's (no mirror), and on every model at least 99.96 % of the matched vertices have their tangent and their `cross(normal, tangent)` within 2 degrees of the original's. An independent check on all 56 models found 100 % and no flipped bitangent.
+- No node, combo or track placement matrix has a negative determinant. A mirrored placement would need `w = -1`.

@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 238,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 2856,
+      "byteOffset": 3808,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 2856,
-      "byteOffset": 2856,
+      "byteOffset": 6664,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 1904,
-      "byteOffset": 5712,
+      "byteOffset": 12064,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 2544,
-      "byteOffset": 7616,
+      "byteOffset": 9520,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3808,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 10160,
+      "byteLength": 13968,
       "uri": "Laterne2Sides.bin"
     }
   ],
@@ -198,7 +212,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

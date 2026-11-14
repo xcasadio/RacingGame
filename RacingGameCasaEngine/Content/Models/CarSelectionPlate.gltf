@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 434,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 5208,
+      "byteOffset": 14144,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 5208,
-      "byteOffset": 5208,
+      "byteOffset": 19352,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 3472,
-      "byteOffset": 10416,
+      "byteOffset": 24560,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 7200,
-      "byteOffset": 13888,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 6944,
+      "byteOffset": 7200,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 21088,
+      "byteLength": 28032,
       "uri": "CarSelectionPlate.bin"
     }
   ],
@@ -197,7 +211,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

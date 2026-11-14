@@ -8,6 +8,7 @@ using SharpGLTF.Memory;
 using SharpGLTF.Schema2;
 using SharpGLTF.Validation;
 using GltfImage = SharpGLTF.Schema2.Image;
+using GltfMesh = SharpGLTF.Schema2.Mesh;
 using GltfNode = SharpGLTF.Schema2.Node;
 
 // Converts the legacy RacingGame .x models to .gltf files the CasaEngine runtime can read:
@@ -15,6 +16,7 @@ using GltfNode = SharpGLTF.Schema2.Node;
 //   to translation/rotation/scale (GltfStaticModelReader cannot read matrix nodes);
 // - diffuse and normal textures of each material attached as external .png images;
 // - the legacy material metadata the old runtime importer used stored in the material extras.
+// - a TANGENT attribute generated like the legacy content processor on every primitive that has a normal texture;
 // - the normal maps given with --normal-map (used by meshes the game generates, so no model references them) converted too.
 // Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]... [--normal-map <tga file>]...
 
@@ -191,6 +193,8 @@ internal sealed class ModelConverter
             material.Extras = extras;
         }
 
+        int tangentPrimitives = AddTangents(model, errors);
+
         if (errors.Count == 0)
         {
             string gltfPath = Path.Combine(_gltfDirectory, modelName + ".gltf");
@@ -202,8 +206,116 @@ internal sealed class ModelConverter
             });
         }
 
-        summary = $"{model.LogicalMeshes.Count} meshes, {model.LogicalMaterials.Count} materials, {effectMaterials} with effect instance, {texturedChannels} textured channels";
+        summary = $"{model.LogicalMeshes.Count} meshes, {model.LogicalMaterials.Count} materials, {effectMaterials} with effect instance, {texturedChannels} textured channels, {tangentPrimitives} primitives with tangents";
         return errors;
+    }
+
+    // The legacy content processor (RacingGameModelProcessor) generates the tangents with
+    // MeshHelper.CalculateTangentFrames (no binormal channel): per triangle the direction of increasing U
+    // (Lengyel), accumulated on the three vertices without weighting, then made orthogonal to the vertex
+    // normal and normalised. Measured on the built legacy models (xnb), this reproduces them, including for a
+    // vertex whose triangles all have a degenerate UV mapping: the legacy tangent is then cross(normal, +X)
+    // (cross(normal, +Y) when the normal is parallel to X: not observed in the legacy models, chosen here).
+    // The legacy shader builds the tangent frame as (cross(normal, tangent), tangent, normal) in model space,
+    // with no correction for mirrored UVs; CasaEngine builds cross(normal, tangent) * w in world space. The
+    // legacy model space and the glTF one (node transforms included) coincide, and no world transform of
+    // the legacy models or of the glTF files has a negative determinant, so w = +1 reproduces the legacy
+    // frame everywhere (w is a constant here, not the glTF handedness of the UV mapping).
+    // Only the primitives that have a normal texture get tangents: the others never use them.
+    private static int AddTangents(ModelRoot model, List<string> errors)
+    {
+        int count = 0;
+        foreach (GltfMesh mesh in model.LogicalMeshes)
+        {
+            foreach (MeshPrimitive primitive in mesh.Primitives)
+            {
+                if (primitive.Material?.FindChannel("Normal")?.Texture == null)
+                {
+                    continue;
+                }
+
+                IList<Vector3>? positions = primitive.GetVertexAccessor("POSITION")?.AsVector3Array();
+                IList<Vector3>? normals = primitive.GetVertexAccessor("NORMAL")?.AsVector3Array();
+                IList<Vector2>? uvs = primitive.GetVertexAccessor("TEXCOORD_0")?.AsVector2Array();
+                if (positions == null || normals == null || uvs == null
+                    || normals.Count != positions.Count || uvs.Count != positions.Count)
+                {
+                    errors.Add($"mesh '{mesh.Name}': a primitive with a normal texture lacks POSITION, NORMAL or TEXCOORD_0");
+                    continue;
+                }
+
+                Vector4[] tangents = ComputeTangents(positions, normals, uvs, primitive.GetTriangleIndices());
+                var bytes = new byte[tangents.Length * 16];
+                for (int i = 0; i < tangents.Length; i++)
+                {
+                    BitConverter.TryWriteBytes(bytes.AsSpan(i * 16, 4), tangents[i].X);
+                    BitConverter.TryWriteBytes(bytes.AsSpan((i * 16) + 4, 4), tangents[i].Y);
+                    BitConverter.TryWriteBytes(bytes.AsSpan((i * 16) + 8, 4), tangents[i].Z);
+                    BitConverter.TryWriteBytes(bytes.AsSpan((i * 16) + 12, 4), tangents[i].W);
+                }
+
+                BufferView view = model.UseBufferView(bytes, 0, null, 16, BufferMode.ARRAY_BUFFER);
+                Accessor accessor = model.CreateAccessor("TANGENT");
+                accessor.SetVertexData(view, 0, tangents.Length, DimensionType.VEC4, EncodingType.FLOAT, false);
+                primitive.SetVertexAccessor("TANGENT", accessor);
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static Vector4[] ComputeTangents(
+        IList<Vector3> positions,
+        IList<Vector3> normals,
+        IList<Vector2> uvs,
+        IEnumerable<(int A, int B, int C)> triangles)
+    {
+        var accumulated = new Vector3[positions.Count];
+        foreach ((int a, int b, int c) in triangles)
+        {
+            Vector3 e1 = positions[b] - positions[a];
+            Vector3 e2 = positions[c] - positions[a];
+            Vector2 d1 = uvs[b] - uvs[a];
+            Vector2 d2 = uvs[c] - uvs[a];
+            float determinant = (d1.X * d2.Y) - (d2.X * d1.Y);
+            if (determinant == 0f)
+            {
+                continue; // degenerate UV mapping: no direction of increasing U
+            }
+
+            float r = 1f / determinant;
+            Vector3 direction = ((d2.Y * e1) - (d1.Y * e2)) * r;
+            if (!float.IsFinite(direction.X + direction.Y + direction.Z))
+            {
+                continue;
+            }
+
+            accumulated[a] += direction;
+            accumulated[b] += direction;
+            accumulated[c] += direction;
+        }
+
+        var tangents = new Vector4[positions.Count];
+        for (int i = 0; i < tangents.Length; i++)
+        {
+            Vector3 normal = normals[i];
+            Vector3 tangent = accumulated[i] - (normal * Vector3.Dot(normal, accumulated[i]));
+            if (tangent.LengthSquared() < 1e-20f)
+            {
+                // No usable UV gradient: same fallback as the legacy processor.
+                tangent = Vector3.Cross(normal, Vector3.UnitX);
+                if (tangent.LengthSquared() < 1e-12f)
+                {
+                    tangent = Vector3.Cross(normal, Vector3.UnitY);
+                }
+            }
+
+            tangent = Vector3.Normalize(tangent);
+            tangents[i] = new Vector4(tangent, 1f);
+        }
+
+        return tangents;
     }
 
     private static IReadOnlyList<Assimp.Material> ReadAssimpMaterials(string sourceFile)
