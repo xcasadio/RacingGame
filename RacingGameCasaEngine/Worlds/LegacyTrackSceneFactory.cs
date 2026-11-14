@@ -222,7 +222,7 @@ internal static partial class LegacyTrackSceneFactory
 
     private static Entity CreateRoadEntity(string trackName, IReadOnlyList<LegacyTrackPoint> roadPoints, Vector3 origin, AssetContentManager assetContentManager)
     {
-        var vertices = new Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture[roadPoints.Count * 5];
+        var vertices = new VertexPositionNormalTextureTangent[roadPoints.Count * 5];
 
         for (int index = 0; index < roadPoints.Count; index++)
         {
@@ -269,15 +269,18 @@ internal static partial class LegacyTrackSceneFactory
         return CreateStaticModelEntity($"Track.Road.{trackName}", roadModel, Matrix.Identity);
     }
 
-    private static Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture CreateRoadVertex(LegacyTrackPoint point, float lateralFactor, float textureV, Vector3 origin)
+    private static VertexPositionNormalTextureTangent CreateRoadVertex(LegacyTrackPoint point, float lateralFactor, float textureV, Vector3 origin)
     {
         Vector3 legacyPosition = point.Position + point.Right * (LegacyRoadWidthScale * point.RoadWidth * lateralFactor);
         Vector3 runtimePosition = ConvertLegacyPoint(legacyPosition) - origin;
         Vector3 runtimeNormal = ConvertLegacyDirection(point.Up);
-        return new Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture(
+        // TrackVertex.cs: TangentVertex(position, uv, normal = up, tangent = right).
+        Vector3 runtimeTangent = ConvertLegacyDirection(point.Right);
+        return new VertexPositionNormalTextureTangent(
             runtimePosition,
             runtimeNormal,
-            new Microsoft.Xna.Framework.Vector2(point.TextureU, textureV));
+            new Microsoft.Xna.Framework.Vector2(point.TextureU, textureV),
+            new Vector4(runtimeTangent, 1f));
     }
 
     private static RaceTrackStartPose CreatePlayerStartPose(LegacyTrackPoint point, Vector3 origin)
@@ -987,6 +990,7 @@ internal static partial class LegacyTrackSceneFactory
         {
             Name = name,
             BasColor = roadTexture,
+            NormalMap = LoadProjectTexture(assetContentManager, "RoadNormal.png"),
             DiffuseColor = diffuse,
             AmbientColor = ambient,
             SpecularColor = new Vector3(0.14f),
