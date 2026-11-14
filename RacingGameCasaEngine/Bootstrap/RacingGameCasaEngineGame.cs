@@ -37,6 +37,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     private readonly FrontEndNavigationSmokeValidator? _navigationSmokeValidator;
     private readonly TrackMigrationCaptureValidator? _trackMigrationCaptureValidator;
     private readonly UiScreenCaptureValidator? _uiScreenCaptureValidator;
+    private readonly ReferenceViewCaptureValidator? _referenceViewCaptureValidator;
     private readonly CarProfileAuditValidator? _carProfileAuditValidator;
     private readonly CarTopSpeedAuditValidator? _carTopSpeedAuditValidator;
     private readonly TrackRuntimeSceneExportValidator? _trackRuntimeSceneExportValidator;
@@ -99,6 +100,11 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         if (launchOptions.CaptureUiScreens)
         {
             _uiScreenCaptureValidator = new UiScreenCaptureValidator(this, _frontEndFlow);
+        }
+
+        if (launchOptions.CaptureReferenceViews)
+        {
+            _referenceViewCaptureValidator = new ReferenceViewCaptureValidator(this, _frontEndFlow, launchOptions.ReferenceViewsFilePath, launchOptions.ReferenceCaptureOutputDirectory);
         }
 
         if (launchOptions.CaptureCarProfileAudit)
@@ -455,6 +461,38 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         {
             Logs.WriteException(ex);
             Logs.WriteWarning("Failed to capture the movement debug report.");
+        }
+    }
+
+    /// <summary>
+    /// Saves the back buffer to the given PNG file, opaque (the alpha channel is not part of the picture).
+    /// Returns false, after logging, when the capture fails.
+    /// </summary>
+    internal bool SaveBackBufferAsPng(string filePath)
+    {
+        try
+        {
+            int width = GraphicsDevice.PresentationParameters.BackBufferWidth;
+            int height = GraphicsDevice.PresentationParameters.BackBufferHeight;
+            var pixels = new Color[width * height];
+            GraphicsDevice.GetBackBufferData(pixels);
+            for (int index = 0; index < pixels.Length; index++)
+            {
+                pixels[index].A = 255;
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+            using var screenshot = new Texture2D(GraphicsDevice, width, height, false, SurfaceFormat.Color);
+            screenshot.SetData(pixels);
+            using FileStream stream = File.Create(filePath);
+            screenshot.SaveAsPng(stream, width, height);
+            Logs.WriteInfo($"Screenshot saved: {filePath}");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logs.WriteException(ex);
+            return false;
         }
     }
 

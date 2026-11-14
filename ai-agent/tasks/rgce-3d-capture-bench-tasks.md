@@ -58,7 +58,9 @@ Produire, pour les trois circuits, des paires d'images « original / conversion 
 - Validation : build 0 erreur ; deux lancements avec la même graine donnent 30 PNG identiques (ou un écart mesuré et noté) ; sans argument le jeu démarre sur son écran de chargement.
 - Commit : `feat(original): add a deterministic track audit capture mode`
 
-### ⏳ T2 — Rejouer les vues dans la conversion
+### ✅ T2 — Rejouer les vues dans la conversion
+
+> Validation (2026-11-14) : build 0 erreur. `--capture-reference-views <views.json> --reference-capture-out <dir>` écrit 15 PNG 1280×720 ; deux lancements : écart 0,00 sur les 15 vues. Alignement journalisé : la grille de départ de la conversion est à 0,00 m de la voiture de l'original convertie sur les trois circuits ; les points de passage sont à 0,00 à 3,68 m (Expert 50 %). Sur la vue de départ, lignes de route, banderole et relief se superposent. Retirés pour la capture : HUD, caméras de poursuite et libre, lignes de debug du parcours (`RaceCourseDebugComponent`) ; l'orientation de la caméra est remise à zéro (la caméra de poursuite la laissait inclinée). Préalable : `337a43c` (membre obligatoire du moteur) et `b4374f4` (voiture dessinée seulement sur la grille, O1).
 
 - Objectif : `RacingGameCasaEngine.exe --capture-reference-views <views.json>` capture les mêmes vues, mêmes noms, même taille, avec la projection de l'original.
 - Fichiers : `RacingGameCasaEngine/Program.cs`, `Bootstrap/RaceLaunchOptions.cs`, `Bootstrap/RacingGameCasaEngineGame.cs`, `Bootstrap/ReferenceViewCaptureValidator.cs` (nouveau).
@@ -85,7 +87,7 @@ Produire, pour les trois circuits, des paires d'images « original / conversion 
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
-| O1 | La voiture est placée au point de vue côté original (la carte d'ombres la suit) ; à reproduire côté conversion si une API de téléportation existe. | T2 |
+| O1 | Réglé (`b4374f4`) : la conversion n'a pas d'API pour déplacer la voiture ; l'original ne la dessine donc que sur la grille de départ (`car.visible`). | T2 |
 | O2 | Le décor aléatoire hors route n'existe pas dans la conversion : écart attendu. | T4 |
 
 ## Hors périmètre

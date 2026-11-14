@@ -120,6 +120,17 @@ internal static partial class LegacyTrackSceneFactory
         return new RaceTrackScene(trackEntities, sceneryEntities, playerStartPose, checkpointTriggers, physicsProfile);
     }
 
+    /// <summary>
+    /// Converts a point given in the original game's coordinates (Z up) to the race world of this track, exactly as
+    /// <see cref="Create"/> places the track: same axis mapping, same origin. Used to replay the original's reference
+    /// views (ADR-0015).
+    /// </summary>
+    internal static Vector3 ConvertLegacyPointToRaceWorld(string trackName, Vector3 legacyPoint)
+    {
+        LegacyTrackLayout layout = LoadTrackLayout(RaceBootstrapAssets.GetTrackDataAssetName(trackName));
+        return ConvertLegacyPoint(legacyPoint) - ComputeOrigin(layout.TrackPoints);
+    }
+
     private static LegacyTrackLayout LoadTrackLayout(string assetName)
     {
         if (TrackCache.TryGetValue(assetName, out LegacyTrackLayout? cachedLayout))
