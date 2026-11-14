@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.Entities;
+using RacingGameCasaEngine.Worlds;
 using StbImageSharp;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -32,6 +33,8 @@ internal static class LegacyCarVisualFactory
     private const float LegacyCarReflectionMultiplyBase = 0.85f;
     private const float LegacyCarReflectionMultiplyFactor = 0.75f;
     private const string CarNormalTextureFileName = "RacerCarNormal.png";
+    private const float LegacyCarDefaultAmbient = 40f;
+    private static readonly Color LegacyCarDefaultDiffuseColor = new(210, 210, 210);
     private static readonly Color LegacyTextureColorKey = new(255, 0, 255, 0);
     private static readonly string[] CarDiffuseTextureFileNames = ["RacerCar.tga", "RacerCar2.tga", "RacerCar3.tga"];
 
@@ -203,6 +206,9 @@ internal static class LegacyCarVisualFactory
         Vector3 specularColor = tuning.ApplySpecularColor(importedMaterial.SpecularColor);
         float specularPower = Math.Clamp(tuning.ApplySpecularPower(importedMaterial.SpecularPower), 2f, 48f);
         bool useLegacyCarReflectionBlend = UsesLegacyCarReflectionBlend(importedMaterial);
+        // The original draws every car part but the glass with the default ambient (40) and diffuse (210), whatever its
+        // .X material says (RacingGameOriginal Model.RenderCar: Material.DefaultAmbientColor / DefaultDiffuseColor).
+        bool usesLegacyCarDefaultColors = importedMaterial.EffectFilePath?.Contains("ReflectionSimpleGlass", StringComparison.OrdinalIgnoreCase) != true;
 
         return new LitDiffuseMaterial
         {
@@ -211,8 +217,10 @@ internal static class LegacyCarVisualFactory
             NormalMap = normalTexture,
             ReflectionCube = reflectionCube,
             UseSceneReflectionCube = useSceneReflectionCube,
-            DiffuseColor = importedMaterial.DiffuseColor,
-            AmbientColor = presentation.AmbientColor,
+            DiffuseColor = usesLegacyCarDefaultColors ? LegacyCarDefaultDiffuseColor : importedMaterial.DiffuseColor,
+            AmbientColor = usesLegacyCarDefaultColors
+                ? new Vector3(LegacyCarDefaultAmbient / (float)LegacyCarDefaultDiffuseColor.R)
+                : LegacyTrackSceneFactory.ComputeLegacyImportedAmbient(modelName, importedMaterial),
             EmissiveColor = presentation.EmissiveColor,
             SpecularColor = specularColor,
             SpecularPower = specularPower,

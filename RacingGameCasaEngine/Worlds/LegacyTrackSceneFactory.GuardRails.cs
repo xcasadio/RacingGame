@@ -403,13 +403,15 @@ internal static partial class LegacyTrackSceneFactory
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "Leitplanke.tga");
             Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "LeitplankeNormal.png");
+            string name = $"{trackName}.GuardRailMaterial.{sideName}";
+            (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(182, 182, 182), 72, 182);
             return new LitDiffuseMaterial
             {
-                Name = $"{trackName}.GuardRailMaterial.{sideName}",
+                Name = name,
                 BasColor = diffuseTexture,
                 NormalMap = normalTexture,
-                DiffuseColor = diffuseTexture != null ? Color.White : new Color(182, 182, 182),
-                EmissiveColor = new Vector3(0.03f, 0.03f, 0.03f),
+                DiffuseColor = diffuse,
+                AmbientColor = ambient,
                 SpecularColor = new Vector3(0.88f, 0.88f, 0.88f),
                 SpecularPower = 16f,
                 SamplerState = SamplerState.AnisotropicWrap,
@@ -421,13 +423,15 @@ internal static partial class LegacyTrackSceneFactory
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "RoadCement.tga");
             Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "RoadCementNormal.png");
+            string name = $"{trackName}.ColumnMaterial";
+            (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(176, 176, 176), LegacyDefaultAmbient, LegacyDefaultDiffuse);
             return new LitDiffuseMaterial
             {
-                Name = $"{trackName}.ColumnMaterial",
+                Name = name,
                 BasColor = diffuseTexture,
                 NormalMap = normalTexture,
-                DiffuseColor = diffuseTexture != null ? Color.White : new Color(176, 176, 176),
-                EmissiveColor = new Vector3(0.01f, 0.01f, 0.01f),
+                DiffuseColor = diffuse,
+                AmbientColor = ambient,
                 SpecularColor = new Vector3(0.18f),
                 SpecularPower = 8f,
                 SamplerState = SamplerState.AnisotropicWrap,

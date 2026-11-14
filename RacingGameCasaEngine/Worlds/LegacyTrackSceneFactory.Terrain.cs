@@ -138,13 +138,15 @@ internal static partial class LegacyTrackSceneFactory
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "Landscape.tga", "CityGround.tga");
             Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "LandscapeNormal.png", "CityGroundNormal.png");
+            string name = $"{trackName}.TerrainMaterial";
+            (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(182, 166, 118), 88, 234);
             return new LitDiffuseMaterial
             {
-                Name = $"{trackName}.TerrainMaterial",
+                Name = name,
                 BasColor = diffuseTexture,
                 NormalMap = normalTexture,
-                DiffuseColor = diffuseTexture != null ? Color.White : new Color(182, 166, 118),
-                EmissiveColor = new Vector3(0.01f, 0.01f, 0.008f),
+                DiffuseColor = diffuse,
+                AmbientColor = ambient,
                 SpecularColor = new Vector3(0.05f),
                 SpecularPower = 6f,
                 SamplerState = SamplerState.AnisotropicWrap,

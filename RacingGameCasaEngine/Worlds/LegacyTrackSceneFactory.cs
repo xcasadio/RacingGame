@@ -18,7 +18,6 @@ namespace RacingGameCasaEngine.Worlds;
 internal static partial class LegacyTrackSceneFactory
 {
     private const float WorldScale = 1.0f;
-    private const float GroundMargin = 18f;
     private static readonly Quaternion LegacyXModelCorrection = Quaternion.CreateFromAxisAngle(Vector3.Right, MathHelper.Pi / 2.0f);
     private const int NumberOfIterationsPer100Meters = 40;
     private const float CurveFactor = 0.25f;
@@ -75,7 +74,6 @@ internal static partial class LegacyTrackSceneFactory
     };
     private static readonly string[] CheckpointBannerCandidates = ["Banner", "Banner2", "Banner3", "Banner4", "Banner5", "Banner6"];
     private static readonly string[] RoadTextureCandidates = ["Road.tga", "track.tga", "RoadCement.tga"];
-    private static readonly string[] GroundTextureCandidates = ["Landscape.tga", "CityGround.tga"];
 
     internal static RaceTrackScene Create(string trackName, AssetContentManager assetContentManager)
     {
@@ -360,24 +358,6 @@ internal static partial class LegacyTrackSceneFactory
         }
 
         return new RaceTrackPhysicsProfile(points);
-    }
-
-    private static Entity CreateGroundEntity(string trackName, IReadOnlyList<Vector3> roadPoints, AssetContentManager assetContentManager)
-    {
-        float minX = roadPoints.Min(static point => point.X) - GroundMargin;
-        float maxX = roadPoints.Max(static point => point.X) + GroundMargin;
-        float minZ = roadPoints.Min(static point => point.Z) - GroundMargin;
-        float maxZ = roadPoints.Max(static point => point.Z) + GroundMargin;
-        float minY = roadPoints.Min(static point => point.Y) - 0.8f;
-        float width = Math.Max(10f, maxX - minX);
-        float depth = Math.Max(10f, maxZ - minZ);
-
-        StaticModel groundModel = StaticModel.CreateFromPrimitive(new BoxPrimitive(width, 1.0f, depth), $"{trackName}.Ground");
-        groundModel.Meshes[0].Material = CreateGroundMaterial(trackName, assetContentManager);
-
-        Matrix transform = Matrix.CreateTranslation(new Vector3((minX + maxX) * 0.5f, minY, (minZ + maxZ) * 0.5f));
-        // As in RacingGame, the ground only receives shadows (Landscape.GenerateShadow).
-        return CreateStaticModelEntity($"Track.Ground.{trackName}", groundModel, transform, castShadows: false);
     }
 
     /// <summary>The start light's red, yellow and green models, loaded once (null for a missing one).</summary>
@@ -954,33 +934,67 @@ internal static partial class LegacyTrackSceneFactory
         return sampler;
     }
 
+    // The original lights a pixel as texture * (A + D * N.L) (NormalMapping.fx:216, 402). The race world has one white
+    // light of intensity 1 and a flat ambient of 1 (RaceWorldFactory), and the engine renders
+    // texture * DiffuseColor * (N.L * light + ambient * MaterialAmbientColor): DiffuseColor = D and
+    // MaterialAmbientColor = A / D, per channel, give the same pixel. A channel without diffuse (D = 0) shows no
+    // ambient either, because the engine multiplies the ambient by DiffuseColor: it gets 0.
+    // Material.DefaultAmbientColor / DefaultDiffuseColor (Core/Graphics/Material.cs:30-32).
+    internal const byte LegacyDefaultAmbient = 40;
+    internal const byte LegacyDefaultDiffuse = 210;
+
+    // Ambient the original sets on signs, banners and windmills (Core/Graphics/Model.cs:202-263).
+    private const float LegacyBrightAmbient = 128f / 255f;
+
+    /// <summary>DiffuseColor (D) and MaterialAmbientColor (A / D) of a generated material the original builds with ambient A and diffuse D (0..255).</summary>
+    /// <param name="baseColor">Tint of the material when its texture is missing; white when it has one.</param>
+    private static (Color Diffuse, Vector3 Ambient) CreateLegacyLighting(string materialName, Color baseColor, byte ambient, byte diffuse)
+    {
+        var diffuseColor = new Color(
+            (byte)((baseColor.R * diffuse + 127) / 255),
+            (byte)((baseColor.G * diffuse + 127) / 255),
+            (byte)((baseColor.B * diffuse + 127) / 255));
+        return (diffuseColor, ComputeLegacyAmbient(materialName, new Vector3(ambient / 255f), diffuseColor));
+    }
+
+    /// <summary>
+    /// The MaterialAmbientColor (A / D per channel) of an imported material: A is the ambient of its legacy effect (the
+    /// raw value, not the engine presentation's, which caps it to 1), D its DiffuseColor as the engine will use it.
+    /// </summary>
+    internal static Vector3 ComputeLegacyImportedAmbient(string modelName, StaticModelImportedMaterial importedMaterial)
+    {
+        Vector3 ambient = importedMaterial.BrightAmbientHint ? new Vector3(LegacyBrightAmbient) : importedMaterial.AmbientColor;
+        return ComputeLegacyAmbient($"{modelName}.{importedMaterial.DisplayName}", ambient, importedMaterial.DiffuseColor);
+    }
+
+    private static Vector3 ComputeLegacyAmbient(string materialName, Vector3 ambient, Color diffuse)
+    {
+        Vector3 d = diffuse.ToVector3();
+        if ((d.X <= 0f && ambient.X > 0f) || (d.Y <= 0f && ambient.Y > 0f) || (d.Z <= 0f && ambient.Z > 0f))
+        {
+            Logs.WriteWarning($"Legacy material '{materialName}' has an ambient without diffuse on a channel: the engine cannot render it.");
+        }
+
+        return new Vector3(
+            d.X > 0f ? ambient.X / d.X : 0f,
+            d.Y > 0f ? ambient.Y / d.Y : 0f,
+            d.Z > 0f ? ambient.Z / d.Z : 0f);
+    }
+
     private static LitDiffuseMaterial CreateRoadMaterial(string trackName, AssetContentManager assetContentManager)
     {
         Texture2D? roadTexture = LoadProjectTexture(assetContentManager, RoadTextureCandidates);
+        string name = $"{trackName}.RoadMaterial";
+        (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, roadTexture != null ? Color.White : new Color(60, 62, 66), LegacyDefaultAmbient, LegacyDefaultDiffuse);
         return new LitDiffuseMaterial
         {
-            Name = $"{trackName}.RoadMaterial",
+            Name = name,
             BasColor = roadTexture,
-            DiffuseColor = roadTexture != null ? Color.White : new Color(60, 62, 66),
-            EmissiveColor = new Vector3(0.015f, 0.015f, 0.015f),
+            DiffuseColor = diffuse,
+            AmbientColor = ambient,
             SpecularColor = new Vector3(0.14f),
             SpecularPower = 18f,
             RasterizerState = RasterizerState.CullCounterClockwise,
-            SamplerState = SamplerState.AnisotropicWrap,
-        };
-    }
-
-    private static LitDiffuseMaterial CreateGroundMaterial(string trackName, AssetContentManager assetContentManager)
-    {
-        Texture2D? groundTexture = LoadProjectTexture(assetContentManager, GroundTextureCandidates);
-        return new LitDiffuseMaterial
-        {
-            Name = $"{trackName}.GroundMaterial",
-            BasColor = groundTexture,
-            DiffuseColor = groundTexture != null ? Color.White : new Color(182, 166, 118),
-            EmissiveColor = new Vector3(0.01f, 0.01f, 0.008f),
-            SpecularColor = new Vector3(0.05f),
-            SpecularPower = 6f,
             SamplerState = SamplerState.AnisotropicWrap,
         };
     }
@@ -1030,7 +1044,7 @@ internal static partial class LegacyTrackSceneFactory
             ReflectionCube = reflectionCube,
             UseSceneReflectionCube = useSceneReflectionCube,
             DiffuseColor = importedMaterial.DiffuseColor,
-            AmbientColor = presentation.AmbientColor,
+            AmbientColor = ComputeLegacyImportedAmbient(modelName, importedMaterial),
             EmissiveColor = presentation.EmissiveColor,
             SpecularColor = specularColor,
             SpecularPower = specularPower,

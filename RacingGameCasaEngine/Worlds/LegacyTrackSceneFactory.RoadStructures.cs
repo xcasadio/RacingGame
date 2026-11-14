@@ -308,13 +308,15 @@ internal static partial class LegacyTrackSceneFactory
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "RoadBack.tga");
             Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "RoadBackNormal.png");
+            string name = $"{trackName}.RoadBackMaterial";
+            (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(60, 62, 66), LegacyDefaultAmbient, LegacyDefaultDiffuse);
             return new LitDiffuseMaterial
             {
-                Name = $"{trackName}.RoadBackMaterial",
+                Name = name,
                 BasColor = diffuseTexture,
                 NormalMap = normalTexture,
-                DiffuseColor = diffuseTexture != null ? Color.White : new Color(60, 62, 66),
-                EmissiveColor = new Vector3(0.015f, 0.015f, 0.015f),
+                DiffuseColor = diffuse,
+                AmbientColor = ambient,
                 SpecularColor = new Vector3(0.14f),
                 SpecularPower = 18f,
                 RasterizerState = RasterizerState.CullCounterClockwise,
@@ -327,13 +329,15 @@ internal static partial class LegacyTrackSceneFactory
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "RoadTunnel.tga");
             Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "RoadTunnelNormal.png");
+            string name = $"{trackName}.RoadTunnelMaterial";
+            (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(182, 182, 182), 182, 80);
             return new LitDiffuseMaterial
             {
-                Name = $"{trackName}.RoadTunnelMaterial",
+                Name = name,
                 BasColor = diffuseTexture,
                 NormalMap = normalTexture,
-                DiffuseColor = diffuseTexture != null ? Color.White : new Color(182, 182, 182),
-                EmissiveColor = new Vector3(0.015f, 0.015f, 0.015f),
+                DiffuseColor = diffuse,
+                AmbientColor = ambient,
                 SpecularColor = new Vector3(0.14f),
                 SpecularPower = 18f,
                 RasterizerState = RasterizerState.CullNone,
@@ -346,13 +350,15 @@ internal static partial class LegacyTrackSceneFactory
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "CityGround.tga");
             Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "CityGroundNormal.png");
+            string name = $"{trackName}.CityGroundMaterial";
+            (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(182, 166, 118), 32, 200);
             return new LitDiffuseMaterial
             {
-                Name = $"{trackName}.CityGroundMaterial",
+                Name = name,
                 BasColor = diffuseTexture,
                 NormalMap = normalTexture,
-                DiffuseColor = diffuseTexture != null ? Color.White : new Color(182, 166, 118),
-                EmissiveColor = new Vector3(0.01f, 0.01f, 0.008f),
+                DiffuseColor = diffuse,
+                AmbientColor = ambient,
                 SpecularColor = new Vector3(0.05f),
                 SpecularPower = 6f,
                 RasterizerState = RasterizerState.CullCounterClockwise,
