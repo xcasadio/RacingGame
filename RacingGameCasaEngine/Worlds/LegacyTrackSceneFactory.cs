@@ -117,6 +117,10 @@ internal static partial class LegacyTrackSceneFactory
         AddHelperDrivenSceneryEntities(sceneryEntities, roadSplinePoints, layout.RoadHelpers, landscape);
 
         EndSceneDiagnostics(trackName, roadSplinePoints);
+
+        // After the diagnostics, which record every object the landscape places: the city ground looks for the first
+        // big building of the Beginner level with a landscape of its own.
+        trackEntities.AddRange(LegacyRoadStructureBuilder.CreateEntities(trackName, roadSplinePoints, layout.RoadHelpers, origin, terrainSampler, assetContentManager));
         return new RaceTrackScene(trackEntities, sceneryEntities.Entities, playerStartPose, checkpointTriggers, physicsProfile);
     }
 
@@ -451,8 +455,10 @@ internal static partial class LegacyTrackSceneFactory
                         currentType = helperType;
                     }
                 }
-                else if (helperType != LegacyRoadHelperType.Reset)
+                else
                 {
+                    // As in the original (TrackLine.GenerateTunnelsAndLandscapeObjects): any helper starts a range,
+                    // a Reset one too (a range of type Reset, which nothing uses).
                     helperStartedNum = pointIndex;
                     currentType = helperType;
                 }

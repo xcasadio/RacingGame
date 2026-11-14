@@ -172,6 +172,12 @@ internal static partial class LegacyTrackSceneFactory
 
         public Random Random { get; } = random;
 
+        /// <summary>
+        /// Position of the first Hotel or Building added (LandscapeObject.IsBigBuilding), in the original's coordinates:
+        /// where Landscape.CreateCityPlane puts the city ground.
+        /// </summary>
+        public Vector3? FirstBigBuildingPosition { get; private set; }
+
         public float GetMapHeight(float x, float y) => terrainSampler.GetMapHeight(x, y);
 
         public void AddObjectToRender(string modelName, Matrix renderMatrix, LegacyEntityGroup group)
@@ -226,6 +232,13 @@ internal static partial class LegacyTrackSceneFactory
             // Scale all objects up a little (else the world is not filled enough)
             Matrix placedTransform = Matrix.CreateScale(1.2f) * renderMatrix;
             _positions.Add(placedTransform.Translation);
+            if (FirstBigBuildingPosition == null
+                && (modelName.Contains("hotel", StringComparison.OrdinalIgnoreCase)
+                    || modelName.Contains("building", StringComparison.OrdinalIgnoreCase)))
+            {
+                FirstBigBuildingPosition = placedTransform.Translation;
+            }
+
             RecordPlacedObject(modelName, placedTransform);
             group.Entities.Add(CreateStaticModelEntity(
                 group.NextName(modelName),
