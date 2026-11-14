@@ -147,8 +147,8 @@ internal static partial class LegacyTrackSceneFactory
                 NormalMap = normalTexture,
                 DiffuseColor = diffuse,
                 AmbientColor = ambient,
-                SpecularColor = new Vector3(0.05f),
-                SpecularPower = 6f,
+                // Landscape.cs: DiffuseWithDetail20 has no specular term.
+                SpecularColor = Vector3.Zero,
                 SamplerState = SamplerState.AnisotropicWrap,
                 RasterizerState = RasterizerState.CullCounterClockwise,
             };
