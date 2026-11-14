@@ -10,13 +10,15 @@ Compares the 3D reference captures of the original RacingGame with the CasaEngin
    RacingGameOriginal\Desktop\bin\Debug\net10.0\RacingGame.exe --capture-track-audit --seed 1 --out <reference folder>
    ```
 
-   It writes `views.json` and, for each of the 3 tracks, 5 views (`start`, `sector-20`, `sector-50`, `sector-80`, `overview`) in two variants: `<Track>-<view>-full.png` (as the game looks) and `<Track>-<view>-nopost.png` (post screen shaders off). The default size is 1280x720 (`--size WxH` changes it; it must fit on the desktop).
+   It writes `views.json`, `scene.json` (the generated track points and every placed object of each track) and, for each of the 3 tracks, 5 views (`start`, `sector-20`, `sector-50`, `sector-80`, `overview`) in two variants: `<Track>-<view>-full.png` (as the game looks) and `<Track>-<view>-nopost.png` (post screen shaders off). The default size is 1280x720 (`--size WxH` changes it; it must fit on the desktop).
 
 2. Port (replays the cameras of `views.json`, same size and projection):
 
    ```
    RacingGameCasaEngine\bin\Debug\net9.0-windows\RacingGameCasaEngine.exe --capture-reference-views <reference folder>\views.json --reference-capture-out <candidate folder>
    ```
+
+   When the original's `scene.json` lies next to `views.json`, it also writes `scene-measure-<Track>.txt`: the distance of each generated road point from the original's (position, right and up vectors, road width), and for each object placed by the original the nearest object of the same model in the port (distance, rotation, scale), plus the objects without a match on either side.
 
    It writes `<Track>-<view>.png` and logs, per view, how far its start grid and checkpoints are from the original's positions (`alignment` lines in `racinggame-casaengine-<pid>.log`).
 

@@ -88,6 +88,17 @@ namespace RacingGame.Tracks
         protected List<TrackVertex> points = new List<TrackVertex>();
 
         /// <summary>
+        /// Generated track points, read by the capture export
+        /// </summary>
+        internal List<TrackVertex> Points
+        {
+            get
+            {
+                return points;
+            }
+        }
+
+        /// <summary>
         /// Road helper position
         /// </summary>
         public class RoadHelperPosition

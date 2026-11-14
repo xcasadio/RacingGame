@@ -50,6 +50,7 @@ internal sealed class ReferenceViewCaptureValidator
     private readonly float _nearPlane;
     private readonly float _farPlane;
     private readonly string? _loadError;
+    private readonly string? _sceneFilePath;
     private CaptureStep _step = CaptureStep.WaitForFrontEnd;
     private TimeSpan _startedAt;
     private TimeSpan _lastTransitionAt;
@@ -73,6 +74,9 @@ internal sealed class ReferenceViewCaptureValidator
             {
                 throw new FileNotFoundException($"views.json not found: {viewsFilePath}");
             }
+
+            string sceneFilePath = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(viewsFilePath))!, "scene.json");
+            _sceneFilePath = File.Exists(sceneFilePath) ? sceneFilePath : null;
 
             using JsonDocument document = JsonDocument.Parse(File.ReadAllText(viewsFilePath));
             JsonElement root = document.RootElement;
@@ -189,6 +193,7 @@ internal sealed class ReferenceViewCaptureValidator
                     }
 
                     LogAlignment(_tracks[_trackIndex]);
+                    LogSceneMeasure(_tracks[_trackIndex]);
                     Advance(CaptureStep.PrepareView, totalTime, $"Race world ready for {_tracks[_trackIndex].Name}");
                 }
                 break;
@@ -309,6 +314,26 @@ internal sealed class ReferenceViewCaptureValidator
 
             Logs.WriteInfo(FormattableString.Invariant(
                 $"Reference view capture: alignment {track.Name}-{view.Name}: original car at {converted}, nearest anchor {nearest?.Name} at {nearest?.RootComponent?.Position} ({nearestDistance:0.00} m)"));
+        }
+    }
+
+    // Measures the road points and the placed models of the port against the original's scene.json, when the
+    // original wrote one next to views.json.
+    private void LogSceneMeasure(ReferenceTrack track)
+    {
+        if (_sceneFilePath == null || LegacyTrackSceneFactory.LastSceneDiagnostics is not { } diagnostics)
+        {
+            return;
+        }
+
+        try
+        {
+            string summary = ReferenceSceneMeasure.Measure(_sceneFilePath, track.Name, diagnostics, _outputDirectory);
+            Logs.WriteInfo($"Reference view capture: scene measure {track.Name}: {summary}");
+        }
+        catch (Exception ex)
+        {
+            Logs.WriteWarning($"Reference view capture: scene measure failed for {track.Name}: {ex.Message}");
         }
     }
 

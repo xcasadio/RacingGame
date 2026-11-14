@@ -1,0 +1,103 @@
+# Plan agent IA — Fidélité 3D, tranche S1 : géométrie
+
+Plan de la première tranche de corrections issues du banc de capture 3D (`docs/racinggame-3d-capture-bench-findings.md`, écarts G1 à G5), approuvé par l'auteur le 2026-11-14.
+Les décisions D1 → D6 ci-dessous ont été arbitrées avec l'auteur le 2026-11-14 : **ce plan les applique, il ne les rediscute pas**.
+
+Ce fichier doit être mis à jour pendant le travail : l'icône au début de chaque tâche indique son statut courant.
+
+## Objectif
+
+Sur les 15 vues du banc, la route, ses ouvrages et les objets de la conversion sont aux mêmes endroits, avec la même orientation et la même échelle que dans l'original. Les matériaux, l'éclairage et les effets sont hors de cette tranche (S2 à S4).
+
+## État vérifié du dépôt (2026-11-14)
+
+- RacingGame : branche `remaster`, HEAD `08a4a32`. `CasaEngine` (sous-module, arbre de travail à `778f6aa`, propre, sur `main`), `.codegraph/`, `.serena/`, `MGUI/` et `log.txt` sont à l'auteur : jamais indexés.
+- Tracé : les formules de `LegacyTrackSceneFactory.BuildRoadSplinePoints` (`:1055-1296`) correspondent ligne à ligne à `TrackLine.Load` (`RacingGameOriginal/Core/Tracks/TrackLine.cs:176-488`) d'après la lecture ; pourtant les vues montrent la route décalée loin du départ. Cause non établie.
+- Dessous de route (`Track.cs:408-438`) et tunnels (`Track.cs:503-635`) : absents de la conversion.
+- Sol de ville (`Landscape.cs:864-875`, `CreateCityPlane`) : absent de la conversion.
+- Décor aléatoire (`Track.cs:1089-1161`) : absent. Palmiers, banderoles et variantes de panneaux utilisent un générateur semé par le nom du circuit (`LegacyTrackSceneFactory.cs:793-807`), l'original un générateur global semé par `--seed` (`RandomHelper.cs`).
+- Segments de colonne : l'original ne les pose qu'en `HighDetail`, sans échelle propre (`TrackColumns.cs:237-243`) ; la conversion les pose toujours, à l'échelle 1,2 (`LegacyTrackSceneFactory.GuardRails.cs:401`).
+- Les fichiers `.CombiModel` sont bien copiés dans la sortie de build (10 fichiers).
+
+## Décisions verrouillées
+
+| Réf | Décision |
+|---|---|
+| D1 | La référence est `RacingGameOriginal/` ; toute correction se prouve en relançant le banc (ADR-0015). |
+| D2 | On mesure avant de corriger : l'original exporte ses points de tracé et ses objets placés, la conversion journalise l'écart. |
+| D3 | Pas de contournement : si une cause est dans le moteur, la tâche passe en ⚠️ et une tranche moteur est planifiée dans le dépôt `CasaEngine` (branche dédiée, jamais `main`, sans push). |
+| D4 | Décor aléatoire : même ordre de tirage que l'original ; graine fixe pour le banc (celle de `views.json`), graine horaire en jeu comme l'original. |
+| D5 | Mode AUTO, un commit par tâche sur `remaster`, aucun push. |
+| D6 | Matériaux, lumière, ombres, ciel et effets ne sont pas touchés ici. |
+
+## Règles d'exécution pour l'agent
+
+- **Branche `remaster`**, sans push. Ne jamais committer sur `master`.
+- **Une seule tâche à la fois**, icône mise à jour, validation notée sous la tâche, **un commit par tâche** incluant ce fichier.
+- Messages de commit en anglais, format `type(area): summary`.
+- **Ne jamais indexer** les fichiers de l'auteur : `git add` fichier par fichier.
+- Sans argument de capture, les deux jeux se comportent comme avant, sauf les corrections voulues de la conversion.
+- Langue : ce plan en français ; code, commits, ADR et docs en anglais.
+
+## Légende des statuts
+
+- ⏳ Todo · 🚧 In progress · 🧪 Needs testing · ✅ Done · ⚠️ Blocked
+
+## Validation globale
+
+- `dotnet build RacingGameOriginal/Desktop/RacingGame.csproj -c Debug` et `dotnet build RacingGameCasaEngine/RacingGameCasaEngine.csproj -c Debug` : 0 erreur.
+- Banc relancé (`scripts/TrackCaptureCompare/README.md`) : rapport comparé à celui du 2026-11-14 (`docs/racinggame-3d-capture-bench-findings.md`), part de contours retrouvés par vue notée ici.
+- Journal de mesure de T1 : écart maximal du tracé et liste des objets sans correspondance, avant et après.
+
+---
+
+## Phase 1 — Géométrie
+
+### ✅ T1 — Mesurer : tracé et objets exportés par l'original
+
+> Validation (2026-11-14) : builds 0 erreur. Original relancé avec `--seed 1` : 30 PNG et `views.json` identiques au bit près à la référence du banc ; `scene.json` écrit (6,6 Mo). Conversion : `scene-measure-<Track>.txt` écrit pour les trois circuits. Mesure : positions des points de tracé à 0,000 m (1332, 2172 et 4466 points), vecteurs droite et haut à moins de 0,04° ; **largeur de route** différente jusqu'à 0,8 (Beginner), 0,6 (Advanced), 0,53 (Expert) ; objets placés 169 / 1147 (Beginner), 268 / 1693 (Advanced), 539 / 3404 (Expert). Cause de la largeur et des zones vides, lue dans le code : `LegacyTrackLayout` désérialise `WidthHelpers` et `RoadHelpers` sans nommer leurs éléments (`WidthHelper`, `RoadHelper`), donc les deux listes sont vides. Les supports de rail (`GuardRailHolder`) de la conversion ne sont pas enregistrés par la mesure : ils apparaissent tous comme manquants, à traiter en T2.
+
+- Objectif : `--capture-track-audit` écrit aussi `scene.json` (par circuit : points de tracé avec position, droite, haut, largeur ; objets placés avec nom de modèle et matrice). `--capture-reference-views` lit ce fichier s'il est à côté de `views.json` et journalise, par circuit : l'écart de chaque point de tracé (maximum, moyenne, premier indice au-delà de 5 cm), et pour chaque objet de l'original l'objet de même modèle le plus proche dans la conversion (distance, écart d'orientation, écart d'échelle), plus les objets sans correspondance de chaque côté.
+- Fichiers : `RacingGameOriginal/Core/GameScreens/TrackAuditCaptureScreen.cs`, accès en lecture dans `Core/Tracks/TrackLine.cs` et `Core/Landscapes/Landscape.cs` ; `RacingGameCasaEngine/Bootstrap/ReferenceViewCaptureValidator.cs`, `Worlds/LegacyTrackSceneFactory*.cs` (accès en lecture aux points et aux objets), `scripts/TrackCaptureCompare/README.md`.
+- Validation : builds 0 erreur ; les images de l'original restent identiques au bit près à la référence ; le journal de la conversion contient la mesure pour les trois circuits.
+- Commit : `feat(capture): export the original's track points and objects and measure the port against them`
+
+### ⏳ T2 — Corriger ce que la mesure désigne (G1, G5)
+
+- Objectif : le tracé de la conversion suit celui de l'original (écart maximal sous 5 cm) ; les objets communs sont à la même place, orientation et échelle (panneaux, segments de colonne).
+- Fichiers : fixés par T1 (attendus : `Worlds/LegacyTrackSceneFactory*.cs`, éventuellement des modèles glTF de `RacingGameCasaEngine/Content/Models`).
+- Validation : mesure de T1 relancée ; vues `sector-*` du banc.
+- Commit : `fix(racing-casa): …` (un commit par cause distincte)
+
+### ⏳ T3 — Ouvrages absents : dessous de route, tunnels, sol de ville (G4)
+
+- Objectif : la conversion construit le dessous de route, les tunnels et les plans de ville comme l'original (mêmes sommets, mêmes coordonnées de texture, mêmes textures).
+- Fichiers : `Worlds/LegacyTrackSceneFactory*.cs`.
+- Validation : build ; vues `Beginner-sector-20`, `Beginner-overview`, `Expert-overview` et vues de tunnel du banc.
+- Commit : `feat(racing-casa): build the road underside, the tunnels and the city ground`
+
+### ⏳ T4 — Décor aléatoire dans l'ordre de l'original (G3)
+
+- Objectif : palmiers, banderoles, panneaux et décor hors route sont tirés dans le même ordre et avec le même générateur que l'original ; avec la graine du banc, la mesure de T1 ne laisse aucun objet sans correspondance.
+- Fichiers : `Worlds/LegacyTrackSceneFactory*.cs`, `Bootstrap/RaceLaunchOptions.cs` (graine), `Bootstrap/ReferenceViewCaptureValidator.cs`.
+- Validation : mesure de T1 ; vues du banc.
+- Commit : `feat(racing-casa): place the random scenery in the original's draw order`
+
+### ⏳ T5 — Banc relancé et constats mis à jour
+
+- Objectif : relancer le banc, noter les mesures, mettre à jour `docs/racinggame-3d-capture-bench-findings.md` (écarts fermés, écarts restants).
+- Validation : relecture par l'auteur.
+- Commit : `docs(racing-casa): update the 3D findings after the geometry fixes`
+
+---
+
+## Points ouverts
+
+| Réf | Sujet | Tâche concernée |
+|---|---|---|
+
+## Hors périmètre
+
+- Matériaux, lumière, ombres, ciel, effets (tranches S2 à S4).
+- Le « ruban noir » (G2) et la banderole de départ d'Advanced (G6) tant que la mesure ne les rattache pas à la géométrie.
+- Toute modification du moteur sans plan propre dans son dépôt.

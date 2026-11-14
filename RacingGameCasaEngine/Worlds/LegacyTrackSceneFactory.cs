@@ -87,6 +87,7 @@ internal static partial class LegacyTrackSceneFactory
         List<LegacyTrackPoint> roadSplinePoints = BuildRoadSplinePoints(layout, terrainSampler);
         Vector3 origin = ComputeOrigin(layout.TrackPoints);
         var placementState = new LegacySceneryPlacementState(origin, terrainSampler);
+        BeginSceneDiagnostics();
         RaceTrackPhysicsProfile physicsProfile = CreateTrackPhysicsProfile(roadSplinePoints, origin);
 
         if (roadSplinePoints.Count < 3)
@@ -117,6 +118,7 @@ internal static partial class LegacyTrackSceneFactory
 
         AddHelperDrivenSceneryEntities(trackName, sceneryEntities, roadSplinePoints, layout.RoadHelpers, placementState, ref sceneryIndex, assetContentManager);
 
+        EndSceneDiagnostics(trackName, roadSplinePoints);
         return new RaceTrackScene(trackEntities, sceneryEntities, playerStartPose, checkpointTriggers, physicsProfile);
     }
 
@@ -208,7 +210,9 @@ internal static partial class LegacyTrackSceneFactory
             return;
         }
 
-        Matrix runtimeTransform = ConvertLegacyTransform(Matrix.CreateScale(1.2f) * adjustedLegacyTransform, placementState.Origin);
+        Matrix placedLegacyTransform = Matrix.CreateScale(1.2f) * adjustedLegacyTransform;
+        RecordPlacedObject(resolvedModelName, placedLegacyTransform);
+        Matrix runtimeTransform = ConvertLegacyTransform(placedLegacyTransform, placementState.Origin);
         entities.Add(CreateStaticModelEntity($"Track.Scenery.{resolvedModelName}.{sceneryIndex:000}", staticModel, runtimeTransform));
         placementState.CreatedLegacyPositions.Add(legacyPosition);
         sceneryIndex++;

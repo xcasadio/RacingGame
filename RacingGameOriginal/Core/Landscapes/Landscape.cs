@@ -113,6 +113,25 @@ namespace RacingGame.Landscapes
             }
 
             /// <summary>
+            /// Model name and render matrix, for the capture export
+            /// </summary>
+            internal string ModelName
+            {
+                get
+                {
+                    return model.Name;
+                }
+            }
+
+            internal Matrix Matrix
+            {
+                get
+                {
+                    return matrix;
+                }
+            }
+
+            /// <summary>
             /// Create landscape object
             /// </summary>
             /// <param name="setModel">Set model</param>
@@ -160,6 +179,25 @@ namespace RacingGame.Landscapes
         /// List of landscape objects.
         /// </summary>
         List<LandscapeObject> landscapeObjects = new List<LandscapeObject>();
+
+        /// <summary>
+        /// Placed objects and track, read by the capture export
+        /// </summary>
+        internal List<LandscapeObject> LandscapeObjects
+        {
+            get
+            {
+                return landscapeObjects;
+            }
+        }
+
+        internal Track Track
+        {
+            get
+            {
+                return track;
+            }
+        }
 
         /// <summary>
         /// Extra list for objects that are near the track, all the objects

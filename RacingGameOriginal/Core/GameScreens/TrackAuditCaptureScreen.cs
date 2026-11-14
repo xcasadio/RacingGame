@@ -71,6 +71,7 @@ namespace RacingGame.GameScreens
         };
 
         private readonly List<object> exportedTracks = new List<object>();
+        private readonly List<object> exportedScenes = new List<object>();
         private List<object> exportedViews;
         private List<CaptureView> views;
         private int levelIndex = -1;
@@ -111,6 +112,7 @@ namespace RacingGame.GameScreens
                 if (views == null && !BeginNextLevel())
                 {
                     WriteViewsFile();
+                    WriteSceneFile();
                     Console.WriteLine("Track audit capture completed: " + savedFiles + " file(s)");
                     finished = true;
                     return true;
@@ -263,6 +265,7 @@ namespace RacingGame.GameScreens
                 trackLength = RacingGameManager.Landscape.TrackLength,
                 views = exportedViews,
             });
+            exportedScenes.Add(BuildScene(level));
 
             viewIndex = 0;
             variantIndex = 0;
@@ -354,6 +357,67 @@ namespace RacingGame.GameScreens
         private static float[] ToArray(Vector3 v)
         {
             return new[] { v.X, v.Y, v.Z };
+        }
+
+        /// <summary>
+        /// The generated track points and every placed object of the loaded level, so that the
+        /// port can measure its own road and objects against them (scene.json).
+        /// </summary>
+        private static object BuildScene(RacingGameManager.Level level)
+        {
+            Landscapes.Landscape landscape = RacingGameManager.Landscape;
+
+            List<object> points = new List<object>();
+            foreach (Tracks.TrackVertex point in landscape.Track.Points)
+                points.Add(new
+                {
+                    position = ToArray(point.pos),
+                    right = ToArray(point.right),
+                    up = ToArray(point.up),
+                    direction = ToArray(point.dir),
+                    roadWidth = point.roadWidth,
+                });
+
+            List<object> objects = new List<object>();
+            foreach (Landscapes.Landscape.LandscapeObject obj in landscape.LandscapeObjects)
+            {
+                Matrix m = obj.Matrix;
+                objects.Add(new
+                {
+                    model = obj.ModelName,
+                    // Row vectors, as XNA stores them: right, up, backward, translation
+                    matrix = new[]
+                    {
+                        m.M11, m.M12, m.M13, m.M14,
+                        m.M21, m.M22, m.M23, m.M24,
+                        m.M31, m.M32, m.M33, m.M34,
+                        m.M41, m.M42, m.M43, m.M44,
+                    },
+                });
+            }
+
+            return new
+            {
+                name = level.ToString(),
+                trackPoints = points,
+                objects = objects,
+            };
+        }
+
+        private void WriteSceneFile()
+        {
+            var document = new
+            {
+                schema = 1,
+                source = "RacingGame (MonoGame) --capture-track-audit",
+                coordinateSystem = "racinggame-z-up",
+                seed = CaptureOptions.Seed,
+                highDetail = BaseGame.HighDetail,
+                tracks = exportedScenes,
+            };
+
+            File.WriteAllText(Path.Combine(CaptureOptions.OutputDirectory, "scene.json"),
+                JsonSerializer.Serialize(document, new JsonSerializerOptions { WriteIndented = true }));
         }
 
         private void WriteViewsFile()

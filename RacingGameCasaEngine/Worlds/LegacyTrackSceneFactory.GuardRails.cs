@@ -400,6 +400,7 @@ internal static partial class LegacyTrackSceneFactory
 
                 Matrix legacyTransform = Matrix.CreateScale(1.2f)
                     * Matrix.CreateTranslation(new Vector3(bottomPosition.X, bottomPosition.Y, bottomPosition.Z));
+                RecordPlacedObject("RoadColumnSegment", legacyTransform);
                 Matrix runtimeTransform = ConvertLegacyTransform(legacyTransform, origin);
                 entities.Add(CreateStaticModelEntity($"Track.ColumnSegment.{trackName}.{index:000}", segmentModel, runtimeTransform));
             }
