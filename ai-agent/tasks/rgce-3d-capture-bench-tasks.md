@@ -67,10 +67,12 @@ Produire, pour les trois circuits, des paires d'images « original / conversion 
 - Validation : build 0 erreur ; 15 PNG de la taille inscrite dans `views.json` ; deux lancements identiques (ou écart mesuré et noté).
 - Commit : `feat(racing-casa): replay the original's reference views`
 
-### ⏳ T3 — Rapport de comparaison par paire
+### ✅ T3 — Rapport de comparaison par paire
+
+> Validation (2026-11-14) : nouvel outil `scripts/TrackCaptureCompare` (l'outil des écrans reste tel quel). Rapport généré sur les 15 paires, variantes `nopost` et `full`, dans `artifacts/capture-bench/report*` (dossier ignoré par git). Sur `Beginner-start`, les bords de route, les lignes et la banderole se superposent (contours jaunes). Deux lancements de la conversion comparés entre eux : 0,00.
 
 - Objectif : pour chaque paire, écart moyen par canal, image de différence et montage côte à côte ; un rapport Markdown.
-- Fichiers : `scripts/UiCaptureCompare/` (mode paires) ou outil voisin.
+- Fichiers : `scripts/TrackCaptureCompare/` (nouveau).
 - Validation : rapport généré sur les 15 paires ; sur la vue de départ, les bords de route se superposent.
 - Commit : `feat(scripts): compare original and converted 3D captures`
 
