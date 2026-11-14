@@ -1744,7 +1744,9 @@ internal sealed record RaceTrackStartPose(
 public sealed class LegacyTrackLayout
 {
     public List<Vector3> TrackPoints { get; set; } = [];
+    [XmlArrayItem("WidthHelper")]
     public List<LegacyWidthHelper> WidthHelpers { get; set; } = [];
+    [XmlArrayItem("RoadHelper")]
     public List<LegacyRoadHelper> RoadHelpers { get; set; } = [];
     [XmlArray("NeutralsObjects")]
     [XmlArrayItem("NeutralObject")]
