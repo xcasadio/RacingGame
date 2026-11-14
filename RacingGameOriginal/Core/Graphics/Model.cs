@@ -71,6 +71,17 @@ namespace RacingGame.Graphics
         bool hasAlpha = false;
 
         /// <summary>
+        /// Read access to the alpha flag, for the capture export (shadow receivers).
+        /// </summary>
+        internal bool HasAlpha
+        {
+            get
+            {
+                return hasAlpha;
+            }
+        }
+
+        /// <summary>
         /// Is this the car model? Set in constructor and used in the render
         /// methods, this way we can compare much faster when rendering!
         /// </summary>

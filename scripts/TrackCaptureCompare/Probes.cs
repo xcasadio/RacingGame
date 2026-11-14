@@ -66,11 +66,11 @@ internal static class ProbeReport
         }
 
         sb.AppendLine(string.Create(inv, $"- Criteria: (1) `lit` and `away`: candidate within +-{ColorTolerance:0} of the reference per channel; (2) `shadow`: candidate shadow/lit luminance ratio within +-{RatioTolerance:0.00} of the reference's, per view and surface; ")
-            + string.Create(inv, $"(3) class agreement: a probe is shadowed in the candidate when its luminance is below {ShadowedBelow:0.00} x the mean luminance of the candidate's `lit` probes of the same surface in that view (all `lit` probes of the view when that surface has none); each `shadow` probe must be shadowed and each `lit` probe not shadowed. `away-shadowed` probes are reported, not judged."));
+            + string.Create(inv, $"(3) class agreement: a probe is shadowed in the candidate when its luminance is below {ShadowedBelow:0.00} x the mean luminance of the candidate's `lit` probes of the same surface in that view (all `lit` probes of the view when that surface has none); each `shadow` probe must be shadowed and each `lit` probe not shadowed. (4) `away-shadowed`: candidate within +-{ColorTolerance:0} of the reference per channel, like criterion 1."));
         sb.AppendLine();
 
         var body = new StringBuilder();
-        int c1Pass = 0, c1Total = 0, c2Pass = 0, c2Total = 0, c3Pass = 0, c3Total = 0;
+        int c1Pass = 0, c1Total = 0, c2Pass = 0, c2Total = 0, c3Pass = 0, c3Total = 0, c4Pass = 0, c4Total = 0;
 
         foreach (var pair in pairs)
         {
@@ -102,8 +102,8 @@ internal static class ProbeReport
 
             body.AppendLine($"## {pair.Name}");
             body.AppendLine();
-            body.AppendLine("| Probe | Class | Surface | x,y | Reference RGB (std) | Candidate RGB (std) | Diff RGB | Crit. 1 | Crit. 3 |");
-            body.AppendLine("|---|---|---|---|---|---|---|---|---|");
+            body.AppendLine("| Probe | Class | Surface | x,y | Reference RGB (std) | Candidate RGB (std) | Diff RGB | Crit. 1 | Crit. 3 | Crit. 4 |");
+            body.AppendLine("|---|---|---|---|---|---|---|---|---|---|");
 
             foreach (Measured m in measured)
             {
@@ -115,6 +115,15 @@ internal static class ProbeReport
                     crit1 = ok ? "PASS" : "FAIL";
                     c1Total++;
                     c1Pass += ok ? 1 : 0;
+                }
+
+                string crit4 = "-";
+                if (m.Probe.Class == "away-shadowed")
+                {
+                    bool ok = diff.All(d => Math.Abs(d) <= ColorTolerance);
+                    crit4 = ok ? "PASS" : "FAIL";
+                    c4Total++;
+                    c4Pass += ok ? 1 : 0;
                 }
 
                 string crit3 = "-";
@@ -136,7 +145,7 @@ internal static class ProbeReport
                 }
 
                 body.AppendLine(string.Create(inv,
-                    $"| {m.Probe.Name} | {m.Probe.Class} | {m.Probe.Surface ?? "-"} | {m.Probe.X},{m.Probe.Y} | {Fmt(m.Reference)} ({m.ReferenceStd:0.0}) | {Fmt(m.Candidate)} ({m.CandidateStd:0.0}) | {FmtSigned(diff)} | {crit1} | {crit3} |"));
+                    $"| {m.Probe.Name} | {m.Probe.Class} | {m.Probe.Surface ?? "-"} | {m.Probe.X},{m.Probe.Y} | {Fmt(m.Reference)} ({m.ReferenceStd:0.0}) | {Fmt(m.Candidate)} ({m.CandidateStd:0.0}) | {FmtSigned(diff)} | {crit1} | {crit3} | {crit4} |"));
             }
 
             body.AppendLine();
@@ -174,6 +183,7 @@ internal static class ProbeReport
         sb.AppendLine(string.Create(inv, $"| 1. lit and away within +-{ColorTolerance:0} | {c1Pass} | {c1Total} |"));
         sb.AppendLine(string.Create(inv, $"| 2. shadow/lit ratio within +-{RatioTolerance:0.00} (per view and surface) | {c2Pass} | {c2Total} |"));
         sb.AppendLine($"| 3. class agreement (shadow shadowed, lit lit) | {c3Pass} | {c3Total} |");
+        sb.AppendLine(string.Create(inv, $"| 4. away-shadowed within +-{ColorTolerance:0} | {c4Pass} | {c4Total} |"));
         sb.AppendLine();
         sb.Append(body);
         return sb.ToString();

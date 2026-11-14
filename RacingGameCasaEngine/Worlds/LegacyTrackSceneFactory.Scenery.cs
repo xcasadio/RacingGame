@@ -239,11 +239,12 @@ internal static partial class LegacyTrackSceneFactory
                 FirstBigBuildingPosition = placedTransform.Translation;
             }
 
-            RecordPlacedObject(modelName, placedTransform);
-            group.Entities.Add(CreateStaticModelEntity(
+            Entity entity = CreateStaticModelEntity(
                 group.NextName(modelName),
                 model,
-                ConvertLegacyTransform(placedTransform, origin)));
+                ConvertLegacyTransform(placedTransform, origin));
+            RecordPlacedObject(modelName, placedTransform, entity);
+            group.Entities.Add(entity);
         }
 
         /// <summary>The overload of the original that puts an object beside the road, away from it.</summary>

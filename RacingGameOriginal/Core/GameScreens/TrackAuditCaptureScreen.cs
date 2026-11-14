@@ -382,9 +382,14 @@ namespace RacingGame.GameScreens
             foreach (Landscapes.Landscape.LandscapeObject obj in landscape.LandscapeObjects)
             {
                 Matrix m = obj.Matrix;
+                bool nearTrack = landscape.IsNearTrackObject(obj);
                 objects.Add(new
                 {
                     model = obj.ModelName,
+                    // Membership of Landscape.nearTrackObjects, and the receiving rule of
+                    // Landscape.UseShadow / Model.UseShadow, read from the runtime state
+                    castsShadow = nearTrack,
+                    receivesShadow = nearTrack && obj.ReceivesShadowIfNearTrack,
                     // Row vectors, as XNA stores them: right, up, backward, translation
                     matrix = new[]
                     {

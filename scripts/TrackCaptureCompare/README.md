@@ -56,7 +56,7 @@ dotnet run --project scripts/TrackCaptureCompare -- <views.json> <reference fold
 ```
 
 - View names are the `<Track>-<view>` names of views.json. `x`, `y` are full-resolution pixels (1280x720) of the capture, the centre of a 9x9 square; the same pixel is the same surface point in both pictures (geometry is aligned, see `docs/racinggame-3d-capture-bench-findings.md`).
-- `class`: `lit` (in the sun), `shadow` (shadowed by the original), `away` (faces away from the sun and the original does NOT shadow it: terrain slope with no caster, building wall farther than 129 m from the car of that view, where the original's shadow map stops), `away-shadowed` (faces away and the original shadows it too, e.g. guard rails and near buildings: reported, not judged; for a later slice). `note` says why, and for `away` why the original does not shadow it.
+- `class`: `lit` (in the sun), `shadow` (shadowed by the original), `away` (faces away from the sun and the original does NOT shadow it: terrain slope with no caster, building wall farther than 129 m from the car of that view, where the original's shadow map stops), `away-shadowed` (faces away and the original shadows it too: a face of a near building, inside the original's shadow map, that is, within about +-42 m across the light and +-80 m along it of the point 21.5 m ahead of the car position of the view; judged by criterion 4). `note` says why, and for `away` why the original does not shadow it.
 - `surface` (optional): free label (`road`, `terrain`, `city`, `building`). `shadow` and `lit` probes are paired by surface for the ratio. `terrain` triggers the detail correction below.
 - Points sit on patches that are uniform at the 9x9 scale and at least 8 px from any shadow edge, object edge or lane marking in both pictures (checked by sampling: the report prints the luminance standard deviation of each square).
 
@@ -67,6 +67,11 @@ dotnet run --project scripts/TrackCaptureCompare -- <views.json> <reference fold
 1. `lit` and `away`: candidate within +-12 (of 255) of the reference per channel.
 2. `shadow`: the candidate's shadow/lit ratio is within +-0.05 of the reference's. The ratio is the mean luminance (0.299 R + 0.587 G + 0.114 B) of the `shadow` probes over the mean luminance of the `lit` probes, per view and per `surface` (only when both exist).
 3. Class agreement: a probe counts as shadowed in the candidate when its luminance is below 0.6 x the mean luminance of the candidate's own `lit` probes of the same surface in that view (all `lit` probes of the view when that surface has none). Each `shadow` probe must be shadowed and each `lit` probe must not be. The original's shadow colour multiplies the image by about 0.26, so 0.6 sits between lit and shadowed.
+4. `away-shadowed`: candidate within +-12 (of 255) of the reference per channel, like criterion 1. The faces are chosen on uniform patches of near buildings that the original draws in its shadow map (`castsShadow` in `scene.json`, see below); the original shadows them whatever their N.L.
+
+### Shadow flags in scene.json
+
+Each object of `scene.json` carries `castsShadow` (membership of the original's `Landscape.nearTrackObjects`) and `receivesShadow` (member, name without `banner` or `sign`, model not an alpha model), read from the original's runtime state. The port records, for each placed object, the `CastShadows` and `ReceiveShadows` of the component it created; `scene-measure-<Track>.txt` and the console summary give the number of objects whose flags differ, and the first few. A `scene.json` without the flags is accepted (the flag comparison is skipped).
 
 ### Terrain detail correction
 

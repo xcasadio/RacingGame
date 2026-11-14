@@ -137,7 +137,9 @@ internal static class ReferenceSceneMeasure
                     m[0].GetSingle(), m[1].GetSingle(), m[2].GetSingle(), m[3].GetSingle(),
                     m[4].GetSingle(), m[5].GetSingle(), m[6].GetSingle(), m[7].GetSingle(),
                     m[8].GetSingle(), m[9].GetSingle(), m[10].GetSingle(), m[11].GetSingle(),
-                    m[12].GetSingle(), m[13].GetSingle(), m[14].GetSingle(), m[15].GetSingle())));
+                    m[12].GetSingle(), m[13].GetSingle(), m[14].GetSingle(), m[15].GetSingle()),
+                ReadOptionalFlag(placed, "castsShadow"),
+                ReadOptionalFlag(placed, "receivesShadow")));
         }
 
         report.AppendLine("## Placed objects");
@@ -145,6 +147,11 @@ internal static class ReferenceSceneMeasure
         report.AppendLine("model: original / port / matched within 1 m / max distance of the matched / max rotation delta / max scale ratio delta");
 
         var used = new bool[port.PlacedObjects.Count];
+        bool flagsKnown = reference.Count > 0 && reference.All(placed => placed.CastsShadow.HasValue && placed.ReceivesShadow.HasValue);
+        int castMismatches = 0;
+        int receiveMismatches = 0;
+        int flaggedPairs = 0;
+        var flagLines = new List<string>();
         var missing = new List<string>();
         int matchedTotal = 0;
         foreach (IGrouping<string, LegacyPlacedObject> group in reference
@@ -186,6 +193,22 @@ internal static class ReferenceSceneMeasure
                 used[nearest] = true;
                 matched++;
                 Matrix actual = port.PlacedObjects[nearest].LegacyTransform;
+                if (flagsKnown)
+                {
+                    LegacyPlacedObject actualObject = port.PlacedObjects[nearest];
+                    flaggedPairs++;
+                    bool castDiffers = actualObject.CastsShadow != expected.CastsShadow;
+                    bool receiveDiffers = actualObject.ReceivesShadow != expected.ReceivesShadow;
+                    castMismatches += castDiffers ? 1 : 0;
+                    receiveMismatches += receiveDiffers ? 1 : 0;
+                    if (castDiffers || receiveDiffers)
+                    {
+                        Vector3 q = expected.LegacyTransform.Translation;
+                        flagLines.Add(string.Create(CultureInfo.InvariantCulture,
+                            $"  {group.Key} at ({q.X:0.0}, {q.Y:0.0}, {q.Z:0.0}): casts original {expected.CastsShadow} / port {actualObject.CastsShadow}, receives original {expected.ReceivesShadow} / port {actualObject.ReceivesShadow}"));
+                    }
+                }
+
                 maxDistance = Math.Max(maxDistance, nearestDistance);
                 maxRotation = Math.Max(maxRotation, Math.Max(
                     AngleDegrees(expected.LegacyTransform.Right, actual.Right),
@@ -202,6 +225,25 @@ internal static class ReferenceSceneMeasure
             matchedTotal += matched;
             report.AppendLine(CultureInfo.InvariantCulture,
                 $"  {group.Key}: {group.Count()} / {portCount} / {matched} / {maxDistance:0.000} / {maxRotation:0.00} deg / {maxScaleDelta:0.000}");
+        }
+
+        report.AppendLine();
+        string flagSummary;
+        if (flagsKnown)
+        {
+            report.AppendLine(CultureInfo.InvariantCulture,
+                $"shadow flags (castsShadow / receivesShadow, original's runtime state against the components the port created), {flaggedPairs} matched objects: {castMismatches} cast mismatch(es), {receiveMismatches} receive mismatch(es)");
+            foreach (string line in flagLines.Take(WorstLines))
+            {
+                report.AppendLine(line);
+            }
+
+            flagSummary = $", shadow flags: {castMismatches} cast and {receiveMismatches} receive mismatch(es) of {flaggedPairs}";
+        }
+        else
+        {
+            report.AppendLine("shadow flags: not in this scene.json (written before the capture exported castsShadow and receivesShadow)");
+            flagSummary = string.Empty;
         }
 
         report.AppendLine();
@@ -228,7 +270,7 @@ internal static class ReferenceSceneMeasure
             report.AppendLine(line);
         }
 
-        return $"objects {reference.Count}/{port.PlacedObjects.Count}, {matchedTotal} matched, {missing.Count} missing in the port, {extra.Count} extra in the port";
+        return $"objects {reference.Count}/{port.PlacedObjects.Count}, {matchedTotal} matched, {missing.Count} missing in the port, {extra.Count} extra in the port{flagSummary}";
     }
 
     private static float AngleDegrees(Vector3 a, Vector3 b)
@@ -245,6 +287,13 @@ internal static class ReferenceSceneMeasure
     private static Vector3 SafeNormalize(Vector3 vector)
     {
         return vector.LengthSquared() < 1e-12f ? Vector3.Zero : Vector3.Normalize(vector);
+    }
+
+    private static bool? ReadOptionalFlag(JsonElement element, string name)
+    {
+        return element.TryGetProperty(name, out JsonElement value) && value.ValueKind is JsonValueKind.True or JsonValueKind.False
+            ? value.GetBoolean()
+            : null;
     }
 
     private static Vector3 ReadVector(JsonElement element)

@@ -132,6 +132,18 @@ namespace RacingGame.Landscapes
             }
 
             /// <summary>
+            /// Receives shadows when it is in nearTrackObjects: not a banner or sign
+            /// (isBanner) and not an alpha model (Model.UseShadow), read by the capture export.
+            /// </summary>
+            internal bool ReceivesShadowIfNearTrack
+            {
+                get
+                {
+                    return isBanner == false && model.HasAlpha == false;
+                }
+            }
+
+            /// <summary>
             /// Create landscape object
             /// </summary>
             /// <param name="setModel">Set model</param>
@@ -189,6 +201,15 @@ namespace RacingGame.Landscapes
             {
                 return landscapeObjects;
             }
+        }
+
+        /// <summary>
+        /// Is this object in the list that generates (and receives) shadows? Read by
+        /// the capture export.
+        /// </summary>
+        internal bool IsNearTrackObject(LandscapeObject obj)
+        {
+            return nearTrackObjects.Contains(obj);
         }
 
         internal Track Track

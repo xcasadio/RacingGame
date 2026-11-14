@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Light and shadow probes for the 3D capture bench (plan ai-agent/tasks/rgce-3d-lighting-shadows-tasks.md, T1). Points are in full-resolution pixels of the 1280x720 captures; the tool averages a 9x9 square around each. Classes: lit, shadow, away (faces away from the sun and is NOT shadowed by the original), away-shadowed (faces away and is shadowed by the original; reported, not judged until S2b). Chosen on original-s1a (nopost) against rgce-t1; each point sits on a patch that is uniform in both pictures (25x25 mean within a few levels of the 9x9 mean) and at least 8 px from any shadow edge, object edge or lane marking.",
+  "description": "Light and shadow probes for the 3D capture bench (plan ai-agent/tasks/rgce-3d-lighting-shadows-tasks.md, T1). Points are in full-resolution pixels of the 1280x720 captures; the tool averages a 9x9 square around each. Classes: lit, shadow, away (faces away from the sun and is NOT shadowed by the original), away-shadowed (faces away and is shadowed by the original; judged by criterion 4, candidate within +-12 of the reference). Chosen on original-s1a (nopost) against rgce-t1; each point sits on a patch that is uniform in both pictures (25x25 mean within a few levels of the 9x9 mean) and at least 8 px from any shadow edge, object edge or lane marking.",
   "views": {
     "Beginner-start": [
       { "name": "road-lit-1", "x": 480, "y": 600, "class": "lit", "surface": "road", "note": "asphalt between lane markings, in the sun, outside the original's glint band" },
@@ -22,7 +22,13 @@
       { "name": "city-lit-3", "x": 40, "y": 540, "class": "lit", "surface": "city", "note": "sunlit cobbles on the left" },
       { "name": "city-shadow-1", "x": 830, "y": 570, "class": "shadow", "surface": "city", "note": "inside the big shadow cast on the right cobbles by the nearby building and palm (within the shadow-map range)" },
       { "name": "city-shadow-2", "x": 830, "y": 600, "class": "shadow", "surface": "city", "note": "inside the same shadow" },
-      { "name": "city-shadow-3", "x": 830, "y": 690, "class": "shadow", "surface": "city", "note": "inside the same shadow" }
+      { "name": "city-shadow-3", "x": 830, "y": 690, "class": "shadow", "surface": "city", "note": "inside the same shadow" },
+      { "name": "building-away-shadowed-1", "x": 920, "y": 200, "class": "away-shadowed", "surface": "building", "note": "dark face of the near Building (castsShadow, receivesShadow; about 55 m deep, 28 m to the side of and 25 m along the light from the centre of the original's shadow map), turned away from the sun, shadowed by the original; uniform patch, std 0.0 in the original" },
+      { "name": "building-away-shadowed-2", "x": 1000, "y": 200, "class": "away-shadowed", "surface": "building", "note": "same Building, next panel to the right of a pillar; uniform patch, std 0.0 in the original" },
+      { "name": "building-away-shadowed-3", "x": 920, "y": 250, "class": "away-shadowed", "surface": "building", "note": "same Building, same panel as building-away-shadowed-1, lower; uniform patch, std 1.0 in the original" },
+      { "name": "hotel-away-shadowed-1", "x": 110, "y": 40, "class": "away-shadowed", "surface": "building", "note": "dark facade of the near Hotel02 (castsShadow, receivesShadow; 50 m deep, 20 m to the side of and 57 m along the light from the centre of the shadow map), turned away from the sun, shadowed by the original; uniform patch, std 1.0 in the original" },
+      { "name": "hotel-away-shadowed-2", "x": 100, "y": 150, "class": "away-shadowed", "surface": "building", "note": "same Hotel02 facade, lower; uniform patch, std 0.0 in the original" },
+      { "name": "hotel-away-shadowed-3", "x": 30, "y": 100, "class": "away-shadowed", "surface": "building", "note": "same Hotel02 facade, left; uniform patch, std 0.0 in the original" }
     ],
     "Beginner-sector-50": [
       { "name": "road-lit-1", "x": 180, "y": 520, "class": "lit", "surface": "road", "note": "asphalt between lane markings on the left of the road, left of the glint band" },
