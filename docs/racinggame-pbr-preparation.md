@@ -55,9 +55,10 @@ The author asked to decide these case by case. Each is something the original di
 | A8 | `AlphaTrain` is flagged alpha but its technique has no cut-out. | `NormalMapping.fx:503-531` | Decide when the model is used; no bench view shows it. |
 | A9 | Models whose name starts with `alpha` (palms) never receive shadows, but a full-screen shadow mask darkens whatever is drawn in front of a shadowed receiver. | `Core/Graphics/Model.cs:862-867`, `Core/Shaders/ShadowMapBlur.cs:119-137, 225` | Independent of PBR; handled as a per-object approximation in the shadow slice. |
 | A10 | Shadow casters are drawn two-sided without alpha test: palms cast solid card-shaped shadows. | `Core/Content/Shaders/ShadowMap.fx:122-130` | Independent of PBR. The port follows each material's alpha test. Decide: leaf-shaped shadows (port) or card-shaped (original). |
+| A11 | The whole frame is darkened by about 7 %, shadowed or not: the weights of the shadow blur sum to 0.965 and the blurred mask is multiplied over the frame after two passes (0.965 x 0.965 = 0.931). | `Core/Content/Shaders/PostScreenShadowBlur.fx` (`Weights8`), `Core/Shaders/ShadowMapBlur.cs:128, 225` | Independent of PBR. The port does not darken. Decide: leave it (intent) or apply a global 0.931 (image); with a tonemapped PBR frame the question disappears into the exposure setting. |
 
 ## 5. Open measurements that PBR will not settle
 
-- The port's terrain is about 7 % brighter than the original's, uniformly (bench findings, material base slice).
+- Solved since: the port's terrain looked about 7 % brighter than the original's because the original darkens its whole frame (A11).
 - Enabling mipmaps slightly changed foliage coverage and road grain against the original, whose mipmaps are DXT-compressed by its content pipeline.
 - A missing texture file is swallowed silently by the port's `LoadTexture`.

@@ -212,3 +212,34 @@ Left open:
 - Enabling mipmaps raised the mean difference slightly on two views (`Beginner-sector-80` +0.14, `Expert-sector-20` +0.18) before the detail texture brought both well below; on `Expert-sector-20` the change sits on palms, road and rails. Cause not isolated.
 - The original reads the sky cube with two conventions depending on the technique: glass follows the displayed sky, signs and car paint do not. Only the first is reproduced; the second is one of the original's accidental behaviours, to be decided case by case with the PBR work.
 - The car selection screen: the windscreen reflection changes with the converted sky cube; nothing else visibly.
+
+## Update after the shadow slice (2026-11-14)
+
+Plan `ai-agent/tasks/rgce-3d-lighting-shadows-tasks.md` (S2b), port at `d40b020`, CasaEngine at `585af17d` (branch `chantier/racinggame-lighting`). The reference is now `artifacts/capture-bench/original-s2b`: same 30 pictures as before, byte for byte, and a `scene.json` that also says which objects cast and receive shadows in the original.
+
+What was done:
+
+- The engine's shadows gain a mode that multiplies the lit colour by a shadow colour, a filter radius for soft edges, a fade before the shadow distance, and a depth range separate from the lateral extent (CasaEngine ADR-0093). Defaults keep the previous output.
+- The race world uses the original's shadow colour (0.25, 0.26, 0.27) in that mode, a filter radius of 3, and a map of 100 m with a 15 m fade.
+- Casters and receivers follow the original object by object: only its "near track" objects cast; among them banners, signs and alpha models do not receive. Measured: no mismatch on either flag on the three tracks (they differed on 1015 and 1059 of Beginner's 1147 objects before). Road, guard rails and tunnels cast and receive; the road underside and the generated columns do neither; the terrain and the city ground only receive.
+
+What the bench shows (L1, G2):
+
+- Shadows have the original's grey-blue tint and fall where the original's do. On terrain, the shadow/lit ratio matches the original (0.281 against 0.284, 0.264 against 0.267); it was 1.0 before.
+- Edges are graded over 3 to 4 pixels, still crisper than the original's screen-space blur; thin shadows stay thin where the original smears them.
+- The mean difference falls on every non-overview view (three-channel mean), slightly: for example `Beginner-sector-80` 23.73 to 22.20, `Expert-sector-80` 10.84 to 9.87.
+
+Probes: 24 of 34 lit and facing-away points within 12 (unchanged); shadow/lit ratio right on 2 of 4 surfaces (0 before); same points lit and shadowed on both sides: 27 of 33 (unchanged); shadowed faces of near buildings: 3 of 3.
+
+What does not match, and why:
+
+| Difference | Cause | Status |
+|---|---|---|
+| The original is 6 to 8 % darker everywhere, even outside its shadow map. | The weights of its shadow blur sum to 0.965, not 1 (`Core/Content/Shaders/PostScreenShadowBlur.fx`), and the blurred mask is multiplied over the whole frame after two passes: every pixel is multiplied by 0.965 x 0.965 = 0.931. With that pass off, the original's lit terrain equals the port's to the level. This is the "terrain 7 % brighter" left open by the material base slice. | Measured, cause found by the independent verification. Not reproduced: it is an accident of the original (see the PBR preparation, A11). |
+| The city ground left of the road in `Beginner-sector-20` is shadowed in the port, lit in the original. | The shadow of Hotel02, about 75 m high: the engine's orthographic map casts it; the original's perspective map, with its light 129 m away, clips the top of the building. | The Hotel shadow as the cause of the 80-level drop: measured. Without it these points still miss by 15 to 23: about 9 from the darkening above, the rest unexplained. The clipping itself: computed, not measured. |
+| A soft dark patch on the road in `Beginner-sector-50`, and a darker road at the start of Beginner, are only thin bands in the port. | Cast by the track meshes in the original. Back-face culling and the map extent are ruled out by measurement. Candidates left: the original's screen-space blur, its perspective map. | Not isolated. |
+| Palms cast leaf-shaped shadows in the port, card-shaped ones in the original. | The original draws every caster two-sided and without alpha test. | Known, listed with the original's accidental behaviours. |
+| In the original, anything drawn in front of a shadowed receiver is darkened too, receiver or not. | Its shadows are a screen-space mask multiplied over the whole frame. | Approximated per object in the port. |
+| On the overview views the port's shadows sit under the camera, the original's near the start grid. | The engine centres its map on the camera, the original on the car. | Known limit; an engine setting for the map centre would lift it. |
+
+Not measured: the render cost of the 12-tap filter and of the multiply mode.
