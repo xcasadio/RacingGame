@@ -16,12 +16,27 @@ const int DifferentPixelThreshold = 16;
 const int EdgeThreshold = 96;
 
 string variant = "nopost";
+string? probesPath = null;
+string? terrainDetailPath = null;
+bool terrainCorrection = true;
 var positional = new List<string>();
 for (int i = 0; i < args.Length; i++)
 {
     if (args[i] == "--variant" && i + 1 < args.Length)
     {
         variant = args[++i];
+    }
+    else if (args[i] == "--probes" && i + 1 < args.Length)
+    {
+        probesPath = args[++i];
+    }
+    else if (args[i] == "--terrain-detail" && i + 1 < args.Length)
+    {
+        terrainDetailPath = args[++i];
+    }
+    else if (args[i] == "--no-terrain-detail-correction")
+    {
+        terrainCorrection = false;
     }
     else
     {
@@ -31,7 +46,7 @@ for (int i = 0; i < args.Length; i++)
 
 if (positional.Count != 4)
 {
-    Console.Error.WriteLine("Usage: TrackCaptureCompare <views.json> <reference folder> <candidate folder> <output folder> [--variant full|nopost]");
+    Console.Error.WriteLine("Usage: TrackCaptureCompare <views.json> <reference folder> <candidate folder> <output folder> [--variant full|nopost] [--probes <probes.json> [--terrain-detail <tga|png> | --no-terrain-detail-correction]]");
     return 2;
 }
 
@@ -42,6 +57,18 @@ string outputDirectory = positional[3];
 if (!File.Exists(viewsPath) || !Directory.Exists(referenceDirectory) || !Directory.Exists(candidateDirectory))
 {
     Console.Error.WriteLine("views.json, the reference folder or the candidate folder was not found.");
+    return 2;
+}
+
+if (probesPath is not null && !File.Exists(probesPath))
+{
+    Console.Error.WriteLine($"probes file not found: {probesPath}");
+    return 2;
+}
+
+if (probesPath is not null && terrainCorrection && (terrainDetailPath is null || !File.Exists(terrainDetailPath)))
+{
+    Console.Error.WriteLine("--probes needs --terrain-detail <existing file> or --no-terrain-detail-correction.");
     return 2;
 }
 
@@ -164,6 +191,15 @@ foreach ((string name, string referencePath, string candidatePath) in pairs)
 
 File.WriteAllLines(Path.Combine(outputDirectory, "report.md"), report);
 report.ForEach(Console.WriteLine);
+
+if (probesPath is not null)
+{
+    double[] detailFactor = terrainCorrection ? ProbeReport.MeanDoubleDetail(terrainDetailPath!) : new[] { 1.0, 1.0, 1.0 };
+    string probeReport = ProbeReport.Build(probesPath, pairs, referenceDirectory, candidateDirectory, variant, terrainCorrection, terrainDetailPath, detailFactor);
+    File.WriteAllText(Path.Combine(outputDirectory, "probes.md"), probeReport);
+    Console.WriteLine();
+    Console.WriteLine(probeReport);
+}
 return 0;
 
 static double Luminance(byte[] pixels, int index)
