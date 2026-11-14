@@ -51,6 +51,7 @@ internal sealed class ReferenceViewCaptureValidator
     private readonly float _farPlane;
     private readonly string? _loadError;
     private readonly string? _sceneFilePath;
+    private readonly int? _sceneryRandomSeed;
     private CaptureStep _step = CaptureStep.WaitForFrontEnd;
     private TimeSpan _startedAt;
     private TimeSpan _lastTransitionAt;
@@ -85,6 +86,8 @@ internal sealed class ReferenceViewCaptureValidator
             _fieldOfViewY = MathHelper.ToRadians(root.GetProperty("fieldOfViewYDegrees").GetSingle());
             _nearPlane = root.GetProperty("nearPlane").GetSingle();
             _farPlane = root.GetProperty("farPlane").GetSingle();
+            // The original seeds its random scenery from this value before each level, so the port does the same.
+            _sceneryRandomSeed = root.TryGetProperty("seed", out JsonElement seed) ? seed.GetInt32() : null;
             foreach (JsonElement track in root.GetProperty("tracks").EnumerateArray())
             {
                 var views = new List<ReferenceView>();
@@ -174,6 +177,7 @@ internal sealed class ReferenceViewCaptureValidator
                 }
 
                 _flow.State.SelectedTrackIndex = catalogIndex;
+                LegacyTrackSceneFactory.SceneryRandomSeed = _sceneryRandomSeed;
                 _flow.StartRaceForAutomation();
                 _viewIndex = 0;
                 Advance(CaptureStep.WaitForRace, totalTime, $"Loading track {_tracks[_trackIndex].Name}");
@@ -423,6 +427,7 @@ internal sealed class ReferenceViewCaptureValidator
         Logs.WriteInfo($"Reference view capture completed successfully ({_captureCount} file(s)) in {_outputDirectory}");
         Environment.ExitCode = 0;
         _step = CaptureStep.Completed;
+        LegacyTrackSceneFactory.SceneryRandomSeed = null;
         _game.Exit();
     }
 
@@ -431,6 +436,7 @@ internal sealed class ReferenceViewCaptureValidator
         Logs.WriteError(message);
         Environment.ExitCode = 1;
         _step = CaptureStep.Failed;
+        LegacyTrackSceneFactory.SceneryRandomSeed = null;
         _game.Exit();
     }
 }

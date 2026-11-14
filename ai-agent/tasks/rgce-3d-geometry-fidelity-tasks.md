@@ -62,7 +62,9 @@ Sur les 15 vues du banc, la route, ses ouvrages et les objets de la conversion s
 - Validation : builds 0 erreur ; les images de l'original restent identiques au bit près à la référence ; le journal de la conversion contient la mesure pour les trois circuits.
 - Commit : `feat(capture): export the original's track points and objects and measure the port against them`
 
-### ⏳ T2 — Corriger ce que la mesure désigne (G1, G5)
+### ✅ T2 — Corriger ce que la mesure désigne (G1, G5)
+
+> Validation (2026-11-14) : cause 1 corrigée (`c24e677`) : `WidthHelpers` et `RoadHelpers` désérialisés avec leurs noms d'éléments ; largeur de route à 0,000 de l'original sur les trois circuits. Restent les objets : la mesure montre que l'ordre d'ajout, la règle de doublon (`Model.Size`), l'échelle 1,2 et le passage des supports de rail et des segments de colonne par `AddObjectToRender` diffèrent ; ce travail est fusionné avec T4 (même code, même critère : 0 objet sans correspondance).
 
 - Objectif : le tracé de la conversion suit celui de l'original (écart maximal sous 5 cm) ; les objets communs sont à la même place, orientation et échelle (panneaux, segments de colonne).
 - Fichiers : fixés par T1 (attendus : `Worlds/LegacyTrackSceneFactory*.cs`, éventuellement des modèles glTF de `RacingGameCasaEngine/Content/Models`).
@@ -76,7 +78,9 @@ Sur les 15 vues du banc, la route, ses ouvrages et les objets de la conversion s
 - Validation : build ; vues `Beginner-sector-20`, `Beginner-overview`, `Expert-overview` et vues de tunnel du banc.
 - Commit : `feat(racing-casa): build the road underside, the tunnels and the city ground`
 
-### ⏳ T4 — Décor aléatoire dans l'ordre de l'original (G3)
+### ✅ T4 — Décor aléatoire dans l'ordre de l'original (G3)
+
+> Validation (2026-11-14), faite avec la fin de T2 dans un seul commit : mesure relancée par la session principale (`artifacts/capture-bench/rgce-s1c`) : Beginner 1147 / 1147, Advanced 1693 / 1693, Expert 3404 / 3404 objets, 0 sans correspondance de chaque côté, distance et échelle à 0,000, rotation sous 0,04° ; tracé inchangé. Causes : les fichiers `.CombiModel` étaient désérialisés en listes vides (nom d'élément `CombiObject` non déclaré) ; supports de rail et segments de colonne ne passaient pas par le chemin d'ajout de l'original (échelle 1,2, plaquage au terrain, règle de doublon, ordre) ; le vecteur droite non normalisé de l'original n'était pas reproduit pour les décalages ; l'angle de route non borné (NaN) change un tirage ; décor aléatoire et ordre de tirage portés depuis `Track.cs:780-1147`. Graine : `LegacyTrackSceneFactory.SceneryRandomSeed`, celle de `views.json` pour le banc, horaire sinon. `--capture-track-audit` de la conversion (sans graine) : code de sortie 0, aucune erreur au journal.
 
 - Objectif : palmiers, banderoles, panneaux et décor hors route sont tirés dans le même ordre et avec le même générateur que l'original ; avec la graine du banc, la mesure de T1 ne laisse aucun objet sans correspondance.
 - Fichiers : `Worlds/LegacyTrackSceneFactory*.cs`, `Bootstrap/RaceLaunchOptions.cs` (graine), `Bootstrap/ReferenceViewCaptureValidator.cs`.
@@ -95,6 +99,8 @@ Sur les 15 vues du banc, la route, ses ouvrages et les objets de la conversion s
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
+| O1 | La règle de doublon utilise une table des tailles de modèle de l'original (`LegacyModelSizes`, relevée sur les `.xnb` de l'original) : les tailles déduites des glTF diffèrent (ordre des maillages pour les palmiers, Windmill, Casino01, Hotel01 ; RoadColumnSegment à 2,05 au lieu de 49,05). À instruire avec les matériaux : est-ce une erreur d'export des modèles ? | T2, S3 |
+| O2 | `scripts/TrackPlacementExporter/RuntimeSceneComparison.cs` réimplémente l'ancien placement et ne correspond plus à la conversion. À supprimer ou à réaligner : décision de l'auteur. | T2 |
 
 ## Hors périmètre
 

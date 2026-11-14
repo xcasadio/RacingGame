@@ -1,4 +1,3 @@
-using System.Text;
 using System.Xml.Serialization;
 using CasaEngine.Core.Log;
 using CasaEngine.Engine;
@@ -62,7 +61,6 @@ internal static partial class LegacyTrackSceneFactory
     private static readonly Dictionary<string, LegacyTrackLayout> TrackCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, List<LegacyCombiObject>> CombiCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, StaticModel?> ModelCache = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly Dictionary<string, float> ModelSizeCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, Texture2D?> TextureCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, TextureCube?> TextureCubeCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, LegacyTerrainHeightSampler> TerrainCache = new(StringComparer.OrdinalIgnoreCase);
@@ -75,7 +73,6 @@ internal static partial class LegacyTrackSceneFactory
         ["Casino"] = "Casino01",
         ["Combi"] = "CombiPalms",
     };
-    private static readonly string[] PalmModelCandidates = ["AlphaPalm", "AlphaPalm2", "AlphaPalm3", "AlphaPalmSmall"];
     private static readonly string[] CheckpointBannerCandidates = ["Banner", "Banner2", "Banner3", "Banner4", "Banner5", "Banner6"];
     private static readonly string[] RoadTextureCandidates = ["Road.tga", "track.tga", "RoadCement.tga"];
     private static readonly string[] GroundTextureCandidates = ["Landscape.tga", "CityGround.tga"];
@@ -86,7 +83,6 @@ internal static partial class LegacyTrackSceneFactory
         LegacyTerrainHeightSampler terrainSampler = LoadTerrainHeightSampler();
         List<LegacyTrackPoint> roadSplinePoints = BuildRoadSplinePoints(layout, terrainSampler);
         Vector3 origin = ComputeOrigin(layout.TrackPoints);
-        var placementState = new LegacySceneryPlacementState(origin, terrainSampler);
         BeginSceneDiagnostics();
         RaceTrackPhysicsProfile physicsProfile = CreateTrackPhysicsProfile(roadSplinePoints, origin);
 
@@ -106,20 +102,22 @@ internal static partial class LegacyTrackSceneFactory
         var trackEntities = new List<Entity>();
         trackEntities.AddRange(LegacyTerrainMeshBuilder.CreateEntities(trackName, origin, assetContentManager));
         trackEntities.Add(CreateRoadEntity(trackName, roadSplinePoints, origin, assetContentManager));
-        trackEntities.AddRange(LegacyTrackGuardRailBuilder.CreateEntities(trackName, roadSplinePoints, origin, terrainSampler, assetContentManager));
 
-        var sceneryEntities = new List<Entity>();
-
-        int sceneryIndex = 0;
+        // The objects are added in the order of the original's Landscape/Track (so that its "skip an object too close
+        // to an earlier one" rule drops the same ones): the track file's objects (TrackLine.Load), then the guard rail
+        // holders and the column segments (Track.GenerateVerticesAndObjects), then the objects along the road.
+        var landscape = new LegacyLandscape(origin, terrainSampler, assetContentManager, CreateSceneryRandom());
+        var sceneryEntities = new LegacyEntityGroup(static (modelName, index) => $"Track.Scenery.{modelName}.{index:000}");
         foreach (LegacyNeutralObject neutralObject in layout.NeutralsObjects)
         {
-            AddSceneryEntities(sceneryEntities, neutralObject.modelName, neutralObject.matrix, placementState, ref sceneryIndex, assetContentManager);
+            landscape.AddObjectToRender(neutralObject.modelName, neutralObject.matrix, sceneryEntities);
         }
 
-        AddHelperDrivenSceneryEntities(trackName, sceneryEntities, roadSplinePoints, layout.RoadHelpers, placementState, ref sceneryIndex, assetContentManager);
+        trackEntities.AddRange(LegacyTrackGuardRailBuilder.CreateEntities(trackName, roadSplinePoints, origin, terrainSampler, landscape, assetContentManager));
+        AddHelperDrivenSceneryEntities(sceneryEntities, roadSplinePoints, layout.RoadHelpers, landscape);
 
         EndSceneDiagnostics(trackName, roadSplinePoints);
-        return new RaceTrackScene(trackEntities, sceneryEntities, playerStartPose, checkpointTriggers, physicsProfile);
+        return new RaceTrackScene(trackEntities, sceneryEntities.Entities, playerStartPose, checkpointTriggers, physicsProfile);
     }
 
     /// <summary>
@@ -171,53 +169,6 @@ internal static partial class LegacyTrackSceneFactory
         return combiObjects;
     }
 
-    private static void AddSceneryEntities(List<Entity> entities, string modelName, Matrix legacyTransform, LegacySceneryPlacementState placementState, ref int sceneryIndex, AssetContentManager assetContentManager)
-    {
-        if (string.IsNullOrWhiteSpace(modelName))
-        {
-            return;
-        }
-
-        string resolvedModelName = NormalizeLegacyModelName(modelName);
-        if (resolvedModelName.StartsWith("Track", StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        if (resolvedModelName.StartsWith("Combi", StringComparison.OrdinalIgnoreCase))
-        {
-            foreach (LegacyCombiObject combiObject in LoadCombiModel(resolvedModelName))
-            {
-                Matrix combinedTransform = combiObject.matrix * legacyTransform;
-                AddSceneryEntities(entities, combiObject.modelName, combinedTransform, placementState, ref sceneryIndex, assetContentManager);
-            }
-
-            return;
-        }
-
-        StaticModel? staticModel = LoadLegacyModel(resolvedModelName, assetContentManager);
-        if (staticModel == null)
-        {
-            return;
-        }
-
-        Matrix adjustedLegacyTransform = ClampSceneryTransformToTerrain(legacyTransform, placementState.TerrainSampler);
-        Vector3 legacyPosition = adjustedLegacyTransform.Translation;
-
-        if (!IsDuplicateExempt(resolvedModelName)
-            && IsDuplicatePlacement(placementState.CreatedLegacyPositions, legacyPosition, GetLegacyModelSize(resolvedModelName)))
-        {
-            return;
-        }
-
-        Matrix placedLegacyTransform = Matrix.CreateScale(1.2f) * adjustedLegacyTransform;
-        RecordPlacedObject(resolvedModelName, placedLegacyTransform);
-        Matrix runtimeTransform = ConvertLegacyTransform(placedLegacyTransform, placementState.Origin);
-        entities.Add(CreateStaticModelEntity($"Track.Scenery.{resolvedModelName}.{sceneryIndex:000}", staticModel, runtimeTransform));
-        placementState.CreatedLegacyPositions.Add(legacyPosition);
-        sceneryIndex++;
-    }
-
     private static StaticModel? LoadLegacyModel(string modelName, AssetContentManager assetContentManager)
     {
         modelName = NormalizeLegacyModelName(modelName);
@@ -248,7 +199,6 @@ internal static partial class LegacyTrackSceneFactory
         ApplyImportedMaterials(model, importResult.Materials, modelName, assetContentManager);
         ApplyFallbackMaterials(model, modelName);
         ModelCache[modelName] = model;
-        ModelSizeCache[modelName] = ComputeLegacyModelSize(model);
         return model;
     }
 
@@ -459,27 +409,6 @@ internal static partial class LegacyTrackSceneFactory
         return entity;
     }
 
-    private static void AddHelperDrivenSceneryEntities(
-        string trackName,
-        List<Entity> entities,
-        IReadOnlyList<LegacyTrackPoint> roadPoints,
-        IReadOnlyList<LegacyRoadHelper> roadHelpers,
-        LegacySceneryPlacementState placementState,
-        ref int sceneryIndex,
-        AssetContentManager assetContentManager)
-    {
-        if (roadPoints.Count == 0)
-        {
-            return;
-        }
-
-        List<LegacyRoadHelperPosition> helperPositions = BuildRoadHelperPositions(roadPoints, roadHelpers);
-        var random = CreateDeterministicTrackRandom(trackName);
-
-        AddPalmAndLaternEntities(entities, roadPoints, helperPositions, placementState, ref sceneryIndex, assetContentManager, random);
-        AddSignAndCheckpointEntities(entities, roadPoints, placementState, ref sceneryIndex, assetContentManager, random);
-    }
-
     private static List<LegacyRoadHelperPosition> BuildRoadHelperPositions(
         IReadOnlyList<LegacyTrackPoint> roadPoints,
         IReadOnlyList<LegacyRoadHelper> roadHelpers)
@@ -548,230 +477,20 @@ internal static partial class LegacyTrackSceneFactory
             : LegacyRoadHelperType.Reset;
     }
 
-    private static void AddPalmAndLaternEntities(
-        List<Entity> entities,
-        IReadOnlyList<LegacyTrackPoint> roadPoints,
-        IReadOnlyList<LegacyRoadHelperPosition> helperPositions,
-        LegacySceneryPlacementState placementState,
-        ref int sceneryIndex,
-        AssetContentManager assetContentManager,
-        Random random)
+    /// <summary>
+    /// The original's right vector of a road point: the cross product of its direction and up vectors, never
+    /// normalized (TrackLine.Load). The road points of the port keep it normalized, but the objects the original
+    /// places along the road take their lateral offset and their scale from the raw vector.
+    /// </summary>
+    private static Vector3 GetLegacyRawRight(LegacyTrackPoint point)
     {
-        float lastGap = 0.0f;
-        int generatedNum = 0;
-
-        for (int pointIndex = 0; pointIndex < roadPoints.Count; pointIndex++)
-        {
-            bool palms = false;
-            bool laterns = false;
-            for (int helperIndex = 0; helperIndex < helperPositions.Count; helperIndex++)
-            {
-                LegacyRoadHelperPosition helper = helperPositions[helperIndex];
-                if (pointIndex < helper.StartIndex || pointIndex > helper.EndIndex)
-                {
-                    continue;
-                }
-
-                if (helper.Type == LegacyRoadHelperType.Palms)
-                {
-                    palms = true;
-                }
-                else if (helper.Type == LegacyRoadHelperType.Laterns)
-                {
-                    laterns = true;
-                }
-            }
-
-            if (!palms && !laterns)
-            {
-                continue;
-            }
-
-            LegacyTrackPoint point = roadPoints[pointIndex];
-            float distance = Vector3.Distance(roadPoints[(pointIndex + 1) % roadPoints.Count].Position, point.Position);
-            if (lastGap - distance <= 0.0f)
-            {
-                if (!IsTracksidePlacementAllowed(point))
-                {
-                    continue;
-                }
-
-                Matrix pointSpace = CreateLegacyPointSpace(point);
-                Vector3 objectPoint = InterpolateRoadPoint(roadPoints, pointIndex, lastGap / distance);
-                generatedNum++;
-
-                if (palms)
-                {
-                    float terrainHeight = placementState.TerrainSampler.GetMapHeight(objectPoint.X, objectPoint.Y);
-                    if (objectPoint.Z - terrainHeight < 11.0f)
-                    {
-                        int randomNum = random.Next(PalmModelCandidates.Length);
-                        if (randomNum == PalmModelCandidates.Length - 1)
-                        {
-                            randomNum = random.Next(PalmModelCandidates.Length);
-                        }
-
-                        string modelName = PalmModelCandidates[Math.Clamp(randomNum, 0, PalmModelCandidates.Length - 1)];
-                        Matrix legacyTransform =
-                            Matrix.CreateScale(1.25f)
-                            * Matrix.CreateRotationZ(NextFloat(random, 0.0f, MathHelper.TwoPi))
-                            * Matrix.CreateTranslation(point.Right * (generatedNum % 2 == 0 ? 0.6f : -0.6f) * point.RoadWidth * LegacyRoadWidthScale)
-                            * Matrix.CreateTranslation(new Vector3(0.0f, 0.0f, -50.0f))
-                            * Matrix.CreateTranslation(objectPoint);
-
-                        AddSceneryEntities(entities, modelName, legacyTransform, placementState, ref sceneryIndex, assetContentManager);
-                    }
-                }
-                else
-                {
-                    Matrix legacyTransform =
-                        Matrix.CreateRotationZ(generatedNum % 2 == 0 ? MathHelper.Pi : 0.0f)
-                        * Matrix.CreateTranslation(new Vector3(
-                            (generatedNum % 2 == 0 ? 0.5f : -0.5f) * point.RoadWidth * LegacyRoadWidthScale - 0.35f,
-                            0.0f,
-                            -0.2f))
-                        * pointSpace
-                        * Matrix.CreateTranslation(objectPoint);
-
-                    AddSceneryEntities(entities, "Laterne", legacyTransform, placementState, ref sceneryIndex, assetContentManager);
-                }
-
-                lastGap += PalmAndLaternGap;
-            }
-
-            lastGap -= distance;
-        }
-    }
-
-    private static void AddSignAndCheckpointEntities(
-        List<Entity> entities,
-        IReadOnlyList<LegacyTrackPoint> roadPoints,
-        LegacySceneryPlacementState placementState,
-        ref int sceneryIndex,
-        AssetContentManager assetContentManager,
-        Random random)
-    {
-        LegacyTrackPoint startPoint = roadPoints[0];
-        Matrix startPointSpace = CreateLegacyPointSpace(startPoint);
-
-        Matrix startBannerTransform =
-            Matrix.CreateScale(startPoint.RoadWidth)
-            * Matrix.CreateScale(1.051f)
-            * Matrix.CreateTranslation(new Vector3(0.0f, -5.1f, 0.0f))
-            * startPointSpace
-            * Matrix.CreateTranslation(startPoint.Position);
-        AddSceneryEntities(entities, "Banner6", startBannerTransform, placementState, ref sceneryIndex, assetContentManager);
-
-        Matrix startLightTransform =
-            Matrix.CreateScale(1.1f)
-            * Matrix.CreateTranslation(new Vector3(startPoint.RoadWidth * LegacyRoadWidthScale * 0.50f - 0.3f, 6.0f, -0.2f))
-            * startPointSpace
-            * Matrix.CreateTranslation(startPoint.Position);
-        // Built red, as RacingGame's ResetStartLight left it; RaceStartLight turns it yellow, then green.
-        AddSceneryEntities(entities, StartLightModelNames[0], startLightTransform, placementState, ref sceneryIndex, assetContentManager);
-        LoadStartLightModels(assetContentManager);
-
-        float checkpointGap = CheckpointGap;
-        float signGap = SignGap;
-        for (int pointIndex = 0; pointIndex < roadPoints.Count - 24; pointIndex++)
-        {
-            LegacyTrackPoint point = roadPoints[pointIndex];
-            float distance = Vector3.Distance(roadPoints[(pointIndex + 1) % roadPoints.Count].Position, point.Position);
-            if (!IsTracksidePlacementAllowed(point))
-            {
-                continue;
-            }
-
-            Matrix pointSpace = CreateLegacyPointSpace(point);
-            if (checkpointGap - distance <= 0.0f)
-            {
-                Vector3 objectPoint = InterpolateRoadPoint(roadPoints, pointIndex, checkpointGap / distance);
-                string bannerName = CheckpointBannerCandidates[random.Next(CheckpointBannerCandidates.Length)];
-                Matrix checkpointTransform =
-                    Matrix.CreateScale(point.RoadWidth)
-                    * Matrix.CreateTranslation(new Vector3(0.0f, 0.0f, -0.1f))
-                    * pointSpace
-                    * Matrix.CreateTranslation(objectPoint);
-                AddSceneryEntities(entities, bannerName, checkpointTransform, placementState, ref sceneryIndex, assetContentManager);
-
-                checkpointGap += CheckpointGap;
-            }
-            else if (signGap - distance <= 0.0f && pointIndex >= 25)
-            {
-                Vector3 objectPoint = InterpolateRoadPoint(roadPoints, pointIndex, signGap / distance);
-                Vector3 backPosition = roadPoints[pointIndex - 25].Position;
-                bool loopingAhead = roadPoints[(pointIndex + 60) % roadPoints.Count].Up.Z < 0.15f;
-                Vector3 angleVector = Vector3.Normalize(backPosition - point.Position);
-                float roadAngle = AngleBetweenVectors(angleVector, Vector3.Normalize(-point.Direction));
-                if (Vector3.Distance(point.Right, angleVector) < Vector3.Distance(-point.Right, angleVector))
-                {
-                    roadAngle = -roadAngle;
-                }
-
-                if (loopingAhead)
-                {
-                    Matrix signTransform =
-                        Matrix.CreateTranslation(new Vector3(point.RoadWidth * LegacyRoadWidthScale * 0.5f - 0.1f, 0.0f, -0.25f))
-                        * pointSpace
-                        * Matrix.CreateTranslation(objectPoint);
-                    AddSceneryEntities(entities, "SignWarning", signTransform, placementState, ref sceneryIndex, assetContentManager);
-                }
-                else if (roadAngle < -MathHelper.Pi / 7.5f)
-                {
-                    Matrix signTransform =
-                        Matrix.CreateRotationZ(MathHelper.Pi / 2.0f)
-                        * Matrix.CreateTranslation(new Vector3(-point.RoadWidth * LegacyRoadWidthScale * 0.5f - 0.15f, 0.0f, -0.25f))
-                        * pointSpace
-                        * Matrix.CreateTranslation(objectPoint);
-                    AddSceneryEntities(entities, "SignCurveRight", signTransform, placementState, ref sceneryIndex, assetContentManager);
-                }
-                else if (roadAngle > MathHelper.Pi / 7.5f)
-                {
-                    Matrix signTransform =
-                        Matrix.CreateRotationZ(-MathHelper.Pi / 2.0f)
-                        * Matrix.CreateTranslation(new Vector3(point.RoadWidth * LegacyRoadWidthScale * 0.5f - 0.15f, 0.0f, -0.25f))
-                        * pointSpace
-                        * Matrix.CreateTranslation(objectPoint);
-                    AddSceneryEntities(entities, "SignCurveLeft", signTransform, placementState, ref sceneryIndex, assetContentManager);
-                }
-                else if (roadAngle < -MathHelper.Pi / 10.0f || roadAngle > MathHelper.Pi / 10.0f || random.Next(9) == 4)
-                {
-                    int randomVariant = random.Next(3);
-                    if (randomVariant == 0 && Math.Abs(roadAngle) < MathHelper.Pi / 24.0f)
-                    {
-                        randomVariant = random.Next(3);
-                    }
-                    else if (Math.Abs(roadAngle) < MathHelper.Pi / 20.0f && random.Next(2) == 1)
-                    {
-                        roadAngle *= -1.0f;
-                    }
-
-                    string modelName = randomVariant == 0
-                        ? (roadAngle > 0.0f ? "SignCurveLeft" : "SignCurveRight")
-                        : (randomVariant == 1 ? "Sign" : "Sign2");
-                    Matrix signTransform =
-                        Matrix.CreateRotationZ((roadAngle > 0.0f ? -1.0f : 1.0f) * MathHelper.Pi / 2.0f)
-                        * Matrix.CreateTranslation(new Vector3(
-                            (roadAngle > 0.0f ? 1.0f : -1.0f) * point.RoadWidth * LegacyRoadWidthScale * 0.5f - (randomVariant == 0 ? 0.15f : 0.005f),
-                            0.0f,
-                            -0.25f))
-                        * pointSpace
-                        * Matrix.CreateTranslation(objectPoint);
-                    AddSceneryEntities(entities, modelName, signTransform, placementState, ref sceneryIndex, assetContentManager);
-                }
-
-                signGap += SignGap;
-            }
-
-            checkpointGap -= distance;
-            signGap -= distance;
-        }
+        return Vector3.Cross(point.Direction, point.Up);
     }
 
     private static Matrix CreateLegacyPointSpace(LegacyTrackPoint point)
     {
         Matrix pointSpace = Matrix.Identity;
-        pointSpace.Right = point.Right;
+        pointSpace.Right = GetLegacyRawRight(point);
         pointSpace.Up = point.Direction;
         pointSpace.Forward = -point.Up;
         return pointSpace;
@@ -792,40 +511,6 @@ internal static partial class LegacyTrackSceneFactory
         Vector3 p3 = roadPoints[(pointIndex + 1) % roadPoints.Count].Position;
         Vector3 p4 = roadPoints[(pointIndex + 2) % roadPoints.Count].Position;
         return Vector3.CatmullRom(p1, p2, p3, p4, amount);
-    }
-
-    private static Random CreateDeterministicTrackRandom(string trackName)
-    {
-        // System.HashCode is randomized per process, so the seed uses a stable FNV-1a hash instead:
-        // the same track must get the same scenery on every launch.
-        const uint FnvOffsetBasis = 2166136261u;
-        const uint FnvPrime = 16777619u;
-
-        uint hash = FnvOffsetBasis;
-        foreach (byte value in Encoding.UTF8.GetBytes($"{trackName.ToUpperInvariant()}|LegacyTrackSceneFactory.Helpers"))
-        {
-            hash = unchecked((hash ^ value) * FnvPrime);
-        }
-
-        return new Random(unchecked((int)hash));
-    }
-
-    private static float NextFloat(Random random, float min, float max)
-    {
-        return (float)random.NextDouble() * (max - min) + min;
-    }
-
-    private static float AngleBetweenVectors(Vector3 first, Vector3 second)
-    {
-        if (first.LengthSquared() < 0.0001f || second.LengthSquared() < 0.0001f)
-        {
-            return 0.0f;
-        }
-
-        first.Normalize();
-        second.Normalize();
-        float dot = Math.Clamp(Vector3.Dot(first, second), -1.0f, 1.0f);
-        return MathF.Acos(dot);
     }
 
     private static float GetNearestWidthScale(IReadOnlyList<LegacyWidthHelper> widthHelpers, Vector3 legacyPoint)
@@ -889,104 +574,6 @@ internal static partial class LegacyTrackSceneFactory
         return ModelAliases.TryGetValue(modelName, out string? alias)
             ? alias
             : modelName;
-    }
-
-    private static Matrix ClampSceneryTransformToTerrain(Matrix legacyTransform, LegacyTerrainHeightSampler terrainSampler)
-    {
-        Vector3 legacyPosition = legacyTransform.Translation;
-        float terrainHeight = terrainSampler.GetMapHeight(legacyPosition.X, legacyPosition.Y);
-        if (legacyPosition.Z >= terrainHeight)
-        {
-            return legacyTransform;
-        }
-
-        legacyPosition.Z = terrainHeight;
-        legacyTransform.Translation = legacyPosition;
-        return legacyTransform;
-    }
-
-    private static bool IsDuplicatePlacement(List<Vector3> existingPositions, Vector3 legacyPosition, float modelSize)
-    {
-        float threshold = modelSize * modelSize / 4f;
-        for (int index = 0; index < existingPositions.Count; index++)
-        {
-            if (Vector3.DistanceSquared(existingPositions[index], legacyPosition) < threshold)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool IsDuplicateExempt(string modelName)
-    {
-        return modelName.StartsWith("Banner", StringComparison.OrdinalIgnoreCase)
-            || modelName.StartsWith("Sign", StringComparison.OrdinalIgnoreCase)
-            || modelName.StartsWith("StartLight", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static float GetLegacyModelSize(string modelName)
-    {
-        modelName = NormalizeLegacyModelName(modelName);
-        return ModelSizeCache.TryGetValue(modelName, out float cachedSize)
-            ? cachedSize
-            : 1f;
-    }
-
-    private static float ComputeLegacyModelSize(StaticModel model)
-    {
-        if (model.Meshes.Count == 0)
-        {
-            return 1f;
-        }
-
-        IReadOnlyList<VertexPositionNormalTexture> vertices = model.Meshes[0].GetVertices();
-        if (vertices.Count == 0)
-        {
-            return 1f;
-        }
-
-        var points = new Vector3[vertices.Count];
-        for (int index = 0; index < vertices.Count; index++)
-        {
-            points[index] = vertices[index].Position;
-        }
-
-        BoundingSphere boundingSphere = BoundingSphere.CreateFromPoints(points);
-        float scale = 1f;
-        if (model.RootNode != null && TryGetMeshAbsoluteTransform(model.RootNode, Matrix.Identity, 0, out Matrix absoluteTransform))
-        {
-            scale = Math.Max(
-                absoluteTransform.Right.Length(),
-                Math.Max(
-                    absoluteTransform.Up.Length(),
-                    absoluteTransform.Backward.Length()));
-        }
-
-        float size = boundingSphere.Radius * scale;
-        return size > 0.0001f ? size : 1f;
-    }
-
-    private static bool TryGetMeshAbsoluteTransform(StaticModelNode node, Matrix parentTransform, int meshIndex, out Matrix absoluteTransform)
-    {
-        absoluteTransform = node.LocalTransform * parentTransform;
-        if (node.MeshIndex == meshIndex)
-        {
-            return true;
-        }
-
-        foreach (StaticModelNode child in node.Children)
-        {
-            if (TryGetMeshAbsoluteTransform(child, absoluteTransform, meshIndex, out Matrix childTransform))
-            {
-                absoluteTransform = childTransform;
-                return true;
-            }
-        }
-
-        absoluteTransform = Matrix.Identity;
-        return false;
     }
 
     private static Vector3 ConvertLegacyPoint(Vector3 point)
@@ -1602,21 +1189,6 @@ internal static partial class LegacyTrackSceneFactory
             : throw new InvalidOperationException("EngineEnvironment.ProjectPath must be configured before loading race content.");
     }
 
-    private sealed class LegacySceneryPlacementState
-    {
-        public LegacySceneryPlacementState(Vector3 origin, LegacyTerrainHeightSampler terrainSampler)
-        {
-            Origin = origin;
-            TerrainSampler = terrainSampler;
-        }
-
-        public Vector3 Origin { get; }
-
-        public LegacyTerrainHeightSampler TerrainSampler { get; }
-
-        public List<Vector3> CreatedLegacyPositions { get; } = [];
-    }
-
     private sealed class LegacyTrackPoint
     {
         public LegacyTrackPoint(Vector3 position)
@@ -1781,6 +1353,7 @@ public sealed class LegacyNeutralObject
     public Matrix matrix;
 }
 
+[XmlType("CombiObject")]
 public sealed class LegacyCombiObject
 {
     public string modelName = string.Empty;

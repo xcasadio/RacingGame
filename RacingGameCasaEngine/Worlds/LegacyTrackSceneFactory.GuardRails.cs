@@ -60,6 +60,7 @@ internal static partial class LegacyTrackSceneFactory
             IReadOnlyList<LegacyTrackPoint> roadPoints,
             Vector3 origin,
             LegacyTerrainHeightSampler terrainSampler,
+            LegacyLandscape landscape,
             AssetContentManager assetContentManager)
         {
             var entities = new List<Entity>();
@@ -68,20 +69,23 @@ internal static partial class LegacyTrackSceneFactory
                 return entities;
             }
 
-            List<LegacyRailPoint> leftRailPoints = BuildRailPoints(roadPoints, leftSide: true);
-            List<LegacyRailPoint> rightRailPoints = BuildRailPoints(roadPoints, leftSide: false);
+            List<LegacyRailPoint> leftRailPoints = BuildRailPoints(roadPoints, leftSide: true, unnormalizedRight: false);
+            List<LegacyRailPoint> rightRailPoints = BuildRailPoints(roadPoints, leftSide: false, unnormalizedRight: false);
 
             entities.Add(CreateRailEntity(trackName, leftRailPoints, origin, assetContentManager, leftSide: true));
             entities.Add(CreateRailEntity(trackName, rightRailPoints, origin, assetContentManager, leftSide: false));
 
-            entities.AddRange(CreateHolderEntities(trackName, leftRailPoints, origin, assetContentManager, leftSide: true));
-            entities.AddRange(CreateHolderEntities(trackName, rightRailPoints, origin, assetContentManager, leftSide: false));
-            entities.AddRange(CreateColumnEntities(trackName, roadPoints, origin, terrainSampler, assetContentManager));
+            // The holders go through the landscape like every other object, left rail first (GuardRail constructors).
+            entities.AddRange(CreateHolderEntities(trackName, roadPoints, landscape, leftSide: true));
+            entities.AddRange(CreateHolderEntities(trackName, roadPoints, landscape, leftSide: false));
+            entities.AddRange(CreateColumnEntities(trackName, roadPoints, origin, terrainSampler, landscape, assetContentManager));
 
             return entities;
         }
 
-        private static List<LegacyRailPoint> BuildRailPoints(IReadOnlyList<LegacyTrackPoint> roadPoints, bool leftSide)
+        // unnormalizedRight: the original's rail points (GuardRail) use the road point's raw right vector, so the
+        // holders do; the rail mesh keeps the normalized one.
+        private static List<LegacyRailPoint> BuildRailPoints(IReadOnlyList<LegacyTrackPoint> roadPoints, bool leftSide, bool unnormalizedRight)
         {
             var railPoints = new List<LegacyRailPoint>(roadPoints.Count / 2 + 1);
             int railPointCount = roadPoints.Count / 2 + 1;
@@ -95,7 +99,7 @@ internal static partial class LegacyTrackSceneFactory
                 }
 
                 LegacyTrackPoint roadPoint = roadPoints[pointIndex];
-                Vector3 right = roadPoint.Right;
+                Vector3 right = unnormalizedRight ? GetLegacyRawRight(roadPoint) : roadPoint.Right;
                 Vector3 direction = roadPoint.Direction;
                 Vector3 position = roadPoint.Position + (leftSide ? -1f : 1f) * (LegacyRoadWidthScale * roadPoint.RoadWidth * right * 0.5f);
 
@@ -188,20 +192,14 @@ internal static partial class LegacyTrackSceneFactory
 
         private static IReadOnlyList<Entity> CreateHolderEntities(
             string trackName,
-            IReadOnlyList<LegacyRailPoint> railPoints,
-            Vector3 origin,
-            AssetContentManager assetContentManager,
+            IReadOnlyList<LegacyTrackPoint> roadPoints,
+            LegacyLandscape landscape,
             bool leftSide)
         {
-            StaticModel? holderModel = LoadLegacyModel("GuardRailHolder", assetContentManager);
-            if (holderModel == null)
-            {
-                return [];
-            }
-
-            var entities = new List<Entity>();
-            float lastHolderGap = 0f;
             string sideName = leftSide ? "Left" : "Right";
+            var holders = new LegacyEntityGroup((_, index) => $"Track.GuardRailHolder.{sideName}.{trackName}.{index:000}");
+            List<LegacyRailPoint> railPoints = BuildRailPoints(roadPoints, leftSide, unnormalizedRight: true);
+            float lastHolderGap = 0f;
 
             for (int index = 0; index < railPoints.Count; index++)
             {
@@ -209,29 +207,28 @@ internal static partial class LegacyTrackSceneFactory
                 Vector3 nextPosition = railPoints[(index + 1) % railPoints.Count].Position;
                 float distance = Vector3.Distance(nextPosition, railPoint.Position);
 
-                if (distance > 0.0001f && lastHolderGap - distance <= 0f)
+                if (lastHolderGap - distance <= 0f)
                 {
                     Vector3 p1 = railPoints[index - 1 < 0 ? railPoints.Count - 1 : index - 1].Position;
                     Vector3 p2 = railPoint.Position;
-                    Vector3 p3 = railPoints[(index + 1) % railPoints.Count].Position;
+                    Vector3 p3 = nextPosition;
                     Vector3 p4 = railPoints[(index + 2) % railPoints.Count].Position;
                     Vector3 holderPoint = Vector3.CatmullRom(p1, p2, p3, p4, lastHolderGap / distance);
 
-                    Matrix pointSpace = CreatePointSpaceMatrix(railPoint.Right, railPoint.Direction, railPoint.Up);
-                    Matrix legacyTransform = Matrix.CreateScale(1.125f)
+                    landscape.AddObjectToRender(
+                        "GuardRailHolder",
+                        Matrix.CreateScale(1.125f)
                         * Matrix.CreateTranslation(HolderPileCorrectionVector)
-                        * pointSpace
-                        * Matrix.CreateTranslation(holderPoint);
-
-                    Matrix runtimeTransform = ConvertLegacyTransform(legacyTransform, origin);
-                    entities.Add(CreateStaticModelEntity($"Track.GuardRailHolder.{sideName}.{trackName}.{entities.Count:000}", holderModel, runtimeTransform));
+                        * CreateRawPointSpaceMatrix(railPoint.Right, railPoint.Direction, railPoint.Up)
+                        * Matrix.CreateTranslation(holderPoint),
+                        holders);
                     lastHolderGap += HolderGap;
                 }
 
                 lastHolderGap -= distance;
             }
 
-            return entities;
+            return holders.Entities;
         }
 
         private static IReadOnlyList<Entity> CreateColumnEntities(
@@ -239,6 +236,7 @@ internal static partial class LegacyTrackSceneFactory
             IReadOnlyList<LegacyTrackPoint> roadPoints,
             Vector3 origin,
             LegacyTerrainHeightSampler terrainSampler,
+            LegacyLandscape landscape,
             AssetContentManager assetContentManager)
         {
             var columnPositions = new List<Vector3>();
@@ -252,7 +250,7 @@ internal static partial class LegacyTrackSceneFactory
                 LegacyTrackPoint nextPoint = roadPoints[(index + 1) % roadPoints.Count];
                 float distance = Vector3.Distance(nextPoint.Position, currentPoint.Position);
 
-                if (distance > 0.0001f && lastColumnsDistance - distance <= 0f)
+                if (lastColumnsDistance - distance <= 0f)
                 {
                     Vector3 p1 = roadPoints[index - 1 < 0 ? roadPoints.Count - 1 : index - 1].Position;
                     Vector3 p2 = currentPoint.Position;
@@ -292,9 +290,11 @@ internal static partial class LegacyTrackSceneFactory
                 return [];
             }
 
-            var entities = new List<Entity>();
-            entities.Add(CreateProceduralColumnsEntity(trackName, columnPositions, topSpaces, bottomSpaces, origin, terrainSampler, assetContentManager));
-            entities.AddRange(CreateColumnSegmentEntities(trackName, columnPositions, origin, terrainSampler, assetContentManager));
+            var entities = new List<Entity>
+            {
+                CreateProceduralColumnsEntity(trackName, columnPositions, topSpaces, bottomSpaces, origin, terrainSampler, assetContentManager),
+            };
+            entities.AddRange(CreateColumnSegmentEntities(trackName, columnPositions, terrainSampler, landscape));
             return entities;
         }
 
@@ -376,36 +376,27 @@ internal static partial class LegacyTrackSceneFactory
             return CreateStaticModelEntity($"Track.Columns.{trackName}", model, Matrix.Identity);
         }
 
+        // Each column also gets a segment object on the ground (TrackColumns constructor), through the landscape.
         private static IReadOnlyList<Entity> CreateColumnSegmentEntities(
             string trackName,
             IReadOnlyList<Vector3> columnPositions,
-            Vector3 origin,
             LegacyTerrainHeightSampler terrainSampler,
-            AssetContentManager assetContentManager)
+            LegacyLandscape landscape)
         {
-            StaticModel? segmentModel = LoadLegacyModel("RoadColumnSegment", assetContentManager);
-            if (segmentModel == null)
-            {
-                return [];
-            }
-
-            var entities = new List<Entity>(columnPositions.Count);
+            var segments = new LegacyEntityGroup((_, index) => $"Track.ColumnSegment.{trackName}.{index:000}");
             for (int index = 0; index < columnPositions.Count; index++)
             {
                 Vector3 columnPoint = columnPositions[index];
-                Vector3 bottomPosition = new(
-                    columnPoint.X,
-                    columnPoint.Y,
-                    terrainSampler.GetMapHeight(columnPoint.X, columnPoint.Y));
 
-                Matrix legacyTransform = Matrix.CreateScale(1.2f)
-                    * Matrix.CreateTranslation(new Vector3(bottomPosition.X, bottomPosition.Y, bottomPosition.Z));
-                RecordPlacedObject("RoadColumnSegment", legacyTransform);
-                Matrix runtimeTransform = ConvertLegacyTransform(legacyTransform, origin);
-                entities.Add(CreateStaticModelEntity($"Track.ColumnSegment.{trackName}.{index:000}", segmentModel, runtimeTransform));
+                // The original lifts the bottom of the column above the ground, then puts the segment back under it.
+                float bottomHeight = terrainSampler.GetMapHeight(columnPoint.X, columnPoint.Y) + ColumnGroundHeight;
+                landscape.AddObjectToRender(
+                    "RoadColumnSegment",
+                    Matrix.CreateTranslation(new Vector3(columnPoint.X, columnPoint.Y, bottomHeight - ColumnGroundHeight)),
+                    segments);
             }
 
-            return entities;
+            return segments.Entities;
         }
 
         private static LitDiffuseMaterial CreateGuardRailMaterial(string trackName, AssetContentManager assetContentManager, string sideName)
@@ -442,6 +433,22 @@ internal static partial class LegacyTrackSceneFactory
                 SamplerState = SamplerState.AnisotropicWrap,
                 RasterizerState = RasterizerState.CullCounterClockwise,
             };
+        }
+
+        // The original's point space (GuardRail): the three vectors as they are, not normalized.
+        private static Matrix CreateRawPointSpaceMatrix(Vector3 right, Vector3 direction, Vector3 up)
+        {
+            Matrix pointSpace = Matrix.Identity;
+            pointSpace.M11 = right.X;
+            pointSpace.M12 = right.Y;
+            pointSpace.M13 = right.Z;
+            pointSpace.M21 = direction.X;
+            pointSpace.M22 = direction.Y;
+            pointSpace.M23 = direction.Z;
+            pointSpace.M31 = up.X;
+            pointSpace.M32 = up.Y;
+            pointSpace.M33 = up.Z;
+            return pointSpace;
         }
 
         private static Matrix CreatePointSpaceMatrix(Vector3 right, Vector3 direction, Vector3 up)
