@@ -27,5 +27,5 @@ Facts verified in the code on 2026-11-14:
 - Two runs of the original with the same seed give byte-identical files (checked on 30 PNG files and `views.json`), so any difference in a pair comes from the port.
 - The default size is 1280x720: the original shrinks a window that does not fit on the desktop, and a 1920x1080 window does not fit on a 1920x1080 desktop.
 - The reference shows every object whatever its distance, which the game itself does not do on slow machines; the frame-rate driven culling is not part of what is compared.
-- The car is moved to the point each view looks at, because the original's shadow map follows the car.
+- The car is moved to the point each view looks at, because the original's shadow map follows the car. It is drawn (and casts its shadow) only in the start and overview views, where it stands on the start grid like the port's car; `views.json` says so per view (`car.visible`).
 - A change of the view set or of `views.json` must be made in the original first, then followed by the port.

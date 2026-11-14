@@ -60,6 +60,7 @@ namespace RacingGame.GameScreens
             public Vector3 CarPosition;
             public Vector3 CarDirection;
             public Vector3 CarUp;
+            public bool CarVisible;
         }
 
         private readonly RacingGameManager.Level[] levels =
@@ -120,7 +121,7 @@ namespace RacingGame.GameScreens
                 PinCar(view);
                 BaseGame.ViewMatrix = Matrix.CreateLookAt(view.Position, view.Target, Vector3.UnitZ);
 
-                RenderScene();
+                RenderScene(view.CarVisible);
 
                 frame++;
                 if (frame == SettleFrames)
@@ -148,20 +149,21 @@ namespace RacingGame.GameScreens
         /// <summary>
         /// GameScreen.Render without the sounds, the ghost car and the HUD.
         /// </summary>
-        private static void RenderScene()
+        private static void RenderScene(bool carVisible)
         {
-            ShadowMapShader.PrepareGameShadows();
+            PrepareShadows(carVisible);
 
             if (BaseGame.UsePostScreenShaders)
                 BaseGame.UI.PostScreenGlowShader.Start();
 
             BaseGame.UI.RenderGameBackground();
             RacingGameManager.Landscape.Render();
-            RacingGameManager.CarModel.RenderCar(
-                RacingGameManager.currentCarNumber,
-                RacingGameManager.CarColor,
-                false,
-                RacingGameManager.Player.CarRenderMatrix);
+            if (carVisible)
+                RacingGameManager.CarModel.RenderCar(
+                    RacingGameManager.currentCarNumber,
+                    RacingGameManager.CarColor,
+                    false,
+                    RacingGameManager.Player.CarRenderMatrix);
             BaseGame.MeshRenderManager.Render();
 
             if (BaseGame.AllowShadowMapping)
@@ -169,6 +171,33 @@ namespace RacingGame.GameScreens
 
             if (BaseGame.UsePostScreenShaders)
                 BaseGame.UI.PostScreenGlowShader.Show();
+        }
+
+        /// <summary>
+        /// ShadowMapShader.PrepareGameShadows, with the car's own shadow only when the car is drawn.
+        /// </summary>
+        private static void PrepareShadows(bool carVisible)
+        {
+            if (!BaseGame.AllowShadowMapping)
+                return;
+
+            ShaderEffect.shadowMapping.GenerateShadows(
+                delegate
+                {
+                    RacingGameManager.Landscape.GenerateShadow();
+                    if (carVisible)
+                        RacingGameManager.CarModel.GenerateShadow(
+                            RacingGameManager.Player.CarRenderMatrix);
+                });
+
+            ShaderEffect.shadowMapping.RenderShadows(
+                delegate
+                {
+                    RacingGameManager.Landscape.UseShadow();
+                    if (carVisible)
+                        RacingGameManager.CarModel.UseShadow(
+                            RacingGameManager.Player.CarRenderMatrix);
+                });
         }
 
         private void Advance()
@@ -219,6 +248,7 @@ namespace RacingGame.GameScreens
                         position = ToArray(view.CarPosition),
                         direction = ToArray(view.CarDirection),
                         up = ToArray(view.CarUp),
+                        visible = view.CarVisible,
                     },
                     files = new
                     {
@@ -250,15 +280,16 @@ namespace RacingGame.GameScreens
             Vector3 startPos = RacingGameManager.Player.CarPosition;
             Vector3 startDir = Vector3.Normalize(RacingGameManager.Player.CarDirection);
             Vector3 startUp = Vector3.Normalize(RacingGameManager.Player.CarUpVector);
-            result.Add(BehindView("start", startPos, startDir, startUp));
+            result.Add(BehindView("start", startPos, startDir, startUp, true));
 
-            // Three points along the track, the car is moved there (the shadow map follows it)
+            // Three points along the track: the car is moved there because the shadow map follows it,
+            // but it is not drawn (the port keeps its car on the start grid)
             float[] percents = { 0.2f, 0.5f, 0.8f };
             foreach (float percent in percents)
             {
                 Matrix m = landscape.GetTrackPositionMatrix(percent, out _, out _);
                 result.Add(BehindView("sector-" + (int)Math.Round(percent * 100),
-                    m.Translation, Vector3.Normalize(m.Forward), Vector3.Normalize(m.Up)));
+                    m.Translation, Vector3.Normalize(m.Forward), Vector3.Normalize(m.Up), false));
             }
 
             // Whole track from above
@@ -282,6 +313,7 @@ namespace RacingGame.GameScreens
                 CarPosition = startPos,
                 CarDirection = startDir,
                 CarUp = startUp,
+                CarVisible = true,
             });
 
             return result;
@@ -290,7 +322,8 @@ namespace RacingGame.GameScreens
         /// <summary>
         /// A view from behind, above and slightly to the right of a point of the road.
         /// </summary>
-        private static CaptureView BehindView(string name, Vector3 pos, Vector3 dir, Vector3 up)
+        private static CaptureView BehindView(string name, Vector3 pos, Vector3 dir, Vector3 up,
+            bool carVisible)
         {
             Vector3 right = Vector3.Cross(dir, Vector3.UnitZ);
             right = right.LengthSquared() < 0.0001f ? Vector3.UnitX : Vector3.Normalize(right);
@@ -302,6 +335,7 @@ namespace RacingGame.GameScreens
                 CarPosition = pos,
                 CarDirection = dir,
                 CarUp = up,
+                CarVisible = carVisible,
             };
         }
 
