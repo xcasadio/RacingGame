@@ -207,7 +207,7 @@ internal static class LegacyImportProfileVerifier
 
         if (profileResult.Materials.Any(static material => material.UsesReflection))
         {
-            failures.Add("Windmill.gltf should keep the bright-ambient exception without reflecting the scene.");
+            failures.Add("Windmill.gltf should not reflect the scene with the RacingGame profile.");
         }
     }
 
