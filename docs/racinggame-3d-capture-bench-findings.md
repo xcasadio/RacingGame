@@ -168,3 +168,47 @@ Probes: lit and facing-away points within 12 of the original per channel: 19 of 
 Status of the earlier findings: M5 (buildings brighter) is reduced, not closed (casino wall above); M2 (signs and banners almost black) is closed for its lighting part, their look now depends on the reflection technique of the original (materials slice); L1 (shadows) is untouched except for the direction, which now follows the original's light: the gantry and building shadows fall where the original's do, still black-edged and untinted.
 
 Not measured: the frame-time cost of the engine changes (the game has no tool for it). The car selection screen shows no visible change (its capture differs only at byte level).
+
+## Update after the material base slice (2026-11-14)
+
+Plan `ai-agent/tasks/rgce-3d-materials-base-tasks.md`, port at `4c058ad`, CasaEngine at `2dea831a` (branch `chantier/racinggame-lighting`), reference unchanged (seed 1). Direction decided by the author: a common base now, a PBR material in the engine later; the original's per-technique specular and reflection formulas are no longer reproduced.
+
+Causes found and fixed:
+
+- No texture of the port had mipmaps: the engine's loader created a single level, while the original builds its 199 textures with mipmaps. The loader can now build the chain (CasaEngine ADR-0092) and the race world uses it. The noise on far ground and far road is gone.
+- The terrain had no detail texture (M1). The engine's lit material gains one (ADR-0091); the terrain binds `LandscapeDetail` tiled 24 times, as the original.
+- The terrain had a specular term the original does not have.
+- The road had no tangents and no normal map (M4, for its relief).
+- The sky was the mirror image of the original's (G7): the sky cube is converted to the port's axes (ADR-0017), which also puts the glass reflections on the original's convention.
+- Imported diffuse colours were truncated instead of rounded.
+
+Mean absolute difference on the red channel and share of the original's edges found in the port, before and after this slice:
+
+| View | Difference before | after | Edges before | after |
+|---|---|---|---|---|
+| Beginner-start | 21.92 | 15.84 | 61.5 % | 99.1 % |
+| Beginner-sector-20 | 34.65 | 32.92 | 68.2 % | 67.0 % |
+| Beginner-sector-50 | 20.74 | 16.25 | 61.6 % | 87.3 % |
+| Beginner-sector-80 | 29.34 | 24.49 | 64.7 % | 96.1 % |
+| Beginner-overview | 19.09 | 10.48 | 93.1 % | 99.3 % |
+| Advanced-start | 22.51 | 16.43 | 46.1 % | 96.1 % |
+| Advanced-sector-20 | 28.41 | 23.13 | 50.1 % | 92.0 % |
+| Advanced-sector-50 | 18.98 | 15.12 | 62.2 % | 89.3 % |
+| Advanced-sector-80 | 17.63 | 13.04 | 51.2 % | 98.7 % |
+| Advanced-overview | 18.40 | 8.93 | 95.2 % | 100.0 % |
+| Expert-start | 17.57 | 13.04 | 60.0 % | 96.8 % |
+| Expert-sector-20 | 24.49 | 18.43 | 41.8 % | 97.4 % |
+| Expert-sector-50 | 20.20 | 14.43 | 58.0 % | 93.3 % |
+| Expert-sector-80 | 16.34 | 11.37 | 49.8 % | 98.1 % |
+| Expert-overview | 21.15 | 10.01 | 98.0 % | 99.9 % |
+
+`Beginner-sector-20` is the view the shadows dominate: the port still shadows the city ground where the original does not (shadow slice).
+
+Probes: lit and facing-away points within 12 of the original: 24 of 34 (19 before). The 10 left: 5 lit road probes (the original's road specular, left to the PBR work), 3 city ground probes (shadows), the casino wall (glass panel, PBR work), and one terrain probe that misses by one level.
+
+Left open:
+
+- The port's terrain is about 7 % brighter than the original's, uniformly, lit or not. The detail texture is not the cause (the gain was there before it). Cause not found.
+- Enabling mipmaps raised the mean difference slightly on two views (`Beginner-sector-80` +0.14, `Expert-sector-20` +0.18) before the detail texture brought both well below; on `Expert-sector-20` the change sits on palms, road and rails. Cause not isolated.
+- The original reads the sky cube with two conventions depending on the technique: glass follows the displayed sky, signs and car paint do not. Only the first is reproduced; the second is one of the original's accidental behaviours, to be decided case by case with the PBR work.
+- The car selection screen: the windscreen reflection changes with the converted sky cube; nothing else visibly.

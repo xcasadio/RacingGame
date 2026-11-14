@@ -166,7 +166,9 @@ Ordre d'exécution : G1 → G2 → E7 → E8 → G2b → G3 → G4 → G5 → G6
 - Validation : build ; `--verify-legacy-import-profile` code 0 ; aucune sonde ne change de verdict ; écart moyen des 15 vues non supérieur à celui de G4.
 - Commit : `fix(racing-casa): round imported diffuse colours and default missing legacy materials`
 
-### ⏳ G6 — Banc, constats, vérification indépendante
+### ✅ G6 — Banc, constats, vérification indépendante
+
+> Validation (2026-11-14) : banc relancé par la vérification indépendante (`artifacts/capture-bench/rgce-vs3`, `report-rgce-vs3`) ; constats mis à jour dans `docs/racinggame-3d-capture-bench-findings.md`. Vérification indépendante : six affirmations, toutes CONFIRMED (banc refait : sondes 24 / 34, écart moyen en baisse sur les 15 vues et les trois canaux par rapport à `report-l4` ; route ; terrain ; mipmaps, 5153 tests moteur verts ; ciel, miroir vérifié par un décodeur DXT1 indépendant sur les 1 572 864 texels, aller-retour identique ; texture de détail du moteur). Écran de sélection (`artifacts/capture-bench/ui-s3`) : seul le reflet du pare-brise change. `--capture-ui-screens` se termine maintenant avec le code 0 (10 écrans) : le point ouvert O9 de S2a ne se reproduit plus, cause non instruite. Restes consignés aux points ouverts O5 à O7.
 
 - Objectif : relancer le banc ; mettre à jour `docs/racinggame-3d-capture-bench-findings.md` (M1, M4 pour sa part de relief, G7) ; passe `verifier` sur la validation globale ; lister ce qui reste pour S2b et pour le chantier PBR.
 - Validation : relecture par l'auteur.
@@ -182,6 +184,9 @@ Ordre d'exécution : G1 → G2 → E7 → E8 → G2b → G3 → G4 → G5 → G6
 | O2 | Le spéculaire de la route reste celui de la conversion (0,14, puissance 18) : les sondes de route éclairée ne sont pas attendues dans la tolérance avant le chantier PBR. | G1 |
 | O3 | Le cube converti change les réflexions de tous les matériaux de la conversion qui en ont une : aujourd'hui les seuls matériaux de vitrage (`Car.gltf` Standard_19, `Casino01.gltf` et `Hotel01.gltf` Material__39, `Hotel02.gltf` fenster) et le socle du carrousel (réflexion 0,35). Vues concernées : les trois vues de départ et les vues d'ensemble (voiture), `Beginner-sector-20` et les vues où figurent hôtels et casino, et l'écran de sélection. Capture avant / après jointe en G6 ; critère : les sondes hors ciel ne régressent pas. | G4 |
 | O4 | Chantier PBR : plan séparé dans le dépôt du moteur (ADR-0013), après S2b. Les tables de réglage spéculaire de la conversion et les réflexions par technique de l'original y seront traitées, avec la liste des comportements accidentels de l'original à trancher un par un. | — |
+| O5 | Le terrain de la conversion est environ 7 % plus clair que celui de l'original, uniformément, éclairé ou non (une sonde, `terrain-lit-1` de Beginner-start, échoue d'un niveau). Écartés par la vérification : identité des textures, alpha prémultiplié, moyenne du détail, format et mipmaps, arrondi des constantes, échelle globale. Pistes : l'original interpole le vecteur de lumière par sommet sans le renormaliser, et filtre le terrain en linéaire là où la conversion est en anisotrope. Contrôle proposé : une capture sans normal map de terrain, une autre en filtrage linéaire. | G3 |
+| O6 | L'activation des mipmaps a fait monter l'écart moyen de 0,14 à 0,18 sur deux vues, sur le feuillage des palmiers et le grain de la route, avant que le détail du terrain ne les fasse baisser bien au-delà. Cause probable : l'original compresse en DXT et construit ses mipmaps par le pipeline de contenu, la conversion par moyenne 2 × 2 sans compression, ce qui change la couverture du test alpha. Non isolé. | G2b |
+| O7 | `LoadTexture` rend une texture nulle sans journal quand un fichier manque (`Worlds/LegacyTrackSceneFactory.cs:1089-1093`) : comportement ancien, à corriger pour qu'un fichier absent soit signalé. | — |
 
 ## Hors périmètre
 
