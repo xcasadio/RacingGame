@@ -38,7 +38,8 @@ internal static class LegacyCarVisualFactory
     private static readonly Color LegacyTextureColorKey = new(255, 0, 255, 0);
     private static readonly string[] CarDiffuseTextureFileNames = ["RacerCar.tga", "RacerCar2.tga", "RacerCar3.tga"];
 
-    private static readonly Texture2DLoader TextureLoader = new();
+    // Race-world textures carry their full mip chain, as the original builds them (GenerateMipmaps=True in its content project).
+    private static readonly Texture2DLoader TextureLoader = new() { GenerateMipmaps = true };
     private static readonly Dictionary<string, Texture2D?> TextureCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, TextureCube?> TextureCubeCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<int, StaticModel?> ConfiguredCarModelCache = new();
@@ -49,6 +50,8 @@ internal static class LegacyCarVisualFactory
     private static bool _hasCachedCarBounds;
     private static bool _hasLoggedMissingCarModel;
     private static bool _hasLoggedUnsupportedCarModel;
+    private static bool _hasLoggedTextureLevels;
+    private static bool _hasLoggedPaintLevels;
 
     internal static readonly Quaternion LegacyCarFacingCorrection = Quaternion.CreateFromAxisAngle(Vector3.Up, MathHelper.Pi);
 
@@ -352,6 +355,12 @@ internal static class LegacyCarVisualFactory
         try
         {
             Texture2D texture = (Texture2D)TextureLoader.LoadAsset(normalizedPath, assetContentManager);
+            if (!_hasLoggedTextureLevels)
+            {
+                _hasLoggedTextureLevels = true;
+                Logs.WriteInfo($"Car textures: '{Path.GetFileName(normalizedPath)}' {texture.Width}x{texture.Height} loaded with {texture.LevelCount} mipmap level(s).");
+            }
+
             TextureCache[normalizedPath] = texture;
             return texture;
         }
@@ -497,7 +506,7 @@ internal static class LegacyCarVisualFactory
     /// </summary>
     private sealed class CarPaint
     {
-        // Rows painted per parallel chunk, and the paint buffer, shared by the cars: painting is done under CacheLock.
+        // Rows painted per parallel chunk, and the paint buffer (the cars share it when their textures have the same size): painting is done under CacheLock.
         private const int ChunkLength = 1 << 16;
         private static Color[] _painted = [];
 
@@ -532,10 +541,16 @@ internal static class LegacyCarVisualFactory
                 source[pixelIndex] = isColorKey ? LegacyTextureColorKey : new Color(red, green, blue, alpha);
             }
 
-            var unpainted = new Texture2D(graphicsDevice, image.Width, image.Height, false, SurfaceFormat.Color);
-            unpainted.SetData(source);
-            var painted = new Texture2D(graphicsDevice, image.Width, image.Height, false, SurfaceFormat.Color);
-            painted.SetData(source);
+            var unpainted = new Texture2D(graphicsDevice, image.Width, image.Height, true, SurfaceFormat.Color);
+            MipmapChain.UploadChain(unpainted, source);
+            var painted = new Texture2D(graphicsDevice, image.Width, image.Height, true, SurfaceFormat.Color);
+            MipmapChain.UploadChain(painted, source);
+            if (!_hasLoggedPaintLevels)
+            {
+                _hasLoggedPaintLevels = true;
+                Logs.WriteInfo($"Car paint textures: '{Path.GetFileName(texturePath)}' {image.Width}x{image.Height} created with {painted.LevelCount} mipmap level(s).");
+            }
+
             return new CarPaint(source, unpainted, painted);
         }
 
@@ -550,7 +565,8 @@ internal static class LegacyCarVisualFactory
             long started = System.Diagnostics.Stopwatch.GetTimestamp();
             _colorIndex = colorIndex;
             Color color = RaceFrontEndCatalog.CarColors[colorIndex].Value;
-            if (_painted.Length < _source.Length)
+            // Exact size: the chain upload checks it against the texture. Rebuilt with the chain at each colour change.
+            if (_painted.Length != _source.Length)
             {
                 _painted = new Color[_source.Length];
             }
@@ -580,7 +596,7 @@ internal static class LegacyCarVisualFactory
                 }
             });
 
-            Painted.SetData(painted, 0, source.Length);
+            MipmapChain.UploadChain(Painted, painted);
             Logs.WriteTrace($"Car paint: colour {colorIndex} painted in {System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds:0.0} ms");
         }
     }

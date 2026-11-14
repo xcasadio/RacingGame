@@ -56,7 +56,9 @@ internal static partial class LegacyTrackSceneFactory
 
     private static readonly XmlSerializer TrackSerializer = new(typeof(LegacyTrackLayout));
     private static readonly XmlSerializer CombiSerializer = new(typeof(List<LegacyCombiObject>), new XmlRootAttribute("ArrayOfCombiObject"));
-    private static readonly Texture2DLoader TextureLoader = new();
+    // Race-world textures carry their full mip chain, as the original builds them (GenerateMipmaps=True in its content project).
+    private static readonly Texture2DLoader TextureLoader = new() { GenerateMipmaps = true };
+    private static bool _hasLoggedTextureLevels;
     private static readonly Dictionary<string, LegacyTrackLayout> TrackCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, List<LegacyCombiObject>> CombiCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, StaticModel?> ModelCache = new(StringComparer.OrdinalIgnoreCase);
@@ -1093,6 +1095,12 @@ internal static partial class LegacyTrackSceneFactory
         try
         {
             var texture = (Texture2D)TextureLoader.LoadAsset(normalizedPath, assetContentManager);
+            if (!_hasLoggedTextureLevels)
+            {
+                _hasLoggedTextureLevels = true;
+                Logs.WriteInfo($"Track textures: '{Path.GetFileName(normalizedPath)}' {texture.Width}x{texture.Height} loaded with {texture.LevelCount} mipmap level(s).");
+            }
+
             TextureCache[normalizedPath] = texture;
             return texture;
         }
