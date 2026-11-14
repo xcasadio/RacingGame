@@ -150,6 +150,24 @@ internal static partial class LegacyTrackSceneFactory
             || modelName.StartsWith("StartLight", StringComparison.Ordinal);
     }
 
+    // Landscape.AddObjectToRender: windmills and the big buildings always generate shadows, whatever the call asks.
+    private static bool IsForcedNearTrackModel(string modelName)
+    {
+        return string.Equals(modelName, "windmill", StringComparison.OrdinalIgnoreCase)
+            || modelName.Contains("hotel", StringComparison.OrdinalIgnoreCase)
+            || modelName.Contains("building", StringComparison.OrdinalIgnoreCase)
+            || modelName.Contains("casino01", StringComparison.OrdinalIgnoreCase);
+    }
+
+    // What an object of nearTrackObjects receives: not a banner or a sign (LandscapeObject.isBanner, "contains") and not an
+    // alpha model (Model.hasAlpha, "starts with alpha": Model.UseShadow never receives for them).
+    private static bool ReceivesShadowWhenNearTrack(string modelName)
+    {
+        return !modelName.Contains("banner", StringComparison.OrdinalIgnoreCase)
+            && !modelName.Contains("sign", StringComparison.OrdinalIgnoreCase)
+            && !modelName.StartsWith("alpha", StringComparison.OrdinalIgnoreCase);
+    }
+
     /// <summary>The entities of one kind of object (scenery, guard rail holders...) and how they are named.</summary>
     private sealed class LegacyEntityGroup(Func<string, int, string> nameFactory)
     {
@@ -180,16 +198,23 @@ internal static partial class LegacyTrackSceneFactory
 
         public float GetMapHeight(float x, float y) => terrainSampler.GetMapHeight(x, y);
 
-        public void AddObjectToRender(string modelName, Matrix renderMatrix, LegacyEntityGroup group)
+        public void AddObjectToRender(string modelName, Matrix renderMatrix, bool isNearTrackForShadowGeneration, LegacyEntityGroup group)
         {
             modelName = FixLegacyModelName(modelName);
+
+            // Always include windmills and buildings for shadow generation (Landscape.cs:388-393). Applied after the flag
+            // of the call, and before the combos, whose children get their own flag (false) and the same forcing by name.
+            if (IsForcedNearTrackModel(modelName))
+            {
+                isNearTrackForShadowGeneration = true;
+            }
 
             if (CombiSizes.ContainsKey(modelName))
             {
                 // Adds all the models of the combo, each one through this method
                 foreach (LegacyCombiObject combiObject in LoadCombiModel(modelName))
                 {
-                    AddObjectToRender(combiObject.modelName, combiObject.matrix * renderMatrix, group);
+                    AddObjectToRender(combiObject.modelName, combiObject.matrix * renderMatrix, false, group);
                 }
 
                 return;
@@ -242,7 +267,9 @@ internal static partial class LegacyTrackSceneFactory
             Entity entity = CreateStaticModelEntity(
                 group.NextName(modelName),
                 model,
-                ConvertLegacyTransform(placedTransform, origin));
+                ConvertLegacyTransform(placedTransform, origin),
+                castShadows: isNearTrackForShadowGeneration,
+                receiveShadows: isNearTrackForShadowGeneration && ReceivesShadowWhenNearTrack(modelName));
             RecordPlacedObject(modelName, placedTransform, entity);
             group.Entities.Add(entity);
         }
@@ -276,6 +303,7 @@ internal static partial class LegacyTrackSceneFactory
             AddObjectToRender(
                 modelName,
                 Matrix.CreateRotationZ(rotation) * Matrix.CreateTranslation(trackPosition + trackRight * distance + new Vector3(0, 0, -100)),
+                false,
                 group);
         }
     }
@@ -374,6 +402,7 @@ internal static partial class LegacyTrackSceneFactory
                             * Matrix.CreateTranslation(right * (generatedNum % 2 == 0 ? 0.6f : -0.6f) * point.RoadWidth * LegacyRoadWidthScale)
                             * Matrix.CreateTranslation(new Vector3(0, 0, -50))
                             * Matrix.CreateTranslation(objectPoint),
+                            true,
                             sceneryEntities);
                     }
                 }
@@ -388,6 +417,7 @@ internal static partial class LegacyTrackSceneFactory
                             -0.2f))
                         * pointSpace
                         * Matrix.CreateTranslation(objectPoint),
+                        true,
                         sceneryEntities);
                 }
 
@@ -412,6 +442,7 @@ internal static partial class LegacyTrackSceneFactory
             * Matrix.CreateTranslation(new Vector3(0, -5.1f, 0))
             * startPointSpace
             * Matrix.CreateTranslation(startPoint.Position),
+            true,
             sceneryEntities);
 
         // The original adds StartLight3 and turns it into the red StartLight once the level is loaded
@@ -422,6 +453,7 @@ internal static partial class LegacyTrackSceneFactory
             * Matrix.CreateTranslation(new Vector3(startPoint.RoadWidth * LegacyRoadWidthScale * 0.50f - 0.3f, 6, -0.2f))
             * startPointSpace
             * Matrix.CreateTranslation(startPoint.Position),
+            true,
             sceneryEntities);
     }
 
@@ -453,6 +485,7 @@ internal static partial class LegacyTrackSceneFactory
                     * Matrix.CreateTranslation(new Vector3(0, 0, -0.1f))
                     * pointSpace
                     * Matrix.CreateTranslation(objectPoint),
+                    true,
                     sceneryEntities);
 
                 checkpointGap += CheckpointGap;
@@ -480,6 +513,7 @@ internal static partial class LegacyTrackSceneFactory
                         Matrix.CreateTranslation(new Vector3(halfRoadWidth - 0.1f, 0, -0.25f))
                         * pointSpace
                         * Matrix.CreateTranslation(objectPoint),
+                        true,
                         sceneryEntities);
                 }
                 else if (roadAngle < -MathHelper.Pi / 7.5f)
@@ -490,6 +524,7 @@ internal static partial class LegacyTrackSceneFactory
                         * Matrix.CreateTranslation(new Vector3(-point.RoadWidth * LegacyRoadWidthScale * 0.5f - 0.15f, 0, -0.25f))
                         * pointSpace
                         * Matrix.CreateTranslation(objectPoint),
+                        true,
                         sceneryEntities);
                 }
                 else if (roadAngle > MathHelper.Pi / 7.5f)
@@ -500,6 +535,7 @@ internal static partial class LegacyTrackSceneFactory
                         * Matrix.CreateTranslation(new Vector3(halfRoadWidth - 0.15f, 0, -0.25f))
                         * pointSpace
                         * Matrix.CreateTranslation(objectPoint),
+                        true,
                         sceneryEntities);
                 }
                 else if (roadAngle < -MathHelper.Pi / 10.0f
@@ -530,6 +566,7 @@ internal static partial class LegacyTrackSceneFactory
                             -0.25f))
                         * pointSpace
                         * Matrix.CreateTranslation(objectPoint),
+                        true,
                         sceneryEntities);
                 }
 

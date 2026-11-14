@@ -110,7 +110,8 @@ internal static partial class LegacyTrackSceneFactory
         var sceneryEntities = new LegacyEntityGroup(static (modelName, index) => $"Track.Scenery.{modelName}.{index:000}");
         foreach (LegacyNeutralObject neutralObject in layout.NeutralsObjects)
         {
-            landscape.AddObjectToRender(neutralObject.modelName, neutralObject.matrix, sceneryEntities);
+            // TrackLine.Load passes false: only the generated objects and the forced names are near the track
+            landscape.AddObjectToRender(neutralObject.modelName, neutralObject.matrix, false, sceneryEntities);
         }
 
         trackEntities.AddRange(LegacyTrackGuardRailBuilder.CreateEntities(trackName, roadSplinePoints, origin, terrainSampler, landscape, assetContentManager));
@@ -371,7 +372,12 @@ internal static partial class LegacyTrackSceneFactory
         return StartLightModelNames.Select(modelName => LoadLegacyModel(modelName, assetContentManager)).ToArray();
     }
 
-    private static Entity CreateStaticModelEntity(string name, StaticModel model, Matrix transform, bool castShadows = true)
+    private static Entity CreateStaticModelEntity(
+        string name,
+        StaticModel model,
+        Matrix transform,
+        bool castShadows = true,
+        bool receiveShadows = true)
     {
         if (!transform.Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation))
         {
@@ -390,6 +396,7 @@ internal static partial class LegacyTrackSceneFactory
         {
             StaticModel = model,
             CastShadows = castShadows,
+            ReceiveShadows = receiveShadows,
         };
         component.LocalTransform.Position = translation;
         component.LocalTransform.Orientation = rotation;

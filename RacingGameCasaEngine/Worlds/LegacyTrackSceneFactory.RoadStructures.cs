@@ -102,7 +102,7 @@ internal static partial class LegacyTrackSceneFactory
 
             // Track.GenerateShadow ignores the road back ("Generate shadows for the road and the tunnel, ignore the
             // road back") and Track.UseShadow does not render it.
-            return CreateStructureEntity($"Track.RoadBack.{trackName}", mesh, castShadows: false);
+            return CreateStructureEntity($"Track.RoadBack.{trackName}", mesh, castShadows: false, receiveShadows: false);
         }
 
         // Track.cs: the vertices of the tunnel parts (left edge of the road, top left, top right, right edge, 4 per
@@ -171,7 +171,7 @@ internal static partial class LegacyTrackSceneFactory
             Logs.WriteInfo($"Track '{trackName}' tunnels: {tunnelRanges.Count} range(s), {vertices.Length} vertices, {indices.Length} indices.");
 
             // Track.GenerateShadow and Track.UseShadow both render the tunnels.
-            return CreateStructureEntity($"Track.RoadTunnel.{trackName}", mesh, castShadows: true);
+            return CreateStructureEntity($"Track.RoadTunnel.{trackName}", mesh, castShadows: true, receiveShadows: true);
         }
 
         // Landscape.CreateCityPlane + PlaneRenderer.DrawPlaneVertices: one quad of half size min(x, y) of the first big
@@ -214,8 +214,9 @@ internal static partial class LegacyTrackSceneFactory
 
             Logs.WriteInfo($"Track '{trackName}' city ground: {vertices.Length} vertices, {indices.Length} indices, center ({center.X:F2}, {center.Y:F2}, {center.Z:F2}) legacy, half size {size:F2}.");
 
-            // Landscape.GenerateShadow: the landscape (and its plane) only receives shadows.
-            return CreateStructureEntity($"Track.CityGround.{trackName}", mesh, castShadows: false);
+            // Landscape.GenerateShadow: the landscape does not cast. The plane itself is not a receiver in the original, but its
+            // screen-space shadow mask shows the terrain's shadow on it (plan, S2b C1), so it receives here.
+            return CreateStructureEntity($"Track.CityGround.{trackName}", mesh, castShadows: false, receiveShadows: true);
         }
 
         // The Landscape of the original is constructed for Level.Beginner (RacingGameManager) and its city plane is
@@ -234,7 +235,7 @@ internal static partial class LegacyTrackSceneFactory
             var discardedEntities = new LegacyEntityGroup(static (modelName, index) => $"{modelName}.{index}");
             foreach (LegacyNeutralObject neutralObject in beginnerLayout.NeutralsObjects)
             {
-                landscape.AddObjectToRender(neutralObject.modelName, neutralObject.matrix, discardedEntities);
+                landscape.AddObjectToRender(neutralObject.modelName, neutralObject.matrix, false, discardedEntities);
                 if (landscape.FirstBigBuildingPosition != null)
                 {
                     break;
@@ -287,7 +288,7 @@ internal static partial class LegacyTrackSceneFactory
             return vector;
         }
 
-        private static Entity CreateStructureEntity(string entityName, StaticModelMesh mesh, bool castShadows)
+        private static Entity CreateStructureEntity(string entityName, StaticModelMesh mesh, bool castShadows, bool receiveShadows)
         {
             var model = new StaticModel { Name = entityName };
             model.Meshes.Add(mesh);
@@ -300,7 +301,7 @@ internal static partial class LegacyTrackSceneFactory
                 Scale = Vector3.One,
             };
 
-            return CreateStaticModelEntity(entityName, model, Matrix.Identity, castShadows);
+            return CreateStaticModelEntity(entityName, model, Matrix.Identity, castShadows, receiveShadows);
         }
 
         // Track.roadBackMaterial: Material("RoadBack", "RoadBackNormal"); the lighting values are the road's, for now.

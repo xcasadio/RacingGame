@@ -221,6 +221,7 @@ internal static partial class LegacyTrackSceneFactory
                         * Matrix.CreateTranslation(HolderPileCorrectionVector)
                         * CreateRawPointSpaceMatrix(railPoint.Right, railPoint.Direction, railPoint.Up)
                         * Matrix.CreateTranslation(holderPoint),
+                        false,
                         holders);
                     lastHolderGap += HolderGap;
                 }
@@ -373,7 +374,8 @@ internal static partial class LegacyTrackSceneFactory
                 Scale = Vector3.One,
             };
 
-            return CreateStaticModelEntity($"Track.Columns.{trackName}", model, Matrix.Identity);
+            // The generated columns neither cast nor receive (Track.GenerateShadow and Track.UseShadow have them commented out).
+            return CreateStaticModelEntity($"Track.Columns.{trackName}", model, Matrix.Identity, castShadows: false, receiveShadows: false);
         }
 
         // Each column also gets a segment object on the ground (TrackColumns constructor), through the landscape.
@@ -393,6 +395,7 @@ internal static partial class LegacyTrackSceneFactory
                 landscape.AddObjectToRender(
                     "RoadColumnSegment",
                     Matrix.CreateTranslation(new Vector3(columnPoint.X, columnPoint.Y, bottomHeight - ColumnGroundHeight)),
+                    false,
                     segments);
             }
 
