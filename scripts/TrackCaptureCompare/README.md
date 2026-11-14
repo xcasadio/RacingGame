@@ -44,10 +44,10 @@ The output folder receives:
 ## Probes (light and shadow levels)
 
 ```
-dotnet run --project scripts/TrackCaptureCompare -- <views.json> <reference folder> <candidate folder> <output folder> --probes scripts/TrackCaptureCompare/probes.json --terrain-detail RacingGame/Content/Textures/LandscapeDetail.tga
+dotnet run --project scripts/TrackCaptureCompare -- <views.json> <reference folder> <candidate folder> <output folder> --probes scripts/TrackCaptureCompare/probes.json --no-terrain-detail-correction
 ```
 
-`--probes <probes.json>` adds a probe evaluation after the usual comparison (`report.md` and `compare-*.png` are unchanged for the same inputs) and writes `probes.md` in the output folder (also printed on the console). The exit code does not depend on the probe verdicts: the report is read, not gated. A missing probes file, or `--probes` without `--terrain-detail` or `--no-terrain-detail-correction`, exits with `2`.
+`--probes <probes.json>` adds a probe evaluation after the usual comparison (`report.md` and `compare-*.png` are unchanged for the same inputs) and writes `probes.md` in the output folder (also printed on the console). The exit code does not depend on the probe verdicts: the report is read, not gated. A missing probes file, or `--probes` without `--no-terrain-detail-correction` or `--terrain-detail`, exits with `2`. Against the port as it is now, pass `--no-terrain-detail-correction`: both games apply the detail texture (see below).
 
 ### probes.json
 
@@ -70,4 +70,4 @@ dotnet run --project scripts/TrackCaptureCompare -- <views.json> <reference fold
 
 ### Terrain detail correction
 
-The original multiplies the terrain colour by `2 x LandscapeDetail` (tiled x24); the port does not yet. `--terrain-detail <tga|png>` (use `RacingGame/Content/Textures/LandscapeDetail.tga`; the tool reads uncompressed and RLE 24/32-bit TGA itself) gives the per-channel mean of `2 x detail / 255`; the REFERENCE colour of `surface: terrain` probes is divided by it (clamped to 255) before the criteria, and the factor is printed in the report. The candidate is never corrected. When both folders hold the same game (original against itself), pass `--no-terrain-detail-correction` instead (factor 1), otherwise the reference alone would be altered.
+Both games now multiply the terrain colour by `2 x LandscapeDetail` (tiled x24), so the bench commands pass `--no-terrain-detail-correction` (factor 1): the reference colours are compared as they are. The correction applies only when the candidate has no detail texture, which was the port before `feat(racing-casa): give the terrain its detail texture`, so that a run of that older state compares like for like: `--terrain-detail <tga|png>` (use `RacingGame/Content/Textures/LandscapeDetail.tga`; the tool reads uncompressed and RLE 24/32-bit TGA itself) gives the per-channel mean of `2 x detail / 255`; the REFERENCE colour of `surface: terrain` probes is divided by it (clamped to 255) before the criteria, and the factor is printed in the report. The candidate is never corrected. When both folders hold the same game (original against itself), pass `--no-terrain-detail-correction` as well, otherwise the reference alone would be altered.

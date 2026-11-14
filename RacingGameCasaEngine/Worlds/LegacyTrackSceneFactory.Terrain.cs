@@ -1,3 +1,4 @@
+using CasaEngine.Core.Log;
 using CasaEngine.Framework.Assets;
 using CasaEngine.Framework.Entities;
 using CasaEngine.Framework.Graphics;
@@ -17,6 +18,8 @@ internal static partial class LegacyTrackSceneFactory
         private const float MapWidthFactor = 10f;
         private const float MapHeightFactor = 10f;
         private const float MapZScale = 300f;
+        private const float TerrainDetailTiling = 24f;
+        private static bool _hasLoggedTerrainDetailLevels;
 
         internal static IReadOnlyList<Entity> CreateEntities(string trackName, Vector3 origin, AssetContentManager assetContentManager)
         {
@@ -138,6 +141,15 @@ internal static partial class LegacyTrackSceneFactory
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "Landscape.tga", "CityGround.tga");
             Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "LandscapeNormal.png", "CityGroundNormal.png");
+            // Landscape.cs: DiffuseWithDetail20 multiplies by 2 * LandscapeDetail sampled at the diffuse coordinates times
+            // DetailFactor (LandscapeNormalMapping.fx, set to 24 by ShaderEffect.cs); the vertices here carry the same coordinates.
+            Texture2D? detailTexture = LoadProjectTexture(assetContentManager, "LandscapeDetail.tga");
+            if (detailTexture != null && !_hasLoggedTerrainDetailLevels)
+            {
+                _hasLoggedTerrainDetailLevels = true;
+                Logs.WriteInfo($"Terrain detail texture: {detailTexture.Width}x{detailTexture.Height}, {detailTexture.LevelCount} mipmap level(s), tiling {TerrainDetailTiling}.");
+            }
+
             string name = $"{trackName}.TerrainMaterial";
             (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(182, 166, 118), 88, 234);
             return new LitDiffuseMaterial
@@ -145,6 +157,8 @@ internal static partial class LegacyTrackSceneFactory
                 Name = name,
                 BasColor = diffuseTexture,
                 NormalMap = normalTexture,
+                DetailTexture = detailTexture,
+                DetailTiling = TerrainDetailTiling,
                 DiffuseColor = diffuse,
                 AmbientColor = ambient,
                 // Landscape.cs: DiffuseWithDetail20 has no specular term.
