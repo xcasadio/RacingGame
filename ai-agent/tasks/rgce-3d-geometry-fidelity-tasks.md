@@ -89,7 +89,9 @@ Sur les 15 vues du banc, la route, ses ouvrages et les objets de la conversion s
 - Validation : mesure de T1 ; vues du banc.
 - Commit : `feat(racing-casa): place the random scenery in the original's draw order`
 
-### ⏳ T5 — Banc relancé et constats mis à jour
+### 🧪 T5 — Banc relancé et constats mis à jour
+
+> Validation (2026-11-14) : banc relancé (`artifacts/capture-bench/rgce-s1d`, rapport `report-s1d`) ; constats mis à jour dans `docs/racinggame-3d-capture-bench-findings.md` (G1, G3, G5, G6 fermés ; G4 fermé pour la géométrie ; G2 reclassé en ombre, L1 ; G7 ouvert). Part de contours retrouvés en hausse sur les 15 vues. Reste : relecture par l'auteur.
 
 - Objectif : relancer le banc, noter les mesures, mettre à jour `docs/racinggame-3d-capture-bench-findings.md` (écarts fermés, écarts restants).
 - Validation : relecture par l'auteur.

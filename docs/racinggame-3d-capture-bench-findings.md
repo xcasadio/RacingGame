@@ -69,3 +69,43 @@ Mean absolute difference per channel (0-255), share of the original's edges foun
 - The race world of the port always draws the checkpoint course as light blue debug lines (`RaceCourseDebugComponent`, added in `RaceWorldFactory.cs:248`). The capture removes them; the game still shows them.
 - The chase camera leaves the camera's orientation tilted, and the look-at view matrix takes its up vector from it. The existing `--capture-track-audit` of the port is therefore rolled; the new capture resets the orientation.
 - The existing `--capture-track-audit` does not force a size and keeps the HUD in its pictures.
+
+## Update after the geometry slice (2026-11-14)
+
+Plan `ai-agent/tasks/rgce-3d-geometry-fidelity-tasks.md`, port at `0ac894d`, same reference (seed 1). The original now exports its track points and placed objects (`scene.json`) and the port measures itself against them (`scene-measure-<Track>.txt`).
+
+Measured: road points at 0.000 m, road width delta 0.000, and the same objects on both sides (Beginner 1147, Advanced 1693, Expert 3404, none unmatched, distance and scale delta 0.000, rotation within 0.04 degrees).
+
+| # | Status | Cause found |
+|---|---|---|
+| G1 | Closed | The road path was right; the road width was not. The track files' width helpers were never read (XML item name not declared), so the road kept its default width, up to about 10 m away from the original's edges. |
+| G2 | Not a geometry divergence | No extra geometry lies beside the road. What was read as a ribbon is the port's black shadow of the guard rail and of the road. Moved to lighting (L1). |
+| G3 | Closed | Combo models were never expanded (same XML cause), guard rail holders and column segments bypassed the original's add path, and the random scenery was not ported. |
+| G4 | Closed for the geometry | The city ground plane is built. It looks almost black because it lies in the port's black building shadows (L1). |
+| G5 | Closed | Signs were placed with the normalized right vector and a different random order; they now match the original's matrices. |
+| G6 | Closed | The "bare gantry" of the original is a street lamp close to the camera, which the port did not place (road helpers never read). |
+| G7 | Open | Sky orientation, not touched. |
+
+Also added: the road underside and the tunnels. No view of the bench shows a tunnel; they are checked by their ranges and vertex counts only.
+
+Share of the original's edges found within 2 pixels in the port, before and after:
+
+| View | Before | After |
+|---|---|---|
+| Beginner-start | 48.9 % | 60.2 % |
+| Beginner-sector-20 | 30.3 % | 42.6 % |
+| Beginner-sector-50 | 38.2 % | 59.1 % |
+| Beginner-sector-80 | 40.8 % | 55.4 % |
+| Beginner-overview | 79.4 % | 87.0 % |
+| Advanced-start | 39.6 % | 42.9 % |
+| Advanced-sector-20 | 43.8 % | 44.8 % |
+| Advanced-sector-50 | 51.9 % | 56.6 % |
+| Advanced-sector-80 | 26.7 % | 45.8 % |
+| Advanced-overview | 85.3 % | 87.1 % |
+| Expert-start | 36.8 % | 54.3 % |
+| Expert-sector-20 | 26.3 % | 41.3 % |
+| Expert-sector-50 | 28.5 % | 52.9 % |
+| Expert-sector-80 | 34.4 % | 50.2 % |
+| Expert-overview | 87.9 % | 93.9 % |
+
+What keeps these numbers from going higher is no longer placement: the terrain's fine grain (M1), the shadows (L1) and the materials (M2 to M5) make most of the remaining edge differences.
