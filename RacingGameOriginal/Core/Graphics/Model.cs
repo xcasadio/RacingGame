@@ -383,6 +383,24 @@ namespace RacingGame.Graphics
         }
 
         /// <summary>
+        /// Track audit capture: draw every object whatever its distance, so that a reference
+        /// view does not depend on the frame rate driven view distance.
+        /// </summary>
+        internal static void DisableViewDistanceLimit()
+        {
+            maxViewDistance = 100000;
+        }
+
+        /// <summary>
+        /// Time driving the animated meshes (windmill wings). Frozen at 0 during a track audit
+        /// capture, so that two runs give the same image.
+        /// </summary>
+        private static float AnimationTime
+        {
+            get { return CaptureOptions.Enabled ? 0.0f : BaseGame.TotalTime; }
+        }
+
+        /// <summary>
         /// Render
         /// </summary>
         /// <param name="renderMatrix">Render matrix</param>
@@ -443,7 +461,7 @@ namespace RacingGame.Graphics
                         renderMatrix.Translation.Length() * 3 +
                         renderMatrix.Determinant() * 5 +
                         (1.0f + ((int)(renderMatrix.M42 * 33.3f) % 100) * 0.00123f) *
-                        BaseGame.TotalTime / 0.654f) *
+                        AnimationTime / 0.654f) *
                         transforms[mesh.ParentBone.Index] *
                         renderMatrix;
                 }
@@ -815,7 +833,7 @@ namespace RacingGame.Graphics
                         renderMatrix.Translation.Length() * 3 +
                         renderMatrix.Determinant() * 5 +
                         (1.0f + ((int)(renderMatrix.M42 * 33.3f) % 100) * 0.00123f) *
-                        BaseGame.TotalTime / 0.654f) *
+                        AnimationTime / 0.654f) *
                         transforms[mesh.ParentBone.Index] *
                         renderMatrix);
                 }
@@ -882,7 +900,7 @@ namespace RacingGame.Graphics
                         renderMatrix.Translation.Length() * 3 +
                         renderMatrix.Determinant() * 5 +
                         (1.0f + ((int)(renderMatrix.M42 * 33.3f) % 100) * 0.00123f) *
-                        BaseGame.TotalTime / 0.654f) *
+                        AnimationTime / 0.654f) *
                         transforms[mesh.ParentBone.Index] *
                         renderMatrix);
                 }

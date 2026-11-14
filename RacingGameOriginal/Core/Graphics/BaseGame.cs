@@ -52,6 +52,13 @@ namespace RacingGame.Graphics
         /// </summary>
         public const float ViewableFieldOfView = FieldOfView / 1.125f;
 
+        /// <summary>
+        /// Projection values, exported with the track audit capture views.
+        /// </summary>
+        internal const float FieldOfViewY = FieldOfView,
+            NearPlaneDistance = NearPlane,
+            FarPlaneDistance = FarPlane;
+
         // UWP COMMENT OUT
        // public static PlatformID CurrentPlatform = Environment.OSVersion.Platform;
 
@@ -290,6 +297,47 @@ namespace RacingGame.Graphics
                     CheckOptionsAndPSVersion();
 
                 return usePostScreenShaders;
+            }
+        }
+
+        /// <summary>
+        /// Track audit capture: turns the post screen shaders (glow) on or off between two views.
+        /// </summary>
+        internal static void SetPostScreenShadersForCapture(bool enabled)
+        {
+            if (alreadyCheckedGraphicsOptions == false)
+                CheckOptionsAndPSVersion();
+            usePostScreenShaders = enabled;
+        }
+
+        private static string pendingFrameCapturePath = null;
+
+        /// <summary>
+        /// Track audit capture: saves the frame being rendered to this PNG file once the 3D scene
+        /// and the UI are drawn (see Draw).
+        /// </summary>
+        internal static void RequestFrameCapture(string pngPath)
+        {
+            pendingFrameCapturePath = pngPath;
+        }
+
+        private static void SaveBackBufferAsPng(string pngPath)
+        {
+            GraphicsDevice device = Device;
+            int w = device.PresentationParameters.BackBufferWidth;
+            int h = device.PresentationParameters.BackBufferHeight;
+            Color[] pixels = new Color[w * h];
+            device.GetBackBufferData(pixels);
+            // The glow shader leaves its own values in the alpha channel
+            for (int i = 0; i < pixels.Length; i++)
+                pixels[i].A = 255;
+
+            using (Texture2D frame = new Texture2D(device, w, h, false, SurfaceFormat.Color))
+            {
+                frame.SetData(pixels);
+                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(pngPath));
+                using (System.IO.FileStream stream = System.IO.File.Create(pngPath))
+                    frame.SaveAsPng(stream, w, h);
             }
         }
 
@@ -1386,7 +1434,11 @@ namespace RacingGame.Graphics
 
                 // Check out if our framerate is running very low. Then we can improve
                 // rendering by reducing the number of objects we draw.
-                if (fpsInterpolated < 5)
+                // (never during a track audit capture, its views must not depend on the frame rate)
+                if (CaptureOptions.Enabled)
+                {
+                }
+                else if (fpsInterpolated < 5)
                     Model.MaxViewDistance = 50;
                 else if (fpsInterpolated < 12)
                     Model.MaxViewDistance = 70;
@@ -1473,6 +1525,13 @@ namespace RacingGame.Graphics
 				UIRenderer.Render(lineManager2D);
 
 				PostUIRender();
+
+				// Track audit capture: the frame is complete, save it before the texts and the cursor
+				if (pendingFrameCapturePath != null)
+				{
+					SaveBackBufferAsPng(pendingFrameCapturePath);
+					pendingFrameCapturePath = null;
+				}
 
 				//Handle drawing the Trophy
 				int lanPlace = RacingGameManager.InGame && RacingGameManager.Player.MultiplayerRace

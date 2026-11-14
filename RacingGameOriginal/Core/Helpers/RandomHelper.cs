@@ -30,7 +30,9 @@ namespace RacingGame.Helpers
         /// <returns>Random</returns>
         public static Random GenerateNewRandomGenerator()
         {
-            globalRandomGenerator =
+            // The track audit capture needs the same random scenery on every run
+            globalRandomGenerator = CaptureOptions.Enabled ?
+                new Random(CaptureOptions.Seed) :
                 new Random((int)DateTime.Now.Ticks);
             //needs Interop: (int)WindowsHelper.GetPerformanceCounter());
             return globalRandomGenerator;

@@ -333,12 +333,21 @@ namespace RacingGame
             // Start playing the menu music
             //Sound.Play(Sound.Sounds.MenuMusic);
 
+            if (CaptureOptions.Enabled)
+            {
+                // --capture-track-audit: no menus, the capture starts once the content is loaded
+                Graphics.Model.DisableViewDistanceLimit();
+                gameScreens.Push(new TrackAuditCaptureLauncher());
+            }
+            else
+            {
             // Create main menu at our main entry point
             gameScreens.Push(new MainMenu());
 
             // But start with splash screen, if user clicks or presses Start,
             // we are back in the main menu.
             gameScreens.Push(new SplashScreen());
+            }
 
             //We want to initially show the loading screen while things start.
             gameScreens.Push(new LoadingScreen());

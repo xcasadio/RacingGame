@@ -87,6 +87,22 @@ namespace RacingGame.Properties
         /// <param name="loadSettings">Load settings</param>
         public static void Initialize()
         {
+            if (CaptureOptions.Enabled)
+            {
+                // Track audit capture: fixed settings, the player's file is neither read nor written
+                defaultInstance = new GameSettings();
+                defaultInstance.Fullscreen = false;
+                defaultInstance.ResolutionWidth = CaptureOptions.Width;
+                defaultInstance.ResolutionHeight = CaptureOptions.Height;
+                defaultInstance.PostScreenEffects = true;
+                defaultInstance.ShadowMapping = true;
+                defaultInstance.HighDetail = true;
+                defaultInstance.SoundVolume = 0;
+                defaultInstance.MusicVolume = 0;
+                needSave = false;
+                return;
+            }
+
             Load();
         }
         /// <summary>
@@ -152,6 +168,10 @@ namespace RacingGame.Properties
         /// </summary>
         public static void Save()
         {
+            // The track audit capture never touches the player's settings file
+            if (CaptureOptions.Enabled)
+                return;
+
             // No need to save if everything is up to date.
             if (needSave == false)
                 return;
