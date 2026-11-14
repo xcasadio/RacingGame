@@ -30,3 +30,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0014 | RacingGameCasaEngine's Help and Options keep their previous layout in the menus' style; Highscores reproduces the original screen | Accepted | 2026-10-06 |
 | ADR-0015 | The original game exports the 3D reference views; the port replays them | Accepted | 2026-11-14 |
 | ADR-0016 | The legacy normal maps are converted to the standard channel layout | Accepted | 2026-11-14 |
+| ADR-0017 | The legacy sky cube is converted to the axes of the converted world | Accepted | 2026-11-14 |

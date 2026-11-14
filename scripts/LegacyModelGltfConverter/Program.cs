@@ -18,17 +18,23 @@ using GltfNode = SharpGLTF.Schema2.Node;
 // - the legacy material metadata the old runtime importer used stored in the material extras.
 // - a TANGENT attribute generated like the legacy content processor on every primitive that has a normal texture;
 // - the normal maps given with --normal-map (used by meshes the game generates, so no model references them) converted too.
-// Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]... [--normal-map <tga file>]...
+// - the sky cube given with --sky-cube rewritten in the axes of the converted world (SkyCubeConverter, ADR-0017).
+// Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]... [--normal-map <tga file>]... [--sky-cube <dds file>]
 
-const string Usage = "Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]... [--normal-map <tga file>]...";
+const string Usage = "Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]... [--normal-map <tga file>]... [--sky-cube <dds file>]";
 var positional = new List<string>();
 var skippedModels = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 var extraNormalMaps = new List<string>();
+string? skyCubePath = null;
 for (int i = 0; i < args.Length; i++)
 {
     if (args[i] == "--normal-map" && i + 1 < args.Length)
     {
         extraNormalMaps.Add(args[++i]);
+    }
+    else if (args[i] == "--sky-cube" && i + 1 < args.Length)
+    {
+        skyCubePath = args[++i];
     }
     else if (args[i] == "--skip" && i + 1 < args.Length)
     {
@@ -95,6 +101,26 @@ foreach (string normalMap in extraNormalMaps)
         Path.Combine(pngDirectory, Path.GetFileNameWithoutExtension(sourcePath) + ".png"),
         isNormalMap: true);
     extraNormalMapCount++;
+}
+
+if (skyCubePath != null)
+{
+    string skySourcePath = Path.GetFullPath(skyCubePath);
+    string skyDestinationPath = Path.Combine(pngDirectory, Path.GetFileName(skySourcePath));
+    try
+    {
+        if (string.Equals(skySourcePath, skyDestinationPath, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("The sky cube would overwrite its own source: use another png output directory.");
+        }
+
+        Console.WriteLine(SkyCubeConverter.Convert(skySourcePath, skyDestinationPath));
+    }
+    catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException)
+    {
+        Console.WriteLine($"ERROR sky cube '{skyCubePath}': {ex.Message}");
+        failures++;
+    }
 }
 
 Console.WriteLine($"{sourceFiles.Length} models, {skipped} skipped, {failures} failed, {converter.ConvertedTextureCount} textures converted, {extraNormalMapCount} extra normal map(s) converted.");
