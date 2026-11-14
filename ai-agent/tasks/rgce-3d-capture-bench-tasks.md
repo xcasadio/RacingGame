@@ -76,7 +76,9 @@ Produire, pour les trois circuits, des paires d'images « original / conversion 
 - Validation : rapport généré sur les 15 paires ; sur la vue de départ, les bords de route se superposent.
 - Commit : `feat(scripts): compare original and converted 3D captures`
 
-### ⏳ T4 — Liste des écarts classée
+### 🧪 T4 — Liste des écarts classée
+
+> Validation (2026-11-14) : les 15 planches lues ; liste classée dans `docs/racinggame-3d-capture-bench-findings.md` (7 écarts de géométrie, 5 de matériaux, 3 d'éclairage, 3 constats annexes). Reste : relecture par l'auteur ; les causes ne sont pas instruites.
 
 - Objectif : lire les 15 paires et classer les écarts par gravité ; c'est la base des corrections suivantes.
 - Sources : rapport de T3, images.
