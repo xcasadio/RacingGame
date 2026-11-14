@@ -14,11 +14,6 @@ internal sealed class RacingGameLegacyMaterialImportProfile : ILegacyMaterialImp
             hints |= LegacyMaterialImportHint.AlphaCutout;
         }
 
-        if (UsesLegacyBrightAmbient(context.SourceAssetName))
-        {
-            hints |= LegacyMaterialImportHint.BrightAmbient;
-        }
-
         if (RacingGameLegacyMaterialTuning.ShouldEnableReflection(context.SourceAssetName, context.ImportedMaterial))
         {
             hints |= LegacyMaterialImportHint.Reflection;
@@ -51,9 +46,4 @@ internal sealed class RacingGameLegacyMaterialImportProfile : ILegacyMaterialImp
             || textureName.Contains("Ast", StringComparison.OrdinalIgnoreCase)
             || textureName.Contains("plants", StringComparison.OrdinalIgnoreCase);
     }
-
-    private static bool UsesLegacyBrightAmbient(string sourceAssetName)
-        => sourceAssetName.StartsWith("Sign", StringComparison.OrdinalIgnoreCase)
-            || sourceAssetName.StartsWith("Banner", StringComparison.OrdinalIgnoreCase)
-            || sourceAssetName.StartsWith("Windmill", StringComparison.OrdinalIgnoreCase);
 }

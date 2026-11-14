@@ -79,9 +79,9 @@ internal static class LegacyImportProfileVerifier
             failures.Add("Sign.gltf should stay neutral without the RacingGame profile.");
         }
 
-        if (!profileMaterial.BrightAmbientHint || profileMaterial.UsesReflection || profileMaterial.SurfaceIntent != LegacyMaterialSurfaceIntent.OpaqueLit)
+        if (profileMaterial.BrightAmbientHint || profileMaterial.UsesReflection || profileMaterial.SurfaceIntent != LegacyMaterialSurfaceIntent.OpaqueLit)
         {
-            failures.Add("Sign.gltf should become bright-ambient without reflecting the scene with the RacingGame profile.");
+            failures.Add("Sign.gltf should keep its own ambient and not reflect the scene with the RacingGame profile.");
         }
 
         if (tuning.EnableReflection || tuning.ApplySpecularColor(profileMaterial.SpecularColor).X > 0.2f)
@@ -140,9 +140,9 @@ internal static class LegacyImportProfileVerifier
 
         StaticModelImportedMaterial bannerMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "banner.tga");
 
-        if (!profileResult.Materials.Any(static material => material.BrightAmbientHint))
+        if (profileResult.Materials.Any(static material => material.BrightAmbientHint))
         {
-            failures.Add("Banner.gltf should produce at least one bright-ambient material with the RacingGame profile.");
+            failures.Add("Banner.gltf should keep the ambient of its own materials with the RacingGame profile (the original never applies its 128 override).");
         }
 
         if (bannerMaterial.UsesReflection)
@@ -200,9 +200,9 @@ internal static class LegacyImportProfileVerifier
         string filePath = Path.Combine(projectContentPath, "Models", "Windmill.gltf");
         var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
-        if (!profileResult.Materials.Any(static material => material.BrightAmbientHint))
+        if (profileResult.Materials.Any(static material => material.BrightAmbientHint))
         {
-            failures.Add("Windmill.gltf should produce at least one bright-ambient material with the RacingGame profile.");
+            failures.Add("Windmill.gltf should keep the ambient of its own materials with the RacingGame profile (the original never applies its 128 override).");
         }
 
         if (profileResult.Materials.Any(static material => material.UsesReflection))

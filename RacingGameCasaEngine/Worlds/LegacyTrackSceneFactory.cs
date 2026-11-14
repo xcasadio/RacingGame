@@ -943,9 +943,6 @@ internal static partial class LegacyTrackSceneFactory
     internal const byte LegacyDefaultAmbient = 40;
     internal const byte LegacyDefaultDiffuse = 210;
 
-    // Ambient the original sets on signs, banners and windmills (Core/Graphics/Model.cs:202-263).
-    private const float LegacyBrightAmbient = 128f / 255f;
-
     /// <summary>DiffuseColor (D) and MaterialAmbientColor (A / D) of a generated material the original builds with ambient A and diffuse D (0..255).</summary>
     /// <param name="baseColor">Tint of the material when its texture is missing; white when it has one.</param>
     private static (Color Diffuse, Vector3 Ambient) CreateLegacyLighting(string materialName, Color baseColor, byte ambient, byte diffuse)
@@ -963,7 +960,7 @@ internal static partial class LegacyTrackSceneFactory
     /// </summary>
     internal static Vector3 ComputeLegacyImportedAmbient(string modelName, StaticModelImportedMaterial importedMaterial)
     {
-        Vector3 ambient = importedMaterial.BrightAmbientHint ? new Vector3(LegacyBrightAmbient) : importedMaterial.AmbientColor;
+        Vector3 ambient = importedMaterial.AmbientColor;
         return ComputeLegacyAmbient($"{modelName}.{importedMaterial.DisplayName}", ambient, importedMaterial.DiffuseColor);
     }
 
