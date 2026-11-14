@@ -15,10 +15,12 @@ CasaEngine removed its runtime Assimp importer (`StaticModelImporter`, CasaEngin
 Run from the repository root (the project references `CasaEngine/CasaEngine.EditorServices`):
 
 ```
-dotnet run --project scripts/LegacyModelGltfConverter -- RacingGame/Content/Models RacingGameCasaEngine/Content/Models RacingGameCasaEngine/Content/Textures --skip Cube
+dotnet run --project scripts/LegacyModelGltfConverter -- RacingGame/Content/Models RacingGameCasaEngine/Content/Models RacingGameCasaEngine/Content/Textures --skip Cube --normal-map RacingGame/Content/Textures/LandscapeNormal.tga --normal-map RacingGame/Content/Textures/CityGroundNormal.tga --normal-map RacingGame/Content/Textures/RoadCementNormal.tga --normal-map RacingGame/Content/Textures/RoadBackNormal.tga --normal-map RacingGame/Content/Textures/RoadTunnelNormal.tga --normal-map RacingGame/Content/Textures/RoadNormal.tga
 ```
 
-Arguments: `<x models directory> <gltf output directory> <png output directory> [--skip <model name>]...`.
+Arguments: `<x models directory> <gltf output directory> <png output directory> [--skip <model name>]... [--normal-map <tga file>]...`.
+`--normal-map` converts a normal map no model references (the meshes RacingGameCasaEngine generates: terrain, road structures) into the png output directory.
+The tool rewrites every output file: close anything that keeps a `.png` of the output directory open, or it stops on a file access error and must be run again.
 `Cube` is skipped because RacingGameCasaEngine does not load it (the legacy game uses it through MGCB).
 
 The exit code is `0` when every model converts; any error (unmatched material names, missing texture, non-decomposable node transform) is printed and gives exit code `1`.
@@ -28,7 +30,7 @@ The exit code is `0` when every model converts; any error (unmatched material na
 For each `<Name>.x`:
 
 - `<gltf dir>/<Name>.gltf` and `<Name>.bin`: geometry from `AssimpToGltfConverter`, node transforms decomposed to translation/rotation/scale;
-- `<png dir>/<Texture>.png`: each `diffuseTexture` / `normalTexture` `.tga` of an effect instance, converted losslessly (RGBA), same base name; referenced from the glTF as an external image (`BaseColor` and `Normal` channels);
+- `<png dir>/<Texture>.png`: each `diffuseTexture` / `normalTexture` `.tga` of an effect instance, converted with the same base name: colour textures losslessly (RGBA), normal maps to the standard channel layout (ADR-0016: red from the legacy green, green from the legacy alpha, opaque alpha); referenced from the glTF as an external image (`BaseColor` and `Normal` channels);
 - material `extras`, used by RacingGameCasaEngine to restore what the old runtime importer read:
   - `legacyMaterial`: `diffuse`, `specular`, `emissive`, `shininess` from the Assimp material (`null` when absent);
   - `legacyEffect`: raw copy of the material `EffectInstance` (`file`, `dwords`, `floats`, `strings`), parsed with the rules of the old importer (ported in `LegacyXFileParser.cs`).

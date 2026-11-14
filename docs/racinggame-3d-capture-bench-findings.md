@@ -109,3 +109,12 @@ Share of the original's edges found within 2 pixels in the port, before and afte
 | Expert-overview | 87.9 % | 93.9 % |
 
 What keeps these numbers from going higher is no longer placement: the terrain's fine grain (M1), the shadows (L1) and the materials (M2 to M5) make most of the remaining edge differences.
+
+## Update: normal maps (2026-11-14)
+
+Found while reviewing the lighting plan, decision in ADR-0016.
+
+- The original's normal maps keep their components in (alpha, green, blue), with alpha along `cross(normal, tangent)` and green along the tangent; red is unused. They had been converted unchanged, and the engine reads (red, green, blue): every normal-mapped surface of the port was lit as if tilted by about 45 degrees. This, not a shadow, is why the city ground looked black (`Beginner-sector-20`: 87.6 % of the original's edges found now, 42.6 % before).
+- Only the meshes the port generates were affected (terrain, guard rails, columns, road underside, tunnels, city ground). The imported models have no tangents in their glTF files, so the engine does not use their normal maps at all: a new divergence, M6, whose fix is in the engine (glTF reader and converter).
+- The 55 normal maps are now written in the standard layout. The mapping comes from reading the two shaders; the pictures cannot confirm it until the light direction and the ambient term match the original (lighting slice).
+- Not checked: the car selection carousel (its plate has a normal map).

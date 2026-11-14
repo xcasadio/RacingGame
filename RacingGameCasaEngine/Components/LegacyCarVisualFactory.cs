@@ -31,7 +31,7 @@ internal static class LegacyCarVisualFactory
     private const float LegacyCarCollisionHeight = RacingCarPawn.CollisionHeight;
     private const float LegacyCarReflectionMultiplyBase = 0.85f;
     private const float LegacyCarReflectionMultiplyFactor = 0.75f;
-    private const string CarNormalTextureFileName = "RacerCarNormal.tga";
+    private const string CarNormalTextureFileName = "RacerCarNormal.png";
     private static readonly Color LegacyTextureColorKey = new(255, 0, 255, 0);
     private static readonly string[] CarDiffuseTextureFileNames = ["RacerCar.tga", "RacerCar2.tga", "RacerCar3.tga"];
 

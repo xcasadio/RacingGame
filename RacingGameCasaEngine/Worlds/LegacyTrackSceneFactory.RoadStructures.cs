@@ -307,7 +307,7 @@ internal static partial class LegacyTrackSceneFactory
         private static LitDiffuseMaterial CreateRoadBackMaterial(string trackName, AssetContentManager assetContentManager)
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "RoadBack.tga");
-            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "RoadBackNormal.tga");
+            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "RoadBackNormal.png");
             return new LitDiffuseMaterial
             {
                 Name = $"{trackName}.RoadBackMaterial",
@@ -326,7 +326,7 @@ internal static partial class LegacyTrackSceneFactory
         private static LitDiffuseMaterial CreateRoadTunnelMaterial(string trackName, AssetContentManager assetContentManager)
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "RoadTunnel.tga");
-            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "RoadTunnelNormal.tga");
+            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "RoadTunnelNormal.png");
             return new LitDiffuseMaterial
             {
                 Name = $"{trackName}.RoadTunnelMaterial",
@@ -345,7 +345,7 @@ internal static partial class LegacyTrackSceneFactory
         private static LitDiffuseMaterial CreateCityGroundMaterial(string trackName, AssetContentManager assetContentManager)
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "CityGround.tga");
-            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "CityGroundNormal.tga");
+            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "CityGroundNormal.png");
             return new LitDiffuseMaterial
             {
                 Name = $"{trackName}.CityGroundMaterial",

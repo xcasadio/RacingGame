@@ -15,14 +15,20 @@ using GltfNode = SharpGLTF.Schema2.Node;
 //   to translation/rotation/scale (GltfStaticModelReader cannot read matrix nodes);
 // - diffuse and normal textures of each material attached as external .png images;
 // - the legacy material metadata the old runtime importer used stored in the material extras.
-// Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]...
+// - the normal maps given with --normal-map (used by meshes the game generates, so no model references them) converted too.
+// Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]... [--normal-map <tga file>]...
 
-const string Usage = "Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]...";
+const string Usage = "Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]... [--normal-map <tga file>]...";
 var positional = new List<string>();
 var skippedModels = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+var extraNormalMaps = new List<string>();
 for (int i = 0; i < args.Length; i++)
 {
-    if (args[i] == "--skip" && i + 1 < args.Length)
+    if (args[i] == "--normal-map" && i + 1 < args.Length)
+    {
+        extraNormalMaps.Add(args[++i]);
+    }
+    else if (args[i] == "--skip" && i + 1 < args.Length)
     {
         skippedModels.Add(args[++i]);
     }
@@ -71,7 +77,25 @@ foreach (string sourceFile in sourceFiles)
     failures += errors.Count > 0 ? 1 : 0;
 }
 
-Console.WriteLine($"{sourceFiles.Length} models, {skipped} skipped, {failures} failed, {converter.ConvertedTextureCount} textures converted.");
+int extraNormalMapCount = 0;
+foreach (string normalMap in extraNormalMaps)
+{
+    string sourcePath = Path.GetFullPath(normalMap);
+    if (!File.Exists(sourcePath))
+    {
+        Console.WriteLine($"ERROR normal map '{normalMap}' not found");
+        failures++;
+        continue;
+    }
+
+    LegacyTextureConverter.ConvertToPng(
+        sourcePath,
+        Path.Combine(pngDirectory, Path.GetFileNameWithoutExtension(sourcePath) + ".png"),
+        isNormalMap: true);
+    extraNormalMapCount++;
+}
+
+Console.WriteLine($"{sourceFiles.Length} models, {skipped} skipped, {failures} failed, {converter.ConvertedTextureCount} textures converted, {extraNormalMapCount} extra normal map(s) converted.");
 return failures == 0 ? 0 : 1;
 
 internal sealed class ModelConverter
@@ -91,6 +115,7 @@ internal sealed class ModelConverter
     private readonly string _gltfDirectory;
     private readonly string _pngDirectory;
     private readonly HashSet<string> _convertedTextures = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, bool> _normalMapTextures = new(StringComparer.OrdinalIgnoreCase);
 
     public ModelConverter(string gltfDirectory, string pngDirectory)
     {
@@ -253,11 +278,18 @@ internal sealed class ModelConverter
             return 0;
         }
 
+        bool isNormalMap = effectParameter == "normalTexture";
         string pngFileName = Path.GetFileNameWithoutExtension(sourceTexture) + ".png";
         string pngPath = Path.Combine(_pngDirectory, pngFileName);
         if (_convertedTextures.Add(pngFileName))
         {
-            LegacyTextureConverter.ConvertToPng(sourceTexture, pngPath);
+            LegacyTextureConverter.ConvertToPng(sourceTexture, pngPath, isNormalMap);
+            _normalMapTextures[pngFileName] = isNormalMap;
+        }
+        else if (_normalMapTextures[pngFileName] != isNormalMap)
+        {
+            errors.Add($"material '{material.Name}': texture '{pngFileName}' is used both as a colour texture and as a normal map");
+            return 0;
         }
 
         if (!images.TryGetValue(pngFileName, out GltfImage? image))

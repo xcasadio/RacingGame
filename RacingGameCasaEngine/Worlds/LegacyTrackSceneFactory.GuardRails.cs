@@ -402,7 +402,7 @@ internal static partial class LegacyTrackSceneFactory
         private static LitDiffuseMaterial CreateGuardRailMaterial(string trackName, AssetContentManager assetContentManager, string sideName)
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "Leitplanke.tga");
-            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "LeitplankeNormal.tga");
+            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "LeitplankeNormal.png");
             return new LitDiffuseMaterial
             {
                 Name = $"{trackName}.GuardRailMaterial.{sideName}",
@@ -420,7 +420,7 @@ internal static partial class LegacyTrackSceneFactory
         private static LitDiffuseMaterial CreateRoadColumnMaterial(string trackName, AssetContentManager assetContentManager)
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "RoadCement.tga");
-            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "RoadCementNormal.tga");
+            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "RoadCementNormal.png");
             return new LitDiffuseMaterial
             {
                 Name = $"{trackName}.ColumnMaterial",

@@ -137,7 +137,7 @@ internal static partial class LegacyTrackSceneFactory
         private static LitDiffuseMaterial CreateTerrainMaterial(string trackName, AssetContentManager assetContentManager)
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "Landscape.tga", "CityGround.tga");
-            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "LandscapeNormal.tga", "CityGroundNormal.tga");
+            Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "LandscapeNormal.png", "CityGroundNormal.png");
             return new LitDiffuseMaterial
             {
                 Name = $"{trackName}.TerrainMaterial",
