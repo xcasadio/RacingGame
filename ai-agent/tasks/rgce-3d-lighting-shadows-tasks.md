@@ -160,7 +160,9 @@ La démo n'a aujourd'hui que des matériaux sans texture ni réflexion (`:100-12
 - Validation : build ; `--verify-legacy-import-profile` code 0 ; mesure de scène inchangée ; critères de sonde « éclairé » et « face opposée au soleil » de la validation globale ; chaque `LitDiffuseMaterial` créé dans `LegacyTrackSceneFactory*.cs` porte `D` et `A / D` du tableau, tunnel compris (relecture du diff).
 - Commit : `fix(racing-casa): light the race world with the original's single light and material ambient`
 
-### ⏳ T2b — Banc intermédiaire et constats de S2a
+### 🧪 T2b — Banc intermédiaire et constats de S2a
+
+> Validation (2026-11-14) : banc relancé (`rgce-l4`, `report-l4`) ; constats mis à jour dans `docs/racinggame-3d-capture-bench-findings.md`. Carrousel : captures avant (`artifacts/capture-bench/ui-before`) et après (`ui-after`) : l'image de la sélection de voiture diffère au niveau des octets, sans différence visible. Vérification indépendante (A2) : lumière, comportement du moteur et banc CONFIRMED (run refait par le vérificateur, mêmes chiffres) ; valeurs de matériau REFUTED sur un point, l'ambiant des panneaux, bannières et éoliennes, corrigé (`46f2013`) puis revérifié ; attribution des sondes en échec INCONCLUSIVE pour la route (cause déduite, non mesurée), d'où la reformulation ci-dessus. **S2a n'atteint pas son critère de sondes (19 / 34) : les causes restantes sont hors de son périmètre et réparties entre S2b et S3.** Reste : relecture par l'auteur.
 
 - Objectif : relancer le banc ; capturer le carrousel de sélection avant (au commit précédant E1 côté moteur et T2 côté jeu, images de `--capture-ui-screens` conservées hors dépôt avant de commencer E1) et après ; noter sous cette tâche le rapport de sondes et l'écart moyen par vue ; mettre à jour `docs/racinggame-3d-capture-bench-findings.md` (M5, part d'éclairage de M2) ; lister ce que les mesures apprennent pour S2b.
 - Validation : validation de S2a (ci-dessus) ; relecture par l'auteur.

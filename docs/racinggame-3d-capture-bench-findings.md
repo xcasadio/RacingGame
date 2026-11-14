@@ -124,3 +124,47 @@ Found while reviewing the lighting plan, decision in ADR-0016.
 M6 is closed (ADR-0016, follow-up). The engine reads the glTF `TANGENT` attribute, the converter writes the original's tangents, and the 56 models are regenerated: imported models are now normal-mapped, with a tangent space measured equal to the original's. Signs, ruins and building faces are no longer flat. What still differs on them is the light itself (direction, ambient, shadows): the lighting slice.
 
 Left as reported by the independent check, not fixed: the engine reader drops a `TANGENT` accessor of the wrong size without a warning, and keeps a zero-length tangent as it is. Neither can happen with the converter's output.
+
+## Update after the light and ambient slice (2026-11-14)
+
+Plan `ai-agent/tasks/rgce-3d-lighting-shadows-tasks.md` (S2a), port at `46f2013`, CasaEngine at `b56ed923` (branch `chantier/racinggame-lighting`), reference unchanged (seed 1). The comparison tool now samples 46 probes on 5 views (`scripts/TrackCaptureCompare/probes.json`).
+
+Causes found and fixed:
+
+- The engine multiplied the ambient term by the texture twice (CasaEngine ADR-0089), and used the reflection cube as ambient source whenever one was bound; a world can now ask for a flat ambient (ADR-0090).
+- The race world had three hard-coded lights, the key one about 19 degrees from the original's, and an ambient of 0.05. It now has the original's single light and the original's ambient and diffuse per material.
+- The port raised the ambient of signs, banners and windmills to 128/255 after an override that is dead code in the original.
+- The port had added an emissive term to its generated materials.
+
+Mean absolute difference on the red channel, before (after the tangents) and after this slice:
+
+| View | Before | After |
+|---|---|---|
+| Beginner-start | 30.65 | 21.92 |
+| Beginner-sector-20 | 50.03 | 34.65 |
+| Beginner-sector-50 | 28.43 | 20.74 |
+| Beginner-sector-80 | 37.27 | 29.34 |
+| Beginner-overview | 24.53 | 19.09 |
+| Advanced-start | 26.70 | 22.51 |
+| Advanced-sector-20 | 41.38 | 28.41 |
+| Advanced-sector-50 | 26.29 | 18.98 |
+| Advanced-sector-80 | 27.64 | 17.63 |
+| Advanced-overview | 26.38 | 18.40 |
+| Expert-start | 27.21 | 17.57 |
+| Expert-sector-20 | 28.90 | 24.49 |
+| Expert-sector-50 | 25.58 | 20.20 |
+| Expert-sector-80 | 24.46 | 16.34 |
+| Expert-overview | 26.42 | 21.15 |
+
+Probes: lit and facing-away points within 12 of the original per channel: 19 of 34 (10 before). The slice's target, all of them, is not reached. The 15 left:
+
+| Probes | Cause | Evidence | Where it goes |
+|---|---|---|---|
+| 7, lit terrain (+12 to +19) | The port's terrain has a specular term (0.05, power 6); the original's terrain shader has none. | All pass in a run with that specular at zero. | Materials slice |
+| 5, lit road (+13 to +37) | The port's road has no normal map and no tangents; the original computes `texture × (A + D × bump)`. | Read in the code; not measured. | Materials slice |
+| 3, city ground | The port casts a shadow there, the original does not. | All pass in a run without shadows. | Shadow slice |
+| 1, casino wall (+77) | Likely: a glass panel of `Casino01` (`ReflectionSimpleGlass`, no texture) that the original draws opaque and dark through a technique fallback, and the port draws as reflective glass. | Zoom on both pictures; not proven on the geometry. | Materials slice |
+
+Status of the earlier findings: M5 (buildings brighter) is reduced, not closed (casino wall above); M2 (signs and banners almost black) is closed for its lighting part, their look now depends on the reflection technique of the original (materials slice); L1 (shadows) is untouched except for the direction, which now follows the original's light: the gantry and building shadows fall where the original's do, still black-edged and untinted.
+
+Not measured: the frame-time cost of the engine changes (the game has no tool for it). The car selection screen shows no visible change (its capture differs only at byte level).
