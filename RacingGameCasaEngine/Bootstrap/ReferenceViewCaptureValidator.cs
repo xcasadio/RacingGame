@@ -2,6 +2,8 @@ using System.Text.Json;
 using CasaEngine.Core.Log;
 using CasaEngine.Framework.Entities;
 using CasaEngine.Framework.Entities.Components;
+using CasaEngine.Framework.Rendering;
+using CasaEngine.Framework.Rendering.Environment;
 using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Components;
@@ -232,6 +234,7 @@ internal sealed class ReferenceViewCaptureValidator
                     return;
                 }
 
+                LogCaptureBench(_tracks[_trackIndex].Name, _tracks[_trackIndex].Views[_viewIndex].Name);
                 _captureCount++;
                 _viewIndex++;
                 Advance(
@@ -247,6 +250,22 @@ internal sealed class ReferenceViewCaptureValidator
                 Advance(CaptureStep.WaitForFrontEnd, totalTime, "Returning to front-end for next track");
                 break;
         }
+    }
+
+    // Proof that the anti-aliasing ran for the picture just saved: the FXAA pass count of the race view in the frame that was
+    // rendered last (RenderStats is reset when the next frame starts rendering the view). 1 in the linear pipeline, 0 in legacy.
+    private void LogCaptureBench(string trackName, string viewName)
+    {
+        World world = _game.GameManager.CurrentWorld!;
+        RenderView? raceView = _game.GameManager.ViewManager.Views.FirstOrDefault(view => ReferenceEquals(view.World, world));
+        if (raceView == null)
+        {
+            Logs.WriteWarning($"[CaptureBench] view {trackName}-{viewName}: no render view found for the race world.");
+            return;
+        }
+
+        string pipeline = world.EnvironmentSettings.ColorPipeline.Mode == ColorPipelineMode.LinearHdr ? "linear" : "legacy";
+        Logs.WriteInfo($"[CaptureBench] view {trackName}-{viewName} pipeline {pipeline} fxaaPasses {raceView.RenderStats.FxaaPasses}");
     }
 
     private bool IsRaceReady()

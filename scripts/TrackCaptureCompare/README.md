@@ -20,6 +20,13 @@ Compares the 3D reference captures of the original RacingGame with the CasaEngin
 
    When the original's `scene.json` lies next to `views.json`, it also writes `scene-measure-<Track>.txt`: the distance of each generated road point from the original's (position, right and up vectors, road width), and for each object placed by the original the nearest object of the same model in the port (distance, rotation, scale), plus the objects without a match on either side.
 
+   `--color-pipeline legacy|linear` (default `linear`) picks the colour pipeline of the race world, for this command and for the other automation modes:
+
+   - `linear`: the race world renders in linear HDR (tonemapper `AcesApprox`, exposure 1, bloom and SSAO off, FXAA on). The sky, drawn by the game's `LegacySkyCubeViewPipeline`, is part of the scene and tonemapped with it; the HUD is not tonemapped.
+   - `legacy`: the engine's legacy colour chain, no tonemapping or anti-aliasing. This is the mode for the geometry and shadow-placement checks (T0.2 reference: `legacy` captures are identical to it). Once the materials move to PBR, the colours of this mode are no longer comparable to the original (plan `ai-agent/tasks/rgce-pbr-race-world-tasks.md`, P7).
+
+   For each saved view the port logs `[CaptureBench] view <Track>-<view> pipeline <legacy|linear> fxaaPasses <n>` in `racinggame-casaengine-<pid>.log`: `n` is the number of FXAA passes of the race view in the frame the picture comes from, 1 in `linear` and 0 in `legacy`. Nothing is logged outside this mode.
+
    It writes `<Track>-<view>.png` and logs, per view, how far its start grid and checkpoints are from the original's positions (`alignment` lines in `racinggame-casaengine-<pid>.log`).
 
 ## Usage

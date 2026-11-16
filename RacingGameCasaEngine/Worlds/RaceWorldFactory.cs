@@ -139,6 +139,12 @@ public static class RaceWorldFactory
         world.EnvironmentSettings.AmbientSource = AmbientSource.Flat;
         world.EnvironmentSettings.AmbientColor = Vector3.One;
         world.EnvironmentSettings.AmbientIntensity = 1f;
+        if (game.UseLinearColorPipeline)
+        {
+            ConfigureLinearColorPipeline(world.EnvironmentSettings.ColorPipeline);
+            world.EnvironmentSettings.MarkDirty();
+        }
+
         world.AddEntity(CreateKeyLightEntity(castShadows: state.EnableShadows));
 
         foreach (Entity entity in trackScene.TrackEntities)
@@ -160,6 +166,18 @@ public static class RaceWorldFactory
         world.AddEntity(CreatePlayerCarEntity(state, car, track));
 
         return world;
+    }
+
+    // Linear HDR with an ACES tonemapper and FXAA, as CasaEngine.Demos PbrMaterialDemo. The brightness is set by the exposure
+    // (the original's global 7 % darkening is not reproduced, A11); bloom and SSAO stay off.
+    private static void ConfigureLinearColorPipeline(ColorPipelineSettings colorPipeline)
+    {
+        colorPipeline.Mode = ColorPipelineMode.LinearHdr;
+        colorPipeline.Tonemapper = TonemapOperator.AcesApprox;
+        colorPipeline.Exposure = 1.0f;
+        colorPipeline.BloomEnabled = false;
+        colorPipeline.SsaoEnabled = false;
+        colorPipeline.AntiAliasing = AntiAliasingMode.Fxaa;
     }
 
     private static Entity CreateCameraEntity(bool enableChaseCamera)

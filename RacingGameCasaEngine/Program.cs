@@ -80,6 +80,7 @@ public static class Program
             CaptureReferenceViews = captureReferenceViews,
             ReferenceViewsFilePath = captureReferenceViews ? GetOptionValue(args, "--capture-reference-views") : null,
             ReferenceCaptureOutputDirectory = GetOptionValue(args, "--reference-capture-out"),
+            UseLinearColorPipeline = ParseColorPipeline(GetOptionValue(args, "--color-pipeline")),
         };
 
         using var game = new RacingGameCasaEngineGame(runtimeContext, displaySettingsPath, frontEndOptionsPath, launchOptions)
@@ -165,6 +166,21 @@ public static class Program
         }
 
         return null;
+    }
+
+    private static bool ParseColorPipeline(string? value)
+    {
+        if (value == null || string.Equals(value, "linear", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (string.Equals(value, "legacy", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        throw new ArgumentException($"Unknown value '{value}' for --color-pipeline (expected legacy or linear).");
     }
 
     private static string GetUserSettingsDirectory(string projectName)

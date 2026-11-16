@@ -28,4 +28,11 @@ internal sealed class RaceLaunchOptions
     public string? ReferenceViewsFilePath { get; init; }
 
     public string? ReferenceCaptureOutputDirectory { get; init; }
+
+    /// <summary>
+    /// --color-pipeline legacy|linear: the colour pipeline of the race world. Linear (the default) renders it in linear HDR with
+    /// tonemapping and FXAA; legacy keeps the engine's legacy colour chain, for the capture bench's geometry and shadow-placement
+    /// checks (plan rgce-pbr-race-world-tasks.md, D1 and P7).
+    /// </summary>
+    public bool UseLinearColorPipeline { get; init; } = true;
 }

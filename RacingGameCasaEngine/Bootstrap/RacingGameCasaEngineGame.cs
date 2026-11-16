@@ -64,6 +64,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
         : base(runtimeContext: runtimeContext)
     {
         launchOptions ??= new RaceLaunchOptions();
+        UseLinearColorPipeline = launchOptions.UseLinearColorPipeline;
         _displaySettingsFileName = displaySettingsFileName;
         _frontEndOptionsFileName = frontEndOptionsFileName;
 
@@ -126,6 +127,9 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame
     }
 
     internal RuntimeRaceSession RaceSession { get; }
+
+    /// <summary>True when the race world renders in linear HDR (--color-pipeline linear, the default).</summary>
+    internal bool UseLinearColorPipeline { get; }
 
     /// <summary>Gamepad vibration on guard-rail hits (Gamepad Vibration option).</summary>
     internal RaceGamepadVibration RaceVibration { get; }
