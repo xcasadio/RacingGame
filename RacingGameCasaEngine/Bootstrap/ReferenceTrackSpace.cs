@@ -77,6 +77,15 @@ internal sealed class ReferenceTrackSpace
     }
 
     /// <summary>
+    /// The transform of a component read from the race world (its world matrix), in the original's coordinates: brought back
+    /// from the road generator's world, then by <see cref="ToLegacyTransform"/>.
+    /// </summary>
+    public Matrix ToLegacyWorldTransform(Matrix worldTransform)
+    {
+        return ToLegacyTransform(worldTransform * _roadWorldInverse);
+    }
+
+    /// <summary>
     /// The largest distance between a point of the original's coordinates and the same point converted to the race world and
     /// brought back: float rounding only when the two conversions are inverse of each other.
     /// </summary>

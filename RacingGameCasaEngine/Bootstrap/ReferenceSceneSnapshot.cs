@@ -2,6 +2,7 @@ using CasaEngine.Framework.Entities;
 using CasaEngine.Framework.Scene.Entities.Components;
 using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
+using RacingGame.Gameplay.Components;
 using RacingGame.Gameplay.Race;
 using RacingGame.Gameplay.Track;
 
@@ -15,13 +16,16 @@ namespace RacingGameCasaEngine.Bootstrap;
 internal sealed record ReferenceSceneSnapshot(
     string TrackName,
     IReadOnlyList<ReferenceRoadPoint> RoadPoints,
-    IReadOnlyList<ReferencePlacedObject> PlacedObjects)
+    IReadOnlyList<ReferencePlacedObject> PlacedObjects,
+    IReadOnlyList<ReferenceGeneratorChildren> GeneratorChildren)
 {
     /// <summary>
-    /// Snapshots <paramref name="layout"/>, the layout the race world was built from. A placed object is kept only when the
-    /// race world holds the entity (scenery) or the generated component (post, column segment) built for it; its transform is
-    /// the layout's, brought back to the original's coordinates by the inverse of the placing conversion, and its shadow
-    /// flags are read from that entity's component, not from the rule that sets them.
+    /// Snapshots <paramref name="layout"/>, the layout the race world was built from. A scenery object is kept only when the
+    /// race world holds the entity built for it; its transform is the layout's, brought back to the original's coordinates by
+    /// the inverse of the placing conversion. A guard rail post or a column segment is a child component of a generator: every
+    /// child the generator holds is an object, whether the layout has a placement for it or not, and its transform is that
+    /// of the child itself, read from the entity (its world matrix, brought back to the original's coordinates). The shadow
+    /// flags are read from the entities' components, not from the rule that sets them.
     /// <paramref name="notBuiltCount"/> is the number of placements without such an entity or component.
     /// </summary>
     internal static ReferenceSceneSnapshot Capture(World world, ReferenceTrackSpace space, RaceTrackLayout layout, out int notBuiltCount)
@@ -42,77 +46,84 @@ internal sealed record ReferenceSceneSnapshot(
         }
 
         var placedObjects = new List<ReferencePlacedObject>();
+        var generatorChildren = new List<ReferenceGeneratorChildren>();
         notBuiltCount = 0;
 
         for (int index = 0; index < layout.Scenery.Count; index++)
         {
             RaceTrackModelPlacement placement = layout.Scenery[index];
             string entityName = $"{RaceWorldNames.TrackSceneryEntityNamePrefix}{placement.ModelName}.{index:000}";
-            AddPlacedObject(
-                placedObjects,
-                space,
-                placement,
-                entitiesByName.TryGetValue(entityName, out Entity? sceneryEntity) ? sceneryEntity.RootComponent : null,
-                ref notBuiltCount);
+            if (!entitiesByName.TryGetValue(entityName, out Entity? sceneryEntity) || sceneryEntity.RootComponent == null)
+            {
+                notBuiltCount++;
+                continue;
+            }
+
+            AddPlacedObject(placedObjects, placement.ModelName, space.ToLegacyTransform(placement.Transform), sceneryEntity.RootComponent);
         }
 
-        AddGeneratedPlacements(placedObjects, space, world, $"{RaceWorldNames.TrackGuardRailEntityNamePrefix}Left.", "Post", layout.LeftPosts, ref notBuiltCount);
-        AddGeneratedPlacements(placedObjects, space, world, $"{RaceWorldNames.TrackGuardRailEntityNamePrefix}Right.", "Post", layout.RightPosts, ref notBuiltCount);
-        AddGeneratedPlacements(placedObjects, space, world, RaceWorldNames.TrackColumnsEntityNamePrefix, "Segment", layout.ColumnSegments, ref notBuiltCount);
+        AddGeneratedChildren(placedObjects, generatorChildren, space, world, $"{RaceWorldNames.TrackGuardRailEntityNamePrefix}Left.", "Left rail posts", "Post", RaceTrackLayout.GuardRailPostModelName, layout.LeftPosts, ref notBuiltCount);
+        AddGeneratedChildren(placedObjects, generatorChildren, space, world, $"{RaceWorldNames.TrackGuardRailEntityNamePrefix}Right.", "Right rail posts", "Post", RaceTrackLayout.GuardRailPostModelName, layout.RightPosts, ref notBuiltCount);
+        AddGeneratedChildren(placedObjects, generatorChildren, space, world, RaceWorldNames.TrackColumnsEntityNamePrefix, "Column segments", "Segment", RaceTrackLayout.ColumnSegmentModelName, layout.ColumnSegments, ref notBuiltCount);
 
-        return new ReferenceSceneSnapshot(layout.TrackName, roadPoints, placedObjects);
+        return new ReferenceSceneSnapshot(layout.TrackName, roadPoints, placedObjects, generatorChildren);
     }
 
     // The posts and the column segments are children of their generator, named <childPrefix>.<index:000> by their index in
-    // the layout's list.
-    private static void AddGeneratedPlacements(
+    // the layout's list. Each child the generator holds is an object of the snapshot, at the transform of the child itself;
+    // one whose name has no placement in the layout is an object the layout does not account for, and the measure shows it as
+    // an object in the port the original does not have.
+    private static void AddGeneratedChildren(
         List<ReferencePlacedObject> placedObjects,
+        List<ReferenceGeneratorChildren> generatorChildren,
         ReferenceTrackSpace space,
         World world,
         string generatorEntityNamePrefix,
+        string label,
         string childPrefix,
+        string defaultModelName,
         IReadOnlyList<RaceTrackModelPlacement> placements,
         ref int notBuiltCount)
     {
-        var childrenByName = new Dictionary<string, SceneComponent>(StringComparer.Ordinal);
+        var placementsWithChild = new HashSet<int>();
+        int childCount = 0;
+        int childrenWithoutPlacement = 0;
         Entity? generator = world.Entities.FirstOrDefault(entity => entity.Name?.StartsWith(generatorEntityNamePrefix, StringComparison.Ordinal) == true);
         if (generator?.RootComponent is { } root)
         {
             foreach (SceneComponent child in root.Children)
             {
-                if (child.Name != null)
+                // The other children of a generator are its generated meshes (the rail, the columns), not placed objects
+                if (child is not RaceGeneratedModelComponent
+                    || child.Name is not { } name
+                    || !name.StartsWith($"{childPrefix}.", StringComparison.Ordinal))
                 {
-                    childrenByName.TryAdd(child.Name, child);
+                    continue;
                 }
+
+                childCount++;
+                bool hasPlacement = int.TryParse(name.AsSpan(childPrefix.Length + 1), out int index)
+                    && index >= 0
+                    && index < placements.Count
+                    && placementsWithChild.Add(index);
+                childrenWithoutPlacement += hasPlacement ? 0 : 1;
+                AddPlacedObject(
+                    placedObjects,
+                    hasPlacement ? placements[index].ModelName : defaultModelName,
+                    space.ToLegacyWorldTransform(child.WorldMatrixWithScale),
+                    child);
             }
         }
 
-        for (int index = 0; index < placements.Count; index++)
-        {
-            childrenByName.TryGetValue($"{childPrefix}.{index:000}", out SceneComponent? component);
-            AddPlacedObject(placedObjects, space, placements[index], component, ref notBuiltCount);
-        }
+        int placementsWithoutChild = placements.Count - placementsWithChild.Count;
+        notBuiltCount += placementsWithoutChild;
+        generatorChildren.Add(new ReferenceGeneratorChildren(label, childCount, placements.Count, childrenWithoutPlacement, placementsWithoutChild));
     }
 
-    private static void AddPlacedObject(
-        List<ReferencePlacedObject> placedObjects,
-        ReferenceTrackSpace space,
-        RaceTrackModelPlacement placement,
-        SceneComponent? component,
-        ref int notBuiltCount)
+    private static void AddPlacedObject(List<ReferencePlacedObject> placedObjects, string modelName, Matrix legacyTransform, SceneComponent component)
     {
-        if (component == null)
-        {
-            notBuiltCount++;
-            return;
-        }
-
         PrimitiveComponent? primitive = component as PrimitiveComponent;
-        placedObjects.Add(new ReferencePlacedObject(
-            placement.ModelName,
-            space.ToLegacyTransform(placement.Transform),
-            primitive?.CastShadows,
-            primitive?.ReceiveShadows));
+        placedObjects.Add(new ReferencePlacedObject(modelName, legacyTransform, primitive?.CastShadows, primitive?.ReceiveShadows));
     }
 }
 
@@ -123,3 +134,9 @@ internal readonly record struct ReferenceRoadPoint(Vector3 Position, Vector3 Rig
 /// game created (<c>null</c>: not known, as in an original scene.json written before the flags were exported).
 /// </summary>
 internal readonly record struct ReferencePlacedObject(string ModelName, Matrix LegacyTransform, bool? CastsShadow = null, bool? ReceivesShadow = null);
+
+/// <summary>
+/// The children of one kind a generator holds (<paramref name="ChildCount"/>) against the placements the layout has for it
+/// (<paramref name="PlacementCount"/>), among them the children without a placement and the placements without a child.
+/// </summary>
+internal readonly record struct ReferenceGeneratorChildren(string Label, int ChildCount, int PlacementCount, int ChildrenWithoutPlacement, int PlacementsWithoutChild);

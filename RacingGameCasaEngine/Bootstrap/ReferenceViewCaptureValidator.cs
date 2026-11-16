@@ -412,6 +412,10 @@ internal sealed class ReferenceViewCaptureValidator
             Logs.WriteInfo(FormattableString.Invariant(
                 $"Reference view capture: round trip {track.Name}: point error max {Math.Max(pointError, roadPointError):0.000000} m over {track.Views.Count * 3} view points and {layout.RoadPoints.Count} road points, transform error max {transformError:0.000000} over {placements.Count()} placed transforms"));
 
+            string childrenSummary = string.Join(", ", snapshot.GeneratorChildren.Select(children =>
+                $"{children.Label} {children.ChildCount} children / {children.PlacementCount} placements ({(children.ChildCount == children.PlacementCount && children.ChildrenWithoutPlacement == 0 && children.PlacementsWithoutChild == 0 ? "equal" : $"{children.ChildrenWithoutPlacement} child(ren) without a placement, {children.PlacementsWithoutChild} placement(s) without a child")})"));
+            Logs.WriteInfo($"Reference view capture: generated children {track.Name}: {childrenSummary}; the transforms of the children were read from the entities (world matrix of each Post.<n> and Segment.<n> component)");
+
             string summary = ReferenceSceneMeasure.Measure(_sceneFilePath, track.Name, snapshot, _outputDirectory);
             Logs.WriteInfo($"Reference view capture: scene measure {track.Name}: {summary} ({notBuiltCount} placement(s) of the layout without an entity or component in the race world)");
         }
