@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 2004,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 24048,
+      "byteOffset": 32064,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 24048,
-      "byteOffset": 24048,
+      "byteOffset": 56112,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 16032,
-      "byteOffset": 48096,
+      "byteOffset": 80160,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 15552,
-      "byteOffset": 64128,
+      "byteOffset": 96192,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 32064,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 79680,
+      "byteLength": 111744,
       "uri": "RuinHouse.bin"
     }
   ],
@@ -197,7 +211,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

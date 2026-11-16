@@ -92,7 +92,7 @@ internal static class Program
     {
         var verifier = new Verifier(contentDirectory);
         verifier.Run();
-        Console.WriteLine($"verify: {verifier.Models} models ({verifier.Meshes} meshes, {verifier.Vertices} vertices, {verifier.Indices} indices, {verifier.Nodes} nodes), "
+        Console.WriteLine($"verify: {verifier.Models} models ({verifier.Meshes} meshes, {verifier.MeshesWithTangents} with tangents, {verifier.Vertices} vertices, {verifier.Tangents} tangents, {verifier.Indices} indices, {verifier.Nodes} nodes), "
             + $"{verifier.Materials} materials ({verifier.MaterialValues} values), {verifier.Textures} textures, {verifier.CatalogueEntries} catalogue entries");
         foreach (string note in verifier.Notes)
         {

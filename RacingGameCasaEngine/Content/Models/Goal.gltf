@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 810,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 9720,
+      "byteOffset": 12960,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 9720,
-      "byteOffset": 9720,
+      "byteOffset": 22680,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 6480,
-      "byteOffset": 19440,
+      "byteOffset": 40992,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 8592,
-      "byteOffset": 25920,
+      "byteOffset": 32400,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 12960,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 34512,
+      "byteLength": 47472,
       "uri": "Goal.bin"
     }
   ],
@@ -197,7 +211,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

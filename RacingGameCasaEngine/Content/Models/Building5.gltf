@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 38,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 456,
+      "byteOffset": 608,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 456,
-      "byteOffset": 456,
+      "byteOffset": 1064,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 304,
-      "byteOffset": 912,
+      "byteOffset": 1520,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 288,
-      "byteOffset": 1216,
+      "byteOffset": 1824,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 608,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 1504,
+      "byteLength": 2112,
       "uri": "Building5.bin"
     }
   ],
@@ -198,7 +212,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

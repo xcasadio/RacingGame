@@ -16,9 +16,9 @@
     "normal_texture": "6b4b6fe8-b7ad-525d-aa5f-d04bf4a02cf2",
     "reflection_texture": "00000000-0000-0000-0000-000000000000",
     "diffuse_color": {
-      "r": 233,
-      "g": 233,
-      "b": 233,
+      "r": 234,
+      "g": 234,
+      "b": 234,
       "a": 255
     },
     "alpha_cutoff": 0.5,

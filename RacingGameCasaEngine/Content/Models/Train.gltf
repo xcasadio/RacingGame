@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 497,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 5964,
+      "byteOffset": 7952,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 5964,
-      "byteOffset": 5964,
+      "byteOffset": 13916,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 3976,
-      "byteOffset": 11928,
+      "byteOffset": 19880,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 3588,
-      "byteOffset": 15904,
+      "byteOffset": 23856,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 7952,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 19492,
+      "byteLength": 27444,
       "uri": "Train.bin"
     }
   ],
@@ -197,7 +211,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

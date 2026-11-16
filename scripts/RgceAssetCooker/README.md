@@ -25,7 +25,7 @@ The default `--content` is `RacingGameCasaEngine/Content` of the repository that
 - Files are written with the editor serializers (`EditorAssetWriterService`), so the editor re-saves them unchanged.
 - Ids are `uuid5` of the asset name in the namespace of `generate_rgce_ui_assets.py` (`racinggame-casaengine/ui-assets`).
   A `.texture` points to the png entry `Image.<Name>` (`uuid5("Image.<Name>")`).
-- **Models**: vertices, indices and nodes are exactly what `LegacyGltfModelReader` reads, with the RacingGame import profile.
+- **Models**: vertices, indices, nodes and tangents are exactly what `LegacyGltfModelReader` reads, with the RacingGame import profile. A mesh whose glTF primitive has a `TANGENT` accessor gets a `tangents` array (one entry per vertex, written by the engine serializer, ADR-0123 of CasaEngine); the converter writes `TANGENT` for the primitives whose material has a normal texture.
   Every model except `Car` and `CarSelectionPlate` gets the root node rotated by pi/2 about X that the game used to add when it loaded
   the glTF (`LegacyTrackSceneFactory.ApplyLegacyModelRootCorrection`, removed in T5.5 once the game loaded the cooked models), named
   `<Name>.LegacyRootCorrection`. Each mesh points to its material by `material_asset_id`.
@@ -54,6 +54,6 @@ same set of entries.
 - `--check`: lists the glTF models and the images of cooked materials with no cooked file or catalogue entry, and the cooked files the plan does not
   contain. Writes nothing; exit code 1 if there is any.
 - `--verify`: re-reads every cooked file with the engine loaders (`StaticModel.Load`, `MaterialAsset.Load`, `Texture.Load`) and compares it with
-  a fresh read of the glTF files and the recipes: vertices, indices, nodes, material ids, every material value under the effective-state rule,
+  a fresh read of the glTF files and the recipes: vertices, tangents (the number of entries and every value), indices, nodes, material ids, every material value under the effective-state rule,
   the render state the engine resolves for the asset, textures, the catalogue (no duplicate id or name, every entry's file exists), and the car
   paint rule the game applies at run time against the paint role of each `Car.gltf` material in the recipes. Exit code 1 on any mismatch. It does not compile the materials (that needs a graphics device); the editor catalogue walk opens them.

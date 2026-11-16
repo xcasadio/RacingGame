@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 62,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 744,
+      "byteOffset": 992,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 744,
-      "byteOffset": 744,
+      "byteOffset": 1736,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 496,
-      "byteOffset": 1488,
+      "byteOffset": 2480,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 432,
-      "byteOffset": 1984,
+      "byteOffset": 2976,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 992,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 2416,
+      "byteLength": 3408,
       "uri": "RoadColumnSegment.bin"
     }
   ],
@@ -617,7 +631,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

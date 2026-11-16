@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 157,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 1884,
+      "byteOffset": 2512,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 1884,
-      "byteOffset": 1884,
+      "byteOffset": 4396,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 1256,
-      "byteOffset": 3768,
+      "byteOffset": 7720,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 1440,
-      "byteOffset": 5024,
+      "byteOffset": 6280,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2512,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 6464,
+      "byteLength": 8976,
       "uri": "Sign.bin"
     }
   ],
@@ -197,7 +211,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

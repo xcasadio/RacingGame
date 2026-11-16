@@ -16,6 +16,9 @@ namespace RacingGame.Gameplay.Import;
 /// </summary>
 internal static class LegacyGltfModelReader
 {
+    private const byte LegacyDefaultAmbient = 40;
+    private const byte LegacyDefaultDiffuse = 210;
+
     private static readonly GltfStaticModelReader Reader = new();
 
     public static bool IsFileSupported(string filePath) => Reader.IsFileSupported(filePath);
@@ -73,6 +76,10 @@ internal static class LegacyGltfModelReader
     {
         if (legacyEffect == null)
         {
+            // No effect instance: the original keeps the defaults of its Material class (Material.cs:29-32), not the
+            // zero ambient set above.
+            material.AmbientColor = new Vector3(LegacyDefaultAmbient / 255f);
+            material.DiffuseColor = new Color(LegacyDefaultDiffuse, LegacyDefaultDiffuse, LegacyDefaultDiffuse);
             return;
         }
 
@@ -160,7 +167,8 @@ internal static class LegacyGltfModelReader
 
     private static Vector3 ToVector3(float[] values) => new(values[0], values[1], values[2]);
 
-    // Same conversion as the old importer (TryReadColor and ToXnaColor with ClampByte).
+    // Same conversion as the old importer (TryReadColor and ToXnaColor with ClampByte), except that a byte is the nearest
+    // value to the float (the importer truncated, 212 instead of 213 for a 0.835 diffuse).
     private static Color ToXnaColor(float[] values) => new(
         ClampByte(values[0]),
         ClampByte(values[1]),
@@ -173,7 +181,7 @@ internal static class LegacyGltfModelReader
             ? value * 255.0f
             : value;
         scaled = Math.Clamp(scaled, 0.0f, 255.0f);
-        return (byte)scaled;
+        return (byte)MathF.Round(scaled, MidpointRounding.AwayFromZero);
     }
 
     // Same resolution as the old importer (StaticModelImporter.cs:679-697). The project content holds the legacy .tga

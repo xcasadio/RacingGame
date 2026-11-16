@@ -38,6 +38,8 @@ internal sealed class Verifier
     public int Models { get; private set; }
     public int Meshes { get; private set; }
     public int Vertices { get; private set; }
+    public int MeshesWithTangents { get; private set; }
+    public int Tangents { get; private set; }
     public int Indices { get; private set; }
     public int Nodes { get; private set; }
     public int Materials { get; private set; }
@@ -193,6 +195,37 @@ internal sealed class Verifier
             if (different > 0)
             {
                 Mismatch($"{where}: {different} of {expectedVertices.Count} vertices differ");
+            }
+        }
+
+        // The tangents: same count as the vertices (the engine loader drops a mismatching array) and the same values.
+        IReadOnlyList<VertexPositionNormalTextureTangent> expectedTangents = expected.GetTangentVertices();
+        IReadOnlyList<VertexPositionNormalTextureTangent> actualTangents = actual.GetTangentVertices();
+        if (actualTangents.Count != expectedTangents.Count)
+        {
+            Mismatch($"{where}: {actualTangents.Count} tangent vertices, expected {expectedTangents.Count}");
+        }
+        else
+        {
+            if (actual.HasTangents && actualTangents.Count != actualVertices.Count)
+            {
+                Mismatch($"{where}: {actualTangents.Count} tangents for {actualVertices.Count} vertices");
+            }
+
+            int differentTangents = 0;
+            for (int index = 0; index < expectedTangents.Count; index++)
+            {
+                if (actualTangents[index].Tangent != expectedTangents[index].Tangent)
+                {
+                    differentTangents++;
+                }
+            }
+
+            MeshesWithTangents += expected.HasTangents ? 1 : 0;
+            Tangents += expectedTangents.Count;
+            if (differentTangents > 0)
+            {
+                Mismatch($"{where}: {differentTangents} of {expectedTangents.Count} tangent vertices differ");
             }
         }
 

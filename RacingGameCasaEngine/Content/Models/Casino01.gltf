@@ -122,60 +122,74 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 8,
+      "componentType": 5126,
+      "count": 1860,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 22320,
+      "byteOffset": 29760,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 22320,
-      "byteOffset": 22320,
+      "byteOffset": 52080,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 14880,
-      "byteOffset": 44640,
+      "byteOffset": 89820,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 15420,
-      "byteOffset": 59520,
+      "byteOffset": 74400,
       "target": 34963
     },
     {
       "buffer": 0,
       "byteLength": 336,
-      "byteOffset": 74940,
+      "byteOffset": 104700,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 336,
-      "byteOffset": 75276,
+      "byteOffset": 105036,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 224,
-      "byteOffset": 75612,
+      "byteOffset": 105372,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 168,
-      "byteOffset": 75836,
+      "byteOffset": 105596,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 29760,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 76004,
+      "byteLength": 105764,
       "uri": "Casino01.bin"
     }
   ],
@@ -345,7 +359,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 8
           },
           "indices": 3,
           "material": 0

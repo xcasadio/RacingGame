@@ -64,36 +64,50 @@
         0
       ],
       "type": "SCALAR"
+    },
+    {
+      "name": "TANGENT",
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 74,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteLength": 888,
+      "byteOffset": 1184,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 888,
-      "byteOffset": 888,
+      "byteOffset": 2072,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 592,
-      "byteOffset": 1776,
+      "byteOffset": 3608,
       "target": 34962
     },
     {
       "buffer": 0,
       "byteLength": 648,
-      "byteOffset": 2368,
+      "byteOffset": 2960,
       "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1184,
+      "byteStride": 16,
+      "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 3016,
+      "byteLength": 4200,
       "uri": "Roadsign.bin"
     }
   ],
@@ -197,7 +211,8 @@
           "attributes": {
             "POSITION": 0,
             "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "TEXCOORD_0": 2,
+            "TANGENT": 4
           },
           "indices": 3,
           "material": 0

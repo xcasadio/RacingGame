@@ -37,7 +37,7 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0021 | RacingGameCasaEngine's automation modes ignore the player input | Accepted; completed by ADR-0022 | 2026-10-15 |
 | ADR-0022 | RacingGameCasaEngine's automation runs ignore the window state | Accepted | 2026-10-15 |
 | ADR-0023 | RacingGame.Gameplay is the CasaEngine editor's gameplay assembly for RacingGameCasaEngine (numbered ADR-0015 until 2026-11-16) | Accepted | 2026-10-08 |
-| ADR-0024 | RacingGameCasaEngine's content folder holds every game file (numbered ADR-0016 until 2026-11-16) | Accepted | 2026-10-08 |
+| ADR-0024 | RacingGameCasaEngine's content folder holds every game file (numbered ADR-0016 until 2026-11-16) | Accepted; amended by ADR-0016 and ADR-0017 | 2026-10-08 |
 | ADR-0025 | RacingGame.Gameplay holds the game code, and generator components rebuild the track (numbered ADR-0017 until 2026-11-16) | Accepted; superseded in part by ADR-0019 | 2026-10-08 |
 | ADR-0026 | RacingGameCasaEngine's models, materials and textures are cooked assets (numbered ADR-0018 until 2026-11-16) | Accepted | 2026-10-08 |
 | ADR-0027 | RacingGameCasaEngine places the track objects as the original does | Proposed | 2026-11-16 |

@@ -1,6 +1,6 @@
 # ADR-0024: RacingGameCasaEngine's content folder holds every game file
 
-- **Status**: Accepted
+- **Status**: Accepted; amended by ADR-0016 and ADR-0017
 - **Date**: 2026-10-08
 - **Source**: this chantier: `ai-agent/tasks/rgce-editor-project-tasks.md`, decisions D4 and D8 (author answers, 2026-10-08), proposal P10 (validated with the plan), tasks T3.1 to T3.5
 

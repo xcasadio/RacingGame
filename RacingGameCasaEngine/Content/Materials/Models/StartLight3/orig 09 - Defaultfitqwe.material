@@ -18,7 +18,7 @@
     "diffuse_color": {
       "r": 0,
       "g": 235,
-      "b": 26,
+      "b": 27,
       "a": 255
     },
     "alpha_cutoff": 0.5,
