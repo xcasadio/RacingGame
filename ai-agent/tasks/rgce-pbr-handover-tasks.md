@@ -13,8 +13,9 @@ Tranches :
 
 | Tranche | Contenu | Dépend de | État |
 |---|---|---|---|
-| S1 | Fusions du moteur et du jeu sur de nouvelles branches (Phases 0 et 1) | — | Approuvée le 2026-11-16 |
-| S2 | HANDOVER §7 : vérification indépendante des fusions, banc de capture du jeu et captures UI sur le moteur fusionné, nouvelle référence sur ce PC | S1 | À détailler après S1 |
+| S1 | Fusion du moteur (T1.1) | — | Faite le 2026-11-16, avec la réserve D5 |
+| S1b | Fusion du jeu avec cuisson des matériaux PBR en assets (D6) | S1 | À détailler et à soumettre |
+| S2 | HANDOVER §7 : vérification indépendante des fusions, banc de capture du jeu et captures UI sur le moteur fusionné, nouvelle référence sur ce PC | S1b | À détailler après S1 |
 | S3 | Tunnel presque noir | S2 | À détailler ; choix de l'auteur attendu (O1) |
 | S4 | Voiture centrale du carrousel trop blanche | S2 | À détailler ; choix de l'auteur attendu (O2) |
 | S5 | Défauts connus du §4 de la note (moteur sur une branche moteur dédiée, jeu sur cette branche) | S2 | À détailler |
@@ -39,6 +40,8 @@ Hors périmètre : tout push ; tout commit sur `main` (moteur), `master` ou `rem
 | D2 | Jeu : nouvelle branche `chantier/rgce-pbr-handover` créée depuis `remaster` local, `origin/remaster` fusionné dedans ; `remaster` n'est pas touché. |
 | D3 | Après les fusions, reprendre de la note : §7 (vérification de la fusion), tunnel presque noir, carrousel trop blanc, défauts connus. |
 | D4 | Mode ASK : arrêt et question à l'auteur à chaque blocage. |
+| D5 | Fusion du moteur committée avec réserve : 8 tests GPU échouent déjà sur `origin/main` seul sur ce PC. |
+| D6 | Matériaux du jeu : garder les assets cuits **et** le PBR. Le cuiseur et ses recettes produisent des matériaux `lit-pbr` (et les tangentes), puis tout est recuit. Tranche à part, plan détaillé soumis avant exécution. |
 
 ## Règles d'exécution pour l'agent
 
@@ -89,7 +92,7 @@ Retour arrière de S1 : jeu, `git switch remaster` puis `git branch -D chantier/
 
 ## Phase 1 — Fusions (S1)
 
-### ⏳ T1.1 — Fusion du moteur
+### ✅ T1.1 — Fusion du moteur
 
 - Objectif : `chantier/merge-editor-project` = `origin/main` + les 24 commits locaux.
 - Fichiers (moteur) : les 7 fichiers en conflit, les ADR locaux à renuméroter s'il y a lieu, le pointeur `MGUI`.
@@ -102,7 +105,15 @@ Retour arrière de S1 : jeu, `git switch remaster` puis `git branch -D chantier/
 - Validation : aucun marqueur de conflit ; les deux builds à 0 erreur ; tests verts, total noté.
 - Commit : `merge: integrate chantier/rgce-editor-project into main's history (origin/main 187a420d)`
 
-### ⏳ T1.2 — Fusion du jeu
+> Validation (2026-11-16), commit moteur `e942caa54` sur `chantier/merge-editor-project` :
+> - Les 7 conflits résolus en gardant les deux côtés. `EditorAssetSaveSource` : `WorldInspector` garde 8, `TextureEditorPanel` et `StaticModelEditorPanel` passent à 9 et 10.
+> - Deux adaptations dues à la fusion : `EditorWorldOperations.IsAddableComponentType` cache aussi `UnresolvedComponent` ; `LitPbrTransparentGpuTests` renseigne lui-même `RenderItem.Features`.
+> - ADR du chantier renumérotés avec leurs renvois : 0071 → 0118, 0072 → 0119, 0073 → 0120, 0074 → 0121, 0075 → 0122. Les renvois du jeu vers ces ADR (`docs/decisions/0017`, `0020`, `ai-agent/tasks/rgce-element-naming-tasks.md`) restent à décaler avec la fusion du jeu.
+> - `MGUI` enregistré à `d0efd9b4`. Builds des deux solutions : 0 erreur.
+> - Tests : 6378 lancés, 6370 verts, 8 en échec (7 empreintes de pixels de `DesktopFrameGpuAllocationTests` et `DrawTransactionRearmGpuTests`, et `IblCubeGeneratorGpuTests.OpenGlChain_IgnoresTheRequestedCubeLevel_SoTheAtlasIsUsed`). Ces 8 tests échouent à l'identique sur `origin/main` seul sur ce PC (worktree temporaire). Réserve acceptée par l'auteur (D5) ; suite en O3.
+> - Écart connu, non traité : la liste des composants des commandes distantes (`EditorWorldOperations.ComponentTypes`) reste calculée une seule fois, alors que celle du dialogue est reconstruite à chaque ouverture.
+
+### ⚠️ T1.2 — Fusion du jeu
 
 - Objectif : `chantier/rgce-pbr-handover` = `remaster` local + `origin/remaster`, sous-module pointé sur le commit de fusion de T1.1.
 - Fichiers : les chemins en conflit listés plus haut, le pointeur `CasaEngine`, ce plan.
@@ -114,6 +125,9 @@ Retour arrière de S1 : jeu, `git switch remaster` puis `git branch -D chantier/
 - Validation : aucun marqueur de conflit ; build du jeu à 0 erreur ; projets de test du jeu verts ; `--smoke-frontend` puis `--verify-legacy-import-profile` en succès.
 - Commit : `merge: integrate origin/remaster (PBR race world) into the local remaster work`
 
+> Bloquée le 2026-11-16, avant le début de la fusion : collision de conception que la règle de conflit ne tranche pas. Ici, les modèles et matériaux sont des assets cuits `lit-diffuse` chargés par identifiant (ADR-0018 local, `scripts/RgceAssetCooker`). Sur `origin/remaster`, les matériaux sont créés en code en `lit-pbr` (`RacingGamePbrMaterialMapping`), avec tangentes, normal maps converties et monde en `LinearHdr`. Décision de l'auteur : D6. La fusion sera reprise par une tranche détaillée à part (S1b), soumise à approbation.
+> Autre collision relevée : les ADR du jeu 0015 à 0018 existent des deux côtés avec des sujets différents.
+
 ---
 
 ## Points ouverts
@@ -122,3 +136,4 @@ Retour arrière de S1 : jeu, `git switch remaster` puis `git branch -D chantier/
 
 - O1 (S3) : tunnel presque noir, relever sa couleur de base ou lui donner une lumière ? Choix de l'auteur.
 - O2 (S4) : voiture centrale du carrousel, quelle intensité viser ? Choix de l'auteur.
+- O3 : 8 tests GPU du moteur échouent sur ce PC, sur `origin/main` comme sur la branche fusionnée (références prises sur l'autre PC). À traiter dans le moteur, hors de ce plan sauf demande.
