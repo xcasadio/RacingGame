@@ -287,7 +287,7 @@ internal static partial class LegacyTrackSceneFactory
 
     private static Entity CreateStaticModelEntity(string name, Guid staticModelAssetId, Matrix transform)
     {
-        if (!transform.Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation))
+        if (!TryDecomposePlacement(transform, out Vector3 scale, out Quaternion rotation, out Vector3 translation))
         {
             scale = Vector3.One;
             rotation = Quaternion.Identity;

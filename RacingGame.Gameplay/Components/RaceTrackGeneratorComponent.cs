@@ -172,7 +172,7 @@ public abstract class RaceTrackGeneratorComponent : SceneComponent, IEntityPolic
 
     private void AddGeneratedChild(RaceGeneratedModel model, World world)
     {
-        if (!model.Transform.Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation))
+        if (!RaceTrackSpace.TryDecomposePlacement(model.Transform, out Vector3 scale, out Quaternion rotation, out Vector3 translation))
         {
             scale = Vector3.One;
             rotation = Quaternion.Identity;

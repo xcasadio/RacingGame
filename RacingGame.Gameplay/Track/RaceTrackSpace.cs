@@ -40,6 +40,40 @@ internal static class RaceTrackSpace
         return runtimeDirection;
     }
 
+    /// <summary>
+    /// Splits a placement into the scale, rotation and translation an entity's local transform holds. The point spaces the
+    /// original builds are not made of vectors at a right angle (the up vector of a road point is not perpendicular to its
+    /// direction on a slope), so a placement can be sheared, which a scale, a rotation and a translation cannot hold, and
+    /// Matrix.Decompose then gives a quaternion that is not a unit one, which scales and bends the model. The scale here is
+    /// the length of each row and the rotation is the one closest to the rows (the polar factor of the matrix whose rows are
+    /// the normalized rows): the shear is shared between the axes instead of landing on one, and a matrix that has none
+    /// is split exactly as Matrix.Decompose splits it.
+    /// </summary>
+    internal static bool TryDecomposePlacement(Matrix transform, out Vector3 scale, out Quaternion rotation, out Vector3 translation)
+    {
+        translation = transform.Translation;
+        scale = new Vector3(transform.Right.Length(), transform.Up.Length(), transform.Backward.Length());
+        rotation = Quaternion.Identity;
+        if (scale.X < 1e-6f || scale.Y < 1e-6f || scale.Z < 1e-6f)
+        {
+            return false;
+        }
+
+        Matrix closest = Matrix.Identity;
+        closest.Right = transform.Right / scale.X;
+        closest.Up = transform.Up / scale.Y;
+        closest.Backward = transform.Backward / scale.Z;
+        for (int iteration = 0; iteration < 10; iteration++)
+        {
+            Matrix inverseTranspose = Matrix.Transpose(Matrix.Invert(closest));
+            closest = (closest + inverseTranspose) * 0.5f;
+            closest.M44 = 1f;
+        }
+
+        rotation = Quaternion.Normalize(Quaternion.CreateFromRotationMatrix(closest));
+        return true;
+    }
+
     internal static Matrix CreatePointSpaceMatrix(Vector3 right, Vector3 direction, Vector3 up)
     {
         if (right.LengthSquared() > 0.0001f)
