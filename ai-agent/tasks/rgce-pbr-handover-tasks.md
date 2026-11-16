@@ -265,23 +265,40 @@ Constats de l'étude du 2026-11-16 (trois lectures en parallèle, faits décisif
 
 ### ⏳ T4.1 — Empreintes de référence du moteur sur ce PC
 
-- Objectif : relever une fois, sur ce PC et sur le moteur fusionné (`e942caa54`), les empreintes des scripts `pbr-baseline` (HANDOVER §2 et §6). Elles dépendent du GPU : elles servent de référence d'ici, pas de comparaison avec l'autre PC.
-- Sources : `CasaEngine/CasaEngine/artifacts/pbr-baseline/*.sh` (copie de `ai-agent/handover/pbr-baseline/`), les démos du moteur construites par T1.1.
-- Étapes : lire chaque script avant de le lancer ; les lancer un à la fois, jamais pendant un build, avec `BIN` pointé sur le build de ce PC ; noter les empreintes sous cette tâche.
-- Validation : chaque script se termine et donne une empreinte ; un script qui ne tourne pas est noté avec son erreur, sans correction du moteur.
+- Objectif : relever une fois, sur ce PC et sur le moteur fusionné (`e942caa54`), les douze empreintes du §6 de la note de passation. Elles dépendent du GPU : elles servent de référence d'ici, pas de comparaison avec l'autre PC.
+- Sources : `CasaEngine/CasaEngine/artifacts/pbr-baseline/` (copie de `ai-agent/handover/pbr-baseline/`). `BIN` = `/d/development/repo/RacingGame/CasaEngine/CasaEngine.Demos/bin/Debug/net9.0-windows` (valeur par défaut des trois scripts, build Debug de T1.1). Sortie : `artifacts/pbr-handover/s1v/engine-baseline/` du jeu (ignoré par git).
+- Lancements, un à la fois, jamais pendant un build :
+  1. `capture-v2.sh <sortie>/legacy` : onze démos, deux captures chacune ;
+  2. `lin-v2.sh <sortie> lin` ;
+  3. `pbrdemo.sh <sortie> pbr` ;
+  4. `pbrdemo.sh <sortie> pbr-legacy CASAENGINE_DEMO_COLOR_PIPELINE=Legacy` ;
+  5. `pbrdemo.sh <sortie> pbr-clearcoat CASAENGINE_PBR_DEMO_CLEARCOAT=1`.
+- Hors périmètre : `framestats.sh` et `framestats-t41.sh` (mesures de temps sur un build Release, pas des empreintes).
+- Validation :
+  - `capture-v2.sh` : pour les huit démos déterministes (`material`, `environment`, `static-model`, `static-shadow`, `render-to-texture`, `ui-overlay`, `frozen-frame`, `tile-map`), `files=yes`, `exceptions=0` et les deux empreintes égales ; pour `skinned`, `particles` et `split-screen` (non déterministes d'après la note), seulement `files=yes` et `exceptions=0` ;
+  - lancements 2 à 5 : une empreinte de 16 caractères hexadécimaux et `exceptions=0` ;
+  - les douze empreintes (huit, plus quatre) sont notées sous cette tâche dans un tableau de la forme du §6 de la note ;
+  - une ligne qui ne remplit pas sa condition est notée telle quelle avec son journal, sans correction du moteur, et remise à T4.2 comme constat.
 - Commit : `docs(ai-agent): record the engine baseline fingerprints of this machine`
 
 ### ⏳ T4.2 — Vérification indépendante des deux fusions
 
-- Objectif : faire réfuter ou confirmer par un `verifier` frais ce que T1.1 et T3.1 affirment. Aucune modification de code par le vérificateur.
+- Objectif : faire réfuter ou confirmer par un `verifier` frais ce que T1.1 et T3.1 affirment. Le vérificateur ne modifie rien.
 - Sources : moteur `chantier/merge-editor-project` (`e942caa54`, parents `187a420d7` et `87fc5f01b`) ; jeu `chantier/rgce-pbr-handover` (`61c465e`, parents `a53133b` et `90e3d99`) ; ce plan.
 - Affirmations à vérifier :
   1. Moteur : la fusion contient `origin/main` et les 24 commits du chantier ; dans les 7 fichiers en conflit, aucun comportement d'un des deux côtés n'est perdu ; les deux adaptations (`EditorWorldOperations.IsAddableComponentType`, `LitPbrTransparentGpuTests`) sont justifiées ; les ADR 0118 à 0122 et leurs renvois sont cohérents, sans renvoi vers un mauvais ADR 0071 à 0075.
-  2. Moteur : les deux solutions se construisent à 0 erreur ; `dotnet test CasaEngine.Tests/CasaEngine.Tests.csproj --blame-hang-timeout 5m` donne 6370 succès sur 6378, et les 8 échecs sont ceux nommés en T1.1.
+  2. Moteur : les deux solutions se construisent à 0 erreur ; la suite de tests donne 6370 succès sur 6378, et les 8 échecs sont ceux nommés en T1.1.
   3. Jeu : dans `61c465e`, les dossiers gardés sont identiques à `a53133b`, aux trois fichiers nommés près ; rien de ce que `origin/remaster` a ajouté hors de ces dossiers n'est perdu ; les ADR 0023 à 0026 et leurs renvois sont cohérents, et les docs de l'autre PC pointent toujours vers leurs ADR 0015 à 0018.
   4. Jeu : build à 0 erreur ; cuiseur `--check` et `--verify` sans écart ; `--smoke-frontend` et `--verify-legacy-import-profile` en succès.
-- Étapes : un seul appel au `verifier`, avec ces affirmations, les commits et les commandes ; un lancement du jeu à la fois. Verdict et constats notés sous cette tâche. Un constat P0 ou P1 bloque la suite ; un P2 introduit par les fusions est corrigé puis revérifié ; le reste est noté.
-- Validation : verdict `CONFIRMED`, ou constats traités comme ci-dessus.
+- Étapes :
+  1. Commandes longues lancées par la session principale, en arrière-plan, sorties complètes gardées dans `artifacts/pbr-handover/s1v/` : les deux builds du moteur et `dotnet test CasaEngine.Tests/CasaEngine.Tests.csproj --blame-hang-timeout 5m`. Le vérificateur reçoit ces fichiers avec le commit sur lequel ils ont été produits.
+  2. Un appel au `verifier` avec les quatre affirmations, les commits, les sorties de l'étape 1 et les commandes courtes qu'il lance lui-même (git, build du jeu, cuiseur, deux lancements du jeu, un à la fois).
+  3. Verdict et constats notés sous cette tâche.
+- Validation, selon le verdict :
+  - `CONFIRMED` : tâche faite ;
+  - `INCONCLUSIVE` : un seul nouvel appel, et seulement après avoir fourni la preuve qui manquait ; sinon S1v est mise en pause avec sa raison, ce qui bloque S1c ;
+  - `REFUTED` ou constats : P0 ou P1, la suite est bloquée et l'auteur est interrogé ; P2 introduit par les fusions, correction dans les limites ci-dessous ; tout autre constat est noté et reporté avec sa raison.
+- Limites des corrections : uniquement un défaut introduit par les fusions, uniquement dans les fichiers de résolution des deux fusions (ceux listés par T1.1 et T3.1), sur `chantier/merge-editor-project` ou `chantier/rgce-pbr-handover`. Une correction = un commit, suivi de la reproduction d'origine et d'un `verifier` frais sur l'affirmation touchée. Deux passes de correction au plus pour toute la tâche. Tout le reste (nouvelle fonction ou changement de conception du moteur, fichier hors de la résolution, plafond atteint) est reporté avec sa raison ou passe la tâche en ⚠️ Blocked ; il n'est pas corrigé ici.
 - Hors périmètre : le banc de capture contre l'original (S1c) ; la cause des écarts faibles des vues 3D relevés en T3.1, notée en O7.
 - Commit : `docs(ai-agent): record the independent verification of the merges`
 
