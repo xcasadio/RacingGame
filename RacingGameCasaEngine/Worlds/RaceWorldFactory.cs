@@ -42,6 +42,9 @@ public static class RaceWorldFactory
     // The key light's specular was 0.92 (white specular colour x intensity 0.92 before this light became the only one,
     // with intensity 1); the specular term is out of the lighting identity and stays as it was.
     private static readonly Color KeyLightSpecularColor = new(235, 235, 235);
+    // pi: a lit-pbr surface lit head-on is pi times darker than a lit-diffuse one at the same intensity (CasaEngine
+    // docs/engine/pbr-rendering.md), so the key light of a PBR world keeps the level the original had at intensity 1.
+    private const float KeyLightIntensity = MathF.PI;
 
     // Shadow map of the race world, tuned on the track audit views (ai-agent/tasks/rgce-hud-shadows-start-tasks.md, T3.1;
     // ai-agent/tasks/rgce-3d-lighting-shadows-tasks.md, S2b T3):
@@ -134,11 +137,13 @@ public static class RaceWorldFactory
         world.EnvironmentSettings.Shadows.ShadowColor = ShadowColor;
         world.EnvironmentSettings.Shadows.DepthBias = ShadowDepthBias;
         world.EnvironmentSettings.Shadows.NormalBias = ShadowNormalBias;
-        // Flat ambient of 1, whatever the reflection cube of the world (Bootstrap/RacingGameCasaEngineGame.cs binds it to
-        // the race world): the cube keeps driving the reflections only.
-        world.EnvironmentSettings.AmbientSource = AmbientSource.Flat;
+        // Image-based lighting from the sky cube (Bootstrap/RacingGameCasaEngineGame.cs binds it to the race world as its
+        // specular environment cube): the cube gives both the ambient diffuse (irradiance) and the reflections of the PBR
+        // materials, as CasaEngine.Demos PbrMaterialDemo.ApplyIbl. Same in both colour pipeline modes.
+        world.EnvironmentSettings.AmbientSource = AmbientSource.Auto;
         world.EnvironmentSettings.AmbientColor = Vector3.One;
         world.EnvironmentSettings.AmbientIntensity = 1f;
+        world.EnvironmentSettings.SpecularIntensity = 1f;
         if (game.UseLinearColorPipeline)
         {
             ConfigureLinearColorPipeline(world.EnvironmentSettings.ColorPipeline);
@@ -212,7 +217,7 @@ public static class RaceWorldFactory
                 LocalOrientation = CreateOrientationFromForward(KeyLightDirection),
                 Color = Color.White,
                 SpecularColor = KeyLightSpecularColor,
-                Intensity = 1f,
+                Intensity = KeyLightIntensity,
                 CastShadows = castShadows,
             },
         };
