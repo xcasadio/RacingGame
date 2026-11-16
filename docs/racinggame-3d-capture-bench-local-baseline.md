@@ -25,7 +25,7 @@ Every figure cites its output file under `artifacts/pbr-handover/s1c/` (not in g
 | Expert | 0.00 m | 0.53 m | 3.68 m | 1.83 m | 0.00 m |
 
 - The conversion is exact: a point of the original converted to the race world and back moves by 0.000061 m at most, and the placed transforms come back unchanged (`cand-a/run.log`, `round trip` lines).
-- Two runs give 14 identical files of 15. `Expert-start.png` differs by its hash, with a mean difference of 0.00 on every channel (`compare-repeat/report.md`).
+- Two runs give 14 identical files of 15. `Expert-start.png` differs by its hash, with a mean difference of 0.00 on every channel (`compare-repeat/report.md`). A third run, made by the independent verification, differs from the first by the hash of two files, `Expert-start.png` and `Expert-overview.png` (`verify/cand`); the size of that difference was not measured.
 
 ## Pictures against the original
 
@@ -46,7 +46,7 @@ Mean absolute difference per channel (0 to 255) and share of the original's edge
 | Expert-start | 29.04, 26.39, 21.96 | 39.8 % | 39.16, 35.45, 30.13 | 56.7 % |
 | Expert-sector-20 | 26.99, 25.03, 21.41 | 32.3 % | 43.92, 36.29, 28.98 | 47.1 % |
 | Expert-sector-50 | 31.53, 30.15, 30.17 | 43.5 % | 51.81, 44.59, 41.61 | 60.4 % |
-| Expert-sector-80 | 19.76, 17.99, 15.34 | 44.8 % | 30.60, 25.00, 21.65 | 69.1 % |
+| Expert-sector-80 | 19.76, 17.99, 15.34 | 40.8 % | 30.60, 25.00, 21.65 | 69.1 % |
 | Expert-overview | 24.64, 22.56, 21.57 | 88.4 % | 43.71, 39.19, 36.97 | 88.4 % |
 
 `Beginner-sector-20` is the worst view: the ground of the city is black in the port (mean luminance 52.1 against 79.7), because the city ground does not exist in this version.
@@ -55,12 +55,12 @@ Mean absolute difference per channel (0 to 255) and share of the original's edge
 
 `compare-probes/probes.md`, criteria of the tool's README:
 
-| Criterion | Pass | Fail |
-|---|---|---|
-| 1. `lit` and `away` within 12 of the original | 10 | 34 |
-| 2. shadow over lit ratio within 0.05 | 0 | 4 |
-| 3. a shadowed point is shadowed, a lit point is lit | 21 | 33 |
-| 4. `away` and shadowed within 12 | 0 | 3 |
+| Criterion | Passed | Failed | Judged |
+|---|---|---|---|
+| 1. `lit` and `away` within 12 of the original | 10 | 24 | 34 |
+| 2. shadow over lit ratio within 0.05 | 0 | 4 | 4 |
+| 3. a shadowed point is shadowed, a lit point is lit | 21 | 12 | 33 |
+| 4. `away` and shadowed within 12 | 0 | 3 | 3 |
 
 The shadow over lit ratio of the original is 0.23 to 0.28. In the port it is 0.67 to 1.13: the shadows are far lighter, and several points the original shadows are lit in the port.
 
@@ -86,12 +86,12 @@ Topics both machines implemented keep this machine's version as the reference (d
 | Topic | What the measure shows |
 |---|---|
 | Road spline and widths | No difference. |
-| Guard rail posts | Same count and position (455/455/455, 742/743/742, 1529/1529/1529; 0.518 m at most), but a scale ratio difference of 0.167 on every post: the port scales them by 1.125, the original by 1.35. |
-| Column segments | About twice too many: 46/101/43, 50/160/47, 137/337/130. The extra segments have no counterpart in the original. |
-| Lanterns | All of the original's are matched, and the port adds a third more: 39/53/39, 62/89/62, 228/330/228. |
+| Guard rail posts | Every post of the original is matched (455/455/455, 742/743/742, 1529/1529/1529; 0.518 m at most; one extra post on Advanced), but a scale ratio difference of 0.167 on every post: the port scales them by 1.125, the original by 1.35. |
+| Column segments | Two to three times too many: 46/101/43, 50/160/47, 137/337/130 (2.2, 3.2 and 2.5 times the original's count). The extra segments have no counterpart in the original. |
+| Lanterns | Every `Laterne` of the original is matched, and the port adds more (about 1.4 times the original's count): 39/53/39, 62/89/62, 228/330/228. The two-sided lanterns are all missing: `Laterne2Sides` 1/0/0, 3/0/0, 9/0/0. |
 | Palms | Far fewer than the original and few matched: `AlphaPalm` 80/17/14, 101/31/18, 219/54/34; `AlphaPalmSmall` 49/6/5, 52/2/0, 81/9/0. Matched palms are rotated by up to 177 degrees. |
 | Signs and banners | Counts differ and few match: `Sign` 18/7/1, 22/16/3, 36/22/2; `Sign2` 6/7/0, 15/12/0, 37/32/5. |
-| Buildings, hotels, start light | Matched one for one on Beginner; `Hotel01` 5/3/3 and `Casino01` 9/5/5 on Expert. |
+| Buildings, hotels, start light | `Building` to `Building5`, `Hotel01`, `Hotel02` and `StartLight` are matched one for one on Beginner. `Casino01` is 3/0/0, 6/2/2, 9/5/5 and `Hotel01` is 5/3/3 on Expert. |
 | Shadows | The port's objects cast where the original's do not, and the shadows are much lighter (probes above). |
 
 What is missing because it exists only on the other machine, to be ported by slice S1h:
