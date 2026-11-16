@@ -168,7 +168,7 @@ Ce qui reste de la note de passation : §7 → S1v ; §4 tunnel → S3, carrouse
 - Objectif : `chantier/rgce-pbr-handover` = `remaster` local + `origin/remaster`, sous-module pointé sur le commit de fusion de T1.1.
 - Fichiers : les chemins en conflit listés plus haut, le pointeur `CasaEngine`, ce plan.
 - Étapes :
-  1. `git merge --no-ff --no-commit origin/remaster`.
+  1. Relever `git rev-parse HEAD` et le noter sous cette tâche, puis `git merge --no-ff --no-commit origin/remaster`.
   2. Résoudre selon la règle de conflit du jeu.
   3. `git add CasaEngine` une fois le moteur sur le commit de T1.1 ; vérifier avec `git diff --cached --submodule`.
   4. Recopier `ai-agent/handover/pbr-baseline/*.sh` vers `CasaEngine/CasaEngine/artifacts/pbr-baseline/` (dossier ignoré par git).
@@ -244,7 +244,7 @@ Constats de l'étude du 2026-11-16 (trois lectures en parallèle, faits décisif
   - `--smoke-frontend` puis `--verify-legacy-import-profile` : succès, un lancement à la fois ;
   - `--capture-ui-screens` comparé à `artifacts/ui-capture-determinism/ref-a/ui` par `scripts/UiCaptureCompare`, et `--capture-track-audit` comparé à `artifacts/o7-track-helpers/after/track-audit-a` par `scripts/compare_track_audit.py` (ou, sans Python sur ce PC, par `scripts/TrackCaptureCompare` s.il accepte ces fichiers, sinon comparaison notée comme non faite) : résultats notés. Le seul changement attendu vient du moteur (`87fc5f01` → `e942caa54`). Un écart n'empêche pas le commit ; il est noté ici et remis à l'auteur. Un jeu qui ne démarre pas ou une capture qui échoue bloque la tâche.
 - Arrêts : build en échec à cause d'une API du moteur qui a bougé et dont la correction ne tient pas en une adaptation minimale du point d'appel (les adaptations faites sont listées dans le commit) ; correction qui demanderait de toucher au moteur ; référence de capture introuvable.
-- Retour arrière : `git merge --abort` avant le commit ; après, `git reset --hard fe6e551` sur cette branche (aucune autre branche touchée), sur demande de l'auteur seulement.
+- Retour arrière : `git merge --abort` avant le commit ; après, `git reset --hard <commit de fusion>^1` sur cette branche, c'est-à-dire le `HEAD` relevé juste avant l'étape 1 et noté sous cette tâche (aucune autre branche touchée, ce plan conservé), sur demande de l.auteur seulement.
 - Commit : `merge: join origin/remaster, keeping the local game code and content`
 
 ---
