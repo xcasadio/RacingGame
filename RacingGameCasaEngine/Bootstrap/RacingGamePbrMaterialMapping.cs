@@ -1,3 +1,4 @@
+using CasaEngine.Framework.Assets.Loaders;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
@@ -61,6 +62,129 @@ internal static class RacingGamePbrMaterialMapping
     /// <summary>Anything without a matching family.</summary>
     public static readonly RacingGamePbrFamily Default = new(0f, 0.8f);
 
+    private static readonly string[] MasonryTextures =
+    [
+        "Building.tga",
+        "building2.tga",
+        "building3.tga",
+        "building4.tga",
+        "building5.tga",
+        "Hotel01.tga",
+        "ruin.tga",
+        "Ruin01.tga",
+        "Stone04.tga",
+        "Stone5.tga",
+    ];
+
+    private static readonly string[] VegetationTextures =
+    [
+        "plants.tga",
+        "PalmLeave.tga",
+    ];
+
+    private static readonly string[] SignageTextures =
+    [
+        "Schild.tga",
+        "Schild2.tga",
+        "Schild_Kurve_links.tga",
+        "SignWarning.tga",
+        "banner.tga",
+        "banner2.tga",
+        "banner3.tga",
+        "roadsign1.tga",
+        "roadsign2.tga",
+        "Goal.tga",
+        "plazaschild.tga",
+        "plazacasino.tga",
+        "ladyluck.tga",
+    ];
+
+    private static readonly string[] LampPostTextures =
+    [
+        "Light.tga",
+        "TLight.tga",
+        "streetlamp.tga",
+        "streetlamp2.tga",
+    ];
+
+    private static readonly string[] GuardRailTextures =
+    [
+        "Leitplanke.tga",
+    ];
+
+    private static readonly string[] MatteIndustrialTextures =
+    [
+        "Hydrant.tga",
+        "garbagecan.tga",
+        "OilWell.tga",
+        "Oiltank.tga",
+        "gelaender.tga",
+        "Windmill.tga",
+    ];
+
+    public static bool IsMasonryTexture(string textureFileName) => ContainsTexture(MasonryTextures, textureFileName);
+
+    public static bool IsVegetationTexture(string textureFileName) => ContainsTexture(VegetationTextures, textureFileName);
+
+    public static bool IsSignageTexture(string textureFileName) => ContainsTexture(SignageTextures, textureFileName);
+
+    public static bool IsLampPostTexture(string textureFileName) => ContainsTexture(LampPostTextures, textureFileName);
+
+    public static bool IsGuardRailTexture(string textureFileName) => ContainsTexture(GuardRailTextures, textureFileName);
+
+    /// <summary>Matte industrial textures, the guard rail texture (Leitplanke) excluded: it belongs to <see cref="GuardRail"/>.</summary>
+    public static bool IsMatteIndustrialTexture(string textureFileName) => ContainsTexture(MatteIndustrialTextures, textureFileName);
+
+    /// <summary>
+    /// Family of an imported scenery material: the glass of the buildings is recognised by its legacy effect
+    /// (ReflectionSimpleGlass.fx), every other family by the file name of the diffuse texture; anything else is
+    /// <see cref="Default"/>.
+    /// </summary>
+    public static RacingGamePbrFamily ResolveImportedFamily(StaticModelImportedMaterial importedMaterial)
+    {
+        string effectFileName = Path.GetFileName(importedMaterial.EffectFilePath ?? string.Empty);
+        if (effectFileName.Equals("ReflectionSimpleGlass.fx", StringComparison.OrdinalIgnoreCase))
+        {
+            return BuildingGlass;
+        }
+
+        string textureFileName = Path.GetFileName(importedMaterial.DiffuseTextureFilePath ?? string.Empty);
+        if (IsGuardRailTexture(textureFileName))
+        {
+            return GuardRail;
+        }
+
+        if (IsLampPostTexture(textureFileName))
+        {
+            return LampPost;
+        }
+
+        if (IsMasonryTexture(textureFileName))
+        {
+            return Masonry;
+        }
+
+        if (IsSignageTexture(textureFileName))
+        {
+            return Signage;
+        }
+
+        if (IsVegetationTexture(textureFileName))
+        {
+            return Vegetation;
+        }
+
+        if (IsMatteIndustrialTexture(textureFileName))
+        {
+            return MatteIndustrial;
+        }
+
+        return Default;
+    }
+
+    private static bool ContainsTexture(string[] candidates, string textureFileName)
+        => candidates.Any(candidate => candidate.Equals(textureFileName, StringComparison.OrdinalIgnoreCase));
+
     /// <summary>
     /// Builds the PBR material of a surface. Common rules: the diffuse texture becomes the base colour texture and the normal
     /// map stays; the former DiffuseColor becomes BaseColor with its alpha forced to 255 (a lower alpha would move the
@@ -74,7 +198,7 @@ internal static class RacingGamePbrMaterialMapping
         Texture2D? baseColorTexture,
         Texture2D? normalTexture,
         Color? diffuseColor,
-        RasterizerState rasterizerState,
+        RasterizerState? rasterizerState,
         SamplerState samplerState,
         Vector3 emissiveColor = default,
         Texture2D? detailTexture = null,

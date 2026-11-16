@@ -63,7 +63,6 @@ internal static partial class LegacyTrackSceneFactory
     private static readonly Dictionary<string, List<LegacyCombiObject>> CombiCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, StaticModel?> ModelCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, Texture2D?> TextureCache = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly Dictionary<string, TextureCube?> TextureCubeCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, LegacyTerrainHeightSampler> TerrainCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, string> ModelAliases = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -1024,41 +1023,21 @@ internal static partial class LegacyTrackSceneFactory
         }
     }
 
-    private static LitDiffuseMaterial CreateImportedRuntimeMaterial(string modelName, StaticModelImportedMaterial importedMaterial, AssetContentManager assetContentManager)
+    private static LitPbrMaterial CreateImportedRuntimeMaterial(string modelName, StaticModelImportedMaterial importedMaterial, AssetContentManager assetContentManager)
     {
-        RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning(modelName, importedMaterial);
-        Texture2D? diffuseTexture = LoadTexture(importedMaterial.DiffuseTextureFilePath, assetContentManager);
-        Texture2D? normalTexture = LoadTexture(importedMaterial.NormalTextureFilePath, assetContentManager);
-        bool useSceneReflectionCube = tuning.EnableReflection
-            && RaceSkySystem.ShouldUseSceneReflectionCube(importedMaterial.ReflectionTextureFilePath);
-        TextureCube? reflectionCube = null;
-        if (tuning.EnableReflection && !useSceneReflectionCube)
-        {
-            reflectionCube = LoadTextureCube(importedMaterial.ReflectionTextureFilePath, assetContentManager);
-            useSceneReflectionCube = reflectionCube == null;
-        }
-
         LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
-        Vector3 specularColor = tuning.ApplySpecularColor(importedMaterial.SpecularColor);
-        float specularPower = Math.Clamp(tuning.ApplySpecularPower(importedMaterial.SpecularPower), 2f, 48f);
 
-        return new LitDiffuseMaterial
-        {
-            Name = $"{modelName}.{importedMaterial.DisplayName}",
-            BasColor = diffuseTexture,
-            NormalMap = normalTexture,
-            ReflectionCube = reflectionCube,
-            UseSceneReflectionCube = useSceneReflectionCube,
-            DiffuseColor = importedMaterial.DiffuseColor,
-            AmbientColor = ComputeLegacyImportedAmbient(modelName, importedMaterial),
-            EmissiveColor = presentation.EmissiveColor,
-            SpecularColor = specularColor,
-            SpecularPower = specularPower,
-            SamplerState = SamplerState.AnisotropicWrap,
-            Queue = presentation.Queue,
-            AlphaCutoff = presentation.AlphaCutoff,
-            RasterizerState = presentation.DisableBackfaceCulling ? RasterizerState.CullNone : null,
-        };
+        return RacingGamePbrMaterialMapping.Create(
+            $"{modelName}.{importedMaterial.DisplayName}",
+            RacingGamePbrMaterialMapping.ResolveImportedFamily(importedMaterial),
+            LoadTexture(importedMaterial.DiffuseTextureFilePath, assetContentManager),
+            LoadTexture(importedMaterial.NormalTextureFilePath, assetContentManager),
+            importedMaterial.DiffuseColor,
+            presentation.DisableBackfaceCulling ? RasterizerState.CullNone : null,
+            SamplerState.AnisotropicWrap,
+            presentation.EmissiveColor,
+            queue: presentation.Queue,
+            alphaCutoff: presentation.AlphaCutoff);
     }
 
     private static Texture2D? LoadProjectTexture(AssetContentManager assetContentManager, params string[] fileNames)
@@ -1115,39 +1094,6 @@ internal static partial class LegacyTrackSceneFactory
         }
     }
 
-    private static TextureCube? LoadTextureCube(string? texturePath, AssetContentManager assetContentManager)
-    {
-        if (string.IsNullOrWhiteSpace(texturePath))
-        {
-            return null;
-        }
-
-        string normalizedPath = Path.GetFullPath(texturePath);
-        if (TextureCubeCache.TryGetValue(normalizedPath, out TextureCube? cachedTexture))
-        {
-            return cachedTexture;
-        }
-
-        if (!File.Exists(normalizedPath) || !TextureCubeLoader.IsTextureCubeFile(normalizedPath))
-        {
-            TextureCubeCache[normalizedPath] = null;
-            return null;
-        }
-
-        try
-        {
-            var texture = TextureCubeLoader.LoadTextureCube(normalizedPath, assetContentManager.GraphicsDevice);
-            TextureCubeCache[normalizedPath] = texture;
-            return texture;
-        }
-        catch (Exception ex)
-        {
-            Logs.WriteException(ex);
-            TextureCubeCache[normalizedPath] = null;
-            return null;
-        }
-    }
-
     private static void ApplyFallbackMaterials(StaticModel model, string modelName)
     {
         Color diffuseColor = InferSceneryColor(modelName);
@@ -1158,13 +1104,15 @@ internal static partial class LegacyTrackSceneFactory
                 continue;
             }
 
-            mesh.Material = new LitDiffuseMaterial
-            {
-                DiffuseColor = diffuseColor,
-                EmissiveColor = diffuseColor.ToVector3() * 0.015f,
-                SpecularColor = new Vector3(0.05f),
-                SpecularPower = 4f,
-            };
+            mesh.Material = RacingGamePbrMaterialMapping.Create(
+                $"{modelName}.Fallback",
+                RacingGamePbrMaterialMapping.Default,
+                null,
+                null,
+                diffuseColor,
+                null,
+                SamplerState.AnisotropicWrap,
+                diffuseColor.ToVector3() * 0.015f);
         }
     }
 
