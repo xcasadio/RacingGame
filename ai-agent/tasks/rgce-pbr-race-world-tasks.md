@@ -338,16 +338,26 @@ Règles communes à toute conversion d'un `LitDiffuseMaterial` en `LitPbrMateria
 | 2 | Plan révisé | REVISE (P2 × 4) | Tous **FIX**. Critère du ciel par valeur prédite (décodage puis ACES) au lieu d'une fenêtre autour de `legacy` ; ligne de journal `[CaptureBench]` qui expose `FxaaPasses` ; T0.2 ordonnée entre T0.1 et T1.1 ; test GPU de E1 en trois cas avec tolérance pour le gris 128. |
 | 3 | Relecture de clôture | REVISE (P2 × 1) | **FIX** sans nouvelle relecture (la boucle est close) : la texture `Leitplanke` importée (`GuardRailHolder`) rejoint la ligne « Rails », conformément à D2. P3 intégrés : remplacement de `ShouldEnableReflection` précisé en T4.1 ; absence de démo pour E1 signalée à l'auteur. P4 noté : une sonde d'ombre sans sonde éclairée sur la même surface peut être mal classée en T2.1, à contrôler à la main si le cas se présente. Points confirmés par le relecteur : API du moteur citées, budget d'échantillonneurs, formule du ciel, alpha du carrousel, couverture de tous les `new LitDiffuseMaterial`. |
 
-## Passation (2026-11-16)
+## Passation (2026-11-16, après exécution)
 
-État à l'arrêt de la session : le plan est approuvé. Le chantier `chantier/pbr-clearcoat-ssao-fxaa` est fusionné dans `main` du moteur (avance rapide jusqu'à `6ead4730`, non poussé). E1 est fait et confirmé sur `chantier/pbr-detail-texture` (`48d720a6`), **pas encore fusionné**. Le pointeur du sous-module n'a pas bougé (`a200f12b`). Aucun code du jeu n'est modifié.
+Le plan est exécuté : E1 et T0.1 à T4.2 sont commités sur `remaster` (`7c46e5c` à `392e4aa`), moteur `main` à `48d720a6`. Rien n'est poussé.
 
-Suite, dans l'ordre : fusionner `chantier/pbr-detail-texture` dans `main` du moteur (avance rapide) et pointer le sous-module dessus, avec l'accord de l'auteur ; puis T0.1, T0.2, T1.1 et la suite selon la règle de dépendances.
+Vérifications indépendantes :
 
-À savoir pour reprendre :
+| Objet | Verdict | Suite |
+|---|---|---|
+| T0.1, T0.2, T1.1 | CONFIRMED | P3 de procédure : T1.1 a démarré alors que T0.2 est 🧪 (répétabilité vraie sur le rapport et les sondes, pas à l'octet : quelques pixels isolés scintillent d'une capture à l'autre, cause non cherchée). |
+| T2.1, T2.2, T2.3 | REFUTED (P2 × 1) | **FIX**, recontrôlé. Les familles du décor importé ne correspondaient jamais : les listes nomment des `.tga`, le contenu converti est en `.png`. Corrigé dans `d35a25a` (comparaison sans extension) ; la sonde du vérificateur donne maintenant rails 1 / 0,45, lampadaires et feux 1 / 0,5, maçonnerie 0 / 0,9, panneaux 0 / 0,6, feuillage 0 / 0,95, industriel 0 / 0,7. Les anciennes tables supprimées avaient le même défaut : leur réglage ne s'appliquait pas non plus. |
+| Plan entier | CONFIRMED | Remarques non bloquantes ci-dessous. |
 
-- Scripts et empreintes de référence du moteur : `CasaEngine/CasaEngine/artifacts/pbr-baseline/` (ignoré par git, propre à cette machine et à son GPU). Empreintes en vigueur : journal du plan moteur `CasaEngine/ai-agent/tasks/pbr-clearcoat-ssao-fxaa-tasks.md`, dernière ligne.
-- Tests du moteur : `dotnet test CasaEngine.Tests/CasaEngine.Tests.csproj --blame-hang-timeout 5m`, jamais `--no-build` (le projet n'est dans aucune solution).
-- Git sur cette machine : `git -c safe.directory=*` ; message de commit dans un fichier puis `git commit -F` ; ne jamais pousser ; ne jamais indexer `.codegraph/`, `.serena/`, `MGUI/`, `log.txt`.
-- Captures : jamais pendant un build ou des tests ; fenêtres laissées ouvertes et non réduites.
-- À faire par l'auteur : push de `main` du moteur et de `remaster` ; contrôles manuels listés dans les deux plans du moteur.
+Reste à décider ou à contrôler par l'auteur :
+
+- **Tunnel presque noir** (P3, introduit par T2.1 en appliquant P9) : l'original l'éclairait surtout par son ambiant de matériau (182), abandonné ; sa couleur de base vaut 80. À trancher : relever sa couleur de base, ou lui donner une lumière.
+- **Voiture centrale du carrousel très blanche** : lumière à π et IBL sans tonemapping (carrousel en `Legacy`, P5). Réglage d'intensité du carrousel à faire à l'œil (O4).
+- Valeurs de la correspondance, exposition, intensités : points de départ (O4). Qualité de l'IBL du ciel (O1).
+- Contrôle à l'œil : une course sur chaque piste, le carrousel, toutes les couleurs de voiture.
+- Deux commentaires de code décrivent encore l'ancien éclairage (`RaceWorldFactory.cs:35-38`, `LegacyTrackSceneFactory.cs:948-953`), et `CreateLegacyLighting` calcule un ambiant qui n'est plus utilisé : nettoyage P4 reporté.
+- Les lignes « différence 0,00 » du banc sont tenues à l'arrondi (0,01 sur `Expert-overview`, 0,0 % de pixels différents).
+- Push de `main` du moteur et de `remaster`.
+
+À savoir pour reprendre : scripts de référence du moteur dans `CasaEngine/CasaEngine/artifacts/pbr-baseline/` (ignoré par git) ; tests du moteur par `dotnet test CasaEngine.Tests/CasaEngine.Tests.csproj --blame-hang-timeout 5m`, jamais `--no-build` ; `git -c safe.directory=*` ; ne jamais indexer `.codegraph/`, `.serena/`, `MGUI/`, `log.txt` ; captures jamais pendant un build, fenêtres ouvertes et non réduites.
