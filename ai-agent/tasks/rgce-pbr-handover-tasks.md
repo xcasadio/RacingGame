@@ -16,7 +16,7 @@ Tranches :
 | S1 | Fusion du moteur (T1.1) | — | Faite le 2026-11-16, avec la réserve D5 |
 | S1b | Fusion de `origin/remaster` en gardant le code et le contenu du jeu d'ici (Phase 3) : histoires jointes, docs, outils et original repris, ADR renumérotés. Le travail PBR de l'autre PC n'est pas actif après cette tranche | S1 | Faite le 2026-11-16 |
 | S1v | HANDOVER §7 : vérification indépendante des fusions du moteur et du jeu (`verifier` frais), captures UI et audit de piste du jeu sur le moteur fusionné. Avant toute tranche qui change le moteur, le contenu ou les matériaux | S1b | Faite le 2026-11-16, verdict CONFIRMED après une correction |
-| S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1v | Détaillée (Phase 5) |
+| S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1v | Faite le 2026-11-16, verdict CONFIRMED après une correction du doc |
 | S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1c | À détailler |
 | S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | À détailler |
 | S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1e | À détailler |
@@ -406,12 +406,22 @@ Source à porter : le code de l'autre PC, lisible par `git show origin/remaster:
 > - Points de route identiques à l'original sur les trois pistes.
 > - Écarts des sujets faits en double, remis à l'auteur (O8) : poteaux de rail à l'échelle 1,125 au lieu de 1,35 ; environ deux fois trop de segments de colonne ; un tiers de lanternes en trop ; palmiers bien moins nombreux et peu appariés ; panneaux peu appariés ; presque tous les objets projettent une ombre alors que ceux de l'original ne le font pas.
 
-### ⏳ T5.4 — Vérification indépendante de S1c
+### ✅ T5.4 — Vérification indépendante de S1c
 
 - Objectif : un `verifier` frais confirme ou réfute : le mode rejoue bien les vues de l'original (taille, projection, positions : les 15 distances d'alignement sous 5 m, critère de T5.1) ; la mesure compare dans le bon repère ; les autres modes d'automation ne régressent pas ; les chiffres du doc sont ceux des sorties.
 - Étapes : commandes longues éventuelles lancées par la session principale ; un appel au `verifier` ; verdict noté ici. `INCONCLUSIVE` : un seul nouvel appel après avoir fourni la preuve manquante, sinon S1c en pause. Constats : P0 ou P1, arrêt et question à l'auteur ; P2 introduit par S1c, corrigé dans les fichiers de T5.1 à T5.3 (un commit par correction, deux passes au plus, `verifier` frais sur l'affirmation touchée) ; le reste noté et reporté.
 - Validation : `CONFIRMED`, ou constats traités comme ci-dessus.
 - Commit : `docs(ai-agent): record the verification of the capture bench port`
+
+> Validation (2026-11-16) :
+> - `verifier` frais, premier passage : **REFUTED**. Affirmations 1 (rejeu fidèle), 2 (mesure dans le bon repère) et 3 (pas de régression) confirmées par ses propres lancements : 15 images 1280×720, 15 distances sous 5 m, réglages utilisateur inchangés (empreintes avant et après), `--smoke-frontend` en succès, cuiseur à 0 écart. Affirmation 4 (chiffres du doc) réfutée.
+>   - F1 (P2, introduit par `389a7e5`) : le tableau des sondes donnait les totaux jugés comme échecs (34 et 33 au lieu de 24 et 12).
+>   - F2 (P2, introduit par `389a7e5`) : une cellule fausse, `Expert-sector-80` `nopost`, 44,8 % au lieu de 40,8 %.
+>   - F3 (P3) et F4 (P4) : formulations plus larges que la mesure (lanternes doubles toutes manquantes, un poteau en trop sur Advanced, segments de colonne 2,2 à 3,2 fois trop nombreux, `Casino01` absent sur Beginner).
+>   - Correction, passe 1 sur 2 : `75651e5`, document seul ; F3 et F4 corrigés au passage ; ajout de la phrase sur le troisième lancement, qui diffère du premier par l'empreinte de deux fichiers.
+> - `verifier` frais sur l'affirmation 4 : **CONFIRMED**, les 60 cellules du tableau des images et tous les triplets par modèle contrôlés.
+> - Remarques P3 et P4 du second passage, notées sans suite (candidat confirmé) : « two to three times » alors qu'Advanced est à 3,2 ; le sens des écarts d'ombre n'est prouvé que sur les 12 exemples listés par piste ; l'échelle 1,125 des poteaux d'ici est déduite de l'écart 0,167, elle n'est pas écrite dans une sortie.
+> - Répétabilité : pas totale au pixel (un ou deux fichiers d'empreinte différente selon le lancement, différence moyenne 0,00 quand elle a été mesurée).
 
 ---
 
