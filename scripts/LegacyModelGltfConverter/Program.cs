@@ -8,6 +8,7 @@ using SharpGLTF.Memory;
 using SharpGLTF.Schema2;
 using SharpGLTF.Validation;
 using GltfImage = SharpGLTF.Schema2.Image;
+using GltfMesh = SharpGLTF.Schema2.Mesh;
 using GltfNode = SharpGLTF.Schema2.Node;
 
 // Converts the legacy RacingGame .x models to .gltf files the CasaEngine runtime can read:
@@ -15,15 +16,21 @@ using GltfNode = SharpGLTF.Schema2.Node;
 //   to translation/rotation/scale (GltfStaticModelReader cannot read matrix nodes);
 // - diffuse and normal textures of each material attached as external .png images;
 // - the legacy material metadata the old runtime importer used stored in the material extras.
-// Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]...
+// - a TANGENT attribute generated like the legacy content processor on every primitive that has a normal texture;
+// - the normal maps given with --normal-map (used by meshes the game generates, so no model references them) converted too.
+// - the sky cube given with --sky-cube rewritten in the axes of the converted world (SkyCubeConverter, ADR-0017).
+// Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]... [--normal-map <tga file>]... [--sky-cube <dds file>]
 // Texture modes, for the textures no model references:
-// - LegacyModelGltfConverter --textures <tga directory> <png directory> <texture name>...: converts each named .tga to .png;
+// - LegacyModelGltfConverter --textures <tga directory> <png directory> <texture name>...: converts each named .tga to .png
+//   as a colour copy; a name followed by ":normal" is converted as a normal map;
 // - LegacyModelGltfConverter --verify-textures <tga directory> <png directory>: decodes every .tga and its .png of the same
-//   name, compares their RGBA bytes and lists the differences and the .tga without .png (exit code 1 if any).
+//   name and compares their RGBA bytes, first as a colour copy, then, if they differ, as a converted normal map; lists both
+//   sets with their counts, and the pairs that match neither and the .tga without .png (exit code 1 if any).
 
-const string Usage = "Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]...";
-const string TexturesUsage = "Usage: LegacyModelGltfConverter --textures <tga directory> <png directory> <texture name>...";
+const string Usage = "Usage: LegacyModelGltfConverter <x models directory> <gltf output directory> <png output directory> [--skip <model name>]... [--normal-map <tga file>]... [--sky-cube <dds file>]";
+const string TexturesUsage = "Usage: LegacyModelGltfConverter --textures <tga directory> <png directory> <texture name>[:normal]...";
 const string VerifyTexturesUsage = "Usage: LegacyModelGltfConverter --verify-textures <tga directory> <png directory>";
+const string NormalSuffix = ":normal";
 
 if (args.Length > 0 && args[0] == "--textures")
 {
@@ -38,7 +45,14 @@ if (args.Length > 0 && args[0] == "--textures")
     int missing = 0;
     for (int i = 3; i < args.Length; i++)
     {
-        string name = Path.GetFileNameWithoutExtension(args[i]);
+        string argument = args[i];
+        bool isNormalMap = argument.EndsWith(NormalSuffix, StringComparison.OrdinalIgnoreCase);
+        if (isNormalMap)
+        {
+            argument = argument[..^NormalSuffix.Length];
+        }
+
+        string name = Path.GetFileNameWithoutExtension(argument);
         string tgaPath = Path.Combine(tgaDirectory, name + ".tga");
         if (!File.Exists(tgaPath))
         {
@@ -47,8 +61,8 @@ if (args.Length > 0 && args[0] == "--textures")
             continue;
         }
 
-        LegacyTextureConverter.ConvertToPng(tgaPath, Path.Combine(pngOutputDirectory, name + ".png"));
-        Console.WriteLine($"{name}.tga: converted to {name}.png");
+        LegacyTextureConverter.ConvertToPng(tgaPath, Path.Combine(pngOutputDirectory, name + ".png"), isNormalMap);
+        Console.WriteLine($"{name}.tga: converted to {name}.png{(isNormalMap ? " (normal map)" : string.Empty)}");
     }
 
     Console.WriteLine($"{args.Length - 3} textures, {missing} not found.");
@@ -69,8 +83,10 @@ if (args.Length > 0 && args[0] == "--verify-textures")
         .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
         .ToArray();
     int pairs = 0;
-    int different = 0;
     int withoutPng = 0;
+    var colourCopies = new List<string>();
+    var normalMaps = new List<string>();
+    var different = new List<string>();
     foreach (string tgaPath in tgaFiles)
     {
         string name = Path.GetFileNameWithoutExtension(tgaPath);
@@ -83,23 +99,43 @@ if (args.Length > 0 && args[0] == "--verify-textures")
         }
 
         pairs++;
-        string? difference = LegacyTextureConverter.Compare(tgaPath, pngPath);
-        if (difference != null)
+        string? colourDifference = LegacyTextureConverter.Compare(tgaPath, pngPath, isNormalMap: false);
+        if (colourDifference == null)
         {
-            Console.WriteLine($"{name}: DIFFERENT {difference}");
-            different++;
+            colourCopies.Add(name);
+        }
+        else if (LegacyTextureConverter.Compare(tgaPath, pngPath, isNormalMap: true) == null)
+        {
+            normalMaps.Add(name);
+        }
+        else
+        {
+            Console.WriteLine($"{name}: DIFFERENT neither a colour copy nor a converted normal map; as a colour copy: {colourDifference}");
+            different.Add(name);
         }
     }
 
-    Console.WriteLine($"{tgaFiles.Length} .tga, {pairs} pairs, {different} different, {withoutPng} without .png.");
-    return different == 0 && withoutPng == 0 ? 0 : 1;
+    Console.WriteLine($"Colour copies ({colourCopies.Count}): {string.Join(", ", colourCopies)}");
+    Console.WriteLine($"Converted normal maps ({normalMaps.Count}): {string.Join(", ", normalMaps)}");
+    Console.WriteLine($"{tgaFiles.Length} .tga, {pairs} pairs, {colourCopies.Count} colour copies, {normalMaps.Count} converted normal maps, {different.Count} different, {withoutPng} without .png.");
+    return different.Count == 0 && withoutPng == 0 ? 0 : 1;
 }
 
 var positional = new List<string>();
 var skippedModels = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+var extraNormalMaps = new List<string>();
+string? skyCubePath = null;
 for (int i = 0; i < args.Length; i++)
 {
-    if (args[i] == "--skip" && i + 1 < args.Length)
+    if (args[i] == "--normal-map" && i + 1 < args.Length)
+    {
+        extraNormalMaps.Add(args[++i]);
+    }
+    else if (args[i] == "--sky-cube" && i + 1 < args.Length)
+    {
+        skyCubePath = args[++i];
+    }
+    else if (args[i] == "--skip" && i + 1 < args.Length)
     {
         skippedModels.Add(args[++i]);
     }
@@ -148,7 +184,45 @@ foreach (string sourceFile in sourceFiles)
     failures += errors.Count > 0 ? 1 : 0;
 }
 
-Console.WriteLine($"{sourceFiles.Length} models, {skipped} skipped, {failures} failed, {converter.ConvertedTextureCount} textures converted.");
+int extraNormalMapCount = 0;
+foreach (string normalMap in extraNormalMaps)
+{
+    string sourcePath = Path.GetFullPath(normalMap);
+    if (!File.Exists(sourcePath))
+    {
+        Console.WriteLine($"ERROR normal map '{normalMap}' not found");
+        failures++;
+        continue;
+    }
+
+    LegacyTextureConverter.ConvertToPng(
+        sourcePath,
+        Path.Combine(pngDirectory, Path.GetFileNameWithoutExtension(sourcePath) + ".png"),
+        isNormalMap: true);
+    extraNormalMapCount++;
+}
+
+if (skyCubePath != null)
+{
+    string skySourcePath = Path.GetFullPath(skyCubePath);
+    string skyDestinationPath = Path.Combine(pngDirectory, Path.GetFileName(skySourcePath));
+    try
+    {
+        if (string.Equals(skySourcePath, skyDestinationPath, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("The sky cube would overwrite its own source: use another png output directory.");
+        }
+
+        Console.WriteLine(SkyCubeConverter.Convert(skySourcePath, skyDestinationPath));
+    }
+    catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException)
+    {
+        Console.WriteLine($"ERROR sky cube '{skyCubePath}': {ex.Message}");
+        failures++;
+    }
+}
+
+Console.WriteLine($"{sourceFiles.Length} models, {skipped} skipped, {failures} failed, {converter.ConvertedTextureCount} textures converted, {extraNormalMapCount} extra normal map(s) converted.");
 return failures == 0 ? 0 : 1;
 
 internal sealed class ModelConverter
@@ -168,6 +242,7 @@ internal sealed class ModelConverter
     private readonly string _gltfDirectory;
     private readonly string _pngDirectory;
     private readonly HashSet<string> _convertedTextures = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, bool> _normalMapTextures = new(StringComparer.OrdinalIgnoreCase);
 
     public ModelConverter(string gltfDirectory, string pngDirectory)
     {
@@ -243,6 +318,8 @@ internal sealed class ModelConverter
             material.Extras = extras;
         }
 
+        int tangentPrimitives = AddTangents(model, errors);
+
         if (errors.Count == 0)
         {
             string gltfPath = Path.Combine(_gltfDirectory, modelName + ".gltf");
@@ -254,8 +331,116 @@ internal sealed class ModelConverter
             });
         }
 
-        summary = $"{model.LogicalMeshes.Count} meshes, {model.LogicalMaterials.Count} materials, {effectMaterials} with effect instance, {texturedChannels} textured channels";
+        summary = $"{model.LogicalMeshes.Count} meshes, {model.LogicalMaterials.Count} materials, {effectMaterials} with effect instance, {texturedChannels} textured channels, {tangentPrimitives} primitives with tangents";
         return errors;
+    }
+
+    // The legacy content processor (RacingGameModelProcessor) generates the tangents with
+    // MeshHelper.CalculateTangentFrames (no binormal channel): per triangle the direction of increasing U
+    // (Lengyel), accumulated on the three vertices without weighting, then made orthogonal to the vertex
+    // normal and normalised. Measured on the built legacy models (xnb), this reproduces them, including for a
+    // vertex whose triangles all have a degenerate UV mapping: the legacy tangent is then cross(normal, +X)
+    // (cross(normal, +Y) when the normal is parallel to X: not observed in the legacy models, chosen here).
+    // The legacy shader builds the tangent frame as (cross(normal, tangent), tangent, normal) in model space,
+    // with no correction for mirrored UVs; CasaEngine builds cross(normal, tangent) * w in world space. The
+    // legacy model space and the glTF one (node transforms included) coincide, and no world transform of
+    // the legacy models or of the glTF files has a negative determinant, so w = +1 reproduces the legacy
+    // frame everywhere (w is a constant here, not the glTF handedness of the UV mapping).
+    // Only the primitives that have a normal texture get tangents: the others never use them.
+    private static int AddTangents(ModelRoot model, List<string> errors)
+    {
+        int count = 0;
+        foreach (GltfMesh mesh in model.LogicalMeshes)
+        {
+            foreach (MeshPrimitive primitive in mesh.Primitives)
+            {
+                if (primitive.Material?.FindChannel("Normal")?.Texture == null)
+                {
+                    continue;
+                }
+
+                IList<Vector3>? positions = primitive.GetVertexAccessor("POSITION")?.AsVector3Array();
+                IList<Vector3>? normals = primitive.GetVertexAccessor("NORMAL")?.AsVector3Array();
+                IList<Vector2>? uvs = primitive.GetVertexAccessor("TEXCOORD_0")?.AsVector2Array();
+                if (positions == null || normals == null || uvs == null
+                    || normals.Count != positions.Count || uvs.Count != positions.Count)
+                {
+                    errors.Add($"mesh '{mesh.Name}': a primitive with a normal texture lacks POSITION, NORMAL or TEXCOORD_0");
+                    continue;
+                }
+
+                Vector4[] tangents = ComputeTangents(positions, normals, uvs, primitive.GetTriangleIndices());
+                var bytes = new byte[tangents.Length * 16];
+                for (int i = 0; i < tangents.Length; i++)
+                {
+                    BitConverter.TryWriteBytes(bytes.AsSpan(i * 16, 4), tangents[i].X);
+                    BitConverter.TryWriteBytes(bytes.AsSpan((i * 16) + 4, 4), tangents[i].Y);
+                    BitConverter.TryWriteBytes(bytes.AsSpan((i * 16) + 8, 4), tangents[i].Z);
+                    BitConverter.TryWriteBytes(bytes.AsSpan((i * 16) + 12, 4), tangents[i].W);
+                }
+
+                BufferView view = model.UseBufferView(bytes, 0, null, 16, BufferMode.ARRAY_BUFFER);
+                Accessor accessor = model.CreateAccessor("TANGENT");
+                accessor.SetVertexData(view, 0, tangents.Length, DimensionType.VEC4, EncodingType.FLOAT, false);
+                primitive.SetVertexAccessor("TANGENT", accessor);
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static Vector4[] ComputeTangents(
+        IList<Vector3> positions,
+        IList<Vector3> normals,
+        IList<Vector2> uvs,
+        IEnumerable<(int A, int B, int C)> triangles)
+    {
+        var accumulated = new Vector3[positions.Count];
+        foreach ((int a, int b, int c) in triangles)
+        {
+            Vector3 e1 = positions[b] - positions[a];
+            Vector3 e2 = positions[c] - positions[a];
+            Vector2 d1 = uvs[b] - uvs[a];
+            Vector2 d2 = uvs[c] - uvs[a];
+            float determinant = (d1.X * d2.Y) - (d2.X * d1.Y);
+            if (determinant == 0f)
+            {
+                continue; // degenerate UV mapping: no direction of increasing U
+            }
+
+            float r = 1f / determinant;
+            Vector3 direction = ((d2.Y * e1) - (d1.Y * e2)) * r;
+            if (!float.IsFinite(direction.X + direction.Y + direction.Z))
+            {
+                continue;
+            }
+
+            accumulated[a] += direction;
+            accumulated[b] += direction;
+            accumulated[c] += direction;
+        }
+
+        var tangents = new Vector4[positions.Count];
+        for (int i = 0; i < tangents.Length; i++)
+        {
+            Vector3 normal = normals[i];
+            Vector3 tangent = accumulated[i] - (normal * Vector3.Dot(normal, accumulated[i]));
+            if (tangent.LengthSquared() < 1e-20f)
+            {
+                // No usable UV gradient: same fallback as the legacy processor.
+                tangent = Vector3.Cross(normal, Vector3.UnitX);
+                if (tangent.LengthSquared() < 1e-12f)
+                {
+                    tangent = Vector3.Cross(normal, Vector3.UnitY);
+                }
+            }
+
+            tangent = Vector3.Normalize(tangent);
+            tangents[i] = new Vector4(tangent, 1f);
+        }
+
+        return tangents;
     }
 
     private static IReadOnlyList<Assimp.Material> ReadAssimpMaterials(string sourceFile)
@@ -330,11 +515,18 @@ internal sealed class ModelConverter
             return 0;
         }
 
+        bool isNormalMap = effectParameter == "normalTexture";
         string pngFileName = Path.GetFileNameWithoutExtension(sourceTexture) + ".png";
         string pngPath = Path.Combine(_pngDirectory, pngFileName);
         if (_convertedTextures.Add(pngFileName))
         {
-            LegacyTextureConverter.ConvertToPng(sourceTexture, pngPath);
+            LegacyTextureConverter.ConvertToPng(sourceTexture, pngPath, isNormalMap);
+            _normalMapTextures[pngFileName] = isNormalMap;
+        }
+        else if (_normalMapTextures[pngFileName] != isNormalMap)
+        {
+            errors.Add($"material '{material.Name}': texture '{pngFileName}' is used both as a colour texture and as a normal map");
+            return 0;
         }
 
         if (!images.TryGetValue(pngFileName, out GltfImage? image))

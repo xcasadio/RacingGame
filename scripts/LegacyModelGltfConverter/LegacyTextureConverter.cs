@@ -7,11 +7,18 @@ namespace LegacyModelGltfConverter;
 
 /// <summary>
 /// Converts the legacy .tga textures to .png, the image format glTF accepts.
-/// Pixels are copied losslessly (RGBA, alpha kept) and the base file name is preserved.
+/// Colour textures are copied losslessly (RGBA, alpha kept); normal maps are rewritten to the standard layout (see
+/// <see cref="ConvertToPng"/>). The base file name is preserved.
 /// </summary>
 internal static class LegacyTextureConverter
 {
-    public static void ConvertToPng(string sourcePath, string destinationPath)
+    /// <param name="isNormalMap">
+    /// The legacy shaders read a normal map as ".agb" and build the tangent space as (cross(normal, tangent), tangent,
+    /// normal) (NormalMapping.fx, ComputeTangentMatrix): alpha goes along the bitangent, green along the tangent, and
+    /// red is unused (saturated). glTF and CasaEngine read red along the tangent and green along
+    /// cross(normal, tangent): a normal map is written as (green, alpha, blue) with an opaque alpha.
+    /// </param>
+    public static void ConvertToPng(string sourcePath, string destinationPath, bool isNormalMap)
     {
         ImageResult image = Decode(sourcePath);
 
@@ -29,9 +36,9 @@ internal static class LegacyTextureConverter
                 {
                     int i = x * 4;
                     row[i] = image.Data[sourceOffset + i + 2];
-                    row[i + 1] = image.Data[sourceOffset + i + 1];
-                    row[i + 2] = image.Data[sourceOffset + i];
-                    row[i + 3] = image.Data[sourceOffset + i + 3];
+                    row[i + 1] = isNormalMap ? image.Data[sourceOffset + i + 3] : image.Data[sourceOffset + i + 1];
+                    row[i + 2] = isNormalMap ? image.Data[sourceOffset + i + 1] : image.Data[sourceOffset + i];
+                    row[i + 3] = isNormalMap ? (byte)255 : image.Data[sourceOffset + i + 3];
                 }
 
                 Marshal.Copy(row, 0, data.Scan0 + y * data.Stride, row.Length);
@@ -47,10 +54,12 @@ internal static class LegacyTextureConverter
     }
 
     /// <summary>
-    /// Decodes both images with StbImageSharp, the decoder of the game, as RGBA bytes and compares them.
-    /// Returns null when they are identical, otherwise a description of the first difference.
+    /// Decodes both images with StbImageSharp, the decoder of the game, as RGBA bytes and compares the .png with what
+    /// <see cref="ConvertToPng"/> writes from the .tga: the same pixels (colour copy) or, with <paramref name="isNormalMap"/>,
+    /// the rewritten channels (normal map). Returns null when they are identical, otherwise a description of the first
+    /// difference.
     /// </summary>
-    public static string? Compare(string tgaPath, string pngPath)
+    public static string? Compare(string tgaPath, string pngPath, bool isNormalMap)
     {
         ImageResult tga = Decode(tgaPath);
         ImageResult png = Decode(pngPath);
@@ -63,8 +72,11 @@ internal static class LegacyTextureConverter
         int firstDifference = -1;
         for (int i = 0; i < tga.Data.Length; i += 4)
         {
-            if (tga.Data[i] != png.Data[i] || tga.Data[i + 1] != png.Data[i + 1]
-                || tga.Data[i + 2] != png.Data[i + 2] || tga.Data[i + 3] != png.Data[i + 3])
+            byte r = isNormalMap ? tga.Data[i + 1] : tga.Data[i];
+            byte g = isNormalMap ? tga.Data[i + 3] : tga.Data[i + 1];
+            byte b = tga.Data[i + 2];
+            byte a = isNormalMap ? (byte)255 : tga.Data[i + 3];
+            if (r != png.Data[i] || g != png.Data[i + 1] || b != png.Data[i + 2] || a != png.Data[i + 3])
             {
                 differentPixels++;
                 if (firstDifference < 0)
