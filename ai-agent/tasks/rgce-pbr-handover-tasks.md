@@ -14,8 +14,14 @@ Tranches :
 | Tranche | Contenu | Dépend de | État |
 |---|---|---|---|
 | S1 | Fusion du moteur (T1.1) | — | Faite le 2026-11-16, avec la réserve D5 |
-| S1b | Fusion du jeu avec cuisson des matériaux PBR en assets (D6) | S1 | À détailler et à soumettre |
-| S2 | HANDOVER §7 : vérification indépendante des fusions, banc de capture du jeu et captures UI sur le moteur fusionné, nouvelle référence sur ce PC | S1b | À détailler après S1 |
+| S1b | Fusion de `origin/remaster` en gardant le code et le contenu du jeu d'ici (Phase 3) : histoires jointes, docs, outils et original repris, ADR renumérotés. Le travail PBR de l'autre PC n'est pas actif après cette tranche | S1 | Détaillée, à approuver |
+| S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1b | À détailler |
+| S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1b | À détailler |
+| S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | À détailler |
+| S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, vérificateurs, suppression des tables de réglage | S1e | À détailler |
+| S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route et des tunnels, texture de détail du terrain | S1f | À détailler |
+| S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville, décor de remplissage aléatoire | S1f | À détailler |
+| S2 | HANDOVER §7 : vérification indépendante des fusions, banc de capture du jeu et captures UI sur le moteur fusionné, nouvelle référence sur ce PC | S1g, S1h | À détailler après S1 |
 | S3 | Tunnel presque noir | S2 | À détailler ; choix de l'auteur attendu (O1) |
 | S4 | Voiture centrale du carrousel trop blanche | S2 | À détailler ; choix de l'auteur attendu (O2) |
 | S5 | Défauts connus du §4 de la note (moteur sur une branche moteur dédiée, jeu sur cette branche) | S2 | À détailler |
@@ -155,6 +161,49 @@ Retour arrière de S1 : jeu, `git switch remaster` puis `git branch -D chantier/
 > - Non vérifié : une course jouée à la main ; l'égalité de ces captures avec celles de l'autre PC.
 > - `Documentation/LAN-Multiplayer.md` et le README décrivent encore le multijoueur : laissés tels quels.
 > - À la fusion du jeu : `origin/remaster` ramènera les 9 fichiers supprimés et l'ancienne version des 6 fichiers modifiés (ajouts des deux côtés) ; garder la version d'ici.
+
+---
+
+## Phase 3 — Fusion du jeu en gardant l'architecture d'ici (S1b)
+
+Constats de l'étude du 2026-11-16 (trois lectures en parallèle, faits décisifs recoupés par l'agent principal) :
+
+- Le code du jeu des deux côtés n'est pas fusionnable texte à texte : ici il vit dans `RacingGame.Gameplay` avec des générateurs et des assets cuits chargés par identifiant ; là-bas il est resté dans `RacingGameCasaEngine` et crée matériaux et entités en code. Six fichiers ajoutés là-bas (`RacingGamePbrMaterialMapping.cs`, `ReferenceSceneMeasure.cs`, `ReferenceViewCaptureValidator.cs`, `LegacyTrackSceneFactory.Scenery.cs`, `.RoadStructures.cs`, `.Diagnostics.cs`) complètent des classes qui ont changé de projet ici.
+- Le contenu diffère : là-bas, 161 fichiers de `RacingGameCasaEngine/Content` modifiés et 7 ajoutés (56 glTF régénérés avec tangentes, normal maps converties, cube du ciel réorienté). Ici, 0 glTF avec `TANGENT`, et `--verify` du cuiseur compare les assets cuits aux glTF.
+- Le format `.staticModel` du moteur ne stocke pas les tangentes (`StaticModelMesh.cs:26-27` lit des `VertexPositionNormalTexture` et vide les tangentes ; aucun champ de tangente dans `EditorAssetJsonSerializer.cs`). Sans tangentes, le moteur retire la normal map (`RenderFeatureResolver`).
+- Le moteur compile un `.material` `lit-pbr` (`MaterialCompiler.cs`), avec clear coat et texture de détail.
+- N'existe que là-bas : dessous de la route, sol de la ville, décor de remplissage aléatoire, tangentes de la route et des tunnels, banc de mesure contre l'original. L'ADR-0019 d'ici affirme qu'il ne manque rien face à l'original : ces trois éléments de géométrie le contredisent.
+- Écarts sur les sujets faits en double, la version d'ici restant la référence (D7) : règle de début de plage des aides (`Reset`), échelle des poteaux de rail (1,125 ici, 1,35 là-bas), tailles des modèles (glTF ici, table de l'original là-bas), séquence aléatoire des palmiers (fixe par piste ici), filtre des CombiModel, ombres des colonnes. Ils seront mesurés par le banc en S1c et remis à l'auteur, pas corrigés d'office.
+- Aucun projet de test du jeu, d'aucun côté.
+
+### ⏳ T3.1 — Fusion d'`origin/remaster`, code et contenu du jeu d'ici
+
+- Objectif : joindre les deux histoires dans `chantier/rgce-pbr-handover` avec un jeu qui se construit et tourne comme avant la fusion, au moteur près. Le travail PBR de l'autre PC reste dans l'histoire et sert de source aux tranches S1c à S1h ; il n'est pas actif dans l'arbre après cette tâche.
+- Fichiers :
+  - **gardés dans l'état d'ici** (état de `HEAD` avant fusion, fichiers ajoutés là-bas retirés) : `RacingGame.Gameplay/`, `RacingGameCasaEngine/` (code, contenu, `.csproj`), `RacingGame.slnx`, `scripts/LegacyModelGltfConverter/`, `RacingGameOriginal/` (version de T2.2) ;
+  - **repris de là-bas** : `scripts/TrackCaptureCompare/`, `docs/racinggame-pbr-preparation.md`, `docs/racinggame-3d-capture-bench-findings.md`, `docs/decisions/0015` à `0018` de là-bas, `ai-agent/HANDOVER.md`, `ai-agent/handover/`, les plans ajoutés dans `ai-agent/tasks/` ;
+  - **fusionnés** : `ai-agent/README.md`, `docs/decisions/README.md` (lignes des deux côtés) ;
+  - **renumérotés** : ADR locaux du jeu 0015 → 0023, 0016 → 0024, 0017 → 0025, 0018 → 0026, fichiers et renvois (index, ADR 0002, 0019 et 0023 à 0026, `ai-agent/README.md`, plans `rgce-editor-project`, `rgce-track-helpers` et celui-ci, `RacingGameCasaEngine/Assets/README.md`, `RacingGameCasaEngine.csproj`) ; les renvois vers les ADR de MGUI de même numéro ne bougent pas ;
+  - **renvois vers les ADR du moteur** renumérotés par T1.1 : 0071 → 0118 et 0075 → 0122 dans les docs du jeu ;
+  - pointeur `CasaEngine` sur `e942caa54` ; ce plan.
+- Étapes :
+  1. `git merge --no-ff --no-commit origin/remaster`.
+  2. Remettre les dossiers « gardés » dans l'état de `HEAD` (`git restore --source=HEAD --staged --worktree -- <dossier>`), puis vérifier `git diff --cached --quiet HEAD -- <dossier>` pour chacun. Exception : dans `RacingGameCasaEngine/`, les deux fichiers touchés par la renumérotation des ADR (`Assets/README.md`, `RacingGameCasaEngine.csproj`) ne diffèrent de `HEAD` que par ces numéros.
+  3. Résoudre les deux index en gardant les lignes des deux côtés.
+  4. Renuméroter les ADR locaux avec `git mv` ; corriger les renvois ligne par ligne, uniquement sur les lignes ajoutées ici depuis `d8ac303` (même méthode que T1.1) ; contrôler par `rg` qu'il ne reste aucun renvoi local vers 0015 à 0018 et que les docs de là-bas pointent toujours vers leurs propres ADR.
+  5. Dans `ai-agent/README.md`, écrire sur la ligne du plan `rgce-pbr-race-world-tasks.md` (là-bas) que son code n'est pas dans l'arbre et sera porté par S1c à S1h. Ne pas modifier les docs de là-bas eux-mêmes.
+  6. `git add CasaEngine` ; vérifier `git diff --cached --submodule`.
+  7. Recopier `ai-agent/handover/pbr-baseline/*.sh` vers `CasaEngine/CasaEngine/artifacts/pbr-baseline/` (ignoré par git).
+- Validation :
+  - aucun marqueur de conflit ; l'étape 2 vérifiée pour chaque dossier « gardé » ;
+  - `dotnet build RacingGameCasaEngine/RacingGameCasaEngine.csproj -c Debug` : 0 erreur ;
+  - `dotnet build` de `scripts/TrackCaptureCompare`, de `scripts/RgceAssetCooker` et de `RacingGameOriginal/Desktop/RacingGame.csproj` : 0 erreur ;
+  - cuiseur `--check` puis `--verify` : succès (contenu inchangé) ;
+  - `--smoke-frontend` puis `--verify-legacy-import-profile` : succès, un lancement à la fois ;
+  - `--capture-ui-screens` comparé à `artifacts/ui-capture-determinism/ref-a/ui` par `scripts/UiCaptureCompare`, et `--capture-track-audit` comparé à `artifacts/o7-track-helpers/after/track-audit-a` par `scripts/compare_track_audit.py` (ou, sans Python sur ce PC, par `scripts/TrackCaptureCompare` s.il accepte ces fichiers, sinon comparaison notée comme non faite) : résultats notés. Le seul changement attendu vient du moteur (`87fc5f01` → `e942caa54`). Un écart n'empêche pas le commit ; il est noté ici et remis à l'auteur. Un jeu qui ne démarre pas ou une capture qui échoue bloque la tâche.
+- Arrêts : build en échec à cause d'une API du moteur qui a bougé et dont la correction ne tient pas en une adaptation minimale du point d'appel (les adaptations faites sont listées dans le commit) ; correction qui demanderait de toucher au moteur ; référence de capture introuvable.
+- Retour arrière : `git merge --abort` avant le commit ; après, `git reset --hard fe6e551` sur cette branche (aucune autre branche touchée), sur demande de l'auteur seulement.
+- Commit : `merge: join origin/remaster, keeping the local game code and content`
 
 ---
 
