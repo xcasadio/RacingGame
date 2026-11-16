@@ -14,7 +14,8 @@ internal sealed class RacingGameLegacyMaterialImportProfile : ILegacyMaterialImp
             hints |= LegacyMaterialImportHint.AlphaCutout;
         }
 
-        if (RacingGameLegacyMaterialTuning.ShouldEnableReflection(context.SourceAssetName, context.ImportedMaterial))
+        string effectFileName = Path.GetFileName(context.ImportedMaterial.EffectFilePath ?? string.Empty);
+        if (effectFileName.Equals("ReflectionSimpleGlass.fx", StringComparison.OrdinalIgnoreCase))
         {
             hints |= LegacyMaterialImportHint.Reflection;
         }

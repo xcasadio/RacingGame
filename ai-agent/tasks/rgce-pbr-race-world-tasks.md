@@ -280,7 +280,7 @@ Règles communes à toute conversion d'un `LitDiffuseMaterial` en `LitPbrMateria
 
 ## Phase 4 — Nettoyage et clôture
 
-### ⏳ T4.1 — Supprimer les tables de réglage
+### ✅ T4.1 — Supprimer les tables de réglage
 
 - Objectif : D3.
 - Fichiers : suppression de `Bootstrap/RacingGameLegacyMaterialTuning.cs` ; `Bootstrap/RacingGameLegacyMaterialImportProfile.cs`, `Bootstrap/LegacyImportProfileVerifier.cs` et tout appelant restant.
@@ -289,6 +289,11 @@ Règles communes à toute conversion d'un `LitDiffuseMaterial` en `LitPbrMateria
   2. Adapter le vérificateur : il contrôle la famille PBR attendue (verre miroir, peinture vernie, découpe des palmiers) au lieu des indices de reflet.
 - Validation : build ; les deux `rg` de la validation globale sont vides ; `--verify-legacy-import-profile` succès ; banc identique à celui de la tâche précédente dans les deux modes (différence 0,00).
 - Commit : `refactor(racing-casa): delete the legacy specular tuning tables`
+
+- Note de validation (2026-11-16) : moteur `48d720a6`, build 0 erreur (2 avertissements préexistants de `ReferenceViewCaptureValidator.cs`). Fichiers : `Bootstrap/RacingGameLegacyMaterialTuning.cs` supprimé par `git rm` (D3) ; `Bootstrap/RacingGameLegacyMaterialImportProfile.cs` (le test de `ShouldEnableReflection` écrit sur place : effet `ReflectionSimpleGlass.fx`, donc l'indice `Reflection` lu par `LegacyCarVisualFactory.IsPaintMaterial` est inchangé ; à noter : `CarSelectionCarousel.cs` ne lit plus cet indice depuis T3.1) ; `Bootstrap/LegacyImportProfileVerifier.cs` (contrôles d'indice de reflet et de réglage spéculaire remplacés par la famille PBR attendue : maçonnerie, panneaux, lampadaires, bannière, végétation avec file `AlphaTest` des palmiers, industriel mat du moulin, verre des immeubles miroir métal 1 / roughness <= 0,1 et opaque, voiture : verre, peinture diélectrique avec `ClearCoat` 1, chrome, pneus ; les contrôles de découpe et d'indice d'import conservés) ; `Components/LegacyCarVisualFactory.cs` (`ResolveFamily` passe en `internal` pour le vérificateur) ; code sans appelant retiré : `LegacyTrackSceneFactory.ComputeLegacyImportedAmbient` et `RaceSkySystem.ShouldUseSceneReflectionCube`.
+  - `rg RacingGameLegacyMaterialTuning RacingGameCasaEngine` et `rg "new LitDiffuseMaterial" RacingGameCasaEngine` : aucun résultat. `--verify-legacy-import-profile` : code 0 (« verification passed »). `--smoke-frontend` : code 0, journal sans `[Warning]`, `[Error]` ni exception.
+  - **Banc identique à T3.1** (une capture par mode, `scratchpad\game\t41\linear1` et `legacy1`, comparées à `t31\linear1` et `t31\legacy1`) : rapport à 0,00 sur chaque canal et 0,0 % de pixels différents pour 14 vues sur 15 dans les deux modes ; `Expert-overview` à 0,01 (aux trois canaux en `linear`, aux canaux G et B en `legacy`), même vue et même valeur que le scintillement de T0.2 à T3.1. 7 des 15 PNG (`linear`) et 10 des 15 (`legacy`) ne sont pas identiques octet par octet (quelques pixels d'arête, même réserve que T0.2). Les trois `scene-measure-*.txt` de chaque mode sont identiques octet par octet à ceux de T3.1. Journaux des deux lancements : 15 lignes `[CaptureBench]` (`pipeline linear fxaaPasses 1`, `pipeline legacy fxaaPasses 0`), aucun `[Warning]`, `[Error]` ni exception, `[IblCache] Generated` une fois.
+  - Non vérifié : une seule capture par mode (la répétabilité propre n'a pas été remesurée, la comparaison à T3.1 vaut répétabilité) ; aucune comparaison de matière par l'auteur.
 
 ### ⏳ T4.2 — Décision, documentation, rapport
 

@@ -965,16 +965,6 @@ internal static partial class LegacyTrackSceneFactory
         return (diffuseColor, ComputeLegacyAmbient(materialName, new Vector3(ambient / 255f), diffuseColor));
     }
 
-    /// <summary>
-    /// The MaterialAmbientColor (A / D per channel) of an imported material: A is the ambient of its legacy effect (the
-    /// raw value, not the engine presentation's, which caps it to 1), D its DiffuseColor as the engine will use it.
-    /// </summary>
-    internal static Vector3 ComputeLegacyImportedAmbient(string modelName, StaticModelImportedMaterial importedMaterial)
-    {
-        Vector3 ambient = importedMaterial.AmbientColor;
-        return ComputeLegacyAmbient($"{modelName}.{importedMaterial.DisplayName}", ambient, importedMaterial.DiffuseColor);
-    }
-
     private static Vector3 ComputeLegacyAmbient(string materialName, Vector3 ambient, Color diffuse)
     {
         Vector3 d = diffuse.ToVector3();

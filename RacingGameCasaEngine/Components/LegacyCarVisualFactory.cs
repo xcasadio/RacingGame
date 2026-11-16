@@ -214,7 +214,7 @@ internal static class LegacyCarVisualFactory
 
     // The car's families by material name (plan rgce-pbr-race-world, "Correspondance"): paint (lack, paint) under a clear
     // coat, chrome, windows (glass, fenster, or the glass effect), tyres (gummi); anything else is the default.
-    private static RacingGamePbrFamily ResolveFamily(StaticModelImportedMaterial importedMaterial)
+    internal static RacingGamePbrFamily ResolveFamily(StaticModelImportedMaterial importedMaterial)
     {
         string displayName = importedMaterial.DisplayName;
         if (IsGlassMaterial(importedMaterial))
