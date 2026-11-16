@@ -263,7 +263,7 @@ Constats de l'étude du 2026-11-16 (trois lectures en parallèle, faits décisif
 
 ## Phase 4 — Vérification indépendante des fusions (S1v)
 
-### ⏳ T4.1 — Empreintes de référence du moteur sur ce PC
+### ✅ T4.1 — Empreintes de référence du moteur sur ce PC
 
 - Objectif : relever une fois, sur ce PC et sur le moteur fusionné (`e942caa54`), les douze empreintes du §6 de la note de passation. Elles dépendent du GPU : elles servent de référence d'ici, pas de comparaison avec l'autre PC.
 - Sources : `CasaEngine/CasaEngine/artifacts/pbr-baseline/` (copie de `ai-agent/handover/pbr-baseline/`). `BIN` = `/d/development/repo/RacingGame/CasaEngine/CasaEngine.Demos/bin/Debug/net9.0-windows` (valeur par défaut des trois scripts, build Debug de T1.1). Sortie : `artifacts/pbr-handover/s1v/engine-baseline/` du jeu (ignoré par git).
@@ -280,6 +280,19 @@ Constats de l'étude du 2026-11-16 (trois lectures en parallèle, faits décisif
   - les douze empreintes (huit, plus quatre) sont notées sous cette tâche dans un tableau de la forme du §6 de la note ;
   - une ligne qui ne remplit pas sa condition est notée telle quelle avec son journal, sans correction du moteur, et remise à T4.2 comme constat.
 - Commit : `docs(ai-agent): record the engine baseline fingerprints of this machine`
+
+> Validation (2026-11-16), moteur `e942caa54`, build Debug, sorties dans `artifacts/pbr-handover/s1v/engine-baseline/` :
+> - les cinq lancements se terminent ; partout `exceptions=0` et `files=yes` ; les huit démos déterministes donnent deux empreintes égales ; `skinned`, `particles` et `split-screen` diffèrent d'une capture à l'autre, comme annoncé par la note.
+>
+> | Script | Empreinte sur ce PC |
+> |---|---|
+> | `capture-v2.sh` (`Legacy`) | material `40e2df3c20090e1f`, environment `4423dd1487a939b6`, static-model `efae412c45225453`, static-shadow `536a8183f8100d2e`, render-to-texture `e62b6b73a06f0939`, ui-overlay `08df0ac0282ae9c5`, frozen-frame `eb25f3917cfa6a0c`, tile-map `625f42300bcbd4ff` |
+> | `lin-v2.sh` (`LinearHdr`) | `39f8355d905a14a8` |
+> | `pbrdemo.sh` | `2d029da5659f2a7e` |
+> | `pbrdemo.sh` avec `CASAENGINE_DEMO_COLOR_PIPELINE=Legacy` | `580dca11e3f9c87e` |
+> | `pbrdemo.sh` avec `CASAENGINE_PBR_DEMO_CLEARCOAT=1` | `5d5850be6d2181e4` |
+>
+> - Seule `frozen-frame` a la même empreinte que sur l'autre PC (§6 de la note) ; les onze autres diffèrent, ce que la note annonce pour un autre GPU.
 
 ### ⏳ T4.2 — Vérification indépendante des deux fusions
 
