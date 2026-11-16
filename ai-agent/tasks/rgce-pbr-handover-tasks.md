@@ -568,23 +568,31 @@ Budget de S1e : T8.1, au plus quatre tours « correction puis comparaison à l'o
 
 - Objectif : le convertisseur d'ici sait écrire les tangentes, convertir les normal maps et le cube du ciel, en gardant ses modes `--textures` et `--verify-textures`.
 - Fichiers : `scripts/LegacyModelGltfConverter/Program.cs`, `LegacyTextureConverter.cs`, `SkyCubeConverter.cs` (nouveau), `README.md`.
-- Règles : mêmes algorithmes que l'autre PC (tangentes par triangle, orthogonalisées contre la normale, `w = +1`, seulement pour les primitives à normal map ; canaux des normal maps ; permutation des blocs du cube) ; une texture utilisée à la fois comme couleur et comme normal map est refusée ; aucune dépendance ajoutée.
-- Validation, vers un dossier de sortie hors du dépôt (`artifacts/pbr-handover/s1e/converted/`) :
+- Règles :
+  1. Mêmes algorithmes que l'autre PC : tangentes par triangle, orthogonalisées contre la normale, `w = +1`, seulement pour les primitives à normal map ; canaux des normal maps ; permutation des blocs du cube. Une texture utilisée à la fois comme couleur et comme normal map est refusée. Aucune dépendance ajoutée.
+  2. Le mode modèles reçoit `--normal-map <tga>` (répétable) et `--sky-cube <dds>`, comme celui de l'autre PC : `--normal-map` convertit les normal maps qu'aucun modèle ne référence, celles des maillages que le jeu génère.
+  3. `--textures` reste une copie de couleur. Un nom suivi de `:normal` est converti comme normal map. Le README n'y cite plus `RoadNormal` sans ce suffixe.
+  4. `--verify-textures` compare chaque paire TGA et PNG d'abord comme copie de couleur, puis, si elle diffère, comme normal map convertie ; il affiche les deux listes et leur nombre, et ne sort en erreur que pour une paire qui ne correspond à aucune des deux.
+- Commande de l'oracle (celle du README de l'autre PC, `scripts/LegacyModelGltfConverter/README.md:18` dans `origin/remaster`), avec deux dossiers de sortie frères, parce que les glTF nomment leurs images par chemin relatif (`../Textures/<nom>.png`) :
+  `dotnet run --project scripts/LegacyModelGltfConverter -- RacingGame/Content/Models <sortie>/Models <sortie>/Textures --skip Cube --normal-map RacingGame/Content/Textures/<nom>.tga` pour chacune des six normal maps des maillages générés (`LandscapeNormal`, `CityGroundNormal`, `RoadCementNormal`, `RoadBackNormal`, `RoadTunnelNormal`, `RoadNormal`), puis `--sky-cube RacingGame/Content/Textures/SkyCubeMap.dds`. `<sortie>` vaut `artifacts/pbr-handover/s1e/converted`.
+- Validation :
   - build du convertisseur à 0 erreur ;
   - les 56 `.gltf` et leurs `.bin` produits sont identiques à l'octet à ceux d'`origin/remaster` ;
   - `SkyCubeMap.dds` produit est identique à l'octet à celui d'`origin/remaster` ;
   - les 55 normal maps produites ont les mêmes pixels que celles d'`origin/remaster` (comparaison des pixels décodés ; l'identité à l'octet est notée si elle tient) ;
   - les PNG de couleur produits ont les mêmes pixels que ceux d'ici (aucune régression du mode existant).
+  - `--verify-textures RacingGame/Content/Textures <sortie>/Textures` sort en succès et classe 55 paires comme normal maps converties, les 55 fichiers `*Normal*.png` que l'autre PC a changés ; sur le contenu d'ici, avant T8.2, il sort en succès avec 0 normal map convertie.
 - Arrêts : un fichier qui diffère de l'oracle sans cause trouvée dans le code du convertisseur ; besoin de modifier le moteur.
 - Commit : `feat(scripts): write tangents and convert the normal maps and the sky cube`
 
 ### ⏳ T8.2 — Contenu régénéré et recuit
 
 - Objectif : le contenu du jeu porte les tangentes, les normal maps converties et le cube du ciel réorienté, et les assets cuits en découlent.
-- Fichiers : `RacingGameCasaEngine/Content/Models/*.gltf` et `*.bin`, `Content/Textures/*Normal*.png`, `Content/Textures/SkyCubeMap.dds`, les assets cuits (`Content/Models/*.staticModel`, `Content/Materials/**`, `Content/Textures/*.texture`, `Content/AssetInfos.json` si le cuiseur le touche) ; `RacingGame.Gameplay/Import/LegacyGltfModelReader.cs` (arrondi des couleurs, valeurs par défaut des matériaux sans effet d'origine) ; `scripts/RgceAssetCooker/Verifier.cs` (comparer aussi les valeurs des tangentes) et son `README.md`.
+- Fichiers : `RacingGameCasaEngine/Content/Models/*.gltf` et `*.bin`, `Content/Textures/*Normal*.png`, `Content/Textures/SkyCubeMap.dds`, les assets cuits (`Content/Models/*.staticModel`, `Content/Materials/**`, `Content/Textures/*.texture`, `Content/AssetInfos.json` si le cuiseur le touche) ; `RacingGame.Gameplay/Import/LegacyGltfModelReader.cs` (arrondi des couleurs, valeurs par défaut des matériaux sans effet d'origine) ; `scripts/RgceAssetCooker/Verifier.cs` (comparer aussi les valeurs des tangentes) et son `README.md` ; `RacingGameCasaEngine/Assets/README.md` (ce que vérifie `--verify-textures`) ; `docs/decisions/0024-rgce-content-holds-every-game-file.md` et l'index, statut seulement : amendé par les ADR-0016 et 0017, puisque les normal maps et le cube du ciel ne sont plus des copies de leur source.
 - Étapes : recopier dans le contenu les fichiers produits par T8.1 ; porter l'arrondi et les valeurs par défaut de `4c058ad` ; faire comparer les tangentes par `--verify` ; recuire ; relancer `--check` et `--verify`.
 - Validation :
   - build du jeu et du cuiseur à 0 erreur ; cuiseur `--check` et `--verify` sans écart ;
+  - `--verify-textures RacingGame/Content/Textures RacingGameCasaEngine/Content/Textures` sort en succès sur le contenu régénéré, avec 55 normal maps converties ;
   - chaque maillage cuit dont le glTF a des tangentes a `tangents`, avec autant d'entrées que de sommets ; le nombre de maillages avec tangentes est noté et égal à celui des primitives à tangentes des glTF ;
   - un second passage du cuiseur ne réécrit aucun fichier ;
   - `--smoke-frontend` et `--verify-legacy-import-profile` en succès (ce dernier adapté seulement si l'arrondi ou les valeurs par défaut changent ce qu'il vérifie, chaque adaptation notée) ;
