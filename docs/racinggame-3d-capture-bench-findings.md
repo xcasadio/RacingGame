@@ -243,3 +243,31 @@ What does not match, and why:
 | On the overview views the port's shadows sit under the camera, the original's near the start grid. | The engine centres its map on the camera, the original on the car. | Known limit; an engine setting for the map centre would lift it. |
 
 Not measured: the render cost of the 12-tap filter and of the multiply mode.
+
+## Update after the PBR switch (2026-11-16)
+
+Plan `ai-agent/tasks/rgce-pbr-race-world-tasks.md`, decision ADR-0018, CasaEngine at `48d720a6`. The race world and the car now use `LitPbrMaterial`, light the scene with the key light at pi and the sky cube (image-based ambient and reflections), and render in `LinearHdr` (tonemapper `AcesApprox`, exposure 1, FXAA). The bench takes `--color-pipeline legacy|linear` (default `linear`); both modes use the same PBR materials, only the colour chain differs (`scripts/TrackCaptureCompare/README.md`).
+
+What the bench still proves, and what it no longer does:
+
+- **Still valid, in both modes.** Geometry and placement: the three `scene-measure-*.txt` are byte for byte identical to those recorded before the switch (road points at 0.000 m, objects matched, no difference of shadow flags). Shadow placement: the shadow or light class of the probes is unchanged from before the switch (27 of 33 agree with the original; the six that do not are the same `shadow` probes of `city` and `road`, which the port renders lit). Repeatability: two captures in a row give 0.00 on every channel and 0.0 % of different pixels on the 15 views in each mode (0.01 on the three channels of `Expert-overview` in `linear`, the flicker already seen before the switch). `[CaptureBench]` logs `fxaaPasses 0` in `legacy` and `fxaaPasses 1` in `linear` for every view.
+- **No longer comparable.** Colours. The bench compares against the original captured without its post-process, and the port's materials, light and colour chain are different by design (D1, D2, P7). Probe criterion 1 (lit and away within 12) falls from 24 of 34 to 0 in `legacy` and 2 in `linear`; this is the expected effect of the switch, not a regression to chase. Mean differences of the sheets are no longer a progress measure.
+
+Numbers at the end of the chantier (probes of `scripts/TrackCaptureCompare/probes.json` against `artifacts/capture-bench/original-s2b`, `--no-terrain-detail-correction`):
+
+| Criterion | `legacy` | `linear` |
+|---|---|---|
+| 1. lit and away within 12 | 0 of 34 | 2 of 34 |
+| 2. shadow/lit ratio within 0.05 | 2 of 4 | 0 of 4 |
+| 3. shadow or light class | 27 of 33 | 27 of 33 |
+| 4. shadowed faces of near buildings within 12 | 0 of 3 | 3 of 3 |
+
+Left for the author to judge by eye, with the values that stay starting points (plan point O4):
+
+- The lit road over the lit terrain luminance ratio of `Beginner-start` (`road-lit-1`, `terrain-lit-1`): 0.6853 in `legacy` and 0.7116 in `linear`, against 0.5610 before the switch and 0.3509 in the original. The road is lighter than the original's: its roughness (0.85) and base colour are starting values.
+- The terrain shadow/lit ratio in `linear`: 0.172 and 0.138 against 0.284 and 0.267 in the original (0.282 and 0.263 in `legacy`). The cause was not found; the hypothesis noted when the pipeline was switched (the shadow colour applied to the linear light, then encoded) was not checked.
+- The six `shadow` probes of the city ground and the road that the original shades and the port lights (ratios 1.86 and 0.84 in `legacy`, 2.80 and 0.90 in `linear`, against 0.275 and 0.227): unchanged by the switch, the shadow slice's limits remain (the Hotel02 shadow, the original's screen-space blur).
+- The faces turned away from the sun are lit by the sky: `building-away-1` is 159,174,182 in `legacy` and 161,169,175 in `linear`, against 14,13,12 in the original. In `legacy` the shadowed faces of near buildings are 12 to 17 levels too light (0 of 3).
+- The image-based lighting is derived from the 512 pixel sky cube without mipmaps (O1): not judged on a race. In the car selection carousel, which stays in `Legacy` (no tonemapping), the white car is very light.
+
+The original's dark opaque glass (A5) is replaced: the glass of the buildings is a mirror of the sky (the black casino wall, plan point O2, was not inspected). The original's glint on the road (M4) has no PBR counterpart here: the road is a rough dielectric (0 / 0.85).

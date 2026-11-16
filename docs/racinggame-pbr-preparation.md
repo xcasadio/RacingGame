@@ -1,6 +1,6 @@
 # PBR preparation: what must be decided before the PBR work starts (2026-11-14)
 
-Written while the author was away, after the direction "common base, then PBR" (2026-11-14). Nothing here is executed. It gathers what was verified, so that the PBR work can be planned and approved quickly.
+Written while the author was away, after the direction "common base, then PBR" (2026-11-14). This preparation was executed on 2026-11-16: the decisions below were taken (see "Decisions taken") and applied by the plan `ai-agent/tasks/rgce-pbr-race-world-tasks.md`, recorded in [ADR-0018](decisions/0018-race-world-renders-in-linear-hdr-with-pbr-materials.md); the text below is the state before that work. It gathers what was verified, so that the PBR work can be planned and approved quickly.
 
 Sources: a read-only check of `CasaEngine/ai-agent/tasks/pbr-rendering-implementation-plan.md` against the engine working tree (branch `chantier/racinggame-lighting`, during the shadow work), the reading of the original's effective material pipeline, and the bench findings (`docs/racinggame-3d-capture-bench-findings.md`).
 
@@ -53,6 +53,8 @@ The author decided the points above with the agent on 2026-11-15 and 2026-11-16 
 | D6 | A10: palms cast leaf-shaped shadows (the material's alpha cut-out), as the conversion does today. | A10 |
 | D7 | A11: no global 7 % darkening; brightness is set by the tonemapping exposure. | A11 |
 | D8 | FXAA anti-aliasing (author's choice, 2026-11-15). | none (added by the author) |
+
+Outcome (2026-11-16): D1 to D8 are applied in code; the mapping, the light (pi), the sky-cube lighting, the `Legacy` carousel and what the bench still measures are in [ADR-0018](decisions/0018-race-world-renders-in-linear-hdr-with-pbr-materials.md), and the bench numbers at the end of the chantier in `docs/racinggame-3d-capture-bench-findings.md` ("Update after the PBR switch"). The values of the material table, the exposure and the light intensity are starting points, to be tuned by eye by the author.
 
 ## 4. The original's accidental behaviours, to decide one by one
 
