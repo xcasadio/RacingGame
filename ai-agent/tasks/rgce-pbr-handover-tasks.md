@@ -581,7 +581,7 @@ Budget de S1e : T8.1, au plus quatre tours « correction puis comparaison à l'o
   - `SkyCubeMap.dds` produit est identique à l'octet à celui d'`origin/remaster` ;
   - les 55 normal maps produites ont les mêmes pixels que celles d'`origin/remaster` (comparaison des pixels décodés ; l'identité à l'octet est notée si elle tient) ;
   - les PNG de couleur produits ont les mêmes pixels que ceux d'ici (aucune régression du mode existant).
-  - `--verify-textures RacingGame/Content/Textures <sortie>/Textures` sort en succès et classe 55 paires comme normal maps converties, les 55 fichiers `*Normal*.png` que l'autre PC a changés ; sur le contenu d'ici, avant T8.2, il sort en succès avec 0 normal map convertie.
+  - `--verify-textures`, sur un dossier qui contient tous les PNG : `artifacts/pbr-handover/s1e/overlay/Textures`, copie de `RacingGameCasaEngine/Content/Textures` par-dessus laquelle sont recopiés les fichiers de `<sortie>/Textures` (le mode modèles ne produit pas les PNG de couleur des maillages générés, que seul `--textures` écrit). Attendu : 129 `.tga`, 129 paires, 74 copies de couleur, 55 normal maps converties (les 55 fichiers `*Normal*.png` que l'autre PC a changés), 0 `.tga` sans `.png`, code de sortie 0. Sur le contenu d'ici, avant T8.2 : 129 paires, 129 copies de couleur, 0 normal map convertie, code de sortie 0.
 - Arrêts : un fichier qui diffère de l'oracle sans cause trouvée dans le code du convertisseur ; besoin de modifier le moteur.
 - Commit : `feat(scripts): write tangents and convert the normal maps and the sky cube`
 
