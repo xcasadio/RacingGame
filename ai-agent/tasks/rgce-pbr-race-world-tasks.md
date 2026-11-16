@@ -152,7 +152,7 @@ Règles communes à toute conversion d'un `LitDiffuseMaterial` en `LitPbrMateria
 - Commit (moteur) : `feat(materials): add a detail texture to lit-pbr (ADR-0116)`
 - Note de validation (2026-11-16) : commit moteur `48d720a6` sur `chantier/pbr-detail-texture`. Échantillonneur `DetailTexture` (15 sur 16 utilisés), clés additives `detail_texture` et `detail_tiling`, ADR-0116. La texture de détail n'agit qu'avec une texture de base, comme `lit-diffuse`. Builds des deux solutions : 0 erreur ; 6076 tests verts ; les douze empreintes de référence du moteur inchangées. Vérification indépendante : **CONFIRMED**, aucun constat bloquant, trois remarques P4. Non vérifié : terrain réel pavé 24 fois (tâche T2.1), compilation DX11 du shader.
 
-### ⏳ T0.1 — Avancer le moteur et corriger les renvois
+### ✅ T0.1 — Avancer le moteur et corriger les renvois
 
 - Objectif : le jeu compile contre le moteur qui contient le PBR, le clear coat, FXAA et E1 ; les documents citent les bons numéros d'ADR.
 - Prérequis : P6 fait ou autorisé par l'auteur, E1 ✅.
@@ -163,6 +163,7 @@ Règles communes à toute conversion d'un `LitDiffuseMaterial` en `LitPbrMateria
   3. Inscrire D1 à D8 dans `docs/racinggame-pbr-preparation.md` (§3 et §4 : décision prise, date).
 - Validation : build 0 erreur ; `--smoke-frontend` ; `rg "ADR-00(89|9[0-3])" docs` : aucun résultat.
 - Commit : `chore(engine): point the CasaEngine submodule at the PBR work and fix the decision references`
+- Note de validation (2026-11-16) : pointeur du sous-module avancé de `a200f12` à `48d720a6` (E1 sur `chantier/pbr-detail-texture`, qui contient `main` du moteur avec PBR, clear coat, SSAO, FXAA). Les cinq titres d'ADR ont été vérifiés dans `CasaEngine/docs/decisions/README.md` (0097 ambiant appliqué une fois, 0098 ambiant plat avec cube de réflexion, 0099 texture de détail, 0100 mipmaps, 0101 réglages d'ombre) puis les huit renvois corrigés (quatre dans chaque document). D1 à D8 inscrits dans `docs/racinggame-pbr-preparation.md` (§3 « Decisions taken », rappel en fin de §4). Build du jeu : 0 erreur (28 avertissements, dans le moteur et `ReferenceViewCaptureValidator.cs`, aucun dans du code modifié par cette tâche). `--smoke-frontend` : code 0, journal sans `[Warning]`, `[Error]` ni exception. `rg "ADR-00(89|9[0-3])" docs` : aucun résultat.
 
 ### ⏳ T0.2 — Référence du banc avant bascule
 

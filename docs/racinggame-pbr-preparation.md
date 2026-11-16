@@ -12,12 +12,12 @@ What makes it stale:
 
 | Task | Stale statement | Current fact |
 |---|---|---|
-| PBR-000, 105, 602 | Reference captures "before any change" | ADR-0089 already changed the ambient of every textured lit material; the baseline must be pinned to a commit. |
-| PBR-101 | Add the colour pipeline setting to `WorldEnvironmentSettings` | Five methods to update (reset, load, save, clone, copy), as ADR-0090 did; a test is required; per-view override semantics are not stated. |
+| PBR-000, 105, 602 | Reference captures "before any change" | ADR-0097 already changed the ambient of every textured lit material; the baseline must be pinned to a commit. |
+| PBR-101 | Add the colour pipeline setting to `WorldEnvironmentSettings` | Five methods to update (reset, load, save, clone, copy), as ADR-0098 did; a test is required; per-view override semantics are not stated. |
 | PBR-102 | Always render into the scene target in linear HDR | The scene target only exists when `FrameCapturePlanner` asks for it, its format is `Color`, and the UI is composed inside the view pipeline before the blit: "UI after tonemap" needs a structural change. Buffered virtual resolutions (ADR-0087) and frozen frames (ADR-0086) are not considered. |
 | PBR-103 | Tonemap at the presenter | The only blit of the scene target is in `RenderPipeline`; `TexturePresenter` does not draw; the shader descriptor array is private. |
-| PBR-104 | Decode sRGB for colour textures | No decode point exists; `SampleBaseTexture` now also multiplies the detail texture (ADR-0091); mipmaps (ADR-0092) are averaged in the stored space. |
-| PBR-202 | Ambient = `AmbientColor × AmbientIntensity × occlusion`; sample shadows "exactly as LitForward" | The intensity is already folded into `AmbientColor`; the flat ambient source (ADR-0090) and the compose-once rule (ADR-0089) must be honoured; `HAS_FORWARD_SHADOW_BINDINGS` must be defined or shadows silently become 1; the shadow mode, tint, filter and fade of the shadow slice must be supported. |
+| PBR-104 | Decode sRGB for colour textures | No decode point exists; `SampleBaseTexture` now also multiplies the detail texture (ADR-0099); mipmaps (ADR-0100) are averaged in the stored space. |
+| PBR-202 | Ambient = `AmbientColor × AmbientIntensity × occlusion`; sample shadows "exactly as LitForward" | The intensity is already folded into `AmbientColor`; the flat ambient source (ADR-0098) and the compose-once rule (ADR-0097) must be honoured; `HAS_FORWARD_SHADOW_BINDINGS` must be defined or shadows silently become 1; the shadow mode, tint, filter and fade of the shadow slice must be supported. |
 | PBR-203 | Technique selection through `ShaderVariantLibrary` | LitForward techniques are chosen by the material; `EffectiveShaderResolver` falls back to LitForward for any unknown lit material, so a `lit-pbr` would silently render as Blinn-Phong without an explicit case; hot reload needs a new case. |
 | PBR-301 | "Same pattern as `LitDiffuseMaterial.GetFeatures`" | No such method; features come from `GetShaderCapabilities` and `RenderFeatureResolver`. |
 | PBR-302 | Register the definition and compile | Built-in factories receive counted texture handles (ADR-0037), registered ones do not; without a factory the compiler throws; key names must not collide with `lit-diffuse`. |
@@ -39,6 +39,21 @@ The original's glow (`PostScreenGlow`) and lens flare (bench findings L2, L3) ne
 3. **How the original's materials map to metallic-roughness.** The original gives no roughness and no metalness: the shininess is 24 for every mesh (the model files' value never reaches the GPU), and reflection is chosen by technique. A proposal to arbitrate, per family: terrain, road, masonry, signs and banners (dielectric, rough); guard rails and lamp posts (metal); car paint (clear-coat-like dielectric, or metal); glass (transparent, needs transparent PBR, which the engine plan leaves out); chrome parts of the car (metal, smooth).
 4. **The port's specular tuning tables** (`RacingGameLegacyMaterialTuning`) become obsolete; decide whether they are deleted with the switch.
 
+### Decisions taken
+
+The author decided the points above with the agent on 2026-11-15 and 2026-11-16 (plan `ai-agent/tasks/rgce-pbr-race-world-tasks.md`, approved 2026-11-16). They are not reopened by the plan.
+
+| Ref | Decision | Answers |
+|---|---|---|
+| D1 | The race world renders in `LinearHdr`. The capture bench keeps a `Legacy` mode for geometry and shadow-placement regression checks. No HDR display is required: the tonemapping brings the image back to the screen. Reversible. | §3.2 |
+| D2 | Material mapping: car paint is a dielectric with a clear coat; chrome parts are smooth metal; guard rails and lamp posts are metal; everything else (terrain, road, masonry, signs, banners, vegetation) is a rough dielectric. | §3.3 |
+| D3 | `RacingGameLegacyMaterialTuning` is deleted with the switch. | §3.4 |
+| D4 | A2: the car body keeps its own normal map (`RacerCarNormal.png`), not the one inherited from the cement. | A2 |
+| D5 | A5: the glass buildings are a mirror (smooth opaque metal reflecting the sky), not dark panels. | A5 |
+| D6 | A10: palms cast leaf-shaped shadows (the material's alpha cut-out), as the conversion does today. | A10 |
+| D7 | A11: no global 7 % darkening; brightness is set by the tonemapping exposure. | A11 |
+| D8 | FXAA anti-aliasing (author's choice, 2026-11-15). | none (added by the author) |
+
 ## 4. The original's accidental behaviours, to decide one by one
 
 The author asked to decide these case by case. Each is something the original displays that its authors most likely did not intend. With PBR most of them disappear on their own; the question is whether any should be reproduced on purpose.
@@ -56,6 +71,8 @@ The author asked to decide these case by case. Each is something the original di
 | A9 | Models whose name starts with `alpha` (palms) never receive shadows, but a full-screen shadow mask darkens whatever is drawn in front of a shadowed receiver. | `Core/Graphics/Model.cs:862-867`, `Core/Shaders/ShadowMapBlur.cs:119-137, 225` | Independent of PBR; handled as a per-object approximation in the shadow slice. |
 | A10 | Shadow casters are drawn two-sided without alpha test: palms cast solid card-shaped shadows. | `Core/Content/Shaders/ShadowMap.fx:122-130` | Independent of PBR. The port follows each material's alpha test. Decide: leaf-shaped shadows (port) or card-shaped (original). |
 | A11 | The whole frame is darkened by about 7 %, shadowed or not: the weights of the shadow blur sum to 0.965 and the blurred mask is multiplied over the frame after two passes (0.965 x 0.965 = 0.931). | `Core/Content/Shaders/PostScreenShadowBlur.fx` (`Weights8`), `Core/Shaders/ShadowMapBlur.cs:128, 225` | Independent of PBR. The port does not darken. Decide: leave it (intent) or apply a global 0.931 (image); with a tonemapped PBR frame the question disappears into the exposure setting. |
+
+Decided (2026-11-15 and 2026-11-16, see "Decisions taken" in §3): A2 keep the car's own normal map (D4); A5 mirror glass (D5); A10 leaf-shaped palm shadows (D6); A11 no global darkening, the exposure sets the brightness (D7). The other rows keep the status given in the table.
 
 ## 5. Open measurements that PBR will not settle
 
