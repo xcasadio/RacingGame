@@ -17,7 +17,7 @@ Tranches :
 | S1b | Fusion de `origin/remaster` en gardant le code et le contenu du jeu d'ici (Phase 3) : histoires jointes, docs, outils et original repris, ADR renumérotés. Le travail PBR de l'autre PC n'est pas actif après cette tranche | S1 | Faite le 2026-11-16 |
 | S1v | HANDOVER §7 : vérification indépendante des fusions du moteur et du jeu (`verifier` frais), captures UI et audit de piste du jeu sur le moteur fusionné. Avant toute tranche qui change le moteur, le contenu ou les matériaux | S1b | Faite le 2026-11-16, verdict CONFIRMED après une correction |
 | S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1v | Faite le 2026-11-16, verdict CONFIRMED après une correction du doc |
-| S1a | Alignement sur l'original des sujets faits en double (D11) : poteaux de rail, segments de colonne, lanternes, palmiers, panneaux, ombres portées, avec le décor de remplissage aléatoire, qui partage les mêmes tirages. Prouvé par la mesure de scène de S1c ; nouvelle référence « avant PBR » en fin de tranche | S1c | Détaillée (Phase 6) |
+| S1a | Alignement sur l'original des sujets faits en double (D11) : poteaux de rail, segments de colonne, lanternes, palmiers, panneaux, ombres portées, avec le décor de remplissage aléatoire, qui partage les mêmes tirages. Prouvé par la mesure de scène de S1c ; nouvelle référence « avant PBR » en fin de tranche | S1c | Faite le 2026-11-16, verdict CONFIRMED après une correction (rail et supports) ; un critère réduit (O9) |
 | S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1a | À détailler |
 | S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | À détailler |
 | S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1e | À détailler |
@@ -509,11 +509,22 @@ Budget de S1a : pour T6.1, au plus six tours « correction puis mesure » ; pour
 > - Répétabilité : 12 fichiers identiques sur 15, les trois autres à une différence moyenne de 0,00.
 > - Nouvelles références d'ici : audit de piste `artifacts/pbr-handover/s1a/audit-1`, captures UI `artifacts/pbr-handover/s1a/ui`. Contre les captures UI d'avant : 7 états à 0,00 ; `race-hud` 1,89, `pause` 0,52 et `race-finished` 1,20 au pire canal, parce que le décor a changé.
 
-### ⏳ T6.4 — Vérification indépendante de S1a
+### ✅ T6.4 — Vérification indépendante de S1a
 
 - Objectif : un `verifier` frais confirme ou réfute, par ses propres lancements : les décomptes d'objets et d'ombres de T6.1 et T6.2 ; chaque règle portée correspond au code de l'original cité ; la graine est celle de `views.json` sous le banc et fixe par piste ailleurs ; pas de régression des autres modes ; les chiffres du doc sont ceux des sorties.
 - Étapes et verdicts : comme T5.4 (un appel ; `INCONCLUSIVE`, un seul nouvel appel après preuve fournie ; P0 ou P1, arrêt et question ; P2 introduit par S1a, corrigé dans les fichiers de T6.1 à T6.3, deux passes au plus, `verifier` frais sur l'affirmation touchée ; le reste noté).
 - Commit : `docs(ai-agent): record the verification of the alignment on the original`
+
+> Validation (2026-11-16) :
+> - `verifier` frais, premier passage : **REFUTED**. Affirmations 1 à 5 confirmées par ses propres lancements (décomptes, mesure honnête, neuf règles relues contre l'original, graine, pas de régression). Il a recalculé l'inclinaison des supports depuis les matrices de l'original et retrouve 1,08°, 6,81° et 11,91°. Affirmation 6 réfutée sur une phrase de l'ADR-0027.
+>   - F1 (P2, introduit par S1a) : l'ADR disait que supports et rail pouvaient s'écarter de « quelques centimètres » ; l'écart atteignait environ 0,3 m et 0,6 m sur les sections raides, parce que les supports étaient passés au vecteur droite brut et que le maillage du rail était resté au vecteur normalisé.
+>   - Correction, passe 1 sur 2 : `4d34441`, le maillage du rail part des points de rail de ses supports, comme l'original (`GuardRail.cs:169-199`) ; `b57eb62`, ADR, doc et plan. Mesure, test du front-end et empreintes de placement inchangés.
+>   - Remarques P3 et P4 du premier passage, corrigées au passage dans les textes : le cisaillement touche aussi lanternes, banderoles, panneaux et feu de départ dans leurs entités ; citation `TrackLine.cs:490` ; l'original ne réensemence par piste que dans sa capture de référence.
+> - `verifier` frais sur la correction : **CONFIRMED** (rail et supports sur les mêmes points ; mesure inchangée, fichiers de mesure identiques à l'octet ; chiffres de l'ADR recalculés).
+> - Remarques P3 et P4 du second passage, notées sans suite (candidat confirmé) :
+>   - P3 : dans le contexte de l'ADR-0027, « The game seeds it once, from the clock » désigne le jeu d'origine, alors que « the game » désigne le port partout ailleurs dans la liste ; la section Decision est correcte ;
+>   - P4 : les écarts rail contre bord de route (0,008, 0,298 et 0,627 m) négligent le retrait de 0,5 unité, lui aussi mis à l'échelle ; avec ce terme : 0,008, 0,284 et 0,584 m, mêmes décomptes ;
+>   - P4 : les images de la section du doc datent d'avant la correction du rail ; un nouveau lancement ne diffère que par les trois fichiers déjà connus pour varier.
 
 ---
 
