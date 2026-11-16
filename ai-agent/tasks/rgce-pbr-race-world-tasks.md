@@ -1,6 +1,6 @@
 # Plan agent IA — Monde de course en PBR et en lumière linéaire
 
-Chantier PBR côté jeu, préparé par [racinggame-pbr-preparation.md](../../docs/racinggame-pbr-preparation.md). **Brouillon soumis à l'auteur le 2026-11-16 : aucune modification de code avant son approbation.**
+Chantier PBR côté jeu, préparé par [racinggame-pbr-preparation.md](../../docs/racinggame-pbr-preparation.md). **Approuvé par l'auteur le 2026-11-16** (points P1 à P9 compris).
 
 Les décisions D1 → D8 ci-dessous ont été arbitrées avec l'auteur les 2026-11-15 et 2026-11-16 : **ce plan les applique, il ne les rediscute pas**. Les points P1 → P9 sont des arbitrages proposés par l'agent : l'auteur les valide ou les corrige en approuvant le plan.
 
@@ -138,7 +138,7 @@ Règles communes à toute conversion d'un `LitDiffuseMaterial` en `LitPbrMateria
 
 ## Phase 0 — Prérequis et référence
 
-### ⏳ E1 — Moteur : texture de détail dans `lit-pbr`
+### ✅ E1 — Moteur : texture de détail dans `lit-pbr`
 
 - Objectif : P1. `LitPbrMaterial` gagne `DetailTexture`, `DetailTextureAssetId` et `DetailTiling` (défaut 1), avec la formule et les noms de `LitDiffuseMaterial` ; sans texture, rendu inchangé au bit près.
 - Prérequis : P6 (première fusion) ; branche `chantier/pbr-detail-texture`.
@@ -150,6 +150,7 @@ Règles communes à toute conversion d'un `LitDiffuseMaterial` en `LitPbrMateria
   4. ADR-0116 ; documentation. Pas de démo dédiée : le test GPU et le terrain du jeu servent de preuve (écart assumé à `AGENTS.md` §6, à valider par l'auteur).
 - Validation : builds des deux solutions ; suite complète verte ; empreintes de référence du moteur inchangées (`capture-v2.sh`, `lin-v2.sh`, `pbrdemo.sh`).
 - Commit (moteur) : `feat(materials): add a detail texture to lit-pbr (ADR-0116)`
+- Note de validation (2026-11-16) : commit moteur `48d720a6` sur `chantier/pbr-detail-texture`. Échantillonneur `DetailTexture` (15 sur 16 utilisés), clés additives `detail_texture` et `detail_tiling`, ADR-0116. La texture de détail n'agit qu'avec une texture de base, comme `lit-diffuse`. Builds des deux solutions : 0 erreur ; 6076 tests verts ; les douze empreintes de référence du moteur inchangées. Vérification indépendante : **CONFIRMED**, aucun constat bloquant, trois remarques P4. Non vérifié : terrain réel pavé 24 fois (tâche T2.1), compilation DX11 du shader.
 
 ### ⏳ T0.1 — Avancer le moteur et corriger les renvois
 
@@ -283,3 +284,17 @@ Règles communes à toute conversion d'un `LitDiffuseMaterial` en `LitPbrMateria
 | 1 | Plan entier | REVISE (P1 × 1, P2 × 4) | Tous **FIX**. Le pipeline du ciel est au jeu : il lie le décodage et passe en deux phases (T1.1), avec preuve de FXAA, du HUD et du ciel. Carrousel resserré : PBR en `Legacy` (P5). IBL déplacée après les premiers matériaux PBR, réglages d'ambiant écrits par mode (T2.2). Unité de lumière : terrain en PBR par une texture de détail ajoutée au moteur (P1, E1) et lumière à π (P8). Règles de conversion par propriété, dont l'alpha de `BaseColor` (P9, « Correspondance »). |
 | 2 | Plan révisé | REVISE (P2 × 4) | Tous **FIX**. Critère du ciel par valeur prédite (décodage puis ACES) au lieu d'une fenêtre autour de `legacy` ; ligne de journal `[CaptureBench]` qui expose `FxaaPasses` ; T0.2 ordonnée entre T0.1 et T1.1 ; test GPU de E1 en trois cas avec tolérance pour le gris 128. |
 | 3 | Relecture de clôture | REVISE (P2 × 1) | **FIX** sans nouvelle relecture (la boucle est close) : la texture `Leitplanke` importée (`GuardRailHolder`) rejoint la ligne « Rails », conformément à D2. P3 intégrés : remplacement de `ShouldEnableReflection` précisé en T4.1 ; absence de démo pour E1 signalée à l'auteur. P4 noté : une sonde d'ombre sans sonde éclairée sur la même surface peut être mal classée en T2.1, à contrôler à la main si le cas se présente. Points confirmés par le relecteur : API du moteur citées, budget d'échantillonneurs, formule du ciel, alpha du carrousel, couverture de tous les `new LitDiffuseMaterial`. |
+
+## Passation (2026-11-16)
+
+État à l'arrêt de la session : le plan est approuvé. Le chantier `chantier/pbr-clearcoat-ssao-fxaa` est fusionné dans `main` du moteur (avance rapide jusqu'à `6ead4730`, non poussé). E1 est fait et confirmé sur `chantier/pbr-detail-texture` (`48d720a6`), **pas encore fusionné**. Le pointeur du sous-module n'a pas bougé (`a200f12b`). Aucun code du jeu n'est modifié.
+
+Suite, dans l'ordre : fusionner `chantier/pbr-detail-texture` dans `main` du moteur (avance rapide) et pointer le sous-module dessus, avec l'accord de l'auteur ; puis T0.1, T0.2, T1.1 et la suite selon la règle de dépendances.
+
+À savoir pour reprendre :
+
+- Scripts et empreintes de référence du moteur : `CasaEngine/CasaEngine/artifacts/pbr-baseline/` (ignoré par git, propre à cette machine et à son GPU). Empreintes en vigueur : journal du plan moteur `CasaEngine/ai-agent/tasks/pbr-clearcoat-ssao-fxaa-tasks.md`, dernière ligne.
+- Tests du moteur : `dotnet test CasaEngine.Tests/CasaEngine.Tests.csproj --blame-hang-timeout 5m`, jamais `--no-build` (le projet n'est dans aucune solution).
+- Git sur cette machine : `git -c safe.directory=*` ; message de commit dans un fichier puis `git commit -F` ; ne jamais pousser ; ne jamais indexer `.codegraph/`, `.serena/`, `MGUI/`, `log.txt`.
+- Captures : jamais pendant un build ou des tests ; fenêtres laissées ouvertes et non réduites.
+- À faire par l'auteur : push de `main` du moteur et de `remaster` ; contrôles manuels listés dans les deux plans du moteur.
