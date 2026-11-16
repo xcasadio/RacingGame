@@ -230,10 +230,11 @@ internal sealed class RaceTrackLayout
         List<RaceTrackModelPlacement> columnSegments = [];
         if (roadPoints.Count >= 4)
         {
+            // GuardRail.cs:169-199: the rail's mesh and its posts are built from the same rail points.
             leftRailPoints = BuildRailPoints(roadPoints, leftSide: true);
             rightRailPoints = BuildRailPoints(roadPoints, leftSide: false);
-            AddPostPlacements(placer, BuildPostRailPoints(roadPoints, leftSide: true), layoutSettings.HolderGap, leftPosts);
-            AddPostPlacements(placer, BuildPostRailPoints(roadPoints, leftSide: false), layoutSettings.HolderGap, rightPosts);
+            AddPostPlacements(placer, leftRailPoints, layoutSettings.HolderGap, leftPosts);
+            AddPostPlacements(placer, rightRailPoints, layoutSettings.HolderGap, rightPosts);
             columns = BuildColumnPlacements(roadPoints, terrainSampler, layoutSettings.ColumnsDistance);
             AddColumnSegmentPlacements(placer, columns, columnSegments);
         }
@@ -750,44 +751,13 @@ internal sealed class RaceTrackLayout
         });
     }
 
-    private static List<RaceTrackRailPoint> BuildRailPoints(IReadOnlyList<RaceTrackRoadPoint> roadPoints, bool leftSide)
-    {
-        var railPoints = new List<RaceTrackRailPoint>(roadPoints.Count / 2 + 1);
-        int railPointCount = roadPoints.Count / 2 + 1;
-
-        for (int index = 0; index < railPointCount; index++)
-        {
-            int pointIndex = index * 2;
-            if (pointIndex >= roadPoints.Count - 1)
-            {
-                pointIndex = roadPoints.Count - 1;
-            }
-
-            RaceTrackRoadPoint roadPoint = roadPoints[pointIndex];
-            Vector3 right = roadPoint.Right;
-            Vector3 direction = roadPoint.Direction;
-            Vector3 position = roadPoint.Position + (leftSide ? -1f : 1f) * (LegacyRoadWidthScale * roadPoint.RoadWidth * right * 0.5f);
-
-            if (leftSide)
-            {
-                right = -right;
-                direction = -direction;
-            }
-
-            position -= right * InsideRoadDistance;
-            railPoints.Add(new RaceTrackRailPoint(position, right, direction, roadPoint.Up));
-        }
-
-        return railPoints;
-    }
-
     /// <summary>
-    /// The rail points GuardRail.cs:169-199 builds, from which it places its posts: the road point's offset by half the road
+    /// The rail points GuardRail.cs:169-199 builds, for the rail's mesh and for its posts: the road point's offset by half the road
     /// width along the road point's right vector as it is, not normalized (TrackVertex.cs:64-90; the vector is the cross
     /// product of the direction and the up vector, a bit shorter than 1 where the two are not at a right angle), then moved
-    /// 0.5 units inside the road. The rail's mesh uses <see cref="BuildRailPoints"/>.
+    /// 0.5 units inside the road.
     /// </summary>
-    private static List<RaceTrackRailPoint> BuildPostRailPoints(IReadOnlyList<RaceTrackRoadPoint> roadPoints, bool leftSide)
+    private static List<RaceTrackRailPoint> BuildRailPoints(IReadOnlyList<RaceTrackRoadPoint> roadPoints, bool leftSide)
     {
         int railPointCount = roadPoints.Count / 2 + 1;
         var railPoints = new List<RaceTrackRailPoint>(railPointCount);
@@ -939,8 +909,8 @@ internal sealed class RaceTrackLayout
 
     /// <summary>
     /// Track.GenerateObjectsForTrack (Track.cs:704-1161) with the objects it adds, in its order, drawing from one random
-    /// generator the way the original draws from its one generator, RandomHelper (RandomHelper.cs:23-59, reseeded once per
-    /// level): palms and laterns, the start banner and light, the checkpoint banners and the signs, the random scenery.
+    /// generator the way the original draws from its one generator, RandomHelper (RandomHelper.cs:23-59, seeded once from the clock;
+    /// its reference capture reseeds it per level): palms and laterns, the start banner and light, the checkpoint banners and the signs, the random scenery.
     /// </summary>
     private static void AddHelperDrivenSceneryPlacements(
         int seed,
@@ -1368,7 +1338,7 @@ internal sealed class RaceTrackLayout
         }
     }
 
-    // The road point's right vector as the original keeps and uses it (TrackLine.cs:462-464 and 490): the cross product of
+    // The road point's right vector as the original keeps and uses it (TrackLine.cs:490, which replaces the normalized vector of lines 462-464): the cross product of
     // the direction and the up vector, not normalized. The offsets the generation computes from it are those of the original.
     private static Vector3 GetLegacyRawRight(RaceTrackRoadPoint point)
     {

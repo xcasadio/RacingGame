@@ -17,7 +17,7 @@ internal static partial class LegacyTrackSceneFactory
     /// <summary>
     /// The seed of the random scenery of the tracks built next. Null (the default) is a seed per track, derived from the track's
     /// name (<see cref="RaceTrackLayout.CreateTrackSeed"/>): the same scenery on every launch. The original draws its random
-    /// scenery from a generator it reseeds once per level, <c>new Random(1)</c> in its reference capture; the reference view
+    /// scenery from one generator seeded once from the clock; its reference capture reseeds it per level with <c>new Random(1)</c>; the reference view
     /// capture sets the seed of its views.json here, so that the port draws the same.
     /// </summary>
     internal static int? SceneryRandomSeed { get; set; }
