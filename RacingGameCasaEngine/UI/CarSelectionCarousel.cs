@@ -7,6 +7,7 @@ using CasaEngine.Framework.Entities;
 using CasaEngine.Framework.Entities.Components;
 using CasaEngine.Framework.Materials.Runtime;
 using CasaEngine.Framework.Rendering;
+using CasaEngine.Framework.Rendering.Environment;
 using CasaEngine.Framework.Rendering.Models;
 using CasaEngine.Framework.World;
 using MGUI.Core.UI;
@@ -49,14 +50,14 @@ internal sealed class CarSelectionCarousel : IDisposable
     private const float NearPlane = 0.5f;
     private const float FarPlane = 1750f;
     private const string PlateModelName = "CarSelectionPlate";
+    // pi, as the race world's key light: a lit-pbr surface lit head-on is pi times darker than a lit-diffuse one at the same intensity.
+    private const float KeyLightIntensity = MathF.PI;
     // Shadow map of the carousel: the engine's box is centred on the camera, about 11 units from the carousel's centre,
     // whose cars reach 7 units from it.
     private const int ShadowMapResolution = 2048;
     private const float ShadowMaxDistance = 16f;
     private const float ShadowDepthBias = 0.001f;
     private const float ShadowNormalBias = 0.05f;
-    // RacingGame's plate (NormalMapping.fx, ReflectionSpecular) added a Fresnel-weighted sky reflection to its texture.
-    private const float PlateReflectionAmount = 0.35f;
 
     // Fitted to the author's capture at 4:3 (plan rgce-title-car-selection-xna-look-tasks.md, T4.3): front plate edges
     // and bottom, rear car centres, within 6.7 capture pixels on average. RacingGame's code had (1.5, 1, 0) and 5.
@@ -101,6 +102,13 @@ internal sealed class CarSelectionCarousel : IDisposable
         _world = new World { Name = WorldName };
         _world.LoadContent(game);
         _world.EnvironmentSettings.SpecularEnvironmentCubemap = game.GetOrCreateRaceSkyReflectionCube();
+        // Image-based lighting from the sky cube, as the race world (Worlds/RaceWorldFactory.cs): the PBR materials of the cars
+        // and of the plate take their ambient and their reflections from it. The carousel stays in the legacy colour pipeline
+        // (its view needs the alpha the tonemapping does not write, plan rgce-pbr-race-world P5).
+        _world.EnvironmentSettings.AmbientSource = AmbientSource.Auto;
+        _world.EnvironmentSettings.AmbientColor = Vector3.One;
+        _world.EnvironmentSettings.AmbientIntensity = 1f;
+        _world.EnvironmentSettings.SpecularIntensity = 1f;
         _world.EnvironmentSettings.Shadows.Resolution = ShadowMapResolution;
         _world.EnvironmentSettings.Shadows.MaxDistance = ShadowMaxDistance;
         _world.EnvironmentSettings.Shadows.DepthBias = ShadowDepthBias;
@@ -112,7 +120,7 @@ internal sealed class CarSelectionCarousel : IDisposable
             LocalOrientation = RaceWorldFactory.CreateOrientationFromForward(LightDirection),
             Color = Color.White,
             SpecularColor = Color.White,
-            Intensity = 1f,
+            Intensity = KeyLightIntensity,
         };
         _world.AddEntity(new Entity { Name = "Carousel.Light", RootComponent = _light });
 
@@ -362,21 +370,16 @@ internal sealed class CarSelectionCarousel : IDisposable
 
             StaticModelImportedMaterial importedMaterial = importResult.Materials[mesh.MaterialIndex];
             LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
-            mesh.Material = new LitDiffuseMaterial
-            {
-                Name = $"{PlateModelName}.{importedMaterial.DisplayName}",
-                BasColor = LoadTexture(textureLoader, importedMaterial.DiffuseTextureFilePath, game),
-                NormalMap = LoadTexture(textureLoader, importedMaterial.NormalTextureFilePath, game),
-                DiffuseColor = importedMaterial.DiffuseColor,
-                AmbientColor = presentation.AmbientColor,
-                EmissiveColor = presentation.EmissiveColor,
-                SpecularColor = importedMaterial.SpecularColor,
-                SpecularPower = Math.Clamp(importedMaterial.SpecularPower, 2f, 48f),
-                SamplerState = SamplerState.AnisotropicWrap,
-                Queue = presentation.Queue,
-                UseSceneReflectionCube = importedMaterial.UsesReflection,
-                ReflectionAddAmount = PlateReflectionAmount,
-            };
+            mesh.Material = RacingGamePbrMaterialMapping.Create(
+                $"{PlateModelName}.{importedMaterial.DisplayName}",
+                RacingGamePbrMaterialMapping.CarouselPlate,
+                LoadTexture(textureLoader, importedMaterial.DiffuseTextureFilePath, game),
+                LoadTexture(textureLoader, importedMaterial.NormalTextureFilePath, game),
+                importedMaterial.DiffuseColor,
+                null,
+                SamplerState.AnisotropicWrap,
+                presentation.EmissiveColor,
+                queue: presentation.Queue);
             for (int index = 0; index < mesh.SubMeshes.Count; index++)
             {
                 mesh.SubMeshes[index].Material = mesh.Material;

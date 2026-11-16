@@ -183,7 +183,15 @@ internal static class RacingGamePbrMaterialMapping
     }
 
     private static bool ContainsTexture(string[] candidates, string textureFileName)
-        => candidates.Any(candidate => candidate.Equals(textureFileName, StringComparison.OrdinalIgnoreCase));
+        => candidates.Any(candidate => IsSameTexture(candidate, textureFileName));
+
+    /// <summary>
+    /// Two texture file names designate the same texture when they differ only by case and extension: the legacy models name
+    /// their textures .tga, the copy of the content next to the game keeps the .tga files, while the converted content of the
+    /// project folder only has the .png files, and the importer keeps whichever file it finds.
+    /// </summary>
+    public static bool IsSameTexture(string textureFileName, string otherTextureFileName)
+        => Path.GetFileNameWithoutExtension(textureFileName).Equals(Path.GetFileNameWithoutExtension(otherTextureFileName), StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Builds the PBR material of a surface. Common rules: the diffuse texture becomes the base colour texture and the normal
