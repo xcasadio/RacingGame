@@ -342,7 +342,7 @@ Source à porter : le code de l'autre PC, lisible par `git show origin/remaster:
 - `scripts/TrackCaptureCompare` est dans l'arbre depuis S1b et se construit.
 - Ici il n'y a pas de décor de remplissage aléatoire (S1h) : la graine de `views.json` n'a rien à piloter. Les objets de remplissage de l'original apparaîtront comme absents du port dans la mesure ; c'est attendu.
 
-### ⏳ T5.1 — Mode `--capture-reference-views`
+### ✅ T5.1 — Mode `--capture-reference-views`
 
 - Objectif : le jeu rejoue les vues de `views.json` et écrit une image `<Piste>-<vue>.png` par vue.
 - Fichiers : `RacingGameCasaEngine/Bootstrap/ReferenceViewCaptureValidator.cs` (nouveau), `RaceLaunchOptions.cs`, `RacingGameCasaEngineGame.cs`, `RacingGameCasaEngine/Program.cs` ; côté `RacingGame.Gameplay`, au plus une méthode qui convertit un point de l'original vers le monde de course d'une piste (même repère et même origine que la scène).
@@ -358,7 +358,14 @@ Source à porter : le code de l'autre PC, lisible par `git show origin/remaster:
 - Arrêts : besoin de modifier le moteur ; besoin de changer le tracé, les placements ou les matériaux du jeu ; une distance d'alignement au-dessus de 5 m (la tâche passe en ⚠️ Blocked avec la question, l'écart n'est pas enregistré comme résultat).
 - Commit : `feat(racing-casa): replay the original's reference views`
 
-### ⏳ T5.2 — Mesure de la scène contre `scene.json`
+> Validation (2026-11-16), commit `0e3485b`, exécutant `executor`, relu par la session principale :
+> - Build à 0 erreur. Rejeu sur `artifacts/pbr-handover/s1c/ref/views.json` : sortie 0, 15 images 1280×720, 15 lignes d'alignement, 15 lignes `[CaptureBench]` (`pipeline legacy fxaaPasses 0`).
+> - Alignement, en mètres, toutes sous 5 m : Beginner 0,00 / 1,07 / 0,00 / 1,57 / 0,00 ; Advanced 0,00 / 1,14 / 0,00 / 1,72 / 0,00 ; Expert 0,00 / 0,53 / 3,68 / 1,83 / 0,00 (ordre : start, sector-20, sector-50, sector-80, overview).
+> - `--smoke-frontend` en succès ; `--capture-ui-screens` contre `artifacts/pbr-handover/s1b/ui` : les 10 états à 0,00.
+> - Aucun changement dans `RacingGame.Gameplay`. La conversion est dans `Bootstrap/ReferenceTrackSpace.cs` : `ConvertLegacyPoint`, origine du tracé, puis matrice de monde du générateur de route (identité en pratique).
+> - Écarts au code de l'autre PC : capture par `RequestScreenshotAtEndOfDraw`, une update par draw ; délai maximal 240 s ; pas de graine de décor, puisqu'il n'y a pas de remplissage aléatoire ici.
+
+### ✅ T5.2 — Mesure de la scène contre `scene.json`
 
 - Objectif : pour chaque piste, comparer les points de route et les modèles placés du jeu à ceux de l'original, dans le repère de l'original, et écrire `scene-measure-<Piste>.txt`.
 - Fichiers : `RacingGameCasaEngine/Bootstrap/ReferenceSceneMeasure.cs` (nouveau, porté), `ReferenceViewCaptureValidator.cs` ; côté `RacingGame.Gameplay`, au plus un type de relevé (points de route, objets placés avec leur transformation dans le repère de l'original et leurs indicateurs d'ombre).
@@ -372,7 +379,14 @@ Source à porter : le code de l'autre PC, lisible par `git show origin/remaster:
 - Arrêts : comme T5.1.
 - Commit : `feat(racing-casa): measure the scene against the original's points and objects`
 
-### ⏳ T5.3 — Première mesure de la version d'ici, avant PBR
+> Validation (2026-11-16), commit `40fb7c1`, exécutant `executor`, relu par la session principale :
+> - Build à 0 erreur. Rejeu : sortie 0, 15 images, trois `scene-measure-<Piste>.txt`.
+> - Résumés : Beginner, points 1332/1332 à 0,000 m, objets 1147/821, 712 appariés, 435 manquants, 109 en trop ; Advanced, points 2172/2172, objets 1693/1226, 1007 appariés, 686 manquants, 219 en trop ; Expert, points 4466/4466, objets 3404/2595, 2140 appariés, 1264 manquants, 455 en trop.
+> - Inverse : aller-retour d'un point, erreur maximale 0,000061 m ; transformations placées inchangées (lignes `round trip` du journal).
+> - `ReferenceSceneMeasure.cs` porté sans changer tolérances ni format. Relevé dans `Bootstrap/ReferenceSceneSnapshot.cs`. Seul ajout dans `RacingGame.Gameplay` : `LegacyTrackSceneFactory.ComputeRaceLayout`, extrait de `Create` sans changement de comportement.
+> - Limite : la mesure part des transformations du tracé, pas de la matrice de monde de chaque composant ; un générateur non placé à l'identité ne s'y verrait pas (le journal note que les matrices sont à l'identité). Le cas « pas de `scene.json` » n'a pas été lancé.
+
+### ✅ T5.3 — Première mesure de la version d'ici, avant PBR
 
 - Objectif : la référence de ce PC, prise avant tout changement de moteur, de contenu ou de matériaux, et les écarts des sujets faits en double remis à l'auteur.
 - Fichiers : `docs/racinggame-3d-capture-bench-local-baseline.md` (nouveau, en anglais), `docs/README.md` s'il indexe les docs voisins, ce plan. Sorties dans `artifacts/pbr-handover/s1c/` (ignoré par git).
@@ -384,6 +398,13 @@ Source à porter : le code de l'autre PC, lisible par `git show origin/remaster:
   5. Doc : par piste et par vue, les chiffres du rapport ; le résumé des trois `scene-measure` ; un tableau des écarts par sujet fait en double (aides de piste, tunnels, placement, poteaux, tailles des modèles, palmiers) avec ce que la mesure montre pour chacun, et ce qui manque ici parce que cela n'existe que là-bas (dessous de la route, sol de la ville, remplissage).
 - Validation : les quatre lancements se terminent en succès ; les rapports existent ; le doc cite pour chaque chiffre le fichier de sortie d'où il vient. Les écarts à l'original ne sont pas des échecs de cette tâche : ce sont ses résultats.
 - Commit : `docs(racing-casa): record the capture bench baseline of the local version`
+
+> Validation (2026-11-16) : les quatre lancements en succès (original, deux rejeux, comparaisons `nopost`, `full`, sondes, répétabilité). Résultats dans `docs/racinggame-3d-capture-bench-local-baseline.md`, sorties dans `artifacts/pbr-handover/s1c/`.
+> - Répétabilité : 14 fichiers identiques sur 15 ; `Expert-start.png` diffère par son empreinte avec une différence moyenne de 0,00.
+> - Images contre l'original (`nopost`) : différence moyenne par canal de 15 à 56 sur 255 ; pire vue `Beginner-sector-20` (sol de la ville noir).
+> - Sondes : rapport ombre sur lumière de 0,23 à 0,28 dans l'original, de 0,67 à 1,13 ici ; aucun des quatre rapports dans la tolérance.
+> - Points de route identiques à l'original sur les trois pistes.
+> - Écarts des sujets faits en double, remis à l'auteur (O8) : poteaux de rail à l'échelle 1,125 au lieu de 1,35 ; environ deux fois trop de segments de colonne ; un tiers de lanternes en trop ; palmiers bien moins nombreux et peu appariés ; panneaux peu appariés ; presque tous les objets projettent une ombre alors que ceux de l'original ne le font pas.
 
 ### ⏳ T5.4 — Vérification indépendante de S1c
 
@@ -418,3 +439,4 @@ Source à porter : le code de l'autre PC, lisible par `git show origin/remaster:
 - O5 (S1b) : les ADR du jeu 0015 à 0018 existent des deux côtés avec des sujets différents ; les ADR locaux 0015 à 0018 sont à renuméroter (0023 à 0026), avec leurs renvois, y compris ceux du moteur s'il y en a.
 - O6 (clos par T2.2, D9) : l'original de référence ne compilait pas sur ce PC. Essai du 2026-11-16 sur la copie `RacingGameOriginal/` d'`origin/remaster`, extraite hors du dépôt : `dotnet build Desktop/RacingGame.csproj` échoue avec `NU1101`, package `MonoGame.Xna.Framework.Net` introuvable sur nuget.org (`Core/Core.csproj` et `Desktop/RacingGame.csproj` ; version `1.0.0-preview.1` d'après `Documentation/LAN-Multiplayer.md`). Cinq fichiers l'utilisent, tous du multijoueur LAN (`Core/Multiplayer/*`, `LanBrowserScreen.cs`, `MultiplayerGameScreen.cs`). Deux voies : recopier le package depuis le cache NuGet de l'autre PC, ou retirer le multijoueur LAN de la copie (D8 l'autorise). Choix de l'auteur attendu.
 - O7 : depuis le moteur fusionné, les vues 3D du jeu ne sont plus identiques au pixel à la référence d'ici (T3.1 : pire canal 0,352 sur 255 pour l'audit de piste, 0,09 pour les captures UI avec 3D). Cause non cherchée. Décision en mode AUTO : écart faible, hors du code du jeu (identique), non bloquant ; une nouvelle référence est prise en S1c. À confirmer par l'auteur.
+- O8 (remis à l'auteur par S1c) : la mesure contre l'original montre que la version d'ici, gardée comme référence (D7), s'écarte de l'original sur plusieurs sujets faits en double : échelle des poteaux de rail, nombre de segments de colonne, lanternes en trop, palmiers, panneaux, ombres portées. Détail dans `docs/racinggame-3d-capture-bench-local-baseline.md`. Rien n'est corrigé d'office. Question : faut-il aligner ces sujets sur l'original (une tranche de plus, avant ou après le PBR), ou les laisser tels quels ?
