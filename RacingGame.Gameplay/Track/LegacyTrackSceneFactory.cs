@@ -61,7 +61,7 @@ internal static partial class LegacyTrackSceneFactory
                 continue;
             }
 
-            sceneryEntities.Add(CreateStaticModelEntity($"Track.Scenery.{placement.ModelName}.{index:000}", modelAssetId, placement.Transform));
+            sceneryEntities.Add(CreateStaticModelEntity($"Track.Scenery.{placement.ModelName}.{index:000}", modelAssetId, placement.Transform, placement.CastsShadow, placement.ReceivesShadow));
         }
 
         return new RaceTrackScene(trackEntities, sceneryEntities, layout.PlayerStartPose, layout.CheckpointTriggers, trackAssetId, heightmapAssetId);
@@ -285,7 +285,7 @@ internal static partial class LegacyTrackSceneFactory
             new Microsoft.Xna.Framework.Vector2(point.TextureU, textureV));
     }
 
-    private static Entity CreateStaticModelEntity(string name, Guid staticModelAssetId, Matrix transform)
+    private static Entity CreateStaticModelEntity(string name, Guid staticModelAssetId, Matrix transform, bool castShadows, bool receiveShadows)
     {
         if (!TryDecomposePlacement(transform, out Vector3 scale, out Quaternion rotation, out Vector3 translation))
         {
@@ -304,7 +304,8 @@ internal static partial class LegacyTrackSceneFactory
         {
             Name = nameof(StaticModelComponent),
             StaticModelAssetId = staticModelAssetId,
-            CastShadows = true,
+            CastShadows = castShadows,
+            ReceiveShadows = receiveShadows,
         };
         component.LocalTransform.Position = translation;
         component.LocalTransform.Orientation = rotation;

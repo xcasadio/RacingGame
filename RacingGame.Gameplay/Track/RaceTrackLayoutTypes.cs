@@ -20,8 +20,11 @@ internal readonly record struct RaceTrackRoadPoint(
 /// <summary>A point of a guard rail, in legacy space.</summary>
 internal readonly record struct RaceTrackRailPoint(Vector3 Position, Vector3 Right, Vector3 Direction, Vector3 Up);
 
-/// <summary>A model placed at a world transform in runtime space.</summary>
-internal readonly record struct RaceTrackModelPlacement(string ModelName, Matrix Transform);
+/// <summary>
+/// A model placed at a world transform in runtime space, and whether the original makes it generate and receive a shadow
+/// (see <see cref="LegacyLandscapePlacer"/>).
+/// </summary>
+internal readonly record struct RaceTrackModelPlacement(string ModelName, Matrix Transform, bool CastsShadow, bool ReceivesShadow);
 
 /// <summary>
 /// A column, in legacy space: its top <paramref name="Position"/> on the road, the point spaces of its top and

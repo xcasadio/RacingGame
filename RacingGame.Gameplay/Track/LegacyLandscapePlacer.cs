@@ -129,19 +129,33 @@ internal sealed class LegacyLandscapePlacer
     /// </summary>
     /// <param name="modelName">The model, or a combo, which adds each of its models through this method.</param>
     /// <param name="renderMatrix">The object's transform in legacy space, without the scale of 1.2 this method adds.</param>
+    /// <param name="isNearTrackForShadowGeneration">
+    /// The original's flag of the same name: the object joins <c>nearTrackObjects</c>, the list that generates (and receives)
+    /// shadows. The windmills, the hotels, the buildings and the casino join it whatever the call says.
+    /// </param>
     /// <param name="target">The list the placement is appended to.</param>
-    public void AddObject(string modelName, Matrix renderMatrix, List<RaceTrackModelPlacement> target)
+    public void AddObject(string modelName, Matrix renderMatrix, bool isNearTrackForShadowGeneration, List<RaceTrackModelPlacement> target)
     {
         // Fix wrong model names (Landscape.cs:395-407)
         modelName = FixModelName(modelName);
 
+        // Always include windmills and buildings for shadow generation (Landscape.cs:409-414)
+        string lowerModelName = modelName.ToLowerInvariant();
+        if (lowerModelName == "windmill"
+            || lowerModelName.Contains("hotel")
+            || lowerModelName.Contains("building")
+            || lowerModelName.Contains("casino01"))
+        {
+            isNearTrackForShadowGeneration = true;
+        }
+
         // Search for combos (Landscape.cs:416-428)
         if (CombiSizes.ContainsKey(modelName))
         {
-            // Add all combi objects (TrackCombiModels.cs:139-145): each one goes through this method
+            // Add all combi objects (TrackCombiModels.cs:139-145): each one goes through this method, not marked as near the track
             foreach (LegacyCombiObject combiObject in _loadCombiModel(modelName))
             {
-                AddObject(combiObject.modelName, combiObject.matrix * renderMatrix, target);
+                AddObject(combiObject.modelName, combiObject.matrix * renderMatrix, false, target);
             }
 
             return;
@@ -181,7 +195,19 @@ internal sealed class LegacyLandscapePlacer
         Matrix placedTransform = Matrix.CreateScale(1.2f) * renderMatrix;
         _positions.Add(placedTransform.Translation);
 
-        var placement = new RaceTrackModelPlacement(modelName, ConvertLegacyTransform(placedTransform, _origin));
+        // An object of nearTrackObjects generates a shadow (Landscape.cs:1288-1295, GenerateShadow) and receives one unless it
+        // is a banner or a sign (LandscapeObject.isBanner, Landscape.cs:56 and 159-162, the name contains "banner" or "sign";
+        // Landscape.cs:1314-1321, UseShadow) or a model with alpha (Model.hasAlpha, Model.cs:212, the name starts with "alpha";
+        // Model.UseShadow, Model.cs:877). The export of the original reads the same rules (TrackAuditCaptureScreen.cs:385-392).
+        bool receivesShadow = isNearTrackForShadowGeneration
+            && !lowerModelName.Contains("banner")
+            && !lowerModelName.Contains("sign")
+            && !lowerModelName.StartsWith("alpha", StringComparison.Ordinal);
+        var placement = new RaceTrackModelPlacement(
+            modelName,
+            ConvertLegacyTransform(placedTransform, _origin),
+            isNearTrackForShadowGeneration,
+            receivesShadow);
         target.Add(placement);
         Placements.Add(placement);
     }
@@ -189,7 +215,7 @@ internal sealed class LegacyLandscapePlacer
     /// <summary>Landscape.AddObjectToRender(string, Vector3), Landscape.cs:557-560.</summary>
     public void AddObject(string modelName, Vector3 renderPosition, List<RaceTrackModelPlacement> target)
     {
-        AddObject(modelName, Matrix.CreateTranslation(renderPosition), target);
+        AddObject(modelName, Matrix.CreateTranslation(renderPosition), false, target);
     }
 
     /// <summary>
@@ -230,6 +256,7 @@ internal sealed class LegacyLandscapePlacer
         AddObject(
             modelName,
             Matrix.CreateRotationZ(rotation) * Matrix.CreateTranslation(trackPosition + trackRight * distance + new Vector3(0, 0, -100)),
+            false,
             target);
     }
 

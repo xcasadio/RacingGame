@@ -10,7 +10,7 @@ namespace RacingGame.Gameplay.Track;
 /// frees. It is false for a catalogued model (posts, column segments), named by <paramref name="StaticModelAssetId"/> with a
 /// null <paramref name="Model"/>: the engine shares it, and the generator never frees it.
 /// </summary>
-internal sealed record RaceGeneratedModel(string Name, StaticModel? Model, Matrix Transform, bool CastShadows, bool OwnsBuffers, Guid StaticModelAssetId = default);
+internal sealed record RaceGeneratedModel(string Name, StaticModel? Model, Matrix Transform, bool CastShadows, bool OwnsBuffers, Guid StaticModelAssetId = default, bool ReceiveShadows = true);
 
 /// <summary>The catalogued inputs of a track: its .Track layout and its landscape height map.</summary>
 internal sealed record RaceTrackSource(string TrackName, LegacyTrackLayout Track, string HeightmapPath, LegacyTerrainHeightSampler Heights);

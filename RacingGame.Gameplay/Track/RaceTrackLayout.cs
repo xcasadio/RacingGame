@@ -219,7 +219,7 @@ internal sealed class RaceTrackLayout
         var scenery = new List<RaceTrackModelPlacement>();
         foreach (LegacyNeutralObject neutralObject in track.NeutralsObjects)
         {
-            placer.AddObject(neutralObject.modelName, neutralObject.matrix, scenery);
+            placer.AddObject(neutralObject.modelName, neutralObject.matrix, false, scenery);
         }
 
         List<RaceTrackRailPoint> leftRailPoints = [];
@@ -858,6 +858,7 @@ internal sealed class RaceTrackLayout
                     * Matrix.CreateTranslation(HolderPileCorrectionVector)
                     * pointSpace
                     * Matrix.CreateTranslation(holderPoint),
+                    false,
                     target);
                 lastHolderGap += holderGap;
             }
@@ -1111,6 +1112,7 @@ internal sealed class RaceTrackLayout
                             * Matrix.CreateTranslation(right * (generatedNum % 2 == 0 ? 0.6f : -0.6f) * point.RoadWidth * LegacyRoadWidthScale)
                             * Matrix.CreateTranslation(new Vector3(0, 0, -50))
                             * Matrix.CreateTranslation(objectPoint),
+                            true,
                             target);
                     }
                 }
@@ -1125,6 +1127,7 @@ internal sealed class RaceTrackLayout
                             -0.2f))
                         * pointSpace
                         * Matrix.CreateTranslation(objectPoint),
+                        true,
                         target);
                 }
 
@@ -1153,6 +1156,7 @@ internal sealed class RaceTrackLayout
             * Matrix.CreateTranslation(new Vector3(0, -5.1f, 0))
             * startPointSpace
             * Matrix.CreateTranslation(startPoint.Position),
+            true,
             target);
 
         // The original adds StartLight3 and turns it into the red StartLight once the level is loaded
@@ -1163,6 +1167,7 @@ internal sealed class RaceTrackLayout
             * Matrix.CreateTranslation(new Vector3(startPoint.RoadWidth * LegacyRoadWidthScale * 0.50f - 0.3f, 6, -0.2f))
             * startPointSpace
             * Matrix.CreateTranslation(startPoint.Position),
+            true,
             target);
     }
 
@@ -1198,6 +1203,7 @@ internal sealed class RaceTrackLayout
                     * Matrix.CreateTranslation(new Vector3(0.0f, 0.0f, -0.1f))
                     * pointSpace
                     * Matrix.CreateTranslation(objectPoint),
+                    true,
                     target);
 
                 checkpointGap += CheckpointGap;
@@ -1225,6 +1231,7 @@ internal sealed class RaceTrackLayout
                         Matrix.CreateTranslation(new Vector3(point.RoadWidth * LegacyRoadWidthScale * 0.5f - 0.1f, 0.0f, -0.25f))
                         * pointSpace
                         * Matrix.CreateTranslation(objectPoint),
+                        true,
                         target);
                 }
                 else if (roadAngle < -MathHelper.Pi / 7.5f)
@@ -1235,6 +1242,7 @@ internal sealed class RaceTrackLayout
                         * Matrix.CreateTranslation(new Vector3(-point.RoadWidth * LegacyRoadWidthScale * 0.5f - 0.15f, 0.0f, -0.25f))
                         * pointSpace
                         * Matrix.CreateTranslation(objectPoint),
+                        true,
                         target);
                 }
                 else if (roadAngle > MathHelper.Pi / 7.5f)
@@ -1245,6 +1253,7 @@ internal sealed class RaceTrackLayout
                         * Matrix.CreateTranslation(new Vector3(point.RoadWidth * LegacyRoadWidthScale * 0.5f - 0.15f, 0.0f, -0.25f))
                         * pointSpace
                         * Matrix.CreateTranslation(objectPoint),
+                        true,
                         target);
                 }
                 else if (roadAngle < -MathHelper.Pi / 10.0f
@@ -1276,6 +1285,7 @@ internal sealed class RaceTrackLayout
                             -0.25f))
                         * pointSpace
                         * Matrix.CreateTranslation(objectPoint),
+                        true,
                         target);
                 }
 

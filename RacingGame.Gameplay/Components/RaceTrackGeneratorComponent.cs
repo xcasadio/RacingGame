@@ -183,6 +183,7 @@ public abstract class RaceTrackGeneratorComponent : SceneComponent, IEntityPolic
         {
             Name = model.Name,
             CastShadows = model.CastShadows,
+            ReceiveShadows = model.ReceiveShadows,
         };
         if (model.StaticModelAssetId != Guid.Empty)
         {

@@ -176,7 +176,7 @@ internal static partial class LegacyTrackSceneFactory
             var models = new List<RaceGeneratedModel>(posts.Count);
             for (int index = 0; index < posts.Count; index++)
             {
-                models.Add(new RaceGeneratedModel($"Post.{index:000}", null, posts[index].Transform, CastShadows: true, OwnsBuffers: false, StaticModelAssetId: holderModelAssetId));
+                models.Add(new RaceGeneratedModel($"Post.{index:000}", null, posts[index].Transform, CastShadows: posts[index].CastsShadow, OwnsBuffers: false, StaticModelAssetId: holderModelAssetId, ReceiveShadows: posts[index].ReceivesShadow));
             }
 
             return models;
@@ -268,7 +268,7 @@ internal static partial class LegacyTrackSceneFactory
             var models = new List<RaceGeneratedModel>(segments.Count);
             for (int index = 0; index < segments.Count; index++)
             {
-                models.Add(new RaceGeneratedModel($"Segment.{index:000}", null, segments[index].Transform, CastShadows: true, OwnsBuffers: false, StaticModelAssetId: segmentModelAssetId));
+                models.Add(new RaceGeneratedModel($"Segment.{index:000}", null, segments[index].Transform, CastShadows: segments[index].CastsShadow, OwnsBuffers: false, StaticModelAssetId: segmentModelAssetId, ReceiveShadows: segments[index].ReceivesShadow));
             }
 
             return models;
