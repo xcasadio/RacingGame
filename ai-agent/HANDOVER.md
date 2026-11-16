@@ -91,3 +91,24 @@ Particularités de ce PC, à revérifier sur l'autre :
 | `pbrdemo.sh` avec `CASAENGINE_PBR_DEMO_CLEARCOAT=1` | `2c176114771ec932` |
 
 Les démos skinned, particles et split-screen ne sont pas déterministes.
+
+## 7. Mise à jour : `origin/main` du moteur a avancé (2026-11-16)
+
+Le push de `main` du moteur a été refusé : `origin/main` contient 60 commits faits sur une autre machine (chantier « MGUI zéro allocation »), absents d'ici. Le §1 est donc remplacé par ceci :
+
+```bash
+git -C D:/development/repo/RacingGame/CasaEngine push origin chantier/pbr-detail-texture
+```
+
+```bash
+git -C D:/development/repo/RacingGame push origin remaster
+```
+
+`chantier/pbr-detail-texture` pointe sur `48d720a6`, le même commit que `main` local : elle contient tout le travail du moteur, et c'est le commit que le sous-module du jeu enregistre.
+
+**Première tâche de la prochaine session** : fusionner `origin/main` dans le travail du moteur, sur une branche (le hook interdit tout commit sur `main`), puis avancer `main` en avance rapide. Points connus :
+
+- **Collision d'ADR** : `origin/main` a pris le numéro 0097 (`desktop runtime owns its draw transaction`). Les ADR 0097 à 0116 de ce travail doivent passer à 0098 à 0117, avec tous leurs renvois : dans le moteur (`docs/`, `ai-agent/`, commentaires de code et de shaders, tests) et dans le jeu (`docs/racinggame-3d-capture-bench-findings.md`, `docs/racinggame-pbr-preparation.md`, `ai-agent/tasks/rgce-pbr-race-world-tasks.md`, ADR-0018, cette note). C'est la quatrième renumérotation ; les précédentes sont décrites dans le journal de `CasaEngine/ai-agent/tasks/pbr-rendering-tasks.md`.
+- **Sous-module `MGUI`** : `origin/main` avance son pointeur. Les builds de cette session ont tourné avec `e9d6a95d` (modification locale de l'auteur, jamais indexée).
+- `origin/main` modifie le backend d'interface (`UI/Backend/MonoGame/`, tests GPU) : après la fusion, relancer les deux builds, la suite complète et les scripts de référence, puis une vérification indépendante.
+- Ensuite : pointer le sous-module du jeu sur le nouveau `main`, rebuild du jeu, banc de capture.
