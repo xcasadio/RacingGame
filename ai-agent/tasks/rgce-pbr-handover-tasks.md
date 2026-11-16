@@ -15,7 +15,7 @@ Tranches :
 |---|---|---|---|
 | S1 | Fusion du moteur (T1.1) | — | Faite le 2026-11-16, avec la réserve D5 |
 | S1b | Fusion de `origin/remaster` en gardant le code et le contenu du jeu d'ici (Phase 3) : histoires jointes, docs, outils et original repris, ADR renumérotés. Le travail PBR de l'autre PC n'est pas actif après cette tranche | S1 | Faite le 2026-11-16 |
-| S1v | HANDOVER §7 : vérification indépendante des fusions du moteur et du jeu (`verifier` frais), captures UI et audit de piste du jeu sur le moteur fusionné. Avant toute tranche qui change le moteur, le contenu ou les matériaux | S1b | Détaillée (Phase 4) |
+| S1v | HANDOVER §7 : vérification indépendante des fusions du moteur et du jeu (`verifier` frais), captures UI et audit de piste du jeu sur le moteur fusionné. Avant toute tranche qui change le moteur, le contenu ou les matériaux | S1b | Faite le 2026-11-16, verdict CONFIRMED après une correction |
 | S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1v | À détailler |
 | S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1c | À détailler |
 | S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | À détailler |
@@ -294,7 +294,7 @@ Constats de l'étude du 2026-11-16 (trois lectures en parallèle, faits décisif
 >
 > - Seule `frozen-frame` a la même empreinte que sur l'autre PC (§6 de la note) ; les onze autres diffèrent, ce que la note annonce pour un autre GPU.
 
-### ⏳ T4.2 — Vérification indépendante des deux fusions
+### ✅ T4.2 — Vérification indépendante des deux fusions
 
 - Objectif : faire réfuter ou confirmer par un `verifier` frais ce que T1.1 et T3.1 affirment. Le vérificateur ne modifie rien.
 - Sources : moteur `chantier/merge-editor-project` (`e942caa54`, parents `187a420d7` et `87fc5f01b`) ; jeu `chantier/rgce-pbr-handover` (`61c465e`, parents `a53133b` et `90e3d99`) ; ce plan.
@@ -314,6 +314,18 @@ Constats de l'étude du 2026-11-16 (trois lectures en parallèle, faits décisif
 - Limites des corrections : uniquement un défaut introduit par les fusions, uniquement dans les fichiers de résolution des deux fusions (ceux listés par T1.1 et T3.1), sur `chantier/merge-editor-project` ou `chantier/rgce-pbr-handover`. Une correction = un commit, suivi de la reproduction d'origine et d'un `verifier` frais sur l'affirmation touchée. Deux passes de correction au plus pour toute la tâche. Tout le reste (nouvelle fonction ou changement de conception du moteur, fichier hors de la résolution, plafond atteint) est reporté avec sa raison ou passe la tâche en ⚠️ Blocked ; il n'est pas corrigé ici.
 - Hors périmètre : le banc de capture contre l'original (S1c) ; la cause des écarts faibles des vues 3D relevés en T3.1, notée en O7.
 - Commit : `docs(ai-agent): record the independent verification of the merges`
+
+> Validation (2026-11-16) :
+> - Commandes longues lancées par la session principale sur le moteur `e942caa54`, arbre propre, sorties dans `artifacts/pbr-handover/s1v/` : deux builds à 0 erreur ; tests 6378 lancés, 6370 verts, 8 en échec.
+> - `verifier` frais, premier passage : **REFUTED**, neuf affirmations sur dix confirmées (1a, 1b, 1c, 2, 3a, 3b, 3c, 3d, 4), 1d réfutée.
+>   - Constat F1 (P2, introduit par la fusion du moteur, documentation seule) : `ai-agent/README.md` du moteur, ligne du plan `rgce-editor-project-engine-tasks.md`, disait « ADR-0118, 0072 et 0073 » ; seul le premier numéro avait été renuméroté.
+>   - Correction, passe 1 sur 2 : moteur `b429b79ec` sur `chantier/merge-editor-project`, une ligne (« ADR-0118, 0119 et 0120 »). Fichier de la résolution de T1.1.
+>   - `verifier` frais sur l'affirmation 1d : **CONFIRMED**. Les 102 mentions restantes de 0071 à 0075 sont celles d'`origin/main` (97) et les cinq notes « numbered ADR-007x until » de l'index.
+> - Réserves du vérificateur, notées sans suite ici :
+>   - il n'a pas reproduit lui-même que les 8 tests échouent aussi sur `origin/main` seul (essai de la session principale en T1.1) ; les builds contrôlés étaient incrémentaux ;
+>   - A1 (P4, code d'`origin/main`) : `EditorWorldOperations.ComponentTypes` reste calculé une seule fois, déjà noté en T1.1 ;
+>   - A2 (P4, effet combiné de la fusion) : les matériaux `lit-pbr` compilés passent maintenant par `RenderFeatureResolver.AdjustToMesh`, qui retire la normal map sans tangentes. Aucun test n'échoue ; rien ne l'a exercé à l'écran. À surveiller en S1e et S1f.
+> - Pointeur `CasaEngine` du jeu avancé sur `b429b79ec` (documentation seule, pas de nouveau build).
 
 ---
 
