@@ -18,7 +18,7 @@ Tranches :
 | S1v | HANDOVER §7 : vérification indépendante des fusions du moteur et du jeu (`verifier` frais), captures UI et audit de piste du jeu sur le moteur fusionné. Avant toute tranche qui change le moteur, le contenu ou les matériaux | S1b | Faite le 2026-11-16, verdict CONFIRMED après une correction |
 | S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1v | Faite le 2026-11-16, verdict CONFIRMED après une correction du doc |
 | S1a | Alignement sur l'original des sujets faits en double (D11) : poteaux de rail, segments de colonne, lanternes, palmiers, panneaux, ombres portées, avec le décor de remplissage aléatoire, qui partage les mêmes tirages. Prouvé par la mesure de scène de S1c ; nouvelle référence « avant PBR » en fin de tranche | S1c | Faite le 2026-11-16, verdict CONFIRMED après une correction (rail et supports) ; un critère réduit (O9) |
-| S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1a | À détailler |
+| S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1a | Faite le 2026-11-16 (Phase 7), verdict CONFIRMED |
 | S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | À détailler |
 | S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1e | À détailler |
 | S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | À détailler |
@@ -525,6 +525,22 @@ Budget de S1a : pour T6.1, au plus six tours « correction puis mesure » ; pour
 >   - P3 : dans le contexte de l'ADR-0027, « The game seeds it once, from the clock » désigne le jeu d'origine, alors que « the game » désigne le port partout ailleurs dans la liste ; la section Decision est correcte ;
 >   - P4 : les écarts rail contre bord de route (0,008, 0,298 et 0,627 m) négligent le retrait de 0,5 unité, lui aussi mis à l'échelle ; avec ce terme : 0,008, 0,284 et 0,584 m, mêmes décomptes ;
 >   - P4 : les images de la section du doc datent d'avant la correction du rail ; un nouveau lancement ne diffère que par les trois fichiers déjà connus pour varier.
+
+---
+
+## Phase 7 — Tangentes dans le format `.staticModel` du moteur (S1d)
+
+Tranche menée dans le dépôt du moteur, avec son propre plan : `CasaEngine/ai-agent/tasks/static-model-tangents-tasks.md` (relu READY au second passage). Branche moteur `chantier/static-model-tangents`, créée depuis `main` (D10).
+
+### ✅ T7.1 — Format, tests, décision
+
+> Validation (2026-11-16) :
+> - Moteur `76d87d455` : un maillage de `.staticModel` peut porter un tableau `tangents` optionnel, une entrée `{x, y, z, w}` par sommet. Le chargeur le lit, le sérialiseur de l'éditeur l'écrit pour un maillage qui en a ; un fichier sans ce tableau se charge comme avant ; un nombre d'entrées incohérent est signalé avec le nom du maillage et le maillage se charge sans tangentes. Moteur `61b4e6fae` : ADR-0123 du moteur en `Proposed`, doc du format.
+> - Les deux solutions à 0 erreur. Tests du moteur : 6382 lancés, 6374 verts, les 8 échecs GPU connus et eux seuls (4 nouveaux tests).
+> - `verifier` frais : **CONFIRMED** sur les six affirmations. Son essai sur 20 000 sommets aux valeurs aléatoires donne 0 écart au bit près après écriture, texte et relecture ; un glTF avec `TANGENT` garde ses tangentes jusqu'à l'asset rechargé ; aucun autre chemin du moteur ne perd les tangentes.
+> - Remarques P4, notées sans suite : une entrée de `tangents` à laquelle il manque une composante lève une exception sans contexte, comme le font déjà les sommets ; une clé `tangents` qui n'est pas un tableau est traitée comme absente, sans message.
+> - Jeu : pointeur `CasaEngine` avancé sur `61b4e6fae` ; build à 0 erreur, cuiseur `--verify` à 0 écart, `--smoke-frontend` en succès. Les modèles du jeu n'ont pas encore de tangentes : c'est S1e.
+> - Reste à l'auteur : valider l'ADR-0123, décider de la remontée de `chantier/static-model-tangents` dans `main` et du push.
 
 ---
 
