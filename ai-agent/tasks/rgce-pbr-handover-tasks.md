@@ -16,7 +16,7 @@ Tranches :
 | S1 | Fusion du moteur (T1.1) | — | Faite le 2026-11-16, avec la réserve D5 |
 | S1b | Fusion de `origin/remaster` en gardant le code et le contenu du jeu d'ici (Phase 3) : histoires jointes, docs, outils et original repris, ADR renumérotés. Le travail PBR de l'autre PC n'est pas actif après cette tranche | S1 | Faite le 2026-11-16 |
 | S1v | HANDOVER §7 : vérification indépendante des fusions du moteur et du jeu (`verifier` frais), captures UI et audit de piste du jeu sur le moteur fusionné. Avant toute tranche qui change le moteur, le contenu ou les matériaux | S1b | Faite le 2026-11-16, verdict CONFIRMED après une correction |
-| S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1v | À détailler |
+| S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1v | Détaillée (Phase 5) |
 | S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1c | À détailler |
 | S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | À détailler |
 | S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1e | À détailler |
@@ -326,6 +326,70 @@ Constats de l'étude du 2026-11-16 (trois lectures en parallèle, faits décisif
 >   - A1 (P4, code d'`origin/main`) : `EditorWorldOperations.ComponentTypes` reste calculé une seule fois, déjà noté en T1.1 ;
 >   - A2 (P4, effet combiné de la fusion) : les matériaux `lit-pbr` compilés passent maintenant par `RenderFeatureResolver.AdjustToMesh`, qui retire la normal map sans tangentes. Aucun test n'échoue ; rien ne l'a exercé à l'écran. À surveiller en S1e et S1f.
 > - Pointeur `CasaEngine` du jeu avancé sur `b429b79ec` (documentation seule, pas de nouveau build).
+
+---
+
+## Phase 5 — Banc de mesure porté ici (S1c)
+
+Source à porter : le code de l'autre PC, lisible par `git show origin/remaster:<chemin>` (commits `b4642e8`, `c3338a3`, `62f7956`, et la partie banc de `09e4a9f`). Rien n'est repris tel quel : ce code vise des classes qui ont changé de projet et de forme ici (règle de fusion a).
+
+État vérifié (2026-11-16) :
+
+- L'original écrit `views.json`, `scene.json` et deux images par vue (`RacingGame.exe --capture-track-audit`, T2.2 : 30 fichiers pour 3 pistes et 5 vues).
+- Ici, `RacingGameCasaEngine/Bootstrap/TrackMigrationCaptureValidator.cs` est le modèle d'un mode de capture : même cycle (`PreviewUpdate`, `StartRaceForAutomation`, `ReturnToFrontEndForAutomation`, `SetDebugCameraEnabled`, `SetCircuitOnlyViewEnabled`), et il recalcule déjà le tracé par `LegacyTrackSceneFactory.ComputeGeneratorLayout` (ligne 407).
+- `RaceTrackLayout` expose `Origin`, `RoadPoints` (espace de l'original), et les placements `Scenery`, `LeftPosts`, `RightPosts`, `ColumnSegments` (espace du jeu). La conversion `RaceTrackSpace.ConvertLegacyPoint` est `(x, z, -y)`, puis on retranche `Origin` : elle s'inverse exactement.
+- Les entités du décor s'appellent `Track.Scenery.<modèle>.<index>` (`LegacyTrackSceneFactory.cs`), les autres suivent les préfixes de `RaceWorldNames`.
+- `scripts/TrackCaptureCompare` est dans l'arbre depuis S1b et se construit.
+- Ici il n'y a pas de décor de remplissage aléatoire (S1h) : la graine de `views.json` n'a rien à piloter. Les objets de remplissage de l'original apparaîtront comme absents du port dans la mesure ; c'est attendu.
+
+### ⏳ T5.1 — Mode `--capture-reference-views`
+
+- Objectif : le jeu rejoue les vues de `views.json` et écrit une image `<Piste>-<vue>.png` par vue.
+- Fichiers : `RacingGameCasaEngine/Bootstrap/ReferenceViewCaptureValidator.cs` (nouveau), `RaceLaunchOptions.cs`, `RacingGameCasaEngineGame.cs`, `RacingGameCasaEngine/Program.cs` ; côté `RacingGame.Gameplay`, au plus une méthode qui convertit un point de l'original vers le monde de course d'une piste (même repère et même origine que la scène).
+- Étapes :
+  1. Options `--capture-reference-views <views.json>` et `--reference-capture-out <dossier>` ; le mode entre dans `IsAutomation` et dans le contrôle « un seul mode d'automation ».
+  2. Validateur porté sur le modèle de `TrackMigrationCaptureValidator` : taille et projection lues dans `views.json` et appliquées à la capture seulement, rien d'enregistré dans les réglages ; première voiture, première couleur ; HUD retiré ; caméras de poursuite et de debug arrêtées ; lignes de debug du parcours retirées ; voiture cachée dans les vues où l'original ne la dessine pas ; capture par le même mécanisme de fin de `Draw` que les autres modes de capture d'ici.
+  3. Journal : pour chaque vue, la distance entre la voiture de l'original convertie et l'ancre la plus proche (départ ou point de contrôle) ; pour chaque image, la ligne `[CaptureBench] view <Piste>-<vue> pipeline <legacy|linear> fxaaPasses <n>`.
+- Validation :
+  - build du jeu à 0 erreur ;
+  - avec la référence de T5.3 étape 1 : sortie 0, 15 images (3 pistes, 5 vues), 15 lignes d'alignement et 15 lignes `[CaptureBench]` ;
+  - les autres modes ne bougent pas : `--smoke-frontend` en succès ; `--capture-ui-screens` contre `artifacts/pbr-handover/s1b/ui`, les 10 états sous le seuil de `UiCaptureCompare`.
+- Arrêts : besoin de modifier le moteur ; besoin de changer le tracé, les placements ou les matériaux du jeu.
+- Commit : `feat(racing-casa): replay the original's reference views`
+
+### ⏳ T5.2 — Mesure de la scène contre `scene.json`
+
+- Objectif : pour chaque piste, comparer les points de route et les modèles placés du jeu à ceux de l'original, dans le repère de l'original, et écrire `scene-measure-<Piste>.txt`.
+- Fichiers : `RacingGameCasaEngine/Bootstrap/ReferenceSceneMeasure.cs` (nouveau, porté), `ReferenceViewCaptureValidator.cs` ; côté `RacingGame.Gameplay`, au plus un type de relevé (points de route, objets placés avec leur transformation dans le repère de l'original et leurs indicateurs d'ombre).
+- Étapes :
+  1. Relevé du jeu construit depuis le tracé de la course (points de route, `Scenery`, `LeftPosts`, `RightPosts`, `ColumnSegments`), transformations ramenées dans le repère de l'original par l'inverse exact de la conversion ; indicateurs d'ombre lus sur les composants des entités du monde, pas sur la règle qui les pose.
+  2. Mesure portée sans changer ses tolérances ni son format de rapport ; résumé d'une ligne dans le journal.
+- Validation :
+  - build à 0 erreur ;
+  - trois fichiers `scene-measure-<Piste>.txt`, chacun avec le nombre de points de route de l'original et du jeu et le décompte des objets appariés, manquants et en trop ;
+  - contrôle de l'inverse : un point de l'original converti puis ramené redonne le point de départ (à l'arrondi flottant près), écrit une fois dans le journal ou vérifié par un calcul noté sous la tâche.
+- Arrêts : comme T5.1.
+- Commit : `feat(racing-casa): measure the scene against the original's points and objects`
+
+### ⏳ T5.3 — Première mesure de la version d'ici, avant PBR
+
+- Objectif : la référence de ce PC, prise avant tout changement de moteur, de contenu ou de matériaux, et les écarts des sujets faits en double remis à l'auteur.
+- Fichiers : `docs/racinggame-3d-capture-bench-local-baseline.md` (nouveau, en anglais), `docs/README.md` s'il indexe les docs voisins, ce plan. Sorties dans `artifacts/pbr-handover/s1c/` (ignoré par git).
+- Étapes, un lancement à la fois, jamais pendant un build :
+  1. Original : `RacingGame.exe --capture-track-audit --seed 1 --size 1280x720 --out <s1c>/ref`.
+  2. Jeu : `RacingGameCasaEngine.exe --capture-reference-views <s1c>/ref/views.json --reference-capture-out <s1c>/cand-a`, puis une seconde fois vers `cand-b`.
+  3. `scripts/TrackCaptureCompare` selon son README : variante `full`, variante `nopost`, puis avec les sondes (`--probes scripts/TrackCaptureCompare/probes.json --no-terrain-detail-correction`).
+  4. Répétabilité : `cand-a` contre `cand-b`, image par image (empreintes, ou différence moyenne si elles diffèrent).
+  5. Doc : par piste et par vue, les chiffres du rapport ; le résumé des trois `scene-measure` ; un tableau des écarts par sujet fait en double (aides de piste, tunnels, placement, poteaux, tailles des modèles, palmiers) avec ce que la mesure montre pour chacun, et ce qui manque ici parce que cela n'existe que là-bas (dessous de la route, sol de la ville, remplissage).
+- Validation : les quatre lancements se terminent en succès ; les rapports existent ; le doc cite pour chaque chiffre le fichier de sortie d'où il vient. Les écarts à l'original ne sont pas des échecs de cette tâche : ce sont ses résultats.
+- Commit : `docs(racing-casa): record the capture bench baseline of the local version`
+
+### ⏳ T5.4 — Vérification indépendante de S1c
+
+- Objectif : un `verifier` frais confirme ou réfute : le mode rejoue bien les vues de l'original (taille, projection, positions) ; la mesure compare dans le bon repère ; les autres modes d'automation ne régressent pas ; les chiffres du doc sont ceux des sorties.
+- Étapes : commandes longues éventuelles lancées par la session principale ; un appel au `verifier` ; verdict noté ici. `INCONCLUSIVE` : un seul nouvel appel après avoir fourni la preuve manquante, sinon S1c en pause. Constats : P0 ou P1, arrêt et question à l'auteur ; P2 introduit par S1c, corrigé dans les fichiers de T5.1 à T5.3 (un commit par correction, deux passes au plus, `verifier` frais sur l'affirmation touchée) ; le reste noté et reporté.
+- Validation : `CONFIRMED`, ou constats traités comme ci-dessus.
+- Commit : `docs(ai-agent): record the verification of the capture bench port`
 
 ---
 
