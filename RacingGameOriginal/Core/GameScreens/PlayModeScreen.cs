@@ -8,13 +8,12 @@ using RacingGame.Sounds;
 namespace RacingGame.GameScreens
 {
     /// <summary>
-    /// Shown when "Start Race" is chosen on the main menu: Single player, LAN race or Back.
+    /// Shown when "Start Race" is chosen on the main menu: Single player or Back.
     /// </summary>
     class PlayModeScreen : IGameScreen
     {
-        static readonly string[] Entries = { "Single player", "Multiplayer" };
+        static readonly string[] Entries = { "Single player" };
 
-        // remembered for the session, so the cursor returns to Multiplayer after a multiplayer race
         static int lastSelection = 0;
 
         readonly PanelButtonGroup buttons = new PanelButtonGroup(lastSelection);
@@ -33,9 +32,6 @@ namespace RacingGame.GameScreens
             {
                 case 0:
                     RacingGameManager.AddGameScreen(new CarSelection());
-                    break;
-                case 1:
-                    RacingGameManager.AddGameScreen(new LanBrowserScreen());
                     break;
             }
         }

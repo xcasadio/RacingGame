@@ -433,8 +433,6 @@ namespace RacingGame
             // Update game engine
             base.Update(gameTime);
 
-            // Pump the LAN race session, if we are in one
-            Multiplayer.LanRace.Update();
 
             if (gameScreens.Count > 0)
             {
@@ -496,9 +494,6 @@ namespace RacingGame
             if (gameScreens.Count > 0 &&
                 gameScreens.Peek().GetType() == typeof(CarSelection))
                 ((CarSelection)gameScreens.Peek()).PostUIRender();
-            else if (gameScreens.Count > 0 &&
-                gameScreens.Peek().GetType() == typeof(LanLobbyScreen))
-                ((LanLobbyScreen)gameScreens.Peek()).PostUIRender();
 
             // Do menu shader after everything
             if (BaseGame.UsePostScreenShaders && PostScreenMenu.Started)

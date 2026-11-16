@@ -38,8 +38,6 @@ namespace RacingGame.GameScreens
 		{
 			"Brake before the corner, not in it",
 			"Build your own tracks with Tarmac Toolbox",
-			"Race your friends over your local network: Start Race, Multiplayer",
-			"Custom tracks can be shared in a LAN race",
 			"Press Esc during a race for the menu",
 			"Turn off Post Screen Effects in Options if the game runs slowly",
 		};

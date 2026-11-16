@@ -44,6 +44,7 @@ Hors périmètre : tout push ; tout commit sur `main` (moteur), `master` ou `rem
 | D6 | Matériaux du jeu : garder les assets cuits **et** le PBR. Le cuiseur et ses recettes produisent des matériaux `lit-pbr` (et les tangentes), puis tout est recuit. Tranche à part, plan détaillé soumis avant exécution. |
 | D7 | Sujets faits en double sur les deux PC (O4) : la version de ce PC sert de référence. Ce qui n'existe que sur l'autre PC est porté dans l'architecture d'ici. |
 | D8 | L'original de référence peut être modifié pour compiler et servir ici (copie `RacingGameOriginal/` d'`origin/remaster`, ou `D:/development/repo/MonoGame-Samples/RacingGame`). |
+| D9 | L'original compile ici en retirant son multijoueur LAN, plutôt qu'en recopiant le package depuis l'autre PC. |
 
 ## Règles d'exécution pour l'agent
 
@@ -132,6 +133,31 @@ Retour arrière de S1 : jeu, `git switch remaster` puis `git branch -D chantier/
 
 ---
 
+## Phase 2 — Original de référence sur ce PC
+
+### ✅ T2.1 — Copie de référence dans la branche
+
+- Objectif : avoir `RacingGameOriginal/` dans la branche avant la fusion du jeu.
+- Fichiers : `RacingGameOriginal/` (371 fichiers), repris tels quels d'`origin/remaster` (`90e3d99`).
+- Validation : `git diff --quiet <commit> origin/remaster -- RacingGameOriginal` sans différence.
+- Commit : `chore(original): bring the reference copy from origin/remaster` (`a85694e`)
+
+### ✅ T2.2 — Retrait du multijoueur LAN de l'original
+
+- Objectif : l'original compile et capture sur ce PC sans le package `MonoGame.Xna.Framework.Net` (D9).
+- Fichiers : supprimés, `Core/Multiplayer/*` (6 fichiers), `Core/GameScreens/LanBrowserScreen.cs`, `LanLobbyScreen.cs`, `MultiplayerGameScreen.cs` ; modifiés, `Core/Core.csproj`, `Core/RacingGameManager.cs`, `Core/Graphics/BaseGame.cs`, `Core/GameScreens/CarSelection.cs`, `PlayModeScreen.cs`, `LoadingScreen.cs`.
+- Validation : voir la note.
+- Commit : `chore(original): remove the LAN multiplayer so the reference builds without its network package`
+
+> Validation (2026-11-16) :
+> - `dotnet build Desktop/RacingGame.csproj` et `dotnet build TrackTool/TrackTool.csproj` : 0 erreur.
+> - `RacingGame.exe --capture-track-audit --out <dossier> --size 1280x720` : sortie 0, 30 fichiers (3 pistes, 5 vues, `full` et `nopost`). `Beginner-start-full.png` regardée : piste, voiture, banderole, palmiers et ombres présents.
+> - Non vérifié : une course jouée à la main ; l'égalité de ces captures avec celles de l'autre PC.
+> - `Documentation/LAN-Multiplayer.md` et le README décrivent encore le multijoueur : laissés tels quels.
+> - À la fusion du jeu : `origin/remaster` ramènera les 9 fichiers supprimés et l'ancienne version des 6 fichiers modifiés (ajouts des deux côtés) ; garder la version d'ici.
+
+---
+
 ## Points ouverts
 
 À trancher pendant l'exécution, ou à remonter en ⚠️ Blocked si la réponse manque.
@@ -154,4 +180,4 @@ Retour arrière de S1 : jeu, `git switch remaster` puis `git branch -D chantier/
 
   Tranché par D7 : la version de ce PC sert de référence.
 - O5 (S1b) : les ADR du jeu 0015 à 0018 existent des deux côtés avec des sujets différents ; les ADR locaux 0015 à 0018 sont à renuméroter (0023 à 0026), avec leurs renvois, y compris ceux du moteur s'il y en a.
-- O6 (S1b, S2) : l'original de référence ne compile pas sur ce PC. Essai du 2026-11-16 sur la copie `RacingGameOriginal/` d'`origin/remaster`, extraite hors du dépôt : `dotnet build Desktop/RacingGame.csproj` échoue avec `NU1101`, package `MonoGame.Xna.Framework.Net` introuvable sur nuget.org (`Core/Core.csproj` et `Desktop/RacingGame.csproj` ; version `1.0.0-preview.1` d'après `Documentation/LAN-Multiplayer.md`). Cinq fichiers l'utilisent, tous du multijoueur LAN (`Core/Multiplayer/*`, `LanBrowserScreen.cs`, `MultiplayerGameScreen.cs`). Deux voies : recopier le package depuis le cache NuGet de l'autre PC, ou retirer le multijoueur LAN de la copie (D8 l'autorise). Choix de l'auteur attendu.
+- O6 (clos par T2.2, D9) : l'original de référence ne compilait pas sur ce PC. Essai du 2026-11-16 sur la copie `RacingGameOriginal/` d'`origin/remaster`, extraite hors du dépôt : `dotnet build Desktop/RacingGame.csproj` échoue avec `NU1101`, package `MonoGame.Xna.Framework.Net` introuvable sur nuget.org (`Core/Core.csproj` et `Desktop/RacingGame.csproj` ; version `1.0.0-preview.1` d'après `Documentation/LAN-Multiplayer.md`). Cinq fichiers l'utilisent, tous du multijoueur LAN (`Core/Multiplayer/*`, `LanBrowserScreen.cs`, `MultiplayerGameScreen.cs`). Deux voies : recopier le package depuis le cache NuGet de l'autre PC, ou retirer le multijoueur LAN de la copie (D8 l'autorise). Choix de l'auteur attendu.
