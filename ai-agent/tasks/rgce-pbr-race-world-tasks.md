@@ -361,3 +361,5 @@ Reste à décider ou à contrôler par l'auteur :
 - Push de `main` du moteur et de `remaster`.
 
 À savoir pour reprendre : scripts de référence du moteur dans `CasaEngine/CasaEngine/artifacts/pbr-baseline/` (ignoré par git) ; tests du moteur par `dotnet test CasaEngine.Tests/CasaEngine.Tests.csproj --blame-hang-timeout 5m`, jamais `--no-build` ; `git -c safe.directory=*` ; ne jamais indexer `.codegraph/`, `.serena/`, `MGUI/`, `log.txt` ; captures jamais pendant un build, fenêtres ouvertes et non réduites.
+
+Mise à jour du 2026-11-16 (après la passation) : `origin/main` du moteur a été fusionné (`863627b4`) et le pointeur du sous-module avancé. Les ADR du moteur cités dans ce plan ont pris +1 (0097 à 0116 devenus 0098 à 0117 : la texture de détail de `lit-pbr` est l'ADR-0117). Build du jeu, `--smoke-frontend` et `--verify-legacy-import-profile` repassés ; banc de capture non relancé sur le moteur fusionné. Détail : `ai-agent/HANDOVER.md`, §7.

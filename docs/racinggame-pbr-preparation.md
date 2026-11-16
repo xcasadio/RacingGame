@@ -12,12 +12,12 @@ What makes it stale:
 
 | Task | Stale statement | Current fact |
 |---|---|---|
-| PBR-000, 105, 602 | Reference captures "before any change" | ADR-0097 already changed the ambient of every textured lit material; the baseline must be pinned to a commit. |
-| PBR-101 | Add the colour pipeline setting to `WorldEnvironmentSettings` | Five methods to update (reset, load, save, clone, copy), as ADR-0098 did; a test is required; per-view override semantics are not stated. |
+| PBR-000, 105, 602 | Reference captures "before any change" | ADR-0098 already changed the ambient of every textured lit material; the baseline must be pinned to a commit. |
+| PBR-101 | Add the colour pipeline setting to `WorldEnvironmentSettings` | Five methods to update (reset, load, save, clone, copy), as ADR-0099 did; a test is required; per-view override semantics are not stated. |
 | PBR-102 | Always render into the scene target in linear HDR | The scene target only exists when `FrameCapturePlanner` asks for it, its format is `Color`, and the UI is composed inside the view pipeline before the blit: "UI after tonemap" needs a structural change. Buffered virtual resolutions (ADR-0087) and frozen frames (ADR-0086) are not considered. |
 | PBR-103 | Tonemap at the presenter | The only blit of the scene target is in `RenderPipeline`; `TexturePresenter` does not draw; the shader descriptor array is private. |
-| PBR-104 | Decode sRGB for colour textures | No decode point exists; `SampleBaseTexture` now also multiplies the detail texture (ADR-0099); mipmaps (ADR-0100) are averaged in the stored space. |
-| PBR-202 | Ambient = `AmbientColor × AmbientIntensity × occlusion`; sample shadows "exactly as LitForward" | The intensity is already folded into `AmbientColor`; the flat ambient source (ADR-0098) and the compose-once rule (ADR-0097) must be honoured; `HAS_FORWARD_SHADOW_BINDINGS` must be defined or shadows silently become 1; the shadow mode, tint, filter and fade of the shadow slice must be supported. |
+| PBR-104 | Decode sRGB for colour textures | No decode point exists; `SampleBaseTexture` now also multiplies the detail texture (ADR-0100); mipmaps (ADR-0101) are averaged in the stored space. |
+| PBR-202 | Ambient = `AmbientColor × AmbientIntensity × occlusion`; sample shadows "exactly as LitForward" | The intensity is already folded into `AmbientColor`; the flat ambient source (ADR-0099) and the compose-once rule (ADR-0098) must be honoured; `HAS_FORWARD_SHADOW_BINDINGS` must be defined or shadows silently become 1; the shadow mode, tint, filter and fade of the shadow slice must be supported. |
 | PBR-203 | Technique selection through `ShaderVariantLibrary` | LitForward techniques are chosen by the material; `EffectiveShaderResolver` falls back to LitForward for any unknown lit material, so a `lit-pbr` would silently render as Blinn-Phong without an explicit case; hot reload needs a new case. |
 | PBR-301 | "Same pattern as `LitDiffuseMaterial.GetFeatures`" | No such method; features come from `GetShaderCapabilities` and `RenderFeatureResolver`. |
 | PBR-302 | Register the definition and compile | Built-in factories receive counted texture handles (ADR-0037), registered ones do not; without a factory the compiler throws; key names must not collide with `lit-diffuse`. |

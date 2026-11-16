@@ -4,7 +4,7 @@ Pour reprendre le travail sur un autre PC, avec une nouvelle session d'agent qui
 
 ## 1. Avant d'éteindre ce PC (à faire par l'auteur)
 
-Rien n'est poussé : sans ces trois commandes, l'autre PC n'aura rien.
+Rien n'est poussé : sans ces commandes, l'autre PC n'aura rien. État à jour : voir le §7, qui prime sur les numéros de commit de ce §1.
 
 ```bash
 git -C D:/development/repo/RacingGame/CasaEngine push origin main
@@ -92,23 +92,23 @@ Particularités de ce PC, à revérifier sur l'autre :
 
 Les démos skinned, particles et split-screen ne sont pas déterministes.
 
-## 7. Mise à jour : `origin/main` du moteur a avancé (2026-11-16)
+## 7. Mise à jour : `origin/main` du moteur fusionné (2026-11-16)
 
-Le push de `main` du moteur a été refusé : `origin/main` contient 60 commits faits sur une autre machine (chantier « MGUI zéro allocation »), absents d'ici. Le §1 est donc remplacé par ceci :
+Le premier push de `main` du moteur a été refusé : `origin/main` portait 60 commits faits sur une autre machine (chantier « MGUI zéro allocation »). Ils sont maintenant fusionnés.
+
+- Moteur : `main` local à `863627b4` (fusion), 81 commits d'avance sur `origin/main`, 0 de retard. Le push de `main` passe désormais en avance rapide.
+- **ADR renumérotés** : `origin/main` avait pris le numéro 0097. Les vingt ADR de ce travail, 0097 à 0116, sont devenus **0098 à 0117**. Les numéros cités dans les sections précédentes de cette note et dans les notes de tâches des plans sont ceux d'avant : ajouter 1 (exemple : la texture de détail de `lit-pbr` est l'ADR-0117, le clear coat l'ADR-0115).
+- Sous-module `MGUI` du moteur : pointeur d'`origin/main` (`d0efd9b4`), arbre propre.
+- Jeu : pointeur du sous-module avancé à `863627b4` ; renvois décalés dans `docs/racinggame-pbr-preparation.md`, `docs/racinggame-3d-capture-bench-findings.md` et l'ADR-0018.
+- Contrôles après fusion : moteur, builds des deux solutions, 6119 tests verts, les douze empreintes de référence inchangées ; jeu, build 0 erreur, `--smoke-frontend` et `--verify-legacy-import-profile` en succès.
+- **Non fait** : vérification indépendante de la fusion, et banc de capture du jeu sur le moteur fusionné (le backend d'interface du moteur a changé). À faire en premier à la reprise.
+
+Commandes à lancer avant d'éteindre :
 
 ```bash
-git -C D:/development/repo/RacingGame/CasaEngine push origin chantier/pbr-detail-texture
+git -C D:/development/repo/RacingGame/CasaEngine push origin main
 ```
 
 ```bash
 git -C D:/development/repo/RacingGame push origin remaster
 ```
-
-`chantier/pbr-detail-texture` pointe sur `48d720a6`, le même commit que `main` local : elle contient tout le travail du moteur, et c'est le commit que le sous-module du jeu enregistre.
-
-**Première tâche de la prochaine session** : fusionner `origin/main` dans le travail du moteur, sur une branche (le hook interdit tout commit sur `main`), puis avancer `main` en avance rapide. Points connus :
-
-- **Collision d'ADR** : `origin/main` a pris le numéro 0097 (`desktop runtime owns its draw transaction`). Les ADR 0097 à 0116 de ce travail doivent passer à 0098 à 0117, avec tous leurs renvois : dans le moteur (`docs/`, `ai-agent/`, commentaires de code et de shaders, tests) et dans le jeu (`docs/racinggame-3d-capture-bench-findings.md`, `docs/racinggame-pbr-preparation.md`, `ai-agent/tasks/rgce-pbr-race-world-tasks.md`, ADR-0018, cette note). C'est la quatrième renumérotation ; les précédentes sont décrites dans le journal de `CasaEngine/ai-agent/tasks/pbr-rendering-tasks.md`.
-- **Sous-module `MGUI`** : `origin/main` avance son pointeur. Les builds de cette session ont tourné avec `e9d6a95d` (modification locale de l'auteur, jamais indexée).
-- `origin/main` modifie le backend d'interface (`UI/Backend/MonoGame/`, tests GPU) : après la fusion, relancer les deux builds, la suite complète et les scripts de référence, puis une vérification indépendante.
-- Ensuite : pointer le sous-module du jeu sur le nouveau `main`, rebuild du jeu, banc de capture.

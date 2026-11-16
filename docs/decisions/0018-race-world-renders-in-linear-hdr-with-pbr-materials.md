@@ -2,7 +2,7 @@
 
 - **Status**: Accepted
 - **Date**: 2026-11-16
-- **Source**: this chantier: `ai-agent/tasks/rgce-pbr-race-world-tasks.md` (D1 to D8, P1 to P9, approved by the author on 2026-11-16), following `docs/racinggame-pbr-preparation.md` and CasaEngine ADR-0116 (detail texture of `lit-pbr`)
+- **Source**: this chantier: `ai-agent/tasks/rgce-pbr-race-world-tasks.md` (D1 to D8, P1 to P9, approved by the author on 2026-11-16), following `docs/racinggame-pbr-preparation.md` and CasaEngine ADR-0117 (detail texture of `lit-pbr`)
 
 ## Context
 
@@ -25,6 +25,6 @@ Facts verified on 2026-11-16, in the code at the end of the chantier:
 
 - The look of the race is now set by a handful of scalars in `RacingGamePbrMaterialMapping`, the key light intensity, the exposure and the sky cube. All of them are starting values, to be tuned by eye by the author. Not fixed, and measured at the end of the chantier: the road is lighter against the terrain than in the original (ratio of the lit road over the lit terrain 0.71 in `linear` against 0.56 before the switch and 0.35 in the original); the terrain shadow ratio in `linear` is lower than in the original (0.14 to 0.17 against 0.27 to 0.28); the faces turned away from the sun are lit by the sky (`building-away-1`). The IBL is derived from the 512 pixel sky cube without mipmaps, whose quality has not been judged on a race.
 - Six probes the original shadows (`city-shadow-1` to `-3`, `road-shadow-1` to `-3`) are lit in the port, as they were before the chantier (the probe criterion on the shadow or light class stays at 27 of 33).
-- The CasaEngine pointer must stay at or after the commit that has the detail texture of `lit-pbr` (ADR-0116). A material of the race world must go through `RacingGamePbrMaterialMapping.Create`: a `LitDiffuseMaterial` would be pi times brighter than its neighbours at equal light.
+- The CasaEngine pointer must stay at or after the commit that has the detail texture of `lit-pbr` (ADR-0117). A material of the race world must go through `RacingGamePbrMaterialMapping.Create`: a `LitDiffuseMaterial` would be pi times brighter than its neighbours at equal light.
 - The carousel renders with the `Legacy` chain: the car is lighter there than in the race (the light and the image-based lighting add without compression), and its tint differs slightly from the race.
 - The original's glow and lens flare, textures authored per model, and transparent glass remain out of scope.

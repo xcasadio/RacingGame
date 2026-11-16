@@ -131,7 +131,7 @@ Plan `ai-agent/tasks/rgce-3d-lighting-shadows-tasks.md` (S2a), port at `46f2013`
 
 Causes found and fixed:
 
-- The engine multiplied the ambient term by the texture twice (CasaEngine ADR-0097), and used the reflection cube as ambient source whenever one was bound; a world can now ask for a flat ambient (ADR-0098).
+- The engine multiplied the ambient term by the texture twice (CasaEngine ADR-0098), and used the reflection cube as ambient source whenever one was bound; a world can now ask for a flat ambient (ADR-0099).
 - The race world had three hard-coded lights, the key one about 19 degrees from the original's, and an ambient of 0.05. It now has the original's single light and the original's ambient and diffuse per material.
 - The port raised the ambient of signs, banners and windmills to 128/255 after an override that is dead code in the original.
 - The port had added an emissive term to its generated materials.
@@ -175,8 +175,8 @@ Plan `ai-agent/tasks/rgce-3d-materials-base-tasks.md`, port at `4c058ad`, CasaEn
 
 Causes found and fixed:
 
-- No texture of the port had mipmaps: the engine's loader created a single level, while the original builds its 199 textures with mipmaps. The loader can now build the chain (CasaEngine ADR-0100) and the race world uses it. The noise on far ground and far road is gone.
-- The terrain had no detail texture (M1). The engine's lit material gains one (ADR-0099); the terrain binds `LandscapeDetail` tiled 24 times, as the original.
+- No texture of the port had mipmaps: the engine's loader created a single level, while the original builds its 199 textures with mipmaps. The loader can now build the chain (CasaEngine ADR-0101) and the race world uses it. The noise on far ground and far road is gone.
+- The terrain had no detail texture (M1). The engine's lit material gains one (ADR-0100); the terrain binds `LandscapeDetail` tiled 24 times, as the original.
 - The terrain had a specular term the original does not have.
 - The road had no tangents and no normal map (M4, for its relief).
 - The sky was the mirror image of the original's (G7): the sky cube is converted to the port's axes (ADR-0017), which also puts the glass reflections on the original's convention.
@@ -219,7 +219,7 @@ Plan `ai-agent/tasks/rgce-3d-lighting-shadows-tasks.md` (S2b), port at `d40b020`
 
 What was done:
 
-- The engine's shadows gain a mode that multiplies the lit colour by a shadow colour, a filter radius for soft edges, a fade before the shadow distance, and a depth range separate from the lateral extent (CasaEngine ADR-0101). Defaults keep the previous output.
+- The engine's shadows gain a mode that multiplies the lit colour by a shadow colour, a filter radius for soft edges, a fade before the shadow distance, and a depth range separate from the lateral extent (CasaEngine ADR-0102). Defaults keep the previous output.
 - The race world uses the original's shadow colour (0.25, 0.26, 0.27) in that mode, a filter radius of 3, and a map of 100 m with a 15 m fade.
 - Casters and receivers follow the original object by object: only its "near track" objects cast; among them banners, signs and alpha models do not receive. Measured: no mismatch on either flag on the three tracks (they differed on 1015 and 1059 of Beginner's 1147 objects before). Road, guard rails and tunnels cast and receive; the road underside and the generated columns do neither; the terrain and the city ground only receive.
 
