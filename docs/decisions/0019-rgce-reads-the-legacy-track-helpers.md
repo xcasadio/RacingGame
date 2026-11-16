@@ -7,7 +7,7 @@
 ## Context
 
 - The legacy `.Track` files name their helper items `WidthHelper` and `RoadHelper`, and the `.CombiModel` files name theirs `CombiObject`. The original game reads them with types of those names (`RacingGame.Shared/Tracks/TrackData.cs`, `TrackCombiModels.cs`).
-- RacingGameCasaEngine looked these elements up by the names of its own classes (`LegacyWidthHelper`, `LegacyRoadHelper`, `LegacyCombiObject`), as its earlier `XmlSerializer` did. It therefore read none of them. ADR-0017 kept that behaviour for parity, and O7 recorded it.
+- RacingGameCasaEngine looked these elements up by the names of its own classes (`LegacyWidthHelper`, `LegacyRoadHelper`, `LegacyCombiObject`), as its earlier `XmlSerializer` did. It therefore read none of them. ADR-0025 kept that behaviour for parity, and O7 recorded it.
 - The game drew the tracks without:
   - the road widths of the width helpers (1 everywhere), with the rails, posts, checkpoint sizes and track physics that follow them;
   - the palms and laterns of the road helper spans;
@@ -37,7 +37,7 @@
 
 ## Consequences
 
-- Complements ADR-0017, whose legacy file reading this record replaces: the reader no longer returns what `XmlSerializer` returned for the helper and CombiModel items.
+- Complements ADR-0025, whose legacy file reading this record replaces: the reader no longer returns what `XmlSerializer` returned for the helper and CombiModel items.
 - Against the original, nothing is missing, and the only extra scenery entities are the banners, signs, start light, palms and laterns, which the original places at run time.
 - Each road point's width equals the original's to within 2e-6.
 - The rendering changes on every track. The road is wider in places, and the scenery entities go from 108, 68 and 202 to 323, 265 and 729 (Advanced, Beginner, Expert). The track physics and checkpoint half widths follow the widths. The car audits did not change.

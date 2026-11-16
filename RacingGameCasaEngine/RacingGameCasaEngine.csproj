@@ -26,7 +26,7 @@
     <ProjectReference Include="..\RacingGame.Gameplay\RacingGame.Gameplay.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <!-- Every file of the project content is a game file (ADR-0016). -->
+    <!-- Every file of the project content is a game file (ADR-0024). -->
     <None Update="Content\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -34,7 +34,7 @@
     <None Update="Content\**\*.design.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
-    <!-- The editor project file, the gameplay assembly the editor loads from the content folder, and the editor state (ADR-0015). -->
+    <!-- The editor project file, the gameplay assembly the editor loads from the content folder, and the editor state (ADR-0023). -->
     <None Update="Content\RacingGameCasaEngine.json;Content\RacingGame.Gameplay.dll;Content\RacingGame.Gameplay.pdb;Content\.casaeditor\**">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>

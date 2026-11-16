@@ -1,4 +1,4 @@
-# ADR-0018: RacingGameCasaEngine's models, materials and textures are cooked assets
+# ADR-0026: RacingGameCasaEngine's models, materials and textures are cooked assets
 
 - **Status**: Accepted
 - **Date**: 2026-10-08
@@ -32,7 +32,7 @@
 
 ## Consequences
 
-- Complements ADR-0016 and ADR-0017. Every model, material and texture of the race opens in the editor; the walk of the whole catalogue is recorded with T5.7.
+- Complements ADR-0024 and ADR-0025. Every model, material and texture of the race opens in the editor; the walk of the whole catalogue is recorded with T5.7.
 - Editing a cooked `.material`, `.staticModel` or `.texture` in the editor changes the game. Running the cooker again rewrites every cooked file whose bytes differ from the glTF and the recipes, so it reverts such edits, and `--verify` reports them as mismatches. The cooker has no way to keep an edited asset.
 - 81 cooked materials name a normal texture. The game draws them without a normal map, as before, because the meshes have no tangents.
 - Car paint is not in the assets. The private material copies keep the cooked `MaterialAssetId`, so a hot reload of a car material would draw it unpainted. The copies and the paint textures live until the process ends, as before.

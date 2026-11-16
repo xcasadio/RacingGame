@@ -14,7 +14,7 @@ Tranches :
 | Tranche | Contenu | Dépend de | État |
 |---|---|---|---|
 | S1 | Fusion du moteur (T1.1) | — | Faite le 2026-11-16, avec la réserve D5 |
-| S1b | Fusion de `origin/remaster` en gardant le code et le contenu du jeu d'ici (Phase 3) : histoires jointes, docs, outils et original repris, ADR renumérotés. Le travail PBR de l'autre PC n'est pas actif après cette tranche | S1 | Détaillée, à approuver |
+| S1b | Fusion de `origin/remaster` en gardant le code et le contenu du jeu d'ici (Phase 3) : histoires jointes, docs, outils et original repris, ADR renumérotés. Le travail PBR de l'autre PC n'est pas actif après cette tranche | S1 | Faite le 2026-11-16 |
 | S1v | HANDOVER §7 : vérification indépendante des fusions du moteur et du jeu (`verifier` frais), captures UI et audit de piste du jeu sur le moteur fusionné. Avant toute tranche qui change le moteur, le contenu ou les matériaux | S1b | À détailler |
 | S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1v | À détailler |
 | S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1c | À détailler |
@@ -175,7 +175,7 @@ Ce qui reste de la note de passation : §7 → S1v ; §4 tunnel → S3, carrouse
 - Validation : aucun marqueur de conflit ; build du jeu à 0 erreur ; projets de test du jeu verts ; `--smoke-frontend` puis `--verify-legacy-import-profile` en succès.
 - Commit : `merge: integrate origin/remaster (PBR race world) into the local remaster work`
 
-> Bloquée le 2026-11-16, avant le début de la fusion : collision de conception que la règle de conflit ne tranche pas. Ici, les modèles et matériaux sont des assets cuits `lit-diffuse` chargés par identifiant (ADR-0018 local, `scripts/RgceAssetCooker`). Sur `origin/remaster`, les matériaux sont créés en code en `lit-pbr` (`RacingGamePbrMaterialMapping`), avec tangentes, normal maps converties et monde en `LinearHdr`. Décision de l'auteur : D6. La fusion sera reprise par une tranche détaillée à part (S1b), soumise à approbation.
+> Bloquée le 2026-11-16, avant le début de la fusion : collision de conception que la règle de conflit ne tranche pas. Ici, les modèles et matériaux sont des assets cuits `lit-diffuse` chargés par identifiant (ADR-0026 d'ici, numéroté 0018 jusqu'à la fusion, `scripts/RgceAssetCooker`). Sur `origin/remaster`, les matériaux sont créés en code en `lit-pbr` (`RacingGamePbrMaterialMapping`), avec tangentes, normal maps converties et monde en `LinearHdr`. Décision de l'auteur : D6. La fusion sera reprise par une tranche détaillée à part (S1b), soumise à approbation.
 > Autre collision relevée : les ADR du jeu 0015 à 0018 existent des deux côtés avec des sujets différents.
 
 ---
@@ -217,7 +217,7 @@ Constats de l'étude du 2026-11-16 (trois lectures en parallèle, faits décisif
 - Écarts sur les sujets faits en double, la version d'ici restant la référence (D7) : règle de début de plage des aides (`Reset`), échelle des poteaux de rail (1,125 ici, 1,35 là-bas), tailles des modèles (glTF ici, table de l'original là-bas), séquence aléatoire des palmiers (fixe par piste ici), filtre des CombiModel, ombres des colonnes. Ils seront mesurés par le banc en S1c et remis à l'auteur, pas corrigés d'office.
 - Aucun projet de test du jeu, d'aucun côté.
 
-### ⏳ T3.1 — Fusion d'`origin/remaster`, code et contenu du jeu d'ici
+### ✅ T3.1 — Fusion d'`origin/remaster`, code et contenu du jeu d'ici
 
 - Objectif : joindre les deux histoires dans `chantier/rgce-pbr-handover` avec un jeu qui se construit et tourne comme avant la fusion, au moteur près. Le travail PBR de l'autre PC reste dans l'histoire et sert de source aux tranches S1c à S1h ; il n'est pas actif dans l'arbre après cette tâche.
 - Fichiers :
@@ -246,6 +246,18 @@ Constats de l'étude du 2026-11-16 (trois lectures en parallèle, faits décisif
 - Arrêts : build en échec à cause d'une API du moteur qui a bougé et dont la correction ne tient pas en une adaptation minimale du point d'appel (les adaptations faites sont listées dans le commit) ; correction qui demanderait de toucher au moteur ; référence de capture introuvable.
 - Retour arrière : `git merge --abort` avant le commit ; après, `git reset --hard <commit de fusion>^1` sur cette branche, c'est-à-dire le `HEAD` relevé juste avant l'étape 1 et noté sous cette tâche (aucune autre branche touchée, ce plan conservé), sur demande de l.auteur seulement.
 - Commit : `merge: join origin/remaster, keeping the local game code and content`
+
+> Validation (2026-11-16, mode AUTO choisi par l'auteur) :
+> - `HEAD` relevé avant la fusion : `a53133b`.
+> - Dossiers gardés : `git diff --cached --quiet HEAD` vrai pour `RacingGame.Gameplay/`, `RacingGame.slnx`, `scripts/LegacyModelGltfConverter/` et `RacingGameOriginal/` ; `RacingGameCasaEngine/` ne diffère que par `Assets/README.md` et `RacingGameCasaEngine.csproj` (numéros d'ADR) et par la ligne `ThrowOnScriptTypeResolution` de `Bootstrap/RacingGameCasaEngineGame.cs`.
+> - ADR d'ici 0015 à 0018 renumérotés 0023 à 0026 avec leurs renvois ; renvois vers les ADR du moteur 0071 et 0075 passés à 0118 et 0122 ; les ADR 0015 à 0018 sont maintenant ceux de l'autre PC. Les cinq plans de l'autre PC portent dans l'index la mention que leur code n'est pas dans l'arbre.
+> - Builds à 0 erreur : jeu, `scripts/TrackCaptureCompare`, `scripts/RgceAssetCooker`, `RacingGameOriginal/Desktop`.
+> - Cuiseur : `--check` 0 manque, `--verify` 0 écart (56 modèles, 98 matériaux, 107 textures).
+> - `--smoke-frontend` et `--verify-legacy-import-profile` : succès.
+> - `--capture-ui-screens` contre `artifacts/ui-capture-determinism/ref-a/ui` : 6 états à 0,00 ; `car-selection`, `race-hud`, `pause`, `race-finished` entre 0,01 et 0,09, sous le seuil de 2,0. Captures dans `artifacts/pbr-handover/s1b/ui`.
+> - `--capture-track-audit` contre `artifacts/o7-track-helpers/after/track-audit-a` : 30 vues, pire canal 0,352 (`Beginner-helper-tunnel`), la plupart sous 0,03 ; les vues sans décor (`road-only-start`, `terrain-overview`) à 0,000. La référence était identique au pixel d'un lancement à l'autre (a contre b : 0,000). Captures dans `artifacts/pbr-handover/s1b/track-audit`.
+> - Constat remis à l'auteur et à S1v : depuis le moteur fusionné, les vues 3D ne sont plus identiques au pixel à la référence d'ici (écarts faibles, cause non cherchée dans cette tâche).
+> - Scripts `pbr-baseline` recopiés dans `CasaEngine/CasaEngine/artifacts/pbr-baseline/`.
 
 ---
 

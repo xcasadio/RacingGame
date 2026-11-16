@@ -33,11 +33,11 @@ Sound effects play through CasaEngine's audio service ([ADR-0003](../../docs/dec
 - Catalogue both in `AssetInfos.json`: `Sound.<Name>` for the `.sound` (`asset_type` `sound`), `Sound.<Name>Wave` for the `.wav` (`asset_type` `wav`).
 - Play it with `AudioService.PlaySound`. Its volume follows the Sound Volume option, which sets `SoundEffect.MasterVolume`, applied by MonoGame to every sound instance CasaEngine plays.
 - Current sounds: `Sound.Beep` and `Sound.Bleep`, played by the race start light (`GameFramework/RaceStartLight.cs`).
-- The 22 other legacy waves are ported but not played yet ([ADR-0016](../../docs/decisions/0016-rgce-content-holds-every-game-file.md)): 19 effects and engine loops, and 3 musics on the `Music` bus, streamed. `scripts/generate_rgce_content_assets.py` copies them under their XACT wave name and writes their `.sound` with the XACT sound volume (`10^(dB/2000)`) and looping. The XACT category volumes (`Music` -3 dB, `Gears` -4 dB) are not carried: set them when the game starts playing these sounds.
+- The 22 other legacy waves are ported but not played yet ([ADR-0024](../../docs/decisions/0024-rgce-content-holds-every-game-file.md)): 19 effects and engine loops, and 3 musics on the `Music` bus, streamed. `scripts/generate_rgce_content_assets.py` copies them under their XACT wave name and writes their `.sound` with the XACT sound volume (`10^(dB/2000)`) and looping. The XACT category volumes (`Music` -3 dB, `Gears` -4 dB) are not carried: set them when the game starts playing these sounds.
 
 ## Content and catalogue
 
-Every game file the game reads lives under `Content` and has a catalogue entry ([ADR-0016](../../docs/decisions/0016-rgce-content-holds-every-game-file.md)); the engine's own content (shaders, fonts, icons) comes from the CasaEngine project reference. The csproj copies `Content\**` to the output, minus the editor-only files, and links nothing from `RacingGame/Content`.
+Every game file the game reads lives under `Content` and has a catalogue entry ([ADR-0024](../../docs/decisions/0024-rgce-content-holds-every-game-file.md)); the engine's own content (shaders, fonts, icons) comes from the CasaEngine project reference. The csproj copies `Content\**` to the output, minus the editor-only files, and links nothing from `RacingGame/Content`.
 
 - Three tools write the catalogue. Ids are uuid5 of the asset name, so a second run changes nothing:
   - `scripts/generate_rgce_ui_assets.py`: the screens, sprites and UI images;
@@ -49,12 +49,12 @@ Every game file the game reads lives under `Content` and has a catalogue entry (
 
 ## CasaEngine editor project
 
-`Content/` is also a CasaEngine editor project ([ADR-0002](../../docs/decisions/0002-rgce-content-is-a-casaengine-editor-project.md), [ADR-0015](../../docs/decisions/0015-racinggame-gameplay-is-the-editor-gameplay-assembly.md)). The game itself does not read the project file.
+`Content/` is also a CasaEngine editor project ([ADR-0002](../../docs/decisions/0002-rgce-content-is-a-casaengine-editor-project.md), [ADR-0023](../../docs/decisions/0023-racinggame-gameplay-is-the-editor-gameplay-assembly.md)). The game itself does not read the project file.
 
 - Files:
   - project file `Content/RacingGameCasaEngine.json`;
   - start world `Content/Worlds/Editor.world`, with one empty entity, `EditorAutomationAnchor`, required by the editor automation;
-  - gameplay assembly `RacingGame.Gameplay` (view models, `Plugin`, and since ADR-0017 the game code: components, the car, the race session, the track layout and generators). Its build copies `RacingGame.Gameplay.dll` and `.pdb` into `Content/`; both files are git-ignored and named by `GameplayDllName`;
+  - gameplay assembly `RacingGame.Gameplay` (view models, `Plugin`, and since ADR-0025 the game code: components, the car, the race session, the track layout and generators). Its build copies `RacingGame.Gameplay.dll` and `.pdb` into `Content/`; both files are git-ignored and named by `GameplayDllName`;
   - `GameplayCsprojName` names `RacingGame.Gameplay.csproj`: before Play, the editor rebuilds and reloads the dll when its sources are newer. On project open it writes `RacingGame.Gameplay/CasaEngine.EnginePath.props`, machine-local and git-ignored.
 - Before opening:
   - build the editor from the submodule, `dotnet build CasaEngine/CasaEngine.Editor.MonoGame.sln -c Debug`, again after every submodule update;
@@ -81,7 +81,7 @@ Every game file the game reads lives under `Content` and has a catalogue entry (
 
 ## Cooked models, materials and textures
 
-The game and the editor load every model, material and texture of the race by asset id ([ADR-0018](../../docs/decisions/0018-rgce-models-and-materials-are-cooked-assets.md)). `scripts/RgceAssetCooker` cooks them from the glTF sources:
+The game and the editor load every model, material and texture of the race by asset id ([ADR-0026](../../docs/decisions/0026-rgce-models-and-materials-are-cooked-assets.md)). `scripts/RgceAssetCooker` cooks them from the glTF sources:
 
 - `Models/<Name>.staticModel` (`StaticModel.<Name>`): the geometry of `Models/<Name>.gltf` as the legacy reader reads it. The scenery, posts, column segments and start lights carry the legacy root rotated by pi/2 about X; the car and the selection plate do not.
 - `Materials/Models/<Name>/<Slot>.material` (`Material.<Name>.<Slot>`) and `Materials/Track/<Role>.material` (`Material.Track.<Role>`): `lit-diffuse` materials with the values the game used to compute from texture names (specular tuning, alpha cutout, back-face culling, reflection). Render states the game left unset are written as the renderer's defaults.

@@ -2,7 +2,7 @@
 
 - **Status**: Accepted
 - **Date**: 2026-10-09
-- **Source**: this chantier: `ai-agent/tasks/rgce-element-naming-tasks.md`, decisions D1 to D4 (author answers, 2026-10-09), proposals P1 to P7 (validated with the plan), tasks T0.1 to T3.1; CasaEngine ADR-0075 (`CasaEngine/docs/decisions/0075-the-editor-names-the-elements-and-components-it-creates.md`) for the editor side
+- **Source**: this chantier: `ai-agent/tasks/rgce-element-naming-tasks.md`, decisions D1 to D4 (author answers, 2026-10-09), proposals P1 to P7 (validated with the plan), tasks T0.1 to T3.1; CasaEngine ADR-0122 (`CasaEngine/docs/decisions/0122-the-editor-names-the-elements-and-components-it-creates.md`) for the editor side
 
 ## Context
 
@@ -10,7 +10,7 @@
 - MGUI indexes element names per window and throws `MGDuplicateElementNameException` on a duplicate, with an ordinal comparison.
 - The names that the code looks up (`btn*`, `txt*`, `face*`) did not follow the naming convention of CasaEngine, which uses `lbl` for a TextBlock and `pnl` for a Border.
 - The components of the test world `Worlds/Test/TrackBeginnerGenerators.world` and the components created by the game code (`RaceWorldFactory`, `RaceCarEntityFactory`, `LegacyTrackSceneFactory`, `CarSelectionCarousel`) kept the engine default name `Object <guid>`. The scene export wrote it in 5,118 of the 5,154 `ComponentPath` values.
-- A cloned component lost its name (CasaEngine ADR-0075, P8).
+- A cloned component lost its name (CasaEngine ADR-0122, P8).
 - The author asked that every element of the UI, of every asset and of what an asset contains is named properly.
 
 ## Decision
@@ -18,7 +18,7 @@
 - **D1, convention.** Screen elements follow the CasaEngine convention. The 92 existing names are harmonised, and the C# strings that look them up change in the same commit.
 - **D2, scope.** The screens, the worlds (entities and components) and the components created by the code. The names of the materials and of the nodes and meshes of the cooked models do not change.
 - **D3, ids.** An asset that is renamed gets the uuid5 of its new name as id. No asset is renamed here, so no id changes.
-- **D4, editor.** The editor gives a default name to what it creates (CasaEngine ADR-0075). The validator does not warn.
+- **D4, editor.** The editor gives a default name to what it creates (CasaEngine ADR-0122). The validator does not warn.
 - **P1, prefixes.** `wnd` Window; `pnl` OverlayPanel, StackPanel and Border; `img` Image; `lbl` TextBlock; `btn` Button.
 - **P2, shape of a name.** The prefix, then the role in PascalCase, then an index when the role repeats. The role comes from the last segment of the sprite, from the bound path, or from the comment before the element. The elements shared by the menu screens have the same name everywhere (`wnd<Screen>`, `pnlRoot`, `imgBackground`, `imgLogo`, `pnlBand`, `imgHeader`, `imgBackButton`, `imgSelectButton` and their highlights).
 - **P3, existing names.** `btn*` is unchanged. `txt*` becomes `lbl*`, except `txtColorLabel` (`lblCarColor`), `txtLabel0..11` (`lblRow0..11`) and `txtName` (`lblPlayerName`). In MainMenu, `face<X>` becomes `pnl<X>Face` and `lbl<X>` becomes `img<X>Label`. 85 names change and 7 stay.

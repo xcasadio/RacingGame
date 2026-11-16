@@ -1,0 +1,85 @@
+# TrackCaptureCompare
+
+Compares the 3D reference captures of the original RacingGame with the CasaEngine port, view by view (ADR-0015, plan `ai-agent/tasks/rgce-3d-capture-bench-tasks.md`).
+
+## Capture
+
+1. Original (the reference, deterministic for a given seed):
+
+   ```
+   RacingGameOriginal\Desktop\bin\Debug\net10.0\RacingGame.exe --capture-track-audit --seed 1 --out <reference folder>
+   ```
+
+   It writes `views.json`, `scene.json` (the generated track points and every placed object of each track) and, for each of the 3 tracks, 5 views (`start`, `sector-20`, `sector-50`, `sector-80`, `overview`) in two variants: `<Track>-<view>-full.png` (as the game looks) and `<Track>-<view>-nopost.png` (post screen shaders off). The default size is 1280x720 (`--size WxH` changes it; it must fit on the desktop).
+
+2. Port (replays the cameras of `views.json`, same size and projection):
+
+   ```
+   RacingGameCasaEngine\bin\Debug\net9.0-windows\RacingGameCasaEngine.exe --capture-reference-views <reference folder>\views.json --reference-capture-out <candidate folder>
+   ```
+
+   When the original's `scene.json` lies next to `views.json`, it also writes `scene-measure-<Track>.txt`: the distance of each generated road point from the original's (position, right and up vectors, road width), and for each object placed by the original the nearest object of the same model in the port (distance, rotation, scale), plus the objects without a match on either side.
+
+   `--color-pipeline legacy|linear` (default `linear`) picks the colour pipeline of the race world, for this command and for the other automation modes:
+
+   - `linear`: the race world renders in linear HDR (tonemapper `AcesApprox`, exposure 1, bloom and SSAO off, FXAA on). The sky, drawn by the game's `LegacySkyCubeViewPipeline`, is part of the scene and tonemapped with it; the HUD is not tonemapped.
+   - `legacy`: the engine's legacy colour chain, no tonemapping or anti-aliasing. This is the mode for the geometry and shadow-placement checks (T0.2 reference: `legacy` captures are identical to it). Once the materials move to PBR, the colours of this mode are no longer comparable to the original (plan `ai-agent/tasks/rgce-pbr-race-world-tasks.md`, P7).
+
+   For each saved view the port logs `[CaptureBench] view <Track>-<view> pipeline <legacy|linear> fxaaPasses <n>` in `racinggame-casaengine-<pid>.log`: `n` is the number of FXAA passes of the race view in the frame the picture comes from, 1 in `linear` and 0 in `legacy`. Nothing is logged outside this mode.
+
+   It writes `<Track>-<view>.png` and logs, per view, how far its start grid and checkpoints are from the original's positions (`alignment` lines in `racinggame-casaengine-<pid>.log`).
+
+## Usage
+
+```
+dotnet run --project scripts/TrackCaptureCompare -- <views.json> <reference folder> <candidate folder> <output folder> [--variant full|nopost]
+```
+
+`--variant` picks the original's variant (default `nopost`, since the port has no glow). Either folder may hold original files or port files, so two runs of the same game can be compared (repeatability check).
+
+Exit codes:
+
+- `1` if a file is missing or two captures have different sizes;
+- `2` on bad arguments;
+- `0` otherwise. There is no pass threshold: the report is read, not gated.
+
+The output folder receives:
+
+- `report.md`: one line per view with the mean absolute difference per channel (0-255), the share of pixels whose largest channel difference exceeds 16, the mean luminance of each image, and the share of the reference's edges found within 2 pixels in the candidate (a geometry alignment hint that ignores shading);
+- `compare-<Track>-<view>.png`: reference and candidate on top, difference x4 and edge overlay below (reference edges red, candidate edges green, common edges yellow), at half size.
+
+## Probes (light and shadow levels)
+
+```
+dotnet run --project scripts/TrackCaptureCompare -- <views.json> <reference folder> <candidate folder> <output folder> --probes scripts/TrackCaptureCompare/probes.json --no-terrain-detail-correction
+```
+
+`--probes <probes.json>` adds a probe evaluation after the usual comparison (`report.md` and `compare-*.png` are unchanged for the same inputs) and writes `probes.md` in the output folder (also printed on the console). The exit code does not depend on the probe verdicts: the report is read, not gated. A missing probes file, or `--probes` without `--no-terrain-detail-correction` or `--terrain-detail`, exits with `2`. Against the port as it is now, pass `--no-terrain-detail-correction`: both games apply the detail texture (see below).
+
+### probes.json
+
+```json
+{ "views": { "<Track>-<view>": [ { "name": "road-lit-1", "x": 480, "y": 600, "class": "lit", "surface": "road", "note": "why this point has this class" } ] } }
+```
+
+- View names are the `<Track>-<view>` names of views.json. `x`, `y` are full-resolution pixels (1280x720) of the capture, the centre of a 9x9 square; the same pixel is the same surface point in both pictures (geometry is aligned, see `docs/racinggame-3d-capture-bench-findings.md`).
+- `class`: `lit` (in the sun), `shadow` (shadowed by the original), `away` (faces away from the sun and the original does NOT shadow it: terrain slope with no caster, building wall farther than 129 m from the car of that view, where the original's shadow map stops), `away-shadowed` (faces away and the original shadows it too: a face of a near building, inside the original's shadow map, that is, within about +-42 m across the light and +-80 m along it of the point 21.5 m ahead of the car position of the view; judged by criterion 4). `note` says why, and for `away` why the original does not shadow it.
+- `surface` (optional): free label (`road`, `terrain`, `city`, `building`). `shadow` and `lit` probes are paired by surface for the ratio. `terrain` triggers the detail correction below.
+- Points sit on patches that are uniform at the 9x9 scale and at least 8 px from any shadow edge, object edge or lane marking in both pictures (checked by sampling: the report prints the luminance standard deviation of each square).
+
+### Report and criteria
+
+`probes.md` gives, per view, each probe's reference and candidate mean colour (RGB, with the luminance standard deviation of the square), their per-channel difference (candidate minus reference) and the verdicts, then the shadow/lit luminance ratio of each side, and a summary table.
+
+1. `lit` and `away`: candidate within +-12 (of 255) of the reference per channel.
+2. `shadow`: the candidate's shadow/lit ratio is within +-0.05 of the reference's. The ratio is the mean luminance (0.299 R + 0.587 G + 0.114 B) of the `shadow` probes over the mean luminance of the `lit` probes, per view and per `surface` (only when both exist).
+3. Class agreement: a probe counts as shadowed in the candidate when its luminance is below 0.6 x the mean luminance of the candidate's own `lit` probes of the same surface in that view (all `lit` probes of the view when that surface has none). Each `shadow` probe must be shadowed and each `lit` probe must not be. The original's shadow colour multiplies the image by about 0.26, so 0.6 sits between lit and shadowed.
+4. `away-shadowed`: candidate within +-12 (of 255) of the reference per channel, like criterion 1. The faces are chosen on uniform patches of near buildings that the original draws in its shadow map (`castsShadow` in `scene.json`, see below); the original shadows them whatever their N.L.
+
+### Shadow flags in scene.json
+
+Each object of `scene.json` carries `castsShadow` (membership of the original's `Landscape.nearTrackObjects`) and `receivesShadow` (member, name without `banner` or `sign`, model not an alpha model), read from the original's runtime state. The port records, for each placed object, the `CastShadows` and `ReceiveShadows` of the component it created; `scene-measure-<Track>.txt` and the console summary give the number of objects whose flags differ, and the first few. A `scene.json` without the flags is accepted (the flag comparison is skipped).
+
+### Terrain detail correction
+
+Both games now multiply the terrain colour by `2 x LandscapeDetail` (tiled x24), so the bench commands pass `--no-terrain-detail-correction` (factor 1): the reference colours are compared as they are. The correction applies only when the candidate has no detail texture, which was the port before `feat(racing-casa): give the terrain its detail texture`, so that a run of that older state compares like for like: `--terrain-detail <tga|png>` (use `RacingGame/Content/Textures/LandscapeDetail.tga`; the tool reads uncompressed and RLE 24/32-bit TGA itself) gives the per-channel mean of `2 x detail / 255`; the REFERENCE colour of `surface: terrain` probes is divided by it (clamped to 255) before the criteria, and the factor is printed in the report. The candidate is never corrected. When both folders hold the same game (original against itself), pass `--no-terrain-detail-correction` as well, otherwise the reference alone would be altered.

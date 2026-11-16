@@ -1,4 +1,4 @@
-# ADR-0015: RacingGame.Gameplay is the CasaEngine editor's gameplay assembly for RacingGameCasaEngine
+# ADR-0023: RacingGame.Gameplay is the CasaEngine editor's gameplay assembly for RacingGameCasaEngine
 
 - **Status**: Accepted
 - **Date**: 2026-10-08

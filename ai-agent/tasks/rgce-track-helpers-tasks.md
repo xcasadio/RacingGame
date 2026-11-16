@@ -645,7 +645,7 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 >   - les outils de parité ;
 >   - le départ des références de S6 depuis `after/` ;
 >   - O3.
->   Elle remplace en partie l'ADR-0017, pour la lecture des fichiers hérités : le statut de l'ADR-0017 et l'index le disent.
+>   Elle remplace en partie l'ADR-0025, pour la lecture des fichiers hérités : le statut de l'ADR-0025 et l'index le disent.
 > - **README** :
 >   - `RacingGameCasaEngine/Assets/README.md` : le générateur de route construit aussi les tunnels, les aides sont lues, et le matériau des tunnels est une constante ;
 >   - README de l'outil de cuisson : le rôle `RoadTunnel` et `ForRoadTunnel`.

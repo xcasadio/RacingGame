@@ -1,4 +1,4 @@
-# ADR-0017: RacingGame.Gameplay holds the game code, and generator components rebuild the track
+# ADR-0025: RacingGame.Gameplay holds the game code, and generator components rebuild the track
 
 - **Status**: Accepted; superseded in part by ADR-0019 (reading of the legacy helper and CombiModel items)
 - **Date**: 2026-10-08
@@ -6,12 +6,12 @@
 
 ## Context
 
-- ADR-0015 made `RacingGame.Gameplay` the editor's gameplay assembly, but the game code still lived in the `RacingGameCasaEngine` exe, which the editor never loads:
+- ADR-0023 made `RacingGame.Gameplay` the editor's gameplay assembly, but the game code still lived in the `RacingGameCasaEngine` exe, which the editor never loads:
   - 12 types derived from `EntityComponent`, `SceneComponent` or `Entity`, with `RaceGameMode` and `RacingPlayerController`;
   - 5 of them reached the game through `World.Game as RacingGameCasaEngineGame`;
   - `RacingCarPawn`, an `Entity` subclass, built its children in its constructor.
 - The race track (terrain, road, guard rails with posts, columns with segments) was built as meshes by a code factory, `LegacyTrackSceneFactory`, which mixed placement computation and mesh building.
-- The CasaEngine editor saves the serialized properties of game components (ADR-0071 of CasaEngine) and skips every component whose type has `[Browsable(false)]`.
+- The CasaEngine editor saves the serialized properties of game components (ADR-0118 of CasaEngine) and skips every component whose type has `[Browsable(false)]`.
 - The author decided that the game code moves to the gameplay DLL (D1), that worlds become editable assets (D2), and that road, rails, columns and terrain are generator components rebuilt from data assets and tuned in the inspector (D5).
 - Two runs of the track audit gave different images. The debug free camera rewrote the poses from the mouse, frames could be stale, and the chase rig left a varying roll. So pixel parity could not be measured.
 
@@ -53,7 +53,7 @@
 
 ## Consequences
 
-- Complements ADR-0015, which stands: the gameplay assembly now holds the game code too.
+- Complements ADR-0023, which stands: the gameplay assembly now holds the game code too.
 - The editor resolves the race components, so worlds can reference them. `Worlds/Test/TrackBeginnerGenerators.world` opens, saves to the same bytes and keeps its settings.
 - The posts and column segments are no longer entities but generated children of their rails and columns. Entity-level comparisons must use the per-mesh export. Culling and shadow casting are decided per generator entity.
 - A type added to the DLL must keep a simple name unique across the engine, MGUI and the editor, because the engine resolves types by simple name. `check_gameplay_type_names.py` checks it.

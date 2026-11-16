@@ -15,7 +15,7 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR | Title | Status | Date |
 |---|---|---|---|
 | ADR-0001 | RacingGameCasaEngine screens are CasaEngine screen assets bound to view models | Accepted | 2026-10-05 |
-| ADR-0002 | RacingGameCasaEngine's content folder is a CasaEngine editor project | Accepted; superseded in part by ADR-0015, ADR-0016 | 2026-10-05 |
+| ADR-0002 | RacingGameCasaEngine's content folder is a CasaEngine editor project | Accepted; superseded in part by ADR-0023, ADR-0024 | 2026-10-05 |
 | ADR-0003 | RacingGameCasaEngine plays its sound effects through CasaEngine's audio system | Accepted | 2026-10-05 |
 | ADR-0004 | RacingGameCasaEngine saves the user settings only when the player leaves the Options screen | Superseded by ADR-0013 | 2026-10-05 |
 | ADR-0005 | RacingGameCasaEngine's main menu reproduces the original XNA menu with MGUI brushes | Superseded by ADR-0006 | 2026-10-05 |
@@ -28,11 +28,15 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0012 | RacingGameCasaEngine's UI images are premultiplied, except the menu background | Accepted | 2026-10-06 |
 | ADR-0013 | RacingGameCasaEngine's Highscores, Options and Help screens reproduce the original XNA screens | Superseded by ADR-0014 | 2026-10-06 |
 | ADR-0014 | RacingGameCasaEngine's Help and Options keep their previous layout in the menus' style; Highscores reproduces the original screen | Accepted | 2026-10-06 |
-| ADR-0015 | RacingGame.Gameplay is the CasaEngine editor's gameplay assembly for RacingGameCasaEngine | Accepted | 2026-10-08 |
-| ADR-0016 | RacingGameCasaEngine's content folder holds every game file | Accepted | 2026-10-08 |
-| ADR-0017 | RacingGame.Gameplay holds the game code, and generator components rebuild the track | Accepted; superseded in part by ADR-0019 | 2026-10-08 |
-| ADR-0018 | RacingGameCasaEngine's models, materials and textures are cooked assets | Accepted | 2026-10-08 |
+| ADR-0015 | The original game exports the 3D reference views; the port replays them | Accepted | 2026-11-14 |
+| ADR-0016 | The legacy normal maps are converted to the standard channel layout | Accepted | 2026-11-14 |
+| ADR-0017 | The legacy sky cube is converted to the axes of the converted world | Accepted | 2026-11-14 |
+| ADR-0018 | The race world renders in linear HDR with PBR materials | Accepted | 2026-11-16 |
 | ADR-0019 | RacingGameCasaEngine reads the legacy track helpers and CombiModel items | Accepted | 2026-10-08 |
 | ADR-0020 | RacingGameCasaEngine names every screen element and every component | Accepted | 2026-10-09 |
 | ADR-0021 | RacingGameCasaEngine's automation modes ignore the player input | Accepted; completed by ADR-0022 | 2026-10-15 |
 | ADR-0022 | RacingGameCasaEngine's automation runs ignore the window state | Accepted | 2026-10-15 |
+| ADR-0023 | RacingGame.Gameplay is the CasaEngine editor's gameplay assembly for RacingGameCasaEngine (numbered ADR-0015 until 2026-11-16) | Accepted | 2026-10-08 |
+| ADR-0024 | RacingGameCasaEngine's content folder holds every game file (numbered ADR-0016 until 2026-11-16) | Accepted | 2026-10-08 |
+| ADR-0025 | RacingGame.Gameplay holds the game code, and generator components rebuild the track (numbered ADR-0017 until 2026-11-16) | Accepted; superseded in part by ADR-0019 | 2026-10-08 |
+| ADR-0026 | RacingGameCasaEngine's models, materials and textures are cooked assets (numbered ADR-0018 until 2026-11-16) | Accepted | 2026-10-08 |

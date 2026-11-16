@@ -319,8 +319,8 @@ Total : 273 noms (6 + 10 + 41 + 20 + 19 + 37 + 51 + 42 + 47).
 - Commit : `docs(adr): record the naming of the RacingGameCasaEngine elements`
 
 > Validation (2026-10-09) :
-> - `docs/decisions/0020-rgce-names-every-element-and-component.md` écrite d'après `template.md` (statut Accepted, date 2026-10-09, source : ce plan et les décisions de l'auteur, plus l'ADR-0075 de CasaEngine pour le côté éditeur) : contexte, D1 à D4, P1 à P7, conséquences. Lignes ajoutées à l'index de `docs/decisions/README.md` et à `ai-agent/README.md` (ce qui reste : O1, T3.3, O2).
-> - Liens vérifiés par `rg` : le chemin de l'ADR-0075 de CasaEngine, le fichier de l'ADR, la ligne d'index et le plan cités existent. Docs seulement : pas de build.
+> - `docs/decisions/0020-rgce-names-every-element-and-component.md` écrite d'après `template.md` (statut Accepted, date 2026-10-09, source : ce plan et les décisions de l'auteur, plus l'ADR-0122 de CasaEngine pour le côté éditeur) : contexte, D1 à D4, P1 à P7, conséquences. Lignes ajoutées à l'index de `docs/decisions/README.md` et à `ai-agent/README.md` (ce qui reste : O1, T3.3, O2).
+> - Liens vérifiés par `rg` : le chemin de l'ADR-0122 de CasaEngine, le fichier de l'ADR, la ligne d'index et le plan cités existent. Docs seulement : pas de build.
 
 
 ### ✅ T3.3 — Vérification indépendante

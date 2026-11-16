@@ -461,25 +461,25 @@ Un arrêt fige la tranche et celles qui en dépendent.
 
 - **Objectif** : consigner D1 et D7 et mettre la documentation à jour.
 - **Fichiers** :
-  - `docs/decisions/0015-racinggame-gameplay-is-the-editor-gameplay-assembly.md` (skill `adr`), qui remplace la partie « view models » de l'ADR-0002 ;
-  - l'ADR-0002, dont le statut devient « Superseded in part by ADR-0015 » sans autre changement ;
+  - `docs/decisions/0023-racinggame-gameplay-is-the-editor-gameplay-assembly.md` (skill `adr`), qui remplace la partie « view models » de l'ADR-0002 ;
+  - l'ADR-0002, dont le statut devient « Superseded in part by ADR-0023 » sans autre changement ;
   - `docs/decisions/README.md` ;
   - `RacingGameCasaEngine/Assets/README.md:43` et les autres docs citant l'ancien nom (`rg`).
 - **Validation** :
-  - `rg -l "RacingGameCasaEngine\.UI" docs RacingGameCasaEngine/Assets` ne trouve plus que l'ADR-0002 historique et la nouvelle ADR-0015, qui cite l'ancien nom. La portée exclut le code, vérifié en T1.1 ; les plans de `ai-agent/` sont historiques ;
+  - `rg -l "RacingGameCasaEngine\.UI" docs RacingGameCasaEngine/Assets` ne trouve plus que l'ADR-0002 historique et la nouvelle ADR-0023, qui cite l'ancien nom. La portée exclut le code, vérifié en T1.1 ; les plans de `ai-agent/` sont historiques ;
   - vérificateur indépendant de S1 (renommage, plugin, parité des captures, écrans dans l'éditeur) : CONFIRMED.
 - **Commit** : `docs(adr): record RacingGame.Gameplay as the editor's gameplay assembly`
 
 > Validation (2026-10-08) :
-> - **ADR-0015** (`Accepted`) consigne D1 et D7 :
+> - **ADR-0023** (`Accepted`) consigne D1 et D7 :
 >   - renommage, et espace de noms propre à l'exe inchangé ;
 >   - `Plugin` et `GameplayCsprojName` ;
 >   - chargement unique dans le jeu (P4) ;
 >   - `.props` local à la machine ;
 >   - conséquences : copie fantôme de la DLL seule, dossiers jamais nettoyés, `Initialize` rejouable, noms de types uniques.
-> - **ADR-0002** : statut « Accepted; superseded in part by ADR-0015 (view-model library, `GameplayCsprojName`) », sans autre changement. L'index est à jour.
+> - **ADR-0002** : statut « Accepted; superseded in part by ADR-0023 (view-model library, `GameplayCsprojName`) », sans autre changement. L'index est à jour.
 > - `RacingGameCasaEngine/Assets/README.md` : DLL de gameplay, recompilation avant Play, `.props`, dossiers `script-build`.
-> - `rg -l "RacingGameCasaEngine\.UI" docs RacingGameCasaEngine/Assets` ne trouve que l'ADR-0002 et l'ADR-0015.
+> - `rg -l "RacingGameCasaEngine\.UI" docs RacingGameCasaEngine/Assets` ne trouve que l'ADR-0002 et l'ADR-0023.
 > - **Vérificateur indépendant de S1 et de T0.2** (2026-10-08) : CONFIRMED sur les 6 points.
 >   - Test MGUI : rouge sans le correctif (930 attendu, 0 obtenu), 3 198 tests verts avec.
 >   - CasaEngine : build de l'éditeur à 0 erreur, 4 159 tests verts ; panneau Logs lisible ; `--logs-filter`.
@@ -711,7 +711,7 @@ Faits relevés pour cette phase (2026-10-08) :
 ### ✅ T3.6 — ADR, documentation et clôture de S3
 
 - **Fichiers** :
-  - `docs/decisions/0016-rgce-content-holds-every-game-file.md`. Il remplace la règle « le contenu lié non catalogué reste lié » de l'ADR-0002, dont le statut devient « superseded in part by ADR-0015, ADR-0016 » ;
+  - `docs/decisions/0024-rgce-content-holds-every-game-file.md`. Il remplace la règle « le contenu lié non catalogué reste lié » de l'ADR-0002, dont le statut devient « superseded in part by ADR-0023, ADR-0024 » ;
   - index des ADR ;
   - `RacingGameCasaEngine/Assets/README.md` (contenu, générateur, sons) ;
   - ce plan.
@@ -720,8 +720,8 @@ Faits relevés pour cette phase (2026-10-08) :
 
 > Validation (2026-10-08) :
 > - **Documents** :
->   - ADR-0016, avec son entrée dans l'index ;
->   - le statut de l'ADR-0002, « superseded in part by ADR-0015 … and ADR-0016 (linked content) » ;
+>   - ADR-0024, avec son entrée dans l'index ;
+>   - le statut de l'ADR-0002, « superseded in part by ADR-0023 … and ADR-0024 (linked content) » ;
 >   - la section « Content and catalogue » et les sons de `RacingGameCasaEngine/Assets/README.md`.
 > - **Fichier projet** : un File > Save de l'éditeur, fait sur une copie du projet avec `scripts/capture_editor_screen.ps1 -SaveProject`, laisse le catalogue de 345 entrées identique octet pour octet. Il déplaçait la clé `GameplayCsprojName`, ajoutée en T1.2 hors de l'ordre où l'éditeur l'écrit. Le fichier validé est remis dans cet ordre (`ProjectSettingsHelper.cs:126-132`), ce qui rend juste la phrase du README : « a Save leaves them unchanged ».
 > - **Vérificateur indépendant de S3 : CONFIRMED**, sans constat P0 à P2. Il a refait :
@@ -733,7 +733,7 @@ Faits relevés pour cette phase (2026-10-08) :
 >   - la liste de sortie, les exports de scène, un `--smoke-frontend`, et la relecture des captures de l'audit.
 >   Il juge l'explication des 7 vues posées étayée par le code et par les images.
 > - **Ses 4 avis, traités dans ce commit** :
->   - P3, volumes des catégories XACT : `Music` -3 dB et `Gears` -4 dB ne sont pas repris. L'ADR-0016 et le README le disent maintenant, au lieu de « garde les réglages XACT » ; il faudra les reprendre quand le jeu jouera ces sons ;
+>   - P3, volumes des catégories XACT : `Music` -3 dB et `Gears` -4 dB ne sont pas repris. L'ADR-0024 et le README le disent maintenant, au lieu de « garde les réglages XACT » ; il faudra les reprendre quand le jeu jouera ces sons ;
 >   - P4 : le contenu propre au moteur (shaders, polices, icônes) arrive dans la sortie par la référence au projet CasaEngine. L'ADR et le README le précisent ;
 >   - P4 : « Textures are PNG » devient « PNG, sauf les deux DDS ; 100 TGA convertis par la conversion des modèles, 29 par `--textures` » ;
 >   - P4 : les chiffres du contrôle négatif de T3.5 sont corrigés (31, 38 et 48 sur le canal le plus écarté).
@@ -1135,7 +1135,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 ### ✅ T4.7 — ADR, documentation et clôture de S4
 
 - **Fichiers** :
-  - `docs/decisions/0017-racinggame-gameplay-holds-the-game-code.md` : la DLL de jeu, `IRaceGameHost`, la voiture en entité, les générateurs et leurs enfants transitoires. Elle complète l'ADR-0015 sans la remplacer ;
+  - `docs/decisions/0025-racinggame-gameplay-holds-the-game-code.md` : la DLL de jeu, `IRaceGameHost`, la voiture en entité, les générateurs et leurs enfants transitoires. Elle complète l'ADR-0023 sans la remplacer ;
   - l'index des ADR ;
   - `RacingGameCasaEngine/Assets/README.md` ;
   - ce plan.
@@ -1144,7 +1144,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 
 > Validation (2026-10-08) :
 > - **Documents** :
->   - ADR-0017, avec son entrée dans l'index ;
+>   - ADR-0025, avec son entrée dans l'index ;
 >   - `RacingGameCasaEngine/Assets/README.md` : section des générateurs (T4.6), origine des ids de piste, contenu de l'assembly de gameplay.
 > - **Vérificateur indépendant de S4 : CONFIRMED**, sans constat P0 à P2, à `792437b` avec ces documents :
 >   - **code** :
@@ -1162,8 +1162,8 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont 4 découvertes en
 >     - la lecture `XDocument` est identique au bit près à celle de `XmlSerializer` sur les 13 fichiers ;
 >     - les déplacements de T4.2 à T4.5 ne changent rien hors de ce que disent leurs notes.
 > - **Avis P4 reportés**, sans retouche d'un candidat confirmé (règles de vérification) :
->   - ADR-0017, Context, écrit « 5 of them reached the game through `World.Game as RacingGameCasaEngineGame` ». Il s'agit en fait de 4 composants, plus `RaceGamepadVibration`, qui recevait le jeu par son constructeur ;
->   - ADR-0017, Consequences, écrit « Culling and shadow casting are decided per generator entity ». Seules les bornes de culling sont par entité ; le drapeau d'ombre est porté par chaque enfant généré.
+>   - ADR-0025, Context, écrit « 5 of them reached the game through `World.Game as RacingGameCasaEngineGame` ». Il s'agit en fait de 4 composants, plus `RaceGamepadVibration`, qui recevait le jeu par son constructeur ;
+>   - ADR-0025, Consequences, écrit « Culling and shadow casting are decided per generator entity ». Seules les bornes de culling sont par entité ; le drapeau d'ombre est porté par chaque enfant généré.
 >   Une prochaine ADR sur ce sujet les corrigera.
 > - **Non vérifié en conditions réelles** : la reconstruction en direct après un réglage dans l'inspecteur, et la duplication d'une entité génératrice, faute d'automatisation ; le code a été relu. Le temps de chargement d'une course, qui calcule maintenant le tracé une fois par générateur et pour la physique, n'a pas été mesuré.
 
@@ -1514,7 +1514,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
 ### ✅ T5.7 — ADR, documentation et clôture de S5
 
 - **Fichiers** :
-  - `docs/decisions/0018-rgce-models-and-materials-are-cooked-assets.md`, avec l'index des ADR ;
+  - `docs/decisions/0026-rgce-models-and-materials-are-cooked-assets.md`, avec l'index des ADR ;
   - `RacingGameCasaEngine/Assets/README.md` : la cuisson, les noms, le second lancement, la peinture ;
   - ce plan.
 - **Validation** :
@@ -1523,7 +1523,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
 - **Commit** : `docs(adr): record the cooked models, materials and textures`
 
 > Validation (2026-10-09) :
-> - **ADR-0018** (`docs/decisions/0018-rgce-models-and-materials-are-cooked-assets.md`) et son entrée d'index.
+> - **ADR-0026** (`docs/decisions/0026-rgce-models-and-materials-are-cooked-assets.md`) et son entrée d'index.
 > - **`RacingGameCasaEngine/Assets/README.md`** :
 >   - nouvelle section « Cooked models, materials and textures » : cuisson, noms, second lancement, peinture, feu, matériaux des générateurs ;
 >   - la liste des outils du catalogue passe à trois : `Image.<nom>` pour les PNG, `World.<chemin>`, puis l'outil de cuisson.
@@ -1553,7 +1553,7 @@ Faits relevés pour cette phase (2026-10-08). Les sources sont :
 >       - chaque écart entre S5 et le témoin est une valeur déjà vue entre deux lancements du témoin (au plus 1,28 sur `race-hud`) ;
 >       - contre `references-acb6ad9`, `race-finished` est à environ 13,8. Cette valeur est la même pour le témoin et pour S5 : elle est antérieure à S5.
 >   - **Éditeur** : le TSV du parcours suit le catalogue entrée par entrée. Les 604 captures existent, sans exception dans les diagnostics, et trois captures ont été lues.
->   - **ADR-0018 et README** : chaque fait est vérifié dans le code et les fichiers cuits :
+>   - **ADR-0026 et README** : chaque fait est vérifié dans le code et les fichiers cuits :
 >     - 81 matériaux sur 97 avec une carte de normales ;
 >     - aucune tangente dans les glTF ;
 >     - 54 modèles avec la racine tournée ;
@@ -1647,7 +1647,7 @@ Faits relevés pour cette phase (2026-10-09), à `2fa7ac7`. Les sources :
 | Réf | Proposition |
 |---|---|
 | P11 | **Constructeurs dans la DLL.** La construction des entités des mondes passe de `RaceWorldFactory` (exe) à `RacingGame.Gameplay` (`Race/RaceWorldTemplates.cs`), sans changer une valeur. Le jeu s'en sert jusqu'à T6.4, puis seul l'outil d'écriture s'en sert. `LegacyTrackSceneFactory.Create` reçoit la fonction de taille des modèles en paramètre. |
-| P12 | **Outil d'écriture** : `RgceAssetCooker --worlds`, qui référence déjà `RacingGame.Gameplay` et les sérialiseurs de l'éditeur. Il écrit :<br>• `Worlds/FrontEnd.world` ;<br>• `Worlds/Race/TrackBeginner.world`, `TrackAdvanced.world` et `TrackExpert.world` ;<br>• `Worlds/CarSelection.world` ;<br>• `Entities/PlayerCar.entity`.<br>La taille des modèles vient des `.staticModel` cuits, par le calcul du jeu (`ComputeLegacyModelSize`). Les ids sont des uuid5 du nom de l'asset, de l'entité et du chemin du composant : un second lancement n'écrit rien. Un nouveau lancement écrase les modifications faites dans l'éditeur, comme pour les assets cuits (ADR-0018).<br>**Mécanisme**, sans changer le moteur :<br>• pour chaque entité des constructeurs, dans leur ordre, l'outil crée une `EntityReference` en ligne (`AssetId` vide) ;<br>• il lui donne son entité par réflexion (setter interne de `Entity`), puis l'ajoute par réflexion à `World._entityReferences`, le champ que lit le sérialiseur de l'éditeur ;<br>• aucune entité n'est initialisée : ni `World.AddEntity`, ni `EditorWorldEditingService`.<br>**Sans jeu** : l'outil charge le catalogue global (`AssetCatalog.Load`) et fait pointer `EngineEnvironment.ProjectPath` vers `Content` pendant le calcul. Il calcule tous les mondes d'abord, puis les écrit par le dossier temporaire de l'outil.<br>**Taille des modèles** : `StaticModel.Load` du `.staticModel` cuit, puis `ComputeLegacyModelSize`. Ce sont le même fichier et le même calcul que le jeu, qui passe par `Acquire`. |
+| P12 | **Outil d'écriture** : `RgceAssetCooker --worlds`, qui référence déjà `RacingGame.Gameplay` et les sérialiseurs de l'éditeur. Il écrit :<br>• `Worlds/FrontEnd.world` ;<br>• `Worlds/Race/TrackBeginner.world`, `TrackAdvanced.world` et `TrackExpert.world` ;<br>• `Worlds/CarSelection.world` ;<br>• `Entities/PlayerCar.entity`.<br>La taille des modèles vient des `.staticModel` cuits, par le calcul du jeu (`ComputeLegacyModelSize`). Les ids sont des uuid5 du nom de l'asset, de l'entité et du chemin du composant : un second lancement n'écrit rien. Un nouveau lancement écrase les modifications faites dans l'éditeur, comme pour les assets cuits (ADR-0026).<br>**Mécanisme**, sans changer le moteur :<br>• pour chaque entité des constructeurs, dans leur ordre, l'outil crée une `EntityReference` en ligne (`AssetId` vide) ;<br>• il lui donne son entité par réflexion (setter interne de `Entity`), puis l'ajoute par réflexion à `World._entityReferences`, le champ que lit le sérialiseur de l'éditeur ;<br>• aucune entité n'est initialisée : ni `World.AddEntity`, ni `EditorWorldEditingService`.<br>**Sans jeu** : l'outil charge le catalogue global (`AssetCatalog.Load`) et fait pointer `EngineEnvironment.ProjectPath` vers `Content` pendant le calcul. Il calcule tous les mondes d'abord, puis les écrit par le dossier temporaire de l'outil.<br>**Taille des modèles** : `StaticModel.Load` du `.staticModel` cuit, puis `ComputeLegacyModelSize`. Ce sont le même fichier et le même calcul que le jeu, qui passe par `Acquire`. |
 | P13 | **Nom des mondes** : un monde chargé porte le nom de son entrée. Les constantes deviennent ces noms : `FrontEndWorldName` = `World.FrontEnd`, et le préfixe des courses `World.Race.`, d'où `World.Race.TrackBeginner`. Les noms d'entités ne changent pas. |
 | P14 | **Ombres et ciel** :<br>• **ombres** : un monde enregistré porte les ombres activées, et sa lumière clé en projette. `OnWorldLoaded` applique ensuite l'option des ombres aux deux, comme le faisait la création ;<br>• **ciel** (D2) : chaque monde de course porte dans son `environment` `specular_cubemap_asset_id` = l'id de `Texture.SkyCubeMap`. Le front-end et le carrousel n'en portent pas ;<br>• à `OnWorldLoaded`, `ConfigureCurrentWorldSky` lit cet id et résout son fichier par le catalogue. Il charge ce cube comme aujourd'hui, en fait le cube de réflexion et le pipeline de ciel, puis remet l'id à vide comme aujourd'hui. Le moteur ne charge donc pas le cube lui-même, et l'image ne change pas ;<br>• un monde de course sans id prend le ciel procédural, comme aujourd'hui quand le fichier manque. Changer l'id dans l'éditeur change donc le ciel de la course. |
 | P15 | **Voiture** (P6) : les mondes de course n'ont pas de `PlayerCar`. Le lieur appelle `SpawnEntity<Entity>("Entity.PlayerCar")`, renomme l'entité `PlayerCar` et règle son état (indice, couleur, piste, profil, mode, vitesse) avant qu'elle n'entre dans le monde, puis la possède. |

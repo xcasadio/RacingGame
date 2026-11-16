@@ -1,4 +1,4 @@
-# ADR-0016: RacingGameCasaEngine's content folder holds every game file
+# ADR-0024: RacingGameCasaEngine's content folder holds every game file
 
 - **Status**: Accepted
 - **Date**: 2026-10-08
@@ -31,7 +31,7 @@
 
 ## Consequences
 
-- Supersedes the rule of ADR-0002 that non-catalogued linked content stays linked. The rest of ADR-0002 stands, as amended by ADR-0015.
+- Supersedes the rule of ADR-0002 that non-catalogued linked content stays linked. The rest of ADR-0002 stands, as amended by ADR-0023.
 - The editor can open every content file: the catalogue grows from 94 to 345 entries.
 - The repository grows by 91 files and 94.4 MiB (66.1 MiB of WAV, 27.2 MiB of PNG). `RacingGame/Content` keeps its own copies for the legacy XNA game, which is unchanged.
 - A new content file needs a catalogue entry, written by one of the two generators or by the editor. `generate_rgce_content_assets.py --check` finds the ones that are missing.
