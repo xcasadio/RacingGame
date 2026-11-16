@@ -32,7 +32,7 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0016 | The legacy normal maps are converted to the standard channel layout | Accepted | 2026-11-14 |
 | ADR-0017 | The legacy sky cube is converted to the axes of the converted world | Accepted | 2026-11-14 |
 | ADR-0018 | The race world renders in linear HDR with PBR materials | Accepted | 2026-11-16 |
-| ADR-0019 | RacingGameCasaEngine reads the legacy track helpers and CombiModel items | Accepted | 2026-10-08 |
+| ADR-0019 | RacingGameCasaEngine reads the legacy track helpers and CombiModel items | Accepted; amended by ADR-0027 | 2026-10-08 |
 | ADR-0020 | RacingGameCasaEngine names every screen element and every component | Accepted | 2026-10-09 |
 | ADR-0021 | RacingGameCasaEngine's automation modes ignore the player input | Accepted; completed by ADR-0022 | 2026-10-15 |
 | ADR-0022 | RacingGameCasaEngine's automation runs ignore the window state | Accepted | 2026-10-15 |
@@ -40,3 +40,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0024 | RacingGameCasaEngine's content folder holds every game file (numbered ADR-0016 until 2026-11-16) | Accepted | 2026-10-08 |
 | ADR-0025 | RacingGame.Gameplay holds the game code, and generator components rebuild the track (numbered ADR-0017 until 2026-11-16) | Accepted; superseded in part by ADR-0019 | 2026-10-08 |
 | ADR-0026 | RacingGameCasaEngine's models, materials and textures are cooked assets (numbered ADR-0018 until 2026-11-16) | Accepted | 2026-10-08 |
+| ADR-0027 | RacingGameCasaEngine places the track objects as the original does | Proposed | 2026-11-16 |

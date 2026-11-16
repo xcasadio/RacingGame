@@ -450,7 +450,7 @@ Retour arrière de S1a : relever `git rev-parse HEAD` avant T6.1 et le noter sou
 
 Budget de S1a : pour T6.1, au plus six tours « correction puis mesure » ; pour T6.2, au plus trois. Chaque tour doit faire baisser le nombre d'objets sans correspondance ou d'écarts d'ombre. Au-delà, ou après un tour sans progrès, la tâche passe en ⚠️ Blocked avec le reste chiffré par modèle, et l'auteur est interrogé.
 
-### ⏳ T6.1 — Placement des objets comme l'original
+### ✅ T6.1 — Placement des objets comme l'original
 
 - Objectif : avec la graine du banc, chaque objet de l'original a son objet dans le jeu, à la même place, orientation et échelle, et le jeu n'en a aucun en trop.
 - Fichiers : `RacingGame.Gameplay/Track/RaceTrackLayout.cs`, `RaceTrackLayoutTypes.cs`, `LegacyTrackSceneFactory*.cs`, `LegacyTrackFileReader.cs` si la lecture est en cause ; `RacingGame.Gameplay/Components/Race*Generator*.cs` seulement pour suivre le tracé ; `RacingGameCasaEngine/Bootstrap/ReferenceViewCaptureValidator.cs` et `ReferenceSceneSnapshot.cs` pour la graine et le relevé.
@@ -473,7 +473,18 @@ Budget de S1a : pour T6.1, au plus six tours « correction puis mesure » ; pour
 - Arrêts : besoin de modifier le moteur ; un reste d'objets non appariés dont la cause n'est pas trouvée dans le code de l'original (la tâche passe en ⚠️ Blocked avec le reste chiffré par modèle ; on ne touche ni aux tolérances ni à la mesure pour le faire disparaître) ; une règle de l'original qui demanderait de changer un asset cuit.
 - Commits : un par cause distincte, chacun compilable, par exemple `fix(racing-casa): place the rail posts and column segments as the original does`, `feat(racing-casa): place the random scenery in the original's draw order`. La validation complète porte sur le dernier.
 
-### ⏳ T6.2 — Ombres portées et reçues comme l'original
+> Validation (2026-11-16), `HEAD` avant la tranche `684c93c`, exécutant `executor`, mesure relancée par la session principale (`artifacts/pbr-handover/s1a/cand-a`) :
+> - Commits : `60c06f8` (chemin d'ajout de l'original, vecteur droite brut, tailles de l'original, un seul générateur, remplissage aléatoire, plages d'aides, graine, empreinte des placements), `cd60b7d` (échelle gardée pour les placements cisaillés), `b1e0dec` (règle 5 bis : la mesure lit les enfants générés).
+> - Objets : 1147/1147, 1693/1693, 3404/3404, tous appariés, 0 manquant, 0 en trop ; distance et écart d'échelle à 0,000 ; points de route inchangés ; les 15 distances d'alignement inchangées.
+> - Générateurs : nombre d'enfants égal à celui du tracé sur les trois pistes (Beginner 224, 231 et 43 ; Advanced 368, 374 et 47 ; Expert 765, 764 et 130), transformations lues sur les entités.
+> - Graine fixe par piste : deux lancements de `--capture-track-audit` journalisent les mêmes empreintes (`6EBF84F81D01AC88`, `FD0564E1183D98FE`, `29A2403A3F0CDCFA`) ; leurs 30 images sous le seuil de 0,01.
+> - Build à 0 erreur ; cuiseur `--check` et `--verify` sans écart ; `--smoke-frontend` en succès. Tunnels : 1, 2 et 10 plages ; l'export de l'original ne contient pas les tunnels, le compte vient de l'algorithme porté.
+> - Trois tours sur six.
+> - **Critère non tenu, regradé par la session principale (mode AUTO) :** l'écart de rotation des supports de rail, lu sur les entités, est de 1,08°, 6,81° et 11,91° (critère : sous 0,1°). Cause : la matrice de l'original est cisaillée en pente, et une entité ne porte qu'une échelle, une rotation et une translation. Tous les autres modèles sont sous 0,04°. Tenir le critère demande une hiérarchie de pivots par objet ou une transformation matricielle dans le moteur, ce qui est un arrêt de cette tâche. Décision : approximation acceptée, position et échelle exactes, limite écrite dans l'ADR-0027 et remise à l'auteur (O9). L'affirmation de la tranche est réduite d'autant.
+> - Écarts au plan : découpage en commits différent des exemples ; `TryDecomposePlacement` non prévu, il change aussi la décomposition des entités du décor ; table des tailles transcrite de celle de l'autre PC, non relue sur les `.xnb`.
+> - Non traité, noté : `scripts/TrackPlacementExporter` réimplémente l'ancien placement ; le maillage des rails garde le vecteur droite normalisé, les supports le vecteur brut (quelques centimètres d'écart en pente).
+
+### ✅ T6.2 — Ombres portées et reçues comme l'original
 
 - Objectif : chaque objet placé projette et reçoit une ombre quand, et seulement quand, celui de l'original le fait.
 - Fichiers : `RacingGame.Gameplay/Track/LegacyTrackSceneFactory*.cs`, `RaceTrackLayout*.cs`, `Components/RaceGeneratedModelComponent.cs` ou les générateurs, selon l'endroit où les indicateurs sont posés.
@@ -482,13 +493,21 @@ Budget de S1a : pour T6.1, au plus six tours « correction puis mesure » ; pour
 - Arrêts : la règle de l'original dépend d'un état que le moteur ne sait pas exprimer (tâche ⚠️ Blocked, sans contournement).
 - Commit : `fix(racing-casa): cast and receive object shadows as the original does`
 
-### ⏳ T6.3 — Références reprises et décisions écrites
+> Validation (2026-11-16), commit `3035053`, mesure relancée par la session principale : 0 écart d'ombre projetée et 0 écart d'ombre reçue sur 1147, 1693 et 3404 objets appariés. Règle de l'original citée dans le code (`Landscape.cs:56`, `159-162`, `409-414`, `1314-1321` ; `Model.cs:212`, `877`). Un tour sur trois.
+
+### ✅ T6.3 — Références reprises et décisions écrites
 
 - Objectif : la référence « avant PBR » est celle de la version alignée, et les décisions sont écrites.
 - Fichiers : `docs/racinggame-3d-capture-bench-local-baseline.md` (section ajoutée « After the alignment », les chiffres d'avant gardés), un ADR du jeu (skill `adr`, numéro libre suivant) qui amende l'ADR-0019 : ordre de tirage et chemin d'ajout de l'original, graine, table des tailles, ombres ; `docs/decisions/README.md` ; l'ADR-0019 marqué amendé ; ce plan.
 - Étapes : banc complet relancé (deux rejeux, comparaisons `nopost`, `full`, sondes, répétabilité) vers `artifacts/pbr-handover/s1a/` ; nouvelles références d'ici notées : `--capture-track-audit` et `--capture-ui-screens` dans `artifacts/pbr-handover/s1a/` ; chaque chiffre du doc cité avec son fichier de sortie, tableaux recopiés par script, pas à la main.
 - Validation : les lancements en succès ; le doc et l'ADR relus contre les sorties.
 - Commit : `docs(racing-casa): record the alignment on the original's object placement`
+
+> Validation (2026-11-16) : banc complet relancé vers `artifacts/pbr-handover/s1a/` (deux rejeux, `nopost`, `full`, sondes, répétabilité), tous en succès. Section « After the alignment » du doc générée par script depuis les sorties. ADR-0027 écrit en `Proposed` ; ADR-0019 marqué amendé.
+> - Contours retrouvés (`nopost`) en hausse sur les 15 vues, par exemple `Expert-start` de 39,8 % à 56,4 %.
+> - Sondes de lumière inchangées (le rapport ombre sur lumière relève de S1g).
+> - Répétabilité : 12 fichiers identiques sur 15, les trois autres à une différence moyenne de 0,00.
+> - Nouvelles références d'ici : audit de piste `artifacts/pbr-handover/s1a/audit-1`, captures UI `artifacts/pbr-handover/s1a/ui`. Contre les captures UI d'avant : 7 états à 0,00 ; `race-hud` 1,89, `pause` 0,52 et `race-finished` 1,20 au pire canal, parce que le décor a changé.
 
 ### ⏳ T6.4 — Vérification indépendante de S1a
 
@@ -523,3 +542,5 @@ Budget de S1a : pour T6.1, au plus six tours « correction puis mesure » ; pour
 - O6 (clos par T2.2, D9) : l'original de référence ne compilait pas sur ce PC. Essai du 2026-11-16 sur la copie `RacingGameOriginal/` d'`origin/remaster`, extraite hors du dépôt : `dotnet build Desktop/RacingGame.csproj` échoue avec `NU1101`, package `MonoGame.Xna.Framework.Net` introuvable sur nuget.org (`Core/Core.csproj` et `Desktop/RacingGame.csproj` ; version `1.0.0-preview.1` d'après `Documentation/LAN-Multiplayer.md`). Cinq fichiers l'utilisent, tous du multijoueur LAN (`Core/Multiplayer/*`, `LanBrowserScreen.cs`, `MultiplayerGameScreen.cs`). Deux voies : recopier le package depuis le cache NuGet de l'autre PC, ou retirer le multijoueur LAN de la copie (D8 l'autorise). Choix de l'auteur attendu.
 - O7 : depuis le moteur fusionné, les vues 3D du jeu ne sont plus identiques au pixel à la référence d'ici (T3.1 : pire canal 0,352 sur 255 pour l'audit de piste, 0,09 pour les captures UI avec 3D). Cause non cherchée. Décision en mode AUTO : écart faible, hors du code du jeu (identique), non bloquant ; une nouvelle référence est prise en S1c. À confirmer par l'auteur.
 - O8 (remis à l'auteur par S1c) : la mesure contre l'original montre que la version d'ici, gardée comme référence (D7), s'écarte de l'original sur plusieurs sujets faits en double : échelle des poteaux de rail, nombre de segments de colonne, lanternes en trop, palmiers, panneaux, ombres portées. Détail dans `docs/racinggame-3d-capture-bench-local-baseline.md`. Rien n'est corrigé d'office. Question : faut-il aligner ces sujets sur l'original (une tranche de plus, avant ou après le PBR), ou les laisser tels quels ? **Tranché le 2026-11-16 : D11, aligner maintenant (tranche S1a).**
+- O9 (S1a) : un support de rail en pente penche par rapport à celui de l'original, jusqu'à 1,08°, 6,81° et 11,91° sur les trois pistes, parce qu'une entité ne peut pas porter le cisaillement de la matrice de l'original. Lanternes, banderoles, panneaux et objets de départ portent le même cisaillement. Approximation acceptée en mode AUTO (position et échelle exactes). Question : faut-il la version exacte, par une hiérarchie de pivots par objet côté jeu, ou par une transformation matricielle côté moteur ?
+- O10 (S1a) : `scripts/TrackPlacementExporter` réimplémente l'ancien placement et ses tailles de modèle ; il ne décrit plus ce que le jeu place. À supprimer ou à réaligner : choix de l'auteur.

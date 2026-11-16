@@ -6,6 +6,8 @@ This is a different measurement from `racinggame-3d-capture-bench-findings.md`. 
 
 Every figure cites its output file under `artifacts/pbr-handover/s1c/` (not in git).
 
+The object placement was then aligned on the original; the second run, which is the reference taken before PBR, is in the last section. Decisions: see ADR-0027.
+
 ## Run
 
 - Game `40fb7c1`, engine `b429b79ec`, Debug builds.
@@ -111,3 +113,77 @@ Other differences seen in the pictures:
 - One run on one machine. The picture figures depend on the GPU.
 - The object match uses the tool's fixed 1 m distance. A palm drawn from another random sequence counts as missing and extra at once.
 - Nothing here says which side is right for the gameplay. It says how far this version is from the original.
+
+## After the alignment on the original's object placement
+
+Second run, on 2026-11-16, after slice S1a of the plan: the objects are placed through the original's add path, in its draw order, and cast and receive shadows as the original's do (ADR-0027). This run is the reference taken before PBR. The figures above stay as the record of the version before the alignment.
+
+Outputs under `artifacts/pbr-handover/s1a/`; the original's export is the same one, `artifacts/pbr-handover/s1c/ref`. The tables of this section are generated from the output files by a script.
+
+### Scene against the original
+
+`cand-a/scene-measure-<Track>.txt`.
+
+| Track | Road points | Objects original / port | Matched | Missing | Extra | Shadow cast / receive mismatches |
+|---|---|---|---|---|---|---|
+| Beginner | 1332 / 1332, 0.000 m at most | 1147 / 1147 | 1147 | 0 | 0 | 0 / 0 |
+| Advanced | 2172 / 2172, 0.000 m at most | 1693 / 1693 | 1693 | 0 | 0 | 0 / 0 |
+| Expert | 4466 / 4466, 0.000 m at most | 3404 / 3404 | 3404 | 0 | 0 | 0 / 0 |
+
+Largest difference of a matched object, per track, with the model that carries it:
+
+| Track | Distance | Scale ratio | Rotation | Rotation without `GuardRailHolder` |
+|---|---|---|---|---|
+| Beginner | 0.000 m | 0.000 | 1.08 degrees (`GuardRailHolder`) | 0.04 degrees (`AlphaPalm2`) |
+| Advanced | 0.000 m | 0.000 | 6.81 degrees (`GuardRailHolder`) | 0.04 degrees (`AlphaPalm`) |
+| Expert | 0.000 m | 0.000 | 11.91 degrees (`GuardRailHolder`) | 0.04 degrees (`AlphaPalm`) |
+
+The rotation of the guard rail posts is read on the entities the generators built. The original's post matrix is sheared on a slope (its right, direction and up vectors are not at a right angle); an entity holds a scale, a rotation and a translation, so it keeps the closest rotation. Position and scale are exact. Open point O9 of the plan.
+
+### Pictures against the original
+
+`compare-nopost/report.md`, `compare-full/report.md`; the `nopost` edges before the alignment are repeated from `artifacts/pbr-handover/s1c/compare-nopost/report.md`.
+
+| View | R, G, B `nopost` | Edges `nopost` | Edges `nopost` before | R, G, B `full` | Edges `full` |
+|---|---|---|---|---|---|
+| Beginner-start | 29.69, 27.03, 23.51 | 58.9 % | 49.0 % | 39.69, 36.01, 31.20 | 73.0 % |
+| Beginner-sector-20 | 55.09, 56.25, 56.78 | 33.2 % | 31.9 % | 69.24, 67.67, 68.40 | 47.5 % |
+| Beginner-sector-50 | 25.32, 22.78, 20.00 | 53.2 % | 50.6 % | 44.71, 37.16, 31.74 | 75.1 % |
+| Beginner-sector-80 | 28.76, 27.44, 23.88 | 55.4 % | 48.6 % | 49.28, 43.14, 35.37 | 74.3 % |
+| Beginner-overview | 22.03, 19.60, 17.81 | 86.9 % | 80.9 % | 38.02, 34.62, 32.34 | 94.3 % |
+| Advanced-start | 24.46, 21.60, 19.11 | 42.3 % | 42.1 % | 49.71, 40.30, 33.85 | 62.9 % |
+| Advanced-sector-20 | 46.59, 39.27, 32.00 | 42.9 % | 42.6 % | 67.92, 54.38, 45.27 | 68.2 % |
+| Advanced-sector-50 | 26.14, 23.64, 21.06 | 55.4 % | 51.5 % | 46.78, 39.20, 33.77 | 76.7 % |
+| Advanced-sector-80 | 21.10, 18.82, 16.44 | 45.0 % | 39.0 % | 39.51, 31.40, 25.93 | 61.1 % |
+| Advanced-overview | 22.85, 19.82, 17.40 | 87.3 % | 85.5 % | 43.89, 37.70, 32.88 | 92.3 % |
+| Expert-start | 28.15, 25.56, 21.73 | 56.4 % | 39.8 % | 38.87, 35.28, 30.23 | 69.5 % |
+| Expert-sector-20 | 25.72, 23.26, 19.71 | 40.7 % | 32.3 % | 43.00, 34.73, 27.74 | 58.0 % |
+| Expert-sector-50 | 27.48, 24.74, 22.63 | 51.6 % | 43.5 % | 46.69, 38.91, 33.75 | 71.0 % |
+| Expert-sector-80 | 19.61, 17.84, 15.15 | 46.5 % | 40.8 % | 30.82, 25.14, 21.77 | 77.2 % |
+| Expert-overview | 24.44, 22.43, 21.49 | 93.7 % | 88.4 % | 44.52, 39.94, 37.64 | 94.1 % |
+
+### Light and shadow probes
+
+`compare-probes/probes.md`.
+
+| Criterion | Passed | Failed | Judged |
+|---|---|---|---|
+| 1. lit and away within +-12 | 11 | 23 | 34 |
+| 2. shadow/lit ratio within +-0.05 (per view and surface) | 0 | 4 | 4 |
+| 3. class agreement (shadow shadowed, lit lit) | 21 | 12 | 33 |
+| 4. away-shadowed within +-12 | 0 | 3 | 3 |
+
+Shadow over lit luminance ratio, original then port: terrain 0.284 then 1.128; city 0.276 then 0.682; road 0.228 then 0.673; terrain 0.267 then 1.024. The lighting is not part of this slice, so these stay as before.
+
+### Repeatability
+
+Two runs (`cand-a`, `cand-b`, `compare-repeat/report.md`): 12 identical files of 15. Different by their hash: `Advanced-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-start.png` (mean difference 0.00, 0.00, 0.00).
+
+Outside the bench the seed is fixed per track. Placement digests logged by two runs of `--capture-track-audit` (`audit-run-1.log`, `audit-run-2.log`):
+
+| Track | Placements | Digest, run 1 | Digest, run 2 |
+|---|---|---|---|
+| Beginner | 1274 | `6EBF84F81D01AC88` | `6EBF84F81D01AC88` |
+| Advanced | 1757 | `FD0564E1183D98FE` | `FD0564E1183D98FE` |
+| Expert | 3432 | `29A2403A3F0CDCFA` | `29A2403A3F0CDCFA` |
+
