@@ -32,12 +32,12 @@ internal static partial class LegacyTrackSceneFactory
     private static readonly HashSet<string> MissingModelNames = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// The catalogue id of the cooked model of a legacy model name, after the name aliases. Returns false, with one
-    /// warning per name, when the catalogue has no such model.
+    /// The catalogue id of the cooked model of a legacy model name (already resolved to the name the original's add path
+    /// keeps, see <see cref="LegacyLandscapePlacer"/>). Returns false, with one warning per name, when the catalogue has no
+    /// such model.
     /// </summary>
-    internal static bool TryGetStaticModelAssetId(string legacyModelName, out Guid assetId)
+    internal static bool TryGetStaticModelAssetId(string modelName, out Guid assetId)
     {
-        string modelName = RaceTrackLayout.NormalizeLegacyModelName(legacyModelName);
         AssetInfo? assetInfo = AssetCatalog.Get(StaticModelAssetNamePrefix + modelName);
         if (assetInfo != null)
         {
@@ -52,28 +52,5 @@ internal static partial class LegacyTrackSceneFactory
 
         assetId = Guid.Empty;
         return false;
-    }
-
-    /// <summary>
-    /// The size of a cooked model for the scenery placement, null when the catalogue has no such model. Computed once per
-    /// model, from the model the engine loads; the hold on it is given back at once, the components that place it hold it.
-    /// </summary>
-    private static float? GetLegacyModelSize(string legacyModelName, AssetContentManager assetContentManager)
-    {
-        string modelName = RaceTrackLayout.NormalizeLegacyModelName(legacyModelName);
-        if (ModelSizeCache.TryGetValue(modelName, out float cachedSize))
-        {
-            return cachedSize;
-        }
-
-        if (!TryGetStaticModelAssetId(modelName, out Guid assetId))
-        {
-            return null;
-        }
-
-        using AssetHandle<StaticModel> handle = assetContentManager.Acquire<StaticModel>(assetId);
-        float size = ComputeLegacyModelSize(handle.Asset);
-        ModelSizeCache[modelName] = size;
-        return size;
     }
 }

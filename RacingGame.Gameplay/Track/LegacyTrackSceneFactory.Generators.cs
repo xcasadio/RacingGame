@@ -82,7 +82,11 @@ internal static partial class LegacyTrackSceneFactory
         return new RaceTrackSource(trackName, track, heightmapPath, heights);
     }
 
-    /// <summary>The layout a generator component works from: no scenery, the post and column spacing of its settings.</summary>
+    /// <summary>
+    /// The layout a generator component works from: the post and column spacing of its settings. The neutral objects, the
+    /// posts and the column segments go through the same add path as the race's, in the same order, so a generator's lists are
+    /// the race's. None of them draws a random number, so there is no seed and no generated scenery.
+    /// </summary>
     internal static RaceTrackLayout ComputeGeneratorLayout(RaceTrackSource source, RaceTrackLayoutSettings settings)
     {
         return RaceTrackLayout.Compute(
@@ -90,7 +94,7 @@ internal static partial class LegacyTrackSceneFactory
             source.Track,
             source.Heights,
             LoadCombiModel,
-            static _ => null,
+            seed: 0,
             settings,
             includeScenery: false);
     }

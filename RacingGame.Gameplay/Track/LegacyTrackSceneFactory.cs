@@ -14,9 +14,16 @@ internal static partial class LegacyTrackSceneFactory
     // The start light's models: red, yellow and green (RacingGame.Shared/Landscapes/TrackObjectManager.cs).
     internal const string StartLightEntityNamePrefix = "Track.Scenery.StartLight.";
 
+    /// <summary>
+    /// The seed of the random scenery of the tracks built next. Null (the default) is a seed per track, derived from the track's
+    /// name (<see cref="RaceTrackLayout.CreateTrackSeed"/>): the same scenery on every launch. The original draws its random
+    /// scenery from a generator it reseeds once per level, <c>new Random(1)</c> in its reference capture; the reference view
+    /// capture sets the seed of its views.json here, so that the port draws the same.
+    /// </summary>
+    internal static int? SceneryRandomSeed { get; set; }
+
     private static readonly Dictionary<string, LegacyTrackLayout> TrackCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, List<LegacyCombiObject>> CombiCache = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly Dictionary<string, float> ModelSizeCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, LegacyTerrainHeightSampler> TerrainCache = new(StringComparer.OrdinalIgnoreCase);
 
     internal static RaceTrackScene Create(string trackName, AssetContentManager assetContentManager)
@@ -24,7 +31,8 @@ internal static partial class LegacyTrackSceneFactory
         Guid trackAssetId = GetCatalogAssetId(RaceBootstrapAssets.GetTrackDataAssetName(trackName));
         Guid heightmapAssetId = GetCatalogAssetId(RaceBootstrapAssets.LandscapeHeightsData);
         RaceTrackSource source = ResolveTrackSource(trackAssetId, heightmapAssetId);
-        RaceTrackLayout layout = ComputeRaceLayout(trackName, source, assetContentManager);
+        RaceTrackLayout layout = ComputeRaceLayout(trackName, source);
+        Logs.WriteInfo($"Track placements {trackName}: {layout.Placements.Count} placement(s) ({layout.LeftPosts.Count} left posts, {layout.RightPosts.Count} right posts, {layout.ColumnSegments.Count} column segments, {layout.Scenery.Count} scenery), tunnels {layout.TunnelSpans.Count}, digest {layout.ComputePlacementDigest()}");
 
         // The track's geometry is rebuilt by generator components from the same catalogued assets; the layout above
         // only drives what stays assembled here: the scenery, the checkpoints and the start.
@@ -63,14 +71,14 @@ internal static partial class LegacyTrackSceneFactory
     /// The layout <see cref="Create"/> builds the scenery, the checkpoints and the start from: every placement, with the
     /// scenery. Also read by the reference capture, which measures what the race world holds against it.
     /// </summary>
-    internal static RaceTrackLayout ComputeRaceLayout(string trackName, RaceTrackSource source, AssetContentManager assetContentManager)
+    internal static RaceTrackLayout ComputeRaceLayout(string trackName, RaceTrackSource source)
     {
         return RaceTrackLayout.Compute(
             trackName,
             source.Track,
             source.Heights,
             LoadCombiModel,
-            modelName => GetLegacyModelSize(modelName, assetContentManager));
+            SceneryRandomSeed ?? RaceTrackLayout.CreateTrackSeed(trackName));
     }
 
     private static Entity CreateGeneratorEntity(string name, RaceTrackGeneratorComponent generator, Guid trackAssetId, Guid heightmapAssetId)
@@ -331,61 +339,6 @@ internal static partial class LegacyTrackSceneFactory
     {
         int index = (int)MathF.Round(progress * (roadPoints.Count - 1)) % roadPoints.Count;
         return roadPoints[Math.Clamp(index, 0, roadPoints.Count - 1)];
-    }
-
-    private static float ComputeLegacyModelSize(StaticModel model)
-    {
-        if (model.Meshes.Count == 0)
-        {
-            return 1f;
-        }
-
-        IReadOnlyList<VertexPositionNormalTexture> vertices = model.Meshes[0].GetVertices();
-        if (vertices.Count == 0)
-        {
-            return 1f;
-        }
-
-        var points = new Vector3[vertices.Count];
-        for (int index = 0; index < vertices.Count; index++)
-        {
-            points[index] = vertices[index].Position;
-        }
-
-        BoundingSphere boundingSphere = BoundingSphere.CreateFromPoints(points);
-        float scale = 1f;
-        if (model.RootNode != null && TryGetMeshAbsoluteTransform(model.RootNode, Matrix.Identity, 0, out Matrix absoluteTransform))
-        {
-            scale = Math.Max(
-                absoluteTransform.Right.Length(),
-                Math.Max(
-                    absoluteTransform.Up.Length(),
-                    absoluteTransform.Backward.Length()));
-        }
-
-        float size = boundingSphere.Radius * scale;
-        return size > 0.0001f ? size : 1f;
-    }
-
-    private static bool TryGetMeshAbsoluteTransform(StaticModelNode node, Matrix parentTransform, int meshIndex, out Matrix absoluteTransform)
-    {
-        absoluteTransform = node.LocalTransform * parentTransform;
-        if (node.MeshIndex == meshIndex)
-        {
-            return true;
-        }
-
-        foreach (StaticModelNode child in node.Children)
-        {
-            if (TryGetMeshAbsoluteTransform(child, absoluteTransform, meshIndex, out Matrix childTransform))
-            {
-                absoluteTransform = childTransform;
-                return true;
-            }
-        }
-
-        absoluteTransform = Matrix.Identity;
-        return false;
     }
 
     private static LegacyTerrainHeightSampler LoadTerrainHeightSampler(string filePath)

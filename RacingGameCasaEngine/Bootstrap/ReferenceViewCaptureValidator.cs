@@ -96,6 +96,13 @@ internal sealed class ReferenceViewCaptureValidator
             _fieldOfViewY = MathHelper.ToRadians(root.GetProperty("fieldOfViewYDegrees").GetSingle());
             _nearPlane = root.GetProperty("nearPlane").GetSingle();
             _farPlane = root.GetProperty("farPlane").GetSingle();
+
+            // The original reseeds its random scenery with this seed for each level: the race worlds built from now on do too.
+            if (root.TryGetProperty("seed", out JsonElement seed))
+            {
+                LegacyTrackSceneFactory.SceneryRandomSeed = seed.GetInt32();
+            }
+
             foreach (JsonElement track in root.GetProperty("tracks").EnumerateArray())
             {
                 var views = new List<ReferenceView>();
@@ -396,7 +403,7 @@ internal sealed class ReferenceViewCaptureValidator
         try
         {
             string catalogTrackName = RaceFrontEndCatalog.Tracks[FindCatalogTrackIndex(track.Name)].Name;
-            RaceTrackLayout layout = LegacyTrackSceneFactory.ComputeRaceLayout(catalogTrackName, space.Source, _game.AssetContentManager);
+            RaceTrackLayout layout = LegacyTrackSceneFactory.ComputeRaceLayout(catalogTrackName, space.Source);
             ReferenceSceneSnapshot snapshot = ReferenceSceneSnapshot.Capture(_game.GameManager.CurrentWorld!, space, layout, out int notBuiltCount);
 
             IEnumerable<RaceTrackModelPlacement> placements = layout.Scenery.Concat(layout.LeftPosts).Concat(layout.RightPosts).Concat(layout.ColumnSegments);

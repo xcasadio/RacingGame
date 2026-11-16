@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Xna.Framework;
 using static RacingGame.Gameplay.Track.RaceTrackSpace;
@@ -10,7 +11,7 @@ namespace RacingGame.Gameplay.Track;
 /// the checkpoints, the start pose and the physics profile.
 /// It builds no mesh, material or entity and touches no GPU object, so the scene factory, the generator
 /// components and the export of worlds can all reuse it. The operations, their order and their constants are
-/// those of the former scene factory: the float results must stay bit-identical.
+/// those of the original game (RacingGameOriginal/Core/Tracks, Core/Landscapes): the float results must stay bit-identical.
 /// </summary>
 internal sealed class RaceTrackLayout
 {
@@ -38,6 +39,7 @@ internal sealed class RaceTrackLayout
     private const float CheckpointTriggerHalfDepth = 2.75f;
     private const float InsideRoadDistance = 0.5f;
     private const float MinimumColumnHeight = 2.5f;
+    private const float ColumnGroundHeight = 1.0f;
 
     private static readonly Vector3 HolderPileCorrectionVector = new(0.225f, 0f, 0f);
     private static readonly Vector3[] LoopingPoints =
@@ -56,16 +58,10 @@ internal sealed class RaceTrackLayout
     // The start light's models: red, yellow and green (RacingGame.Shared/Landscapes/TrackObjectManager.cs).
     internal static readonly string[] StartLightModelNames = ["StartLight", "StartLight2", "StartLight3"];
 
-    private static readonly Dictionary<string, string> ModelAliases = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["OilWell"] = "OilPump",
-        ["PalmSmall"] = "AlphaPalmSmall",
-        ["AlphaPalm4"] = "AlphaPalmSmall",
-        ["Palm"] = "AlphaPalm",
-        ["Casino"] = "Casino01",
-        ["Combi"] = "CombiPalms",
-    };
+    // Track.cs:786-788: the palms the generation picks from.
     private static readonly string[] PalmModelCandidates = ["AlphaPalm", "AlphaPalm2", "AlphaPalm3", "AlphaPalmSmall"];
+
+    // Track.cs:938-942: the banners of the checkpoints.
     private static readonly string[] CheckpointBannerCandidates = ["Banner", "Banner2", "Banner3", "Banner4", "Banner5", "Banner6"];
 
     private RaceTrackLayout(
@@ -80,6 +76,7 @@ internal sealed class RaceTrackLayout
         IReadOnlyList<RaceTrackModelPlacement> columnSegments,
         IReadOnlyList<RaceTrackTunnelSpan> tunnelSpans,
         IReadOnlyList<RaceTrackModelPlacement> scenery,
+        IReadOnlyList<RaceTrackModelPlacement> placements,
         IReadOnlyList<RaceCheckpointTriggerDefinition> checkpointTriggers,
         RaceTrackStartPose playerStartPose,
         RaceTrackPhysicsProfile physicsProfile,
@@ -97,6 +94,7 @@ internal sealed class RaceTrackLayout
         ColumnSegments = columnSegments;
         TunnelSpans = tunnelSpans;
         Scenery = scenery;
+        Placements = placements;
         CheckpointTriggers = checkpointTriggers;
         PlayerStartPose = playerStartPose;
         PhysicsProfile = physicsProfile;
@@ -133,8 +131,14 @@ internal sealed class RaceTrackLayout
     /// <summary>The tunnel spans of the road helpers, in road order. Computed with or without the scenery.</summary>
     public IReadOnlyList<RaceTrackTunnelSpan> TunnelSpans { get; }
 
-    /// <summary>The scenery in runtime space, in placement order. A placement's index is the one its entity name carries.</summary>
+    /// <summary>
+    /// The scenery in runtime space, in placement order: the neutral objects of the track file, then what the generation adds
+    /// (palms, laterns, start objects, banners, signs, random scenery). A placement's index is the one its entity name carries.
+    /// </summary>
     public IReadOnlyList<RaceTrackModelPlacement> Scenery { get; }
+
+    /// <summary>Every object the original's add path accepted (posts, column segments and scenery), in the order it added them.</summary>
+    public IReadOnlyList<RaceTrackModelPlacement> Placements { get; }
 
     public IReadOnlyList<RaceCheckpointTriggerDefinition> CheckpointTriggers { get; }
 
@@ -143,24 +147,28 @@ internal sealed class RaceTrackLayout
     public RaceTrackPhysicsProfile PhysicsProfile { get; }
 
     /// <summary>
-    /// Computes the layout of a track.
+    /// Computes the layout of a track. The objects go through <see cref="LegacyLandscapePlacer"/>, in the order the original
+    /// adds them: the neutral objects of the track file (TrackLine.cs:664-676), the posts of the left then of the right
+    /// guard rail (Track.cs:637-638), the column segments (Track.cs:639), then what Track.GenerateObjectsForTrack adds
+    /// (Track.cs:704-1161). Nothing before the generation draws a random number, so the posts and the column segments
+    /// do not depend on the seed.
     /// </summary>
-    /// <param name="trackName">The track's name; it seeds the scenery's random sequence.</param>
+    /// <param name="trackName">The track's name.</param>
     /// <param name="track">The track's .Track layout.</param>
     /// <param name="terrainSampler">The landscape height map.</param>
-    /// <param name="settings">The spacing of the guard rail posts and of the columns; null for the legacy values.</param>
-    /// <param name="includeScenery">False skips the scenery placements (a generator component does not use them).</param>
     /// <param name="loadCombiModel">Returns the objects of a CombiModel (empty for an unknown one).</param>
-    /// <param name="getModelSize">
-    /// Returns the size of a scenery model, or null when the model is unavailable: it is then skipped.
-    /// The size drives the duplicate skipping, so it is the layout's one dependency on loaded models.
+    /// <param name="seed">The seed of the one random generator the generation draws from; see <see cref="CreateTrackSeed"/>.</param>
+    /// <param name="settings">The spacing of the guard rail posts and of the columns; null for the legacy values.</param>
+    /// <param name="includeScenery">
+    /// False skips the generation of the scenery (a generator component does not use it, and it is the only part that draws
+    /// from the seed); the neutral objects, the posts and the column segments are always placed.
     /// </param>
     internal static RaceTrackLayout Compute(
         string trackName,
         LegacyTrackLayout track,
         LegacyTerrainHeightSampler terrainSampler,
         Func<string, IReadOnlyList<LegacyCombiObject>> loadCombiModel,
-        Func<string, float?> getModelSize,
+        int seed,
         RaceTrackLayoutSettings? settings = null,
         bool includeScenery = true)
     {
@@ -179,7 +187,7 @@ internal sealed class RaceTrackLayout
         }
 
         Vector3 origin = ComputeOrigin(track.TrackPoints);
-        var placementState = new LegacySceneryPlacementState(origin, terrainSampler, loadCombiModel, getModelSize);
+        var placer = new LegacyLandscapePlacer(origin, terrainSampler, loadCombiModel);
         RaceTrackPhysicsProfile physicsProfile = CreateTrackPhysicsProfile(roadPoints, origin);
 
         if (roadPoints.Count < 3)
@@ -195,22 +203,6 @@ internal sealed class RaceTrackLayout
             CreateCheckpointTriggerDefinition(roadPoints, 0.80f, origin),
         ];
 
-        List<RaceTrackRailPoint> leftRailPoints = [];
-        List<RaceTrackRailPoint> rightRailPoints = [];
-        List<RaceTrackModelPlacement> leftPosts = [];
-        List<RaceTrackModelPlacement> rightPosts = [];
-        List<RaceTrackColumnPlacement> columns = [];
-        List<RaceTrackModelPlacement> columnSegments = [];
-        if (roadPoints.Count >= 4)
-        {
-            leftRailPoints = BuildRailPoints(roadPoints, leftSide: true);
-            rightRailPoints = BuildRailPoints(roadPoints, leftSide: false);
-            leftPosts = BuildPostPlacements(leftRailPoints, origin, layoutSettings.HolderGap);
-            rightPosts = BuildPostPlacements(rightRailPoints, origin, layoutSettings.HolderGap);
-            columns = BuildColumnPlacements(roadPoints, terrainSampler, layoutSettings.ColumnsDistance);
-            columnSegments = BuildColumnSegmentPlacements(columns, origin);
-        }
-
         // The road helper spans drive both the tunnels, which the road generator builds without the scenery, and the
         // palms and laterns.
         List<LegacyRoadHelperPosition> helperPositions = roadPoints.Count == 0 ? [] : BuildRoadHelperPositions(roadPoints, track.RoadHelpers);
@@ -223,14 +215,32 @@ internal sealed class RaceTrackLayout
             }
         }
 
+        // TrackLine.cs:664-676: the neutral objects of the track file come first.
+        var scenery = new List<RaceTrackModelPlacement>();
+        foreach (LegacyNeutralObject neutralObject in track.NeutralsObjects)
+        {
+            placer.AddObject(neutralObject.modelName, neutralObject.matrix, scenery);
+        }
+
+        List<RaceTrackRailPoint> leftRailPoints = [];
+        List<RaceTrackRailPoint> rightRailPoints = [];
+        List<RaceTrackModelPlacement> leftPosts = [];
+        List<RaceTrackModelPlacement> rightPosts = [];
+        List<RaceTrackColumnPlacement> columns = [];
+        List<RaceTrackModelPlacement> columnSegments = [];
+        if (roadPoints.Count >= 4)
+        {
+            leftRailPoints = BuildRailPoints(roadPoints, leftSide: true);
+            rightRailPoints = BuildRailPoints(roadPoints, leftSide: false);
+            AddPostPlacements(placer, BuildPostRailPoints(roadPoints, leftSide: true), layoutSettings.HolderGap, leftPosts);
+            AddPostPlacements(placer, BuildPostRailPoints(roadPoints, leftSide: false), layoutSettings.HolderGap, rightPosts);
+            columns = BuildColumnPlacements(roadPoints, terrainSampler, layoutSettings.ColumnsDistance);
+            AddColumnSegmentPlacements(placer, columns, columnSegments);
+        }
+
         if (includeScenery)
         {
-            foreach (LegacyNeutralObject neutralObject in track.NeutralsObjects)
-            {
-                AddSceneryPlacement(placementState, neutralObject.modelName, neutralObject.matrix);
-            }
-
-            AddHelperDrivenSceneryPlacements(trackName, roadPoints, helperPositions, placementState);
+            AddHelperDrivenSceneryPlacements(seed, roadPoints, helperPositions, terrainSampler, placer, scenery);
         }
 
         return new RaceTrackLayout(
@@ -244,11 +254,64 @@ internal sealed class RaceTrackLayout
             columns,
             columnSegments,
             tunnelSpans,
-            placementState.Placements,
+            scenery,
+            placer.Placements,
             checkpointTriggers,
             playerStartPose,
             physicsProfile,
             layoutSettings);
+    }
+
+    /// <summary>
+    /// The seed of the random scenery of a track when nothing sets one: derived from the track's name, so that a track has
+    /// the same scenery on every launch. System.HashCode is randomized per process, so the seed uses a stable FNV-1a hash.
+    /// </summary>
+    internal static int CreateTrackSeed(string trackName)
+    {
+        const uint FnvOffsetBasis = 2166136261u;
+        const uint FnvPrime = 16777619u;
+
+        uint hash = FnvOffsetBasis;
+        foreach (byte value in Encoding.UTF8.GetBytes($"{trackName.ToUpperInvariant()}|LegacyTrackSceneFactory.Scenery"))
+        {
+            hash = unchecked((hash ^ value) * FnvPrime);
+        }
+
+        return unchecked((int)hash);
+    }
+
+    /// <summary>
+    /// A digest of the placements (model name, then the 16 elements of the transform, in the order the objects were added):
+    /// the first 8 bytes of a SHA-256, in hexadecimal. Two launches of a track with the same seed give the same digest.
+    /// </summary>
+    internal string ComputePlacementDigest()
+    {
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        Span<float> elements = stackalloc float[16];
+        foreach (RaceTrackModelPlacement placement in Placements)
+        {
+            hash.AppendData(Encoding.UTF8.GetBytes(placement.ModelName));
+            Matrix transform = placement.Transform;
+            elements[0] = transform.M11;
+            elements[1] = transform.M12;
+            elements[2] = transform.M13;
+            elements[3] = transform.M14;
+            elements[4] = transform.M21;
+            elements[5] = transform.M22;
+            elements[6] = transform.M23;
+            elements[7] = transform.M24;
+            elements[8] = transform.M31;
+            elements[9] = transform.M32;
+            elements[10] = transform.M33;
+            elements[11] = transform.M34;
+            elements[12] = transform.M41;
+            elements[13] = transform.M42;
+            elements[14] = transform.M43;
+            elements[15] = transform.M44;
+            hash.AppendData(System.Runtime.InteropServices.MemoryMarshal.AsBytes(elements));
+        }
+
+        return Convert.ToHexString(hash.GetHashAndReset(), 0, 8);
     }
 
     /// <summary>The runtime-space point a track is centered on, from its .Track points alone.</summary>
@@ -718,9 +781,60 @@ internal sealed class RaceTrackLayout
         return railPoints;
     }
 
-    private static List<RaceTrackModelPlacement> BuildPostPlacements(IReadOnlyList<RaceTrackRailPoint> railPoints, Vector3 origin, float holderGap)
+    /// <summary>
+    /// The rail points GuardRail.cs:169-199 builds, from which it places its posts: the road point's offset by half the road
+    /// width along the road point's right vector as it is, not normalized (TrackVertex.cs:64-90; the vector is the cross
+    /// product of the direction and the up vector, a bit shorter than 1 where the two are not at a right angle), then moved
+    /// 0.5 units inside the road. The rail's mesh uses <see cref="BuildRailPoints"/>.
+    /// </summary>
+    private static List<RaceTrackRailPoint> BuildPostRailPoints(IReadOnlyList<RaceTrackRoadPoint> roadPoints, bool leftSide)
     {
-        var placements = new List<RaceTrackModelPlacement>();
+        int railPointCount = roadPoints.Count / 2 + 1;
+        var railPoints = new List<RaceTrackRailPoint>(railPointCount);
+
+        for (int index = 0; index < railPointCount; index++)
+        {
+            int pointIndex = index * 2;
+            if (pointIndex >= roadPoints.Count - 1)
+            {
+                pointIndex = roadPoints.Count - 1;
+            }
+
+            RaceTrackRoadPoint roadPoint = roadPoints[pointIndex];
+            Vector3 right = GetLegacyRawRight(roadPoint);
+            Vector3 direction = roadPoint.Direction;
+            Vector3 position;
+            if (leftSide)
+            {
+                position = roadPoint.Position - LegacyRoadWidthScale * roadPoint.RoadWidth * right / 2;
+
+                // Invert the direction and right vector for the left side (GuardRail.cs:186-187)
+                right = -right;
+                direction = -direction;
+            }
+            else
+            {
+                position = roadPoint.Position + LegacyRoadWidthScale * roadPoint.RoadWidth * right / 2;
+            }
+
+            position -= right * InsideRoadDistance;
+            railPoints.Add(new RaceTrackRailPoint(position, right, direction, roadPoint.Up));
+        }
+
+        return railPoints;
+    }
+
+    /// <summary>
+    /// GuardRail.cs:206-315: a post every <paramref name="holderGap"/> units along the rail, each added the way
+    /// GuardRail.cs:289-304 adds it (scale 1.125, shifted 0.225 along the rail's right, in the rail point's own space,
+    /// not marked as generating shadows), so it is also scaled by 1.2, put above the terrain and skipped near an earlier object.
+    /// </summary>
+    private static void AddPostPlacements(
+        LegacyLandscapePlacer placer,
+        IReadOnlyList<RaceTrackRailPoint> railPoints,
+        float holderGap,
+        List<RaceTrackModelPlacement> target)
+    {
         float lastHolderGap = 0f;
 
         for (int index = 0; index < railPoints.Count; index++)
@@ -737,21 +851,19 @@ internal sealed class RaceTrackLayout
                 Vector3 p4 = railPoints[(index + 2) % railPoints.Count].Position;
                 Vector3 holderPoint = Vector3.CatmullRom(p1, p2, p3, p4, lastHolderGap / distance);
 
-                Matrix pointSpace = CreatePointSpaceMatrix(railPoint.Right, railPoint.Direction, railPoint.Up);
-                Matrix legacyTransform = Matrix.CreateScale(1.125f)
+                Matrix pointSpace = CreateLegacyPointSpace(railPoint.Right, railPoint.Direction, railPoint.Up);
+                placer.AddObject(
+                    GuardRailPostModelName,
+                    Matrix.CreateScale(1.125f)
                     * Matrix.CreateTranslation(HolderPileCorrectionVector)
                     * pointSpace
-                    * Matrix.CreateTranslation(holderPoint);
-
-                Matrix runtimeTransform = ConvertLegacyTransform(legacyTransform, origin);
-                placements.Add(new RaceTrackModelPlacement(GuardRailPostModelName, runtimeTransform));
+                    * Matrix.CreateTranslation(holderPoint),
+                    target);
                 lastHolderGap += holderGap;
             }
 
             lastHolderGap -= distance;
         }
-
-        return placements;
     }
 
     private static List<RaceTrackColumnPlacement> BuildColumnPlacements(IReadOnlyList<RaceTrackRoadPoint> roadPoints, LegacyTerrainHeightSampler terrainSampler, float columnsDistance)
@@ -804,87 +916,57 @@ internal sealed class RaceTrackLayout
         return columns;
     }
 
-    private static List<RaceTrackModelPlacement> BuildColumnSegmentPlacements(IReadOnlyList<RaceTrackColumnPlacement> columns, Vector3 origin)
+    /// <summary>
+    /// TrackColumns.cs:237-243: a column segment at the foot of each column, put on the terrain. The foot is the terrain
+    /// height plus ColumnGroundHeight (TrackColumns.cs:195-197), and the segment is placed ColumnGroundHeight below it.
+    /// </summary>
+    private static void AddColumnSegmentPlacements(
+        LegacyLandscapePlacer placer,
+        IReadOnlyList<RaceTrackColumnPlacement> columns,
+        List<RaceTrackModelPlacement> target)
     {
-        var placements = new List<RaceTrackModelPlacement>(columns.Count);
         for (int index = 0; index < columns.Count; index++)
         {
             Vector3 columnPoint = columns[index].Position;
-            Vector3 bottomPosition = new(
-                columnPoint.X,
-                columnPoint.Y,
-                columns[index].GroundHeight);
-
-            Matrix legacyTransform = Matrix.CreateScale(1.2f)
-                * Matrix.CreateTranslation(new Vector3(bottomPosition.X, bottomPosition.Y, bottomPosition.Z));
-            Matrix runtimeTransform = ConvertLegacyTransform(legacyTransform, origin);
-            placements.Add(new RaceTrackModelPlacement(ColumnSegmentModelName, runtimeTransform));
+            Vector3 bottomPosition = new(columnPoint.X, columnPoint.Y, columns[index].GroundHeight + ColumnGroundHeight);
+            placer.AddObject(
+                ColumnSegmentModelName,
+                new Vector3(bottomPosition.X, bottomPosition.Y, bottomPosition.Z - ColumnGroundHeight),
+                target);
         }
-
-        return placements;
     }
 
-    private static void AddSceneryPlacement(LegacySceneryPlacementState placementState, string modelName, Matrix legacyTransform)
-    {
-        if (string.IsNullOrWhiteSpace(modelName))
-        {
-            return;
-        }
-
-        string resolvedModelName = NormalizeLegacyModelName(modelName);
-        if (resolvedModelName.StartsWith("Track", StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        if (resolvedModelName.StartsWith("Combi", StringComparison.OrdinalIgnoreCase))
-        {
-            foreach (LegacyCombiObject combiObject in placementState.LoadCombiModel(resolvedModelName))
-            {
-                Matrix combinedTransform = combiObject.matrix * legacyTransform;
-                AddSceneryPlacement(placementState, combiObject.modelName, combinedTransform);
-            }
-
-            return;
-        }
-
-        float? modelSize = placementState.GetModelSize(resolvedModelName);
-        if (modelSize == null)
-        {
-            return;
-        }
-
-        Matrix adjustedLegacyTransform = ClampSceneryTransformToTerrain(legacyTransform, placementState.TerrainSampler);
-        Vector3 legacyPosition = adjustedLegacyTransform.Translation;
-
-        if (!IsDuplicateExempt(resolvedModelName)
-            && IsDuplicatePlacement(placementState.CreatedLegacyPositions, legacyPosition, modelSize.Value))
-        {
-            return;
-        }
-
-        Matrix runtimeTransform = ConvertLegacyTransform(Matrix.CreateScale(1.2f) * adjustedLegacyTransform, placementState.Origin);
-        placementState.Placements.Add(new RaceTrackModelPlacement(resolvedModelName, runtimeTransform));
-        placementState.CreatedLegacyPositions.Add(legacyPosition);
-    }
-
+    /// <summary>
+    /// Track.GenerateObjectsForTrack (Track.cs:704-1161) with the objects it adds, in its order, drawing from one random
+    /// generator the way the original draws from its one generator, RandomHelper (RandomHelper.cs:23-59, reseeded once per
+    /// level): palms and laterns, the start banner and light, the checkpoint banners and the signs, the random scenery.
+    /// </summary>
     private static void AddHelperDrivenSceneryPlacements(
-        string trackName,
+        int seed,
         IReadOnlyList<RaceTrackRoadPoint> roadPoints,
         IReadOnlyList<LegacyRoadHelperPosition> helperPositions,
-        LegacySceneryPlacementState placementState)
+        LegacyTerrainHeightSampler terrainSampler,
+        LegacyLandscapePlacer placer,
+        List<RaceTrackModelPlacement> target)
     {
         if (roadPoints.Count == 0)
         {
             return;
         }
 
-        // The palms draw from their own sequence, so the road helpers do not change the models the checkpoint
-        // banners and the signs draw from the other one.
-        AddPalmAndLaternPlacements(roadPoints, helperPositions, placementState, CreateDeterministicTrackRandom(trackName, "Palms"));
-        AddSignAndCheckpointPlacements(roadPoints, placementState, CreateDeterministicTrackRandom(trackName, "Helpers"));
+        var random = new Random(seed);
+        AddPalmAndLaternPlacements(roadPoints, helperPositions, terrainSampler, placer, random, target);
+        AddStartPlacements(roadPoints, placer, target);
+        AddCheckpointAndSignPlacements(roadPoints, placer, random, target);
+        AddRandomSceneryPlacements(roadPoints, terrainSampler, placer, random, target);
     }
 
+    /// <summary>
+    /// TrackLine.cs:612-660: the helpers (tunnels, palms, laterns, reset) of the track file become ranges of road points.
+    /// A helper is a track file marker that a road point within 25 units reaches, each marker used once. The first marker
+    /// opens a range, of any type (a reset included); each later marker closes the open range and, unless it is a reset,
+    /// opens the next one.
+    /// </summary>
     private static List<LegacyRoadHelperPosition> BuildRoadHelperPositions(
         IReadOnlyList<RaceTrackRoadPoint> roadPoints,
         IReadOnlyList<LegacyRoadHelper> roadHelpers)
@@ -927,7 +1009,7 @@ internal sealed class RaceTrackLayout
                         currentType = helperType;
                     }
                 }
-                else if (helperType != LegacyRoadHelperType.Reset)
+                else
                 {
                     helperStartedNum = pointIndex;
                     currentType = helperType;
@@ -938,6 +1020,7 @@ internal sealed class RaceTrackLayout
             }
         }
 
+        // Still a helper open? Then close it close before the end (TrackLine.cs:657-660).
         if (helperStartedNum > 0)
         {
             helperPositions.Add(new LegacyRoadHelperPosition(currentType, helperStartedNum, Math.Max(0, roadPoints.Count - 3)));
@@ -953,11 +1036,14 @@ internal sealed class RaceTrackLayout
             : LegacyRoadHelperType.Reset;
     }
 
+    // Track.cs:704-841: a palm (or a lantern) every PalmAndLaternGap units along the ranges of the palms (or laterns).
     private static void AddPalmAndLaternPlacements(
         IReadOnlyList<RaceTrackRoadPoint> roadPoints,
         IReadOnlyList<LegacyRoadHelperPosition> helperPositions,
-        LegacySceneryPlacementState placementState,
-        Random random)
+        LegacyTerrainHeightSampler terrainSampler,
+        LegacyLandscapePlacer placer,
+        Random random,
+        List<RaceTrackModelPlacement> target)
     {
         float lastGap = 0.0f;
         int generatedNum = 0;
@@ -993,51 +1079,56 @@ internal sealed class RaceTrackLayout
             float distance = Vector3.Distance(roadPoints[(pointIndex + 1) % roadPoints.Count].Position, point.Position);
             if (lastGap - distance <= 0.0f)
             {
+                // Skip generation here when the road is a looping (Track.cs:743-749)
                 if (!IsTracksidePlacementAllowed(point))
                 {
                     continue;
                 }
 
-                Matrix pointSpace = CreateLegacyPointSpace(point);
+                Vector3 right = GetLegacyRawRight(point);
+                Matrix pointSpace = CreateLegacyPointSpace(right, point.Direction, point.Up);
                 Vector3 objectPoint = InterpolateRoadPoint(roadPoints, pointIndex, lastGap / distance);
                 generatedNum++;
 
                 if (palms)
                 {
-                    float terrainHeight = placementState.TerrainSampler.GetMapHeight(objectPoint.X, objectPoint.Y);
-                    if (objectPoint.Z - terrainHeight < 11.0f)
+                    // Skip the palm if the road is more than 11 m above the ground (Track.cs:775-778)
+                    if (objectPoint.Z - terrainSampler.GetMapHeight(objectPoint.X, objectPoint.Y) < 11.0f)
                     {
-                        int randomNum = random.Next(PalmModelCandidates.Length);
-                        if (randomNum == PalmModelCandidates.Length - 1)
+                        int randomNum = random.Next(4);
+
+                        // Less propability for small palm
+                        if (randomNum == 3)
                         {
-                            randomNum = random.Next(PalmModelCandidates.Length);
+                            randomNum = random.Next(4);
                         }
 
-                        string modelName = PalmModelCandidates[Math.Clamp(randomNum, 0, PalmModelCandidates.Length - 1)];
-                        Matrix legacyTransform =
+                        // The rotation is drawn after the model, as the arguments of the original's call are evaluated
+                        placer.AddObject(
+                            PalmModelCandidates[randomNum],
                             Matrix.CreateScale(1.25f)
-                            * Matrix.CreateRotationZ(NextFloat(random, 0.0f, MathHelper.TwoPi))
-                            * Matrix.CreateTranslation(point.Right * (generatedNum % 2 == 0 ? 0.6f : -0.6f) * point.RoadWidth * LegacyRoadWidthScale)
-                            * Matrix.CreateTranslation(new Vector3(0.0f, 0.0f, -50.0f))
-                            * Matrix.CreateTranslation(objectPoint);
-
-                        AddSceneryPlacement(placementState, modelName, legacyTransform);
+                            * Matrix.CreateRotationZ(NextFloat(random, 0, MathHelper.Pi * 2))
+                            * Matrix.CreateTranslation(right * (generatedNum % 2 == 0 ? 0.6f : -0.6f) * point.RoadWidth * LegacyRoadWidthScale)
+                            * Matrix.CreateTranslation(new Vector3(0, 0, -50))
+                            * Matrix.CreateTranslation(objectPoint),
+                            target);
                     }
                 }
                 else
                 {
-                    Matrix legacyTransform =
+                    placer.AddObject(
+                        "Laterne",
                         Matrix.CreateRotationZ(generatedNum % 2 == 0 ? MathHelper.Pi : 0.0f)
                         * Matrix.CreateTranslation(new Vector3(
                             (generatedNum % 2 == 0 ? 0.5f : -0.5f) * point.RoadWidth * LegacyRoadWidthScale - 0.35f,
-                            0.0f,
+                            0,
                             -0.2f))
                         * pointSpace
-                        * Matrix.CreateTranslation(objectPoint);
-
-                    AddSceneryPlacement(placementState, "Laterne", legacyTransform);
+                        * Matrix.CreateTranslation(objectPoint),
+                        target);
                 }
 
+                // We have just set a pile, the next pile will be set after reaching the next holder gap.
                 lastGap += PalmAndLaternGap;
             }
 
@@ -1045,32 +1136,47 @@ internal sealed class RaceTrackLayout
         }
     }
 
-    private static void AddSignAndCheckpointPlacements(
+    // Track.cs:842-880: the goal banner and the start light are always added.
+    private static void AddStartPlacements(
         IReadOnlyList<RaceTrackRoadPoint> roadPoints,
-        LegacySceneryPlacementState placementState,
-        Random random)
+        LegacyLandscapePlacer placer,
+        List<RaceTrackModelPlacement> target)
     {
         RaceTrackRoadPoint startPoint = roadPoints[0];
-        Matrix startPointSpace = CreateLegacyPointSpace(startPoint);
+        Matrix startPointSpace = CreateLegacyPointSpace(GetLegacyRawRight(startPoint), startPoint.Direction, startPoint.Up);
 
-        Matrix startBannerTransform =
+        placer.AddObject(
+            "Banner6",
             Matrix.CreateScale(startPoint.RoadWidth)
+            // Scale up 1.1, but compensate the 1.2 done in the add path
             * Matrix.CreateScale(1.051f)
-            * Matrix.CreateTranslation(new Vector3(0.0f, -5.1f, 0.0f))
+            * Matrix.CreateTranslation(new Vector3(0, -5.1f, 0))
             * startPointSpace
-            * Matrix.CreateTranslation(startPoint.Position);
-        AddSceneryPlacement(placementState, "Banner6", startBannerTransform);
+            * Matrix.CreateTranslation(startPoint.Position),
+            target);
 
-        Matrix startLightTransform =
+        // The original adds StartLight3 and turns it into the red StartLight once the level is loaded
+        // (Landscape.cs:1135-1140); RaceStartLight then turns it yellow, then green.
+        placer.AddObject(
+            StartLightModelNames[0],
             Matrix.CreateScale(1.1f)
-            * Matrix.CreateTranslation(new Vector3(startPoint.RoadWidth * LegacyRoadWidthScale * 0.50f - 0.3f, 6.0f, -0.2f))
+            * Matrix.CreateTranslation(new Vector3(startPoint.RoadWidth * LegacyRoadWidthScale * 0.50f - 0.3f, 6, -0.2f))
             * startPointSpace
-            * Matrix.CreateTranslation(startPoint.Position);
-        // Built red, as RacingGame's ResetStartLight left it; RaceStartLight turns it yellow, then green.
-        AddSceneryPlacement(placementState, StartLightModelNames[0], startLightTransform);
+            * Matrix.CreateTranslation(startPoint.Position),
+            target);
+    }
 
+    // Track.cs:882-1086: a banner at each checkpoint gap and, between them, the road signs.
+    private static void AddCheckpointAndSignPlacements(
+        IReadOnlyList<RaceTrackRoadPoint> roadPoints,
+        LegacyLandscapePlacer placer,
+        Random random,
+        List<RaceTrackModelPlacement> target)
+    {
         float checkpointGap = CheckpointGap;
         float signGap = SignGap;
+
+        // Don't add another one near the end! (Track.cs:893)
         for (int pointIndex = 0; pointIndex < roadPoints.Count - 24; pointIndex++)
         {
             RaceTrackRoadPoint point = roadPoints[pointIndex];
@@ -1080,84 +1186,100 @@ internal sealed class RaceTrackLayout
                 continue;
             }
 
-            Matrix pointSpace = CreateLegacyPointSpace(point);
+            Vector3 right = GetLegacyRawRight(point);
+            Matrix pointSpace = CreateLegacyPointSpace(right, point.Direction, point.Up);
             if (checkpointGap - distance <= 0.0f)
             {
                 Vector3 objectPoint = InterpolateRoadPoint(roadPoints, pointIndex, checkpointGap / distance);
-                string bannerName = CheckpointBannerCandidates[random.Next(CheckpointBannerCandidates.Length)];
-                Matrix checkpointTransform =
+                string bannerName = CheckpointBannerCandidates[random.Next(6)];
+                placer.AddObject(
+                    bannerName,
                     Matrix.CreateScale(point.RoadWidth)
                     * Matrix.CreateTranslation(new Vector3(0.0f, 0.0f, -0.1f))
                     * pointSpace
-                    * Matrix.CreateTranslation(objectPoint);
-                AddSceneryPlacement(placementState, bannerName, checkpointTransform);
+                    * Matrix.CreateTranslation(objectPoint),
+                    target);
 
                 checkpointGap += CheckpointGap;
             }
             else if (signGap - distance <= 0.0f && pointIndex >= 25)
             {
                 Vector3 objectPoint = InterpolateRoadPoint(roadPoints, pointIndex, signGap / distance);
-                Vector3 backPosition = roadPoints[pointIndex - 25].Position;
+
+                // Find out how curvy this point is by going back 25 points.
+                Vector3 backPosition = roadPoints[(pointIndex - 25) % roadPoints.Count].Position;
                 bool loopingAhead = roadPoints[(pointIndex + 60) % roadPoints.Count].Up.Z < 0.15f;
                 Vector3 angleVector = Vector3.Normalize(backPosition - point.Position);
-                float roadAngle = AngleBetweenVectors(angleVector, Vector3.Normalize(-point.Direction));
-                if (Vector3.Distance(point.Right, angleVector) < Vector3.Distance(-point.Right, angleVector))
+                float roadAngle = GetAngleBetweenVectors(angleVector, Vector3.Normalize(-point.Direction));
+
+                // If road goes to the left, use negative angle value!
+                if (Vector3.Distance(right, angleVector) < Vector3.Distance(-right, angleVector))
                 {
                     roadAngle = -roadAngle;
                 }
 
                 if (loopingAhead)
                 {
-                    Matrix signTransform =
+                    placer.AddObject(
+                        "SignWarning",
                         Matrix.CreateTranslation(new Vector3(point.RoadWidth * LegacyRoadWidthScale * 0.5f - 0.1f, 0.0f, -0.25f))
                         * pointSpace
-                        * Matrix.CreateTranslation(objectPoint);
-                    AddSceneryPlacement(placementState, "SignWarning", signTransform);
+                        * Matrix.CreateTranslation(objectPoint),
+                        target);
                 }
                 else if (roadAngle < -MathHelper.Pi / 7.5f)
                 {
-                    Matrix signTransform =
+                    placer.AddObject(
+                        "SignCurveRight",
                         Matrix.CreateRotationZ(MathHelper.Pi / 2.0f)
                         * Matrix.CreateTranslation(new Vector3(-point.RoadWidth * LegacyRoadWidthScale * 0.5f - 0.15f, 0.0f, -0.25f))
                         * pointSpace
-                        * Matrix.CreateTranslation(objectPoint);
-                    AddSceneryPlacement(placementState, "SignCurveRight", signTransform);
+                        * Matrix.CreateTranslation(objectPoint),
+                        target);
                 }
                 else if (roadAngle > MathHelper.Pi / 7.5f)
                 {
-                    Matrix signTransform =
+                    placer.AddObject(
+                        "SignCurveLeft",
                         Matrix.CreateRotationZ(-MathHelper.Pi / 2.0f)
                         * Matrix.CreateTranslation(new Vector3(point.RoadWidth * LegacyRoadWidthScale * 0.5f - 0.15f, 0.0f, -0.25f))
                         * pointSpace
-                        * Matrix.CreateTranslation(objectPoint);
-                    AddSceneryPlacement(placementState, "SignCurveLeft", signTransform);
+                        * Matrix.CreateTranslation(objectPoint),
+                        target);
                 }
-                else if (roadAngle < -MathHelper.Pi / 10.0f || roadAngle > MathHelper.Pi / 10.0f || random.Next(9) == 4)
+                else if (roadAngle < -MathHelper.Pi / 10.0f
+                    || roadAngle > MathHelper.Pi / 10.0f
+                    // Randomly generate sign
+                    || random.Next(9) == 4)
                 {
+                    // Also mix in random curve signs, this is still a curve
                     int randomVariant = random.Next(3);
-                    if (randomVariant == 0 && Math.Abs(roadAngle) < MathHelper.Pi / 24.0f)
+
+                    // Randomize again if not that curvy here
+                    if (randomVariant == 0 && Math.Abs(roadAngle) < MathHelper.Pi / 24)
                     {
                         randomVariant = random.Next(3);
                     }
-                    else if (Math.Abs(roadAngle) < MathHelper.Pi / 20.0f && random.Next(2) == 1)
+                    else if (Math.Abs(roadAngle) < MathHelper.Pi / 20 && random.Next(2) == 1)
                     {
-                        roadAngle *= -1.0f;
+                        roadAngle *= -1;
                     }
 
-                    string modelName = randomVariant == 0
-                        ? (roadAngle > 0.0f ? "SignCurveLeft" : "SignCurveRight")
-                        : (randomVariant == 1 ? "Sign" : "Sign2");
-                    Matrix signTransform =
-                        Matrix.CreateRotationZ((roadAngle > 0.0f ? -1.0f : 1.0f) * MathHelper.Pi / 2.0f)
+                    placer.AddObject(
+                        randomVariant == 0
+                            ? (roadAngle > 0 ? "SignCurveLeft" : "SignCurveRight")
+                            : (randomVariant == 1 ? "Sign" : "Sign2"),
+                        Matrix.CreateRotationZ((roadAngle > 0 ? -1 : 1) * MathHelper.Pi / 2.0f)
                         * Matrix.CreateTranslation(new Vector3(
-                            (roadAngle > 0.0f ? 1.0f : -1.0f) * point.RoadWidth * LegacyRoadWidthScale * 0.5f - (randomVariant == 0 ? 0.15f : 0.005f),
-                            0.0f,
+                            (roadAngle > 0 ? 1 : -1) * point.RoadWidth * LegacyRoadWidthScale * 0.5f - (randomVariant == 0 ? 0.15f : 0.005f),
+                            0,
                             -0.25f))
                         * pointSpace
-                        * Matrix.CreateTranslation(objectPoint);
-                    AddSceneryPlacement(placementState, modelName, signTransform);
+                        * Matrix.CreateTranslation(objectPoint),
+                        target);
                 }
 
+                // We have just set a sign (or not), check for next sign after gap.
                 signGap += SignGap;
             }
 
@@ -1166,15 +1288,94 @@ internal sealed class RaceTrackLayout
         }
     }
 
-    private static Matrix CreateLegacyPointSpace(RaceTrackRoadPoint point)
+    // Track.cs:1087-1161: scenery away from the road, drawn from the objects of Landscape.autoGenerationNames. The original's
+    // high detail mode is the one the reference scene was exported in (scene.json, highDetail true).
+    private static void AddRandomSceneryPlacements(
+        IReadOnlyList<RaceTrackRoadPoint> roadPoints,
+        LegacyTerrainHeightSampler terrainSampler,
+        LegacyLandscapePlacer placer,
+        Random random,
+        List<RaceTrackModelPlacement> target)
+    {
+        string[] names = LegacyLandscapePlacer.AutoGenerationNames;
+        for (int pointIndex = 0; pointIndex < roadPoints.Count; pointIndex += 2)
+        {
+            RaceTrackRoadPoint point = roadPoints[pointIndex];
+
+            // Skip object generation at great heights!
+            if (point.Position.Z - terrainSampler.GetMapHeight(point.Position.X, point.Position.Y) > 60.0f)
+            {
+                continue;
+            }
+
+            if (!IsTracksidePlacementAllowed(point))
+            {
+                continue;
+            }
+
+            // Show twice as many objects in high details mode
+            const int randomMaxPropability = 5;
+
+            // Generate stuff in 20% of the cases
+            if (random.Next(randomMaxPropability) != 0)
+            {
+                continue;
+            }
+
+            // Get random name
+            int randomObjNum = random.Next(names.Length);
+
+            // If above 6, generate again
+            if (randomObjNum >= 6)
+            {
+                randomObjNum = random.Next(names.Length);
+            }
+
+            // Don't generate so many casinos
+            if (randomObjNum == names.Length - 1 && random.Next(3) < 2)
+            {
+                randomObjNum = random.Next(names.Length);
+            }
+
+            // Ok, generate
+            float distance = NextFloat(random, 26, 88);
+
+            // For casinos make sure the object is far enough away.
+            if (randomObjNum == names.Length - 1)
+            {
+                distance += 20;
+            }
+
+            bool side = random.Next(2) == 0;
+            float rotation = NextFloat(random, 0, MathHelper.Pi * 2);
+            placer.AddObject(
+                names[randomObjNum],
+                rotation,
+                point.Position,
+                GetLegacyRawRight(point),
+                distance * (side ? 1 : -1),
+                target);
+        }
+    }
+
+    // The road point's right vector as the original keeps and uses it (TrackLine.cs:462-464 and 490): the cross product of
+    // the direction and the up vector, not normalized. The offsets the generation computes from it are those of the original.
+    private static Vector3 GetLegacyRawRight(RaceTrackRoadPoint point)
+    {
+        return Vector3.Cross(point.Direction, point.Up);
+    }
+
+    // The point space the generation builds from the three vectors (Track.cs:751-756): right, direction, then up.
+    private static Matrix CreateLegacyPointSpace(Vector3 right, Vector3 direction, Vector3 up)
     {
         Matrix pointSpace = Matrix.Identity;
-        pointSpace.Right = point.Right;
-        pointSpace.Up = point.Direction;
-        pointSpace.Forward = -point.Up;
+        pointSpace.Right = right;
+        pointSpace.Up = direction;
+        pointSpace.Forward = -up;
         return pointSpace;
     }
 
+    // Track.cs:743-749: no generation where the road is upside down or a looping goes up or down.
     private static bool IsTracksidePlacementAllowed(RaceTrackRoadPoint point)
     {
         bool upsideDown = point.Up.Z < 0.05f;
@@ -1183,6 +1384,7 @@ internal sealed class RaceTrackLayout
         return !upsideDown && !movingUp && !movingDown;
     }
 
+    // Vector3.CatmullRom between the road point and the next one, as the original interpolates its positions (Track.cs:758-766).
     private static Vector3 InterpolateRoadPoint(IReadOnlyList<RaceTrackRoadPoint> roadPoints, int pointIndex, float amount)
     {
         Vector3 p1 = roadPoints[pointIndex - 1 < 0 ? roadPoints.Count - 1 : pointIndex - 1].Position;
@@ -1192,108 +1394,18 @@ internal sealed class RaceTrackLayout
         return Vector3.CatmullRom(p1, p2, p3, p4, amount);
     }
 
-    private static Random CreateDeterministicTrackRandom(string trackName, string sequenceName)
-    {
-        // System.HashCode is randomized per process, so the seed uses a stable FNV-1a hash instead:
-        // the same track must get the same scenery on every launch.
-        const uint FnvOffsetBasis = 2166136261u;
-        const uint FnvPrime = 16777619u;
-
-        uint hash = FnvOffsetBasis;
-        foreach (byte value in Encoding.UTF8.GetBytes($"{trackName.ToUpperInvariant()}|LegacyTrackSceneFactory.{sequenceName}"))
-        {
-            hash = unchecked((hash ^ value) * FnvPrime);
-        }
-
-        return new Random(unchecked((int)hash));
-    }
-
+    // RandomHelper.GetRandomFloat (RandomHelper.cs:56-59)
     private static float NextFloat(Random random, float min, float max)
     {
         return (float)random.NextDouble() * (max - min) + min;
     }
 
-    private static float AngleBetweenVectors(Vector3 first, Vector3 second)
+    // Vector3Helper.GetAngleBetweenVectors (Vector3Helper.cs:33-40): the dot product of two normalized vectors is not clamped,
+    // so one a bit above 1 gives NaN, as in the original, which makes the comparisons that follow false and so changes which
+    // random numbers are drawn after.
+    private static float GetAngleBetweenVectors(Vector3 first, Vector3 second)
     {
-        if (first.LengthSquared() < 0.0001f || second.LengthSquared() < 0.0001f)
-        {
-            return 0.0f;
-        }
-
-        first.Normalize();
-        second.Normalize();
-        float dot = Math.Clamp(Vector3.Dot(first, second), -1.0f, 1.0f);
-        return MathF.Acos(dot);
-    }
-
-    private static Matrix ClampSceneryTransformToTerrain(Matrix legacyTransform, LegacyTerrainHeightSampler terrainSampler)
-    {
-        Vector3 legacyPosition = legacyTransform.Translation;
-        float terrainHeight = terrainSampler.GetMapHeight(legacyPosition.X, legacyPosition.Y);
-        if (legacyPosition.Z >= terrainHeight)
-        {
-            return legacyTransform;
-        }
-
-        legacyPosition.Z = terrainHeight;
-        legacyTransform.Translation = legacyPosition;
-        return legacyTransform;
-    }
-
-    private static bool IsDuplicatePlacement(List<Vector3> existingPositions, Vector3 legacyPosition, float modelSize)
-    {
-        float threshold = modelSize * modelSize / 4f;
-        for (int index = 0; index < existingPositions.Count; index++)
-        {
-            if (Vector3.DistanceSquared(existingPositions[index], legacyPosition) < threshold)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool IsDuplicateExempt(string modelName)
-    {
-        return modelName.StartsWith("Banner", StringComparison.OrdinalIgnoreCase)
-            || modelName.StartsWith("Sign", StringComparison.OrdinalIgnoreCase)
-            || modelName.StartsWith("StartLight", StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>Resolves the legacy aliases of a model name (Palm to AlphaPalm...).</summary>
-    internal static string NormalizeLegacyModelName(string modelName)
-    {
-        return ModelAliases.TryGetValue(modelName, out string? alias)
-            ? alias
-            : modelName;
-    }
-
-    private sealed class LegacySceneryPlacementState
-    {
-        public LegacySceneryPlacementState(
-            Vector3 origin,
-            LegacyTerrainHeightSampler terrainSampler,
-            Func<string, IReadOnlyList<LegacyCombiObject>> loadCombiModel,
-            Func<string, float?> getModelSize)
-        {
-            Origin = origin;
-            TerrainSampler = terrainSampler;
-            LoadCombiModel = loadCombiModel;
-            GetModelSize = getModelSize;
-        }
-
-        public Vector3 Origin { get; }
-
-        public LegacyTerrainHeightSampler TerrainSampler { get; }
-
-        public Func<string, IReadOnlyList<LegacyCombiObject>> LoadCombiModel { get; }
-
-        public Func<string, float?> GetModelSize { get; }
-
-        public List<Vector3> CreatedLegacyPositions { get; } = [];
-
-        public List<RaceTrackModelPlacement> Placements { get; } = [];
+        return (float)Math.Acos(Vector3.Dot(first, second));
     }
 
     private sealed class LegacyTrackPoint
