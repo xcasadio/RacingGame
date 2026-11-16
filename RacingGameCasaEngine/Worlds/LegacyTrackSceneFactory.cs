@@ -990,23 +990,19 @@ internal static partial class LegacyTrackSceneFactory
             d.Z > 0f ? ambient.Z / d.Z : 0f);
     }
 
-    private static LitDiffuseMaterial CreateRoadMaterial(string trackName, AssetContentManager assetContentManager)
+    private static LitPbrMaterial CreateRoadMaterial(string trackName, AssetContentManager assetContentManager)
     {
         Texture2D? roadTexture = LoadProjectTexture(assetContentManager, RoadTextureCandidates);
         string name = $"{trackName}.RoadMaterial";
-        (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, roadTexture != null ? Color.White : new Color(60, 62, 66), LegacyDefaultAmbient, LegacyDefaultDiffuse);
-        return new LitDiffuseMaterial
-        {
-            Name = name,
-            BasColor = roadTexture,
-            NormalMap = LoadProjectTexture(assetContentManager, "RoadNormal.png"),
-            DiffuseColor = diffuse,
-            AmbientColor = ambient,
-            SpecularColor = new Vector3(0.14f),
-            SpecularPower = 18f,
-            RasterizerState = RasterizerState.CullCounterClockwise,
-            SamplerState = SamplerState.AnisotropicWrap,
-        };
+        (Color diffuse, _) = CreateLegacyLighting(name, roadTexture != null ? Color.White : new Color(60, 62, 66), LegacyDefaultAmbient, LegacyDefaultDiffuse);
+        return RacingGamePbrMaterialMapping.Create(
+            name,
+            RacingGamePbrMaterialMapping.Road,
+            roadTexture,
+            LoadProjectTexture(assetContentManager, "RoadNormal.png"),
+            diffuse,
+            RasterizerState.CullCounterClockwise,
+            SamplerState.AnisotropicWrap);
     }
 
     private static void ApplyImportedMaterials(StaticModel model, IReadOnlyList<StaticModelImportedMaterial> importedMaterials, string modelName, AssetContentManager assetContentManager)

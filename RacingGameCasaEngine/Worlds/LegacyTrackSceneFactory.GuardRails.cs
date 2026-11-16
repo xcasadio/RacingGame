@@ -4,6 +4,7 @@ using CasaEngine.Framework.Graphics;
 using CasaEngine.Framework.Materials;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RacingGameCasaEngine.Bootstrap;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace RacingGameCasaEngine.Worlds;
@@ -402,44 +403,36 @@ internal static partial class LegacyTrackSceneFactory
             return segments.Entities;
         }
 
-        private static LitDiffuseMaterial CreateGuardRailMaterial(string trackName, AssetContentManager assetContentManager, string sideName)
+        private static LitPbrMaterial CreateGuardRailMaterial(string trackName, AssetContentManager assetContentManager, string sideName)
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "Leitplanke.tga");
             Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "LeitplankeNormal.png");
             string name = $"{trackName}.GuardRailMaterial.{sideName}";
-            (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(182, 182, 182), 72, 182);
-            return new LitDiffuseMaterial
-            {
-                Name = name,
-                BasColor = diffuseTexture,
-                NormalMap = normalTexture,
-                DiffuseColor = diffuse,
-                AmbientColor = ambient,
-                SpecularColor = new Vector3(0.88f, 0.88f, 0.88f),
-                SpecularPower = 16f,
-                SamplerState = SamplerState.AnisotropicWrap,
-                RasterizerState = RasterizerState.CullCounterClockwise,
-            };
+            (Color diffuse, _) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(182, 182, 182), 72, 182);
+            return RacingGamePbrMaterialMapping.Create(
+                name,
+                RacingGamePbrMaterialMapping.GuardRail,
+                diffuseTexture,
+                normalTexture,
+                diffuse,
+                RasterizerState.CullCounterClockwise,
+                SamplerState.AnisotropicWrap);
         }
 
-        private static LitDiffuseMaterial CreateRoadColumnMaterial(string trackName, AssetContentManager assetContentManager)
+        private static LitPbrMaterial CreateRoadColumnMaterial(string trackName, AssetContentManager assetContentManager)
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "RoadCement.tga");
             Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "RoadCementNormal.png");
             string name = $"{trackName}.ColumnMaterial";
-            (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(176, 176, 176), LegacyDefaultAmbient, LegacyDefaultDiffuse);
-            return new LitDiffuseMaterial
-            {
-                Name = name,
-                BasColor = diffuseTexture,
-                NormalMap = normalTexture,
-                DiffuseColor = diffuse,
-                AmbientColor = ambient,
-                SpecularColor = new Vector3(0.18f),
-                SpecularPower = 8f,
-                SamplerState = SamplerState.AnisotropicWrap,
-                RasterizerState = RasterizerState.CullCounterClockwise,
-            };
+            (Color diffuse, _) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(176, 176, 176), LegacyDefaultAmbient, LegacyDefaultDiffuse);
+            return RacingGamePbrMaterialMapping.Create(
+                name,
+                RacingGamePbrMaterialMapping.Road,
+                diffuseTexture,
+                normalTexture,
+                diffuse,
+                RasterizerState.CullCounterClockwise,
+                SamplerState.AnisotropicWrap);
         }
 
         // The original's point space (GuardRail): the three vectors as they are, not normalized.

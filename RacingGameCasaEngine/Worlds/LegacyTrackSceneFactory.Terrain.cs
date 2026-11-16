@@ -5,6 +5,7 @@ using CasaEngine.Framework.Graphics;
 using CasaEngine.Framework.Materials;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RacingGameCasaEngine.Bootstrap;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace RacingGameCasaEngine.Worlds;
@@ -137,7 +138,7 @@ internal static partial class LegacyTrackSceneFactory
             return indices;
         }
 
-        private static LitDiffuseMaterial CreateTerrainMaterial(string trackName, AssetContentManager assetContentManager)
+        private static LitPbrMaterial CreateTerrainMaterial(string trackName, AssetContentManager assetContentManager)
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "Landscape.tga", "CityGround.tga");
             Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "LandscapeNormal.png", "CityGroundNormal.png");
@@ -151,21 +152,18 @@ internal static partial class LegacyTrackSceneFactory
             }
 
             string name = $"{trackName}.TerrainMaterial";
-            (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(182, 166, 118), 88, 234);
-            return new LitDiffuseMaterial
-            {
-                Name = name,
-                BasColor = diffuseTexture,
-                NormalMap = normalTexture,
-                DetailTexture = detailTexture,
-                DetailTiling = TerrainDetailTiling,
-                DiffuseColor = diffuse,
-                AmbientColor = ambient,
-                // Landscape.cs: DiffuseWithDetail20 has no specular term.
-                SpecularColor = Vector3.Zero,
-                SamplerState = SamplerState.AnisotropicWrap,
-                RasterizerState = RasterizerState.CullCounterClockwise,
-            };
+            (Color diffuse, _) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(182, 166, 118), 88, 234);
+            // Landscape.cs: DiffuseWithDetail20 has no specular term; the terrain is a fully rough dielectric.
+            return RacingGamePbrMaterialMapping.Create(
+                name,
+                RacingGamePbrMaterialMapping.Terrain,
+                diffuseTexture,
+                normalTexture,
+                diffuse,
+                RasterizerState.CullCounterClockwise,
+                SamplerState.AnisotropicWrap,
+                detailTexture: detailTexture,
+                detailTiling: TerrainDetailTiling);
         }
 
         private static Vector3 CalcLandscapePos(int x, int y, byte[] heights)

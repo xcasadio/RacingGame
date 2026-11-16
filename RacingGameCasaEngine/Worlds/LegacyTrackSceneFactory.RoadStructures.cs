@@ -305,66 +305,54 @@ internal static partial class LegacyTrackSceneFactory
         }
 
         // Track.roadBackMaterial: Material("RoadBack", "RoadBackNormal"); the lighting values are the road's, for now.
-        private static LitDiffuseMaterial CreateRoadBackMaterial(string trackName, AssetContentManager assetContentManager)
+        private static LitPbrMaterial CreateRoadBackMaterial(string trackName, AssetContentManager assetContentManager)
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "RoadBack.tga");
             Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "RoadBackNormal.png");
             string name = $"{trackName}.RoadBackMaterial";
-            (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(60, 62, 66), LegacyDefaultAmbient, LegacyDefaultDiffuse);
-            return new LitDiffuseMaterial
-            {
-                Name = name,
-                BasColor = diffuseTexture,
-                NormalMap = normalTexture,
-                DiffuseColor = diffuse,
-                AmbientColor = ambient,
-                SpecularColor = new Vector3(0.14f),
-                SpecularPower = 18f,
-                RasterizerState = RasterizerState.CullCounterClockwise,
-                SamplerState = SamplerState.AnisotropicWrap,
-            };
+            (Color diffuse, _) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(60, 62, 66), LegacyDefaultAmbient, LegacyDefaultDiffuse);
+            return RacingGamePbrMaterialMapping.Create(
+                name,
+                RacingGamePbrMaterialMapping.Road,
+                diffuseTexture,
+                normalTexture,
+                diffuse,
+                RasterizerState.CullCounterClockwise,
+                SamplerState.AnisotropicWrap);
         }
 
         // Track.roadTunnelMaterial: Material(..., "RoadTunnel", "RoadTunnelNormal"); rendered with culling off.
-        private static LitDiffuseMaterial CreateRoadTunnelMaterial(string trackName, AssetContentManager assetContentManager)
+        private static LitPbrMaterial CreateRoadTunnelMaterial(string trackName, AssetContentManager assetContentManager)
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "RoadTunnel.tga");
             Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "RoadTunnelNormal.png");
             string name = $"{trackName}.RoadTunnelMaterial";
-            (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(182, 182, 182), 182, 80);
-            return new LitDiffuseMaterial
-            {
-                Name = name,
-                BasColor = diffuseTexture,
-                NormalMap = normalTexture,
-                DiffuseColor = diffuse,
-                AmbientColor = ambient,
-                SpecularColor = new Vector3(0.14f),
-                SpecularPower = 18f,
-                RasterizerState = RasterizerState.CullNone,
-                SamplerState = SamplerState.AnisotropicWrap,
-            };
+            (Color diffuse, _) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(182, 182, 182), 182, 80);
+            return RacingGamePbrMaterialMapping.Create(
+                name,
+                RacingGamePbrMaterialMapping.Road,
+                diffuseTexture,
+                normalTexture,
+                diffuse,
+                RasterizerState.CullNone,
+                SamplerState.AnisotropicWrap);
         }
 
         // Landscape.cityMat: Material(..., "CityGround", "CityGroundNormal"); the lighting values are the terrain's, for now.
-        private static LitDiffuseMaterial CreateCityGroundMaterial(string trackName, AssetContentManager assetContentManager)
+        private static LitPbrMaterial CreateCityGroundMaterial(string trackName, AssetContentManager assetContentManager)
         {
             Texture2D? diffuseTexture = LoadProjectTexture(assetContentManager, "CityGround.tga");
             Texture2D? normalTexture = LoadProjectTexture(assetContentManager, "CityGroundNormal.png");
             string name = $"{trackName}.CityGroundMaterial";
-            (Color diffuse, Vector3 ambient) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(182, 166, 118), 32, 200);
-            return new LitDiffuseMaterial
-            {
-                Name = name,
-                BasColor = diffuseTexture,
-                NormalMap = normalTexture,
-                DiffuseColor = diffuse,
-                AmbientColor = ambient,
-                SpecularColor = new Vector3(0.05f),
-                SpecularPower = 6f,
-                RasterizerState = RasterizerState.CullCounterClockwise,
-                SamplerState = SamplerState.AnisotropicWrap,
-            };
+            (Color diffuse, _) = CreateLegacyLighting(name, diffuseTexture != null ? Color.White : new Color(182, 166, 118), 32, 200);
+            return RacingGamePbrMaterialMapping.Create(
+                name,
+                RacingGamePbrMaterialMapping.Road,
+                diffuseTexture,
+                normalTexture,
+                diffuse,
+                RasterizerState.CullCounterClockwise,
+                SamplerState.AnisotropicWrap);
         }
     }
 }
