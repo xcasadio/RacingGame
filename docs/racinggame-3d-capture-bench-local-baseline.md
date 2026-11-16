@@ -132,13 +132,13 @@ Outputs under `artifacts/pbr-handover/s1a/`; the original's export is the same o
 
 Largest difference of a matched object, per track, with the model that carries it:
 
-| Track | Distance | Scale ratio | Rotation | Rotation without `GuardRailHolder` |
+| Track | Distance | Scale ratio | Rotation | Rotation without `GuardRailHolder` (one of the models at that value) |
 |---|---|---|---|---|
 | Beginner | 0.000 m | 0.000 | 1.08 degrees (`GuardRailHolder`) | 0.04 degrees (`AlphaPalm2`) |
 | Advanced | 0.000 m | 0.000 | 6.81 degrees (`GuardRailHolder`) | 0.04 degrees (`AlphaPalm`) |
 | Expert | 0.000 m | 0.000 | 11.91 degrees (`GuardRailHolder`) | 0.04 degrees (`AlphaPalm`) |
 
-The rotation of the guard rail posts is read on the entities the generators built. The original's post matrix is sheared on a slope (its right, direction and up vectors are not at a right angle); an entity holds a scale, a rotation and a translation, so it keeps the closest rotation. Position and scale are exact. Open point O9 of the plan.
+The rotation of the guard rail posts is read on the entities the generators built. The original's post matrix is sheared on a slope (its right, direction and up vectors are not at a right angle); an entity holds a scale, a rotation and a translation, so it keeps the closest rotation. Position and scale are exact. The scenery is read from the layout, not from the entities: lanterns, banners, signs and the start light carry the same shear in their entities, which this column does not show. Open point O9 of the plan.
 
 ### Pictures against the original
 
