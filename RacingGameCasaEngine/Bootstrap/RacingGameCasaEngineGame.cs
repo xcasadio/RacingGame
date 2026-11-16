@@ -42,6 +42,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
     private readonly CarProfileAuditValidator? _carProfileAuditValidator;
     private readonly CarTopSpeedAuditValidator? _carTopSpeedAuditValidator;
     private readonly TrackRuntimeSceneExportValidator? _trackRuntimeSceneExportValidator;
+    private readonly ReferenceViewCaptureValidator? _referenceViewCaptureValidator;
     private readonly string _displaySettingsFileName;
     private readonly string _frontEndOptionsFileName;
     private readonly bool _ignorePlayerInput;
@@ -118,6 +119,11 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
         if (launchOptions.ExportTrackRuntimeScene)
         {
             _trackRuntimeSceneExportValidator = new TrackRuntimeSceneExportValidator(this, _frontEndFlow, launchOptions.RuntimeSceneExportFilePath);
+        }
+
+        if (launchOptions.CaptureReferenceViews)
+        {
+            _referenceViewCaptureValidator = new ReferenceViewCaptureValidator(this, _frontEndFlow, launchOptions.ReferenceViewsFilePath, launchOptions.ReferenceCaptureOutputDirectory);
         }
 
         GameManager.WorldLoaded += OnWorldLoaded;

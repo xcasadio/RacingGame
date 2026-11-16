@@ -26,7 +26,8 @@ public static class Program
         bool captureCarTopSpeedAudit = args.Contains("--capture-car-top-speed-audit", StringComparer.OrdinalIgnoreCase);
         bool exportTrackRuntimeScene = args.Contains("--export-track-runtime-scene", StringComparer.OrdinalIgnoreCase);
         bool verifyLegacyImportProfile = args.Contains("--verify-legacy-import-profile", StringComparer.OrdinalIgnoreCase);
-        EnsureSingleAutomationMode(validateFrontEndNavigation, captureTrackAudit, captureUiScreens, captureCarProfileAudit, captureCarTopSpeedAudit, exportTrackRuntimeScene, verifyLegacyImportProfile);
+        bool captureReferenceViews = args.Contains("--capture-reference-views", StringComparer.OrdinalIgnoreCase);
+        EnsureSingleAutomationMode(validateFrontEndNavigation, captureTrackAudit, captureUiScreens, captureCarProfileAudit, captureCarTopSpeedAudit, exportTrackRuntimeScene, verifyLegacyImportProfile, captureReferenceViews);
 
         Logs.AddLogger(new DebugLogger());
         string logFileName = Path.Combine(AppContext.BaseDirectory, $"racinggame-casaengine-{Environment.ProcessId}.log");
@@ -76,6 +77,9 @@ public static class Program
             CarProfileAuditFilePath = GetOptionValue(args, "--car-profile-audit-file"),
             CarTopSpeedAuditFilePath = GetOptionValue(args, "--car-top-speed-audit-file"),
             CarTopSpeedAuditTrackName = GetOptionValue(args, "--car-top-speed-audit-track"),
+            CaptureReferenceViews = captureReferenceViews,
+            ReferenceViewsFilePath = captureReferenceViews ? GetOptionValue(args, "--capture-reference-views") : null,
+            ReferenceCaptureOutputDirectory = GetOptionValue(args, "--reference-capture-out"),
         };
 
         if (launchOptions.IsAutomation)
@@ -98,7 +102,8 @@ public static class Program
         bool captureCarProfileAudit,
         bool captureCarTopSpeedAudit,
         bool exportTrackRuntimeScene,
-        bool verifyLegacyImportProfile)
+        bool verifyLegacyImportProfile,
+        bool captureReferenceViews)
     {
         int enabledModes = 0;
         if (validateFrontEndNavigation)
@@ -132,6 +137,11 @@ public static class Program
         }
 
         if (verifyLegacyImportProfile)
+        {
+            enabledModes++;
+        }
+
+        if (captureReferenceViews)
         {
             enabledModes++;
         }
