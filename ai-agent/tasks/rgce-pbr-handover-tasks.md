@@ -73,7 +73,7 @@ Hors périmètre : tout push ; tout commit sur `main` (moteur), `master` ou `rem
   - (b) docs, plans, ADR, outils autonomes et original de référence ajoutés là-bas : repris par S1b ;
   - (c) index des ADR et des plans : lignes des deux côtés gardées ; numéros d'ADR en double : les ADR d'ici sont renumérotés, avec leurs renvois ;
   - (d) API du moteur qui a bougé : adaptation minimale du point d'appel du jeu, listée dans le commit ; une correction qui demande de toucher au moteur bloque la tâche ;
-  - (e) sujet fait en double dont les deux versions divergent : la version d'ici reste, l'écart est mesuré par le banc (S1c) et remis à l'auteur. Aucune correction d'office ;
+  - (e) sujet fait en double dont les deux versions divergent : la version d'ici reste, l'écart est mesuré par le banc (S1c) et remis à l'auteur. Aucune correction d'office. Depuis D11, ces écarts sont corrigés vers l'original par la tranche S1a, et par elle seule : le code d'ici reste la base, on le corrige, on ne le remplace pas ;
   - ces règles valent pour S1b et pour toutes les tranches de portage S1c à S1h.
 
 ## Légende des statuts
@@ -105,9 +105,9 @@ Les 46 commits d'`origin/remaster` depuis `d8ac303`, chacun avec la tranche qui 
 | `c6a0372`, `868c8a7` | `TrackCaptureCompare` et ses sondes | S1b (outil repris), utilisé à partir de S1c |
 | `b4642e8` | Rejeu des vues de référence de l'original | S1c, porté |
 | `c3338a3`, `62f7956` | Export des points, objets et ombres ; mesure du port contre l'original | Côté original : S1b. Côté port : S1c, porté |
-| `c24e677` | Lecture des aides de largeur et de route | Fait en double : version d'ici (D7). Écarts mesurés en S1c (règle e) |
-| `80c667c` | Placement exact des objets | Fait en double : version d'ici (D7). Écarts mesurés en S1c (règle e) |
-| `0ac894d` | Dessous de la route, tunnels, sol de la ville | Tunnels : faits en double, version d'ici (D7). Dessous de la route et sol de la ville : S1h, portés |
+| `c24e677` | Lecture des aides de largeur et de route | Fait en double : version d'ici (D7), mesurée en S1c, alignée sur l'original en S1a (D11) |
+| `80c667c` | Placement exact des objets | Fait en double : version d'ici (D7), mesurée en S1c, alignée sur l'original en S1a (D11) |
+| `0ac894d` | Dessous de la route, tunnels, sol de la ville | Tunnels : faits en double, version d'ici (D7), plages alignées sur l'original en S1a (D11). Dessous de la route et sol de la ville : S1h, portés |
 | `b406f4f` | Normal maps au format standard | S1e, porté |
 | `8b30f98` | Tangentes des modèles importés | S1e, porté (dépend de S1d) |
 | `074f242` | Cube du ciel aux axes du port | S1e, porté |
@@ -446,6 +446,10 @@ Décision D11. La base reste le code d'ici (`RaceTrackLayout`, générateurs, as
 - Ici, presque tous les objets placés projettent et reçoivent une ombre ; dans l'original, la plupart ne le font pas (S1c : 620 sur 712, 864 sur 1007, 1771 sur 2140 écarts).
 - Conséquence sur l'enveloppe : le décor de remplissage aléatoire, prévu en S1h, entre dans cette tranche, parce qu'il consomme les mêmes tirages. S1h garde le dessous de la route et le sol de la ville.
 
+Retour arrière de S1a : relever `git rev-parse HEAD` avant T6.1 et le noter sous T6.1 ; annuler les commits de S1a par `git revert` ou `git reset --hard <ce commit>` sur `chantier/rgce-pbr-handover` seulement ; `artifacts/pbr-handover/s1c/` reste la référence d'avant. Sur demande de l'auteur seulement.
+
+Budget de S1a : pour T6.1, au plus six tours « correction puis mesure » ; pour T6.2, au plus trois. Chaque tour doit faire baisser le nombre d'objets sans correspondance ou d'écarts d'ombre. Au-delà, ou après un tour sans progrès, la tâche passe en ⚠️ Blocked avec le reste chiffré par modèle, et l'auteur est interrogé.
+
 ### ⏳ T6.1 — Placement des objets comme l'original
 
 - Objectif : avec la graine du banc, chaque objet de l'original a son objet dans le jeu, à la même place, orientation et échelle, et le jeu n'en a aucun en trop.
@@ -455,7 +459,8 @@ Décision D11. La base reste le code d'ici (`RaceTrackLayout`, générateurs, as
   2. Graine : le tracé reçoit une graine entière. Le mode `--capture-reference-views` passe celle de `views.json`. Partout ailleurs, la graine reste fixe par piste, dérivée du nom de la piste comme aujourd'hui : les autres modes d'automation et le jeu gardent des lancements répétables (ADR-0019). Pas de graine horaire.
   3. Un seul générateur aléatoire, tiré dans l'ordre de l'original.
   4. Tailles de la règle de doublon : celles de l'original, dans une table du jeu avec sa source. Les tailles des modèles cuits ne changent pas.
-  5. Les supports de rail et les segments de colonne restent des enfants des générateurs ; leur liste et leurs transformations viennent du même chemin d'ajout que le reste.
+  5. Les supports de rail et les segments de colonne restent des enfants des générateurs. Les générateurs calculent leur liste par le même chemin d'ajout que la course, avec les objets neutres et combinés du fichier de piste et la table des tailles de la règle 4 (aujourd'hui `ComputeGeneratorLayout` les ignore : `includeScenery: false`, tailles nulles). Ils n'ont pas besoin de la graine : dans l'original, ces objets sont ajoutés avant tout tirage.
+  5 bis. La mesure observe ce qui est généré : `ReferenceSceneSnapshot` lit la transformation de chaque enfant `Post.<n>` et `Segment.<n>` sur l'entité elle-même, et compte comme objet en trop tout enfant de générateur sans placement dans le tracé.
   6. Plages d'aides comme l'original, `Reset` compris. Le nombre de tunnels par piste est comparé à ce que donne l'algorithme de l'original (l'autre PC a relevé 1, 2 et 10) et noté.
   7. Matériaux, lumière, ciel, dessous de la route, sol de la ville : non touchés.
 - Validation, sur `--capture-reference-views artifacts/pbr-handover/s1c/ref/views.json` :
@@ -463,7 +468,8 @@ Décision D11. La base reste le code d'ici (`RaceTrackLayout`, générateurs, as
   - objets : 1147/1147, 1693/1693 et 3404/3404, autant d'appariés, 0 manquant, 0 en trop ; pour chaque modèle, distance maximale sous 0,01 m, écart de rotation sous 0,1°, écart d'échelle à 0,000 ;
   - les 15 distances d'alignement inchangées ;
   - build à 0 erreur ; cuiseur `--check` et `--verify` sans écart ; `--smoke-frontend` en succès ;
-  - deux lancements de `--capture-track-audit` donnent les mêmes images (graine fixe par piste).
+  - supports et segments : pour les trois pistes, le nombre d'enfants de chaque générateur égale celui du tracé, et leurs transformations lues sur les entités sont celles que la mesure compare (une ligne de journal par piste le dit) ;
+  - graine fixe par piste : hors banc, le jeu journalise par piste une empreinte de la liste des placements (modèle et transformation) ; deux lancements de `--capture-track-audit` donnent les mêmes empreintes. Les images de ces deux lancements sont comparées par `scripts/compare_track_audit.py` avec un seuil de 0,01 par canal, à titre de contrôle secondaire.
 - Arrêts : besoin de modifier le moteur ; un reste d'objets non appariés dont la cause n'est pas trouvée dans le code de l'original (la tâche passe en ⚠️ Blocked avec le reste chiffré par modèle ; on ne touche ni aux tolérances ni à la mesure pour le faire disparaître) ; une règle de l'original qui demanderait de changer un asset cuit.
 - Commits : un par cause distincte, chacun compilable, par exemple `fix(racing-casa): place the rail posts and column segments as the original does`, `feat(racing-casa): place the random scenery in the original's draw order`. La validation complète porte sur le dernier.
 
