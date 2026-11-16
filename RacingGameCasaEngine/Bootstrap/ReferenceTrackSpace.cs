@@ -18,15 +18,16 @@ internal sealed class ReferenceTrackSpace
 {
     private readonly Matrix _roadWorldInverse;
 
-    private ReferenceTrackSpace(string trackName, Vector3 origin, Matrix roadWorld)
+    private ReferenceTrackSpace(RaceTrackSource source, Vector3 origin, Matrix roadWorld)
     {
-        TrackName = trackName;
+        Source = source;
         Origin = origin;
         RoadWorld = roadWorld;
         _roadWorldInverse = Matrix.Invert(roadWorld);
     }
 
-    public string TrackName { get; }
+    /// <summary>The track and height map assets of the road generator.</summary>
+    public RaceTrackSource Source { get; }
 
     /// <summary>The runtime-space point the track is centred on (the layout's origin).</summary>
     public Vector3 Origin { get; }
@@ -45,7 +46,7 @@ internal sealed class ReferenceTrackSpace
             return false;
         }
 
-        space = new ReferenceTrackSpace(source!.TrackName, RaceTrackLayout.ComputeOrigin(source.Track.TrackPoints), generator.WorldMatrixWithScale);
+        space = new ReferenceTrackSpace(source!, RaceTrackLayout.ComputeOrigin(source!.Track.TrackPoints), generator.WorldMatrixWithScale);
         return true;
     }
 
@@ -59,6 +60,69 @@ internal sealed class ReferenceTrackSpace
     public Vector3 ToLegacy(Vector3 worldPoint)
     {
         return ConvertRuntimeToLegacyPoint(Vector3.Transform(worldPoint, _roadWorldInverse) + Origin);
+    }
+
+    /// <summary>
+    /// A transform placed by <see cref="RaceTrackSpace.ConvertLegacyTransform"/> (relative to the track origin, as the layout
+    /// gives them), in the original's coordinates: the inverse of that conversion.
+    /// </summary>
+    public Matrix ToLegacyTransform(Matrix runtimeTransform)
+    {
+        Matrix legacyTransform = Matrix.Identity;
+        legacyTransform.Right = ConvertRuntimeToLegacyVector(runtimeTransform.Right);
+        legacyTransform.Up = ConvertRuntimeToLegacyVector(runtimeTransform.Up);
+        legacyTransform.Forward = ConvertRuntimeToLegacyVector(runtimeTransform.Forward);
+        legacyTransform.Translation = ConvertRuntimeToLegacyPoint(runtimeTransform.Translation + Origin);
+        return legacyTransform;
+    }
+
+    /// <summary>
+    /// The largest distance between a point of the original's coordinates and the same point converted to the race world and
+    /// brought back: float rounding only when the two conversions are inverse of each other.
+    /// </summary>
+    public float MaxPointRoundTripError(IEnumerable<Vector3> legacyPoints)
+    {
+        float maxError = 0f;
+        foreach (Vector3 point in legacyPoints)
+        {
+            maxError = Math.Max(maxError, Vector3.Distance(ToLegacy(ToRaceWorld(point)), point));
+        }
+
+        return maxError;
+    }
+
+    /// <summary>
+    /// The largest difference of one element between a placed transform and the same transform brought back to the
+    /// original's coordinates and placed again by <see cref="RaceTrackSpace.ConvertLegacyTransform"/>.
+    /// </summary>
+    public float MaxTransformRoundTripError(IEnumerable<Matrix> runtimeTransforms)
+    {
+        float maxError = 0f;
+        foreach (Matrix runtimeTransform in runtimeTransforms)
+        {
+            Matrix placedAgain = RaceTrackSpace.ConvertLegacyTransform(ToLegacyTransform(runtimeTransform), Origin);
+            maxError = Math.Max(maxError, MaxElementDifference(runtimeTransform, placedAgain));
+        }
+
+        return maxError;
+    }
+
+    private static float MaxElementDifference(Matrix a, Matrix b)
+    {
+        float maxDifference = 0f;
+        maxDifference = Math.Max(maxDifference, Math.Abs(a.M11 - b.M11));
+        maxDifference = Math.Max(maxDifference, Math.Abs(a.M12 - b.M12));
+        maxDifference = Math.Max(maxDifference, Math.Abs(a.M13 - b.M13));
+        maxDifference = Math.Max(maxDifference, Math.Abs(a.M21 - b.M21));
+        maxDifference = Math.Max(maxDifference, Math.Abs(a.M22 - b.M22));
+        maxDifference = Math.Max(maxDifference, Math.Abs(a.M23 - b.M23));
+        maxDifference = Math.Max(maxDifference, Math.Abs(a.M31 - b.M31));
+        maxDifference = Math.Max(maxDifference, Math.Abs(a.M32 - b.M32));
+        maxDifference = Math.Max(maxDifference, Math.Abs(a.M33 - b.M33));
+        maxDifference = Math.Max(maxDifference, Math.Abs(a.M41 - b.M41));
+        maxDifference = Math.Max(maxDifference, Math.Abs(a.M42 - b.M42));
+        maxDifference = Math.Max(maxDifference, Math.Abs(a.M43 - b.M43));
+        return maxDifference;
     }
 
     // RaceTrackSpace.ConvertLegacyVector is (x, z, -y) * WorldScale: this is (x, -z, y) / WorldScale.

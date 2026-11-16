@@ -9,6 +9,7 @@ using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
 using RacingGame.Gameplay.Components;
 using RacingGame.Gameplay.Race;
+using RacingGame.Gameplay.Track;
 using RacingGameCasaEngine.Worlds;
 
 namespace RacingGameCasaEngine.Bootstrap;
@@ -22,6 +23,8 @@ namespace RacingGameCasaEngine.Bootstrap;
 /// to the settings (ADR-0004). The HUD is removed, the chase and debug cameras are stopped, the course debug lines are
 /// removed, and the car is hidden in the views where the original does not draw it. A picture is taken at the end of a
 /// draw, as the other capture modes do, with one update per draw.
+/// When the original wrote a scene.json next to views.json, the road points and the placed models of each race world are also
+/// measured against it (<see cref="ReferenceSceneMeasure"/>), into scene-measure-&lt;Track&gt;.txt in the output folder.
 /// </summary>
 internal sealed class ReferenceViewCaptureValidator
 {
@@ -56,6 +59,7 @@ internal sealed class ReferenceViewCaptureValidator
     private readonly float _nearPlane;
     private readonly float _farPlane;
     private readonly string? _loadError;
+    private readonly string? _sceneFilePath;
     private CaptureStep _step = CaptureStep.WaitForFrontEnd;
     private TimeSpan _startedAt;
     private TimeSpan _lastTransitionAt;
@@ -81,6 +85,9 @@ internal sealed class ReferenceViewCaptureValidator
             {
                 throw new FileNotFoundException($"views.json not found: {viewsFilePath}");
             }
+
+            string sceneFilePath = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(viewsFilePath))!, "scene.json");
+            _sceneFilePath = File.Exists(sceneFilePath) ? sceneFilePath : null;
 
             using JsonDocument document = JsonDocument.Parse(File.ReadAllText(viewsFilePath));
             JsonElement root = document.RootElement;
@@ -140,6 +147,10 @@ internal sealed class ReferenceViewCaptureValidator
             // whatever the frame pacing (the game slows down instead of catching up).
             _game.MaxElapsedTime = _game.TargetElapsedTime;
             Logs.WriteInfo($"Reference view capture started, output folder {_outputDirectory}");
+            if (_sceneFilePath == null)
+            {
+                Logs.WriteInfo("Reference view capture: no scene.json next to views.json, the scene measure is skipped.");
+            }
         }
 
         if (_step is CaptureStep.Completed or CaptureStep.Failed)
@@ -209,6 +220,7 @@ internal sealed class ReferenceViewCaptureValidator
                     }
 
                     LogAlignment(_tracks[_trackIndex], _trackSpace!);
+                    MeasureScene(_tracks[_trackIndex], _trackSpace!);
                     Advance(CaptureStep.PrepareView, totalTime, $"Race world ready for {_tracks[_trackIndex].Name}");
                 }
                 break;
@@ -367,6 +379,39 @@ internal sealed class ReferenceViewCaptureValidator
     private static string Format(Vector3 vector)
     {
         return FormattableString.Invariant($"({vector.X:0.000}, {vector.Y:0.000}, {vector.Z:0.000})");
+    }
+
+    // Measures the road points and the placed models of the race world against the original's scene.json, and checks that
+    // the conversion to the race world is inverted exactly; a failure is a warning, the pictures are still taken.
+    private void MeasureScene(ReferenceTrack track, ReferenceTrackSpace space)
+    {
+        float pointError = space.MaxPointRoundTripError(track.Views.SelectMany(view => new[] { view.Position, view.Target, view.CarPosition }));
+        if (_sceneFilePath == null)
+        {
+            Logs.WriteInfo(FormattableString.Invariant(
+                $"Reference view capture: round trip {track.Name}: point error max {pointError:0.000000} m over {track.Views.Count * 3} view points"));
+            return;
+        }
+
+        try
+        {
+            string catalogTrackName = RaceFrontEndCatalog.Tracks[FindCatalogTrackIndex(track.Name)].Name;
+            RaceTrackLayout layout = LegacyTrackSceneFactory.ComputeRaceLayout(catalogTrackName, space.Source, _game.AssetContentManager);
+            ReferenceSceneSnapshot snapshot = ReferenceSceneSnapshot.Capture(_game.GameManager.CurrentWorld!, space, layout, out int notBuiltCount);
+
+            IEnumerable<RaceTrackModelPlacement> placements = layout.Scenery.Concat(layout.LeftPosts).Concat(layout.RightPosts).Concat(layout.ColumnSegments);
+            float transformError = space.MaxTransformRoundTripError(placements.Select(placement => placement.Transform));
+            float roadPointError = space.MaxPointRoundTripError(layout.RoadPoints.Select(point => point.Position));
+            Logs.WriteInfo(FormattableString.Invariant(
+                $"Reference view capture: round trip {track.Name}: point error max {Math.Max(pointError, roadPointError):0.000000} m over {track.Views.Count * 3} view points and {layout.RoadPoints.Count} road points, transform error max {transformError:0.000000} over {placements.Count()} placed transforms"));
+
+            string summary = ReferenceSceneMeasure.Measure(_sceneFilePath, track.Name, snapshot, _outputDirectory);
+            Logs.WriteInfo($"Reference view capture: scene measure {track.Name}: {summary} ({notBuiltCount} placement(s) of the layout without an entity or component in the race world)");
+        }
+        catch (Exception ex)
+        {
+            Logs.WriteWarning($"Reference view capture: scene measure failed for {track.Name}: {ex.Message}");
+        }
     }
 
     private bool TryStopCameraControllers()

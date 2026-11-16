@@ -24,12 +24,7 @@ internal static partial class LegacyTrackSceneFactory
         Guid trackAssetId = GetCatalogAssetId(RaceBootstrapAssets.GetTrackDataAssetName(trackName));
         Guid heightmapAssetId = GetCatalogAssetId(RaceBootstrapAssets.LandscapeHeightsData);
         RaceTrackSource source = ResolveTrackSource(trackAssetId, heightmapAssetId);
-        RaceTrackLayout layout = RaceTrackLayout.Compute(
-            trackName,
-            source.Track,
-            source.Heights,
-            LoadCombiModel,
-            modelName => GetLegacyModelSize(modelName, assetContentManager));
+        RaceTrackLayout layout = ComputeRaceLayout(trackName, source, assetContentManager);
 
         // The track's geometry is rebuilt by generator components from the same catalogued assets; the layout above
         // only drives what stays assembled here: the scenery, the checkpoints and the start.
@@ -62,6 +57,20 @@ internal static partial class LegacyTrackSceneFactory
         }
 
         return new RaceTrackScene(trackEntities, sceneryEntities, layout.PlayerStartPose, layout.CheckpointTriggers, trackAssetId, heightmapAssetId);
+    }
+
+    /// <summary>
+    /// The layout <see cref="Create"/> builds the scenery, the checkpoints and the start from: every placement, with the
+    /// scenery. Also read by the reference capture, which measures what the race world holds against it.
+    /// </summary>
+    internal static RaceTrackLayout ComputeRaceLayout(string trackName, RaceTrackSource source, AssetContentManager assetContentManager)
+    {
+        return RaceTrackLayout.Compute(
+            trackName,
+            source.Track,
+            source.Heights,
+            LoadCombiModel,
+            modelName => GetLegacyModelSize(modelName, assetContentManager));
     }
 
     private static Entity CreateGeneratorEntity(string name, RaceTrackGeneratorComponent generator, Guid trackAssetId, Guid heightmapAssetId)
