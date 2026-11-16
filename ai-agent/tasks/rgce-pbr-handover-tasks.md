@@ -17,12 +17,12 @@ Tranches :
 | S1b | Fusion de `origin/remaster` en gardant le code et le contenu du jeu d'ici (Phase 3) : histoires jointes, docs, outils et original repris, ADR renumérotés. Le travail PBR de l'autre PC n'est pas actif après cette tranche | S1 | Faite le 2026-11-16 |
 | S1v | HANDOVER §7 : vérification indépendante des fusions du moteur et du jeu (`verifier` frais), captures UI et audit de piste du jeu sur le moteur fusionné. Avant toute tranche qui change le moteur, le contenu ou les matériaux | S1b | Faite le 2026-11-16, verdict CONFIRMED après une correction |
 | S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1v | Faite le 2026-11-16, verdict CONFIRMED après une correction du doc |
-| S1a | Alignement sur l'original des sujets faits en double (D11) : poteaux de rail, segments de colonne, lanternes, palmiers, panneaux, ombres portées. Prouvé par la mesure de scène de S1c ; nouvelle référence « avant PBR » en fin de tranche | S1c | À détailler |
+| S1a | Alignement sur l'original des sujets faits en double (D11) : poteaux de rail, segments de colonne, lanternes, palmiers, panneaux, ombres portées, avec le décor de remplissage aléatoire, qui partage les mêmes tirages. Prouvé par la mesure de scène de S1c ; nouvelle référence « avant PBR » en fin de tranche | S1c | Détaillée (Phase 6) |
 | S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1a | À détailler |
 | S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | À détailler |
 | S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1e | À détailler |
 | S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | À détailler |
-| S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville, décor de remplissage aléatoire ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | À détailler |
+| S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | À détailler |
 | S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1c, S1g, S1h | À détailler après S1 |
 | S3 | Tunnel presque noir | S2 | À détailler ; choix de l'auteur attendu (O1) |
 | S4 | Voiture centrale du carrousel trop blanche | S2 | À détailler ; choix de l'auteur attendu (O2) |
@@ -425,6 +425,70 @@ Source à porter : le code de l'autre PC, lisible par `git show origin/remaster:
 > - `verifier` frais sur l'affirmation 4 : **CONFIRMED**, les 60 cellules du tableau des images et tous les triplets par modèle contrôlés.
 > - Remarques P3 et P4 du second passage, notées sans suite (candidat confirmé) : « two to three times » alors qu'Advanced est à 3,2 ; le sens des écarts d'ombre n'est prouvé que sur les 12 exemples listés par piste ; l'échelle 1,125 des poteaux d'ici est déduite de l'écart 0,167, elle n'est pas écrite dans une sortie.
 > - Répétabilité : pas totale au pixel (un ou deux fichiers d'empreinte différente selon le lancement, différence moyenne 0,00 quand elle a été mesurée).
+
+---
+
+## Phase 6 — Alignement sur l'original des sujets faits en double (S1a)
+
+Décision D11. La base reste le code d'ici (`RaceTrackLayout`, générateurs, assets cuits) : on le corrige jusqu'à ce que la mesure de scène de S1c ne laisse aucun objet sans correspondance. Rien n'est repris tel quel de l'autre PC ; son code et son plan servent d'explication des causes.
+
+État vérifié (2026-11-16) :
+
+- Mesure de S1c, graine 1 (`artifacts/pbr-handover/s1c/cand-a/scene-measure-*.txt`) : points de route identiques ; objets 1147/821, 1693/1226, 3404/2595 (original/jeu) ; 712, 1007 et 2140 appariés.
+- L'autre PC est parti d'un état comparable et a atteint 1147/1147, 1693/1693 et 3404/3404, 0 objet sans correspondance, distance et échelle à 0,000, rotation sous 0,04° (`ai-agent/tasks/rgce-3d-geometry-fidelity-tasks.md`, T4). Causes qu'il a relevées dans le code de l'original :
+  - supports de rail et segments de colonne ne passent pas par le chemin d'ajout de l'original (échelle 1,2, plaquage au terrain, règle de doublon, ordre) ;
+  - les décalages utilisent le vecteur droite normalisé, l'original le vecteur brut ;
+  - l'angle de route est borné ici, pas dans l'original, ce qui change un tirage ;
+  - le décor de remplissage aléatoire de l'original n'existe pas ici, et il partage le générateur aléatoire des palmiers, banderoles et panneaux (`RacingGameOriginal/Core/Tracks/Track.cs`, lignes 780 à 1147 d'après ce plan) ;
+  - la règle de doublon de l'original utilise les tailles de modèle de l'original ; les tailles déduites des glTF diffèrent (table `LegacyModelSizes` de l'autre PC, relevée sur les `.xnb`) ;
+  - les plages d'aides (tunnels, palmiers, lanternes) commencent sur tout repère dans l'original, `Reset` compris ; ici, pas sur `Reset`.
+- Ici, les tirages viennent de deux suites fixées par piste (`RaceTrackLayout.cs`, graines `<piste>|…Palms` et `…Helpers`), décision de l'ADR-0019 pour des audits répétables.
+- Ici, presque tous les objets placés projettent et reçoivent une ombre ; dans l'original, la plupart ne le font pas (S1c : 620 sur 712, 864 sur 1007, 1771 sur 2140 écarts).
+- Conséquence sur l'enveloppe : le décor de remplissage aléatoire, prévu en S1h, entre dans cette tranche, parce qu'il consomme les mêmes tirages. S1h garde le dessous de la route et le sol de la ville.
+
+### ⏳ T6.1 — Placement des objets comme l'original
+
+- Objectif : avec la graine du banc, chaque objet de l'original a son objet dans le jeu, à la même place, orientation et échelle, et le jeu n'en a aucun en trop.
+- Fichiers : `RacingGame.Gameplay/Track/RaceTrackLayout.cs`, `RaceTrackLayoutTypes.cs`, `LegacyTrackSceneFactory*.cs`, `LegacyTrackFileReader.cs` si la lecture est en cause ; `RacingGame.Gameplay/Components/Race*Generator*.cs` seulement pour suivre le tracé ; `RacingGameCasaEngine/Bootstrap/ReferenceViewCaptureValidator.cs` et `ReferenceSceneSnapshot.cs` pour la graine et le relevé.
+- Règles :
+  1. La source est le code de l'original (`RacingGameOriginal/Core/Tracks/Track.cs`, `Core/Landscapes/Landscape.cs`). Chaque règle portée cite son fichier et ses lignes en commentaire. Les effets de bord sont gardés (vecteur droite brut, angle non borné, ordre des tirages).
+  2. Graine : le tracé reçoit une graine entière. Le mode `--capture-reference-views` passe celle de `views.json`. Partout ailleurs, la graine reste fixe par piste, dérivée du nom de la piste comme aujourd'hui : les autres modes d'automation et le jeu gardent des lancements répétables (ADR-0019). Pas de graine horaire.
+  3. Un seul générateur aléatoire, tiré dans l'ordre de l'original.
+  4. Tailles de la règle de doublon : celles de l'original, dans une table du jeu avec sa source. Les tailles des modèles cuits ne changent pas.
+  5. Les supports de rail et les segments de colonne restent des enfants des générateurs ; leur liste et leurs transformations viennent du même chemin d'ajout que le reste.
+  6. Plages d'aides comme l'original, `Reset` compris. Le nombre de tunnels par piste est comparé à ce que donne l'algorithme de l'original (l'autre PC a relevé 1, 2 et 10) et noté.
+  7. Matériaux, lumière, ciel, dessous de la route, sol de la ville : non touchés.
+- Validation, sur `--capture-reference-views artifacts/pbr-handover/s1c/ref/views.json` :
+  - points de route inchangés (1332, 2172, 4466, écart 0,000 m) ;
+  - objets : 1147/1147, 1693/1693 et 3404/3404, autant d'appariés, 0 manquant, 0 en trop ; pour chaque modèle, distance maximale sous 0,01 m, écart de rotation sous 0,1°, écart d'échelle à 0,000 ;
+  - les 15 distances d'alignement inchangées ;
+  - build à 0 erreur ; cuiseur `--check` et `--verify` sans écart ; `--smoke-frontend` en succès ;
+  - deux lancements de `--capture-track-audit` donnent les mêmes images (graine fixe par piste).
+- Arrêts : besoin de modifier le moteur ; un reste d'objets non appariés dont la cause n'est pas trouvée dans le code de l'original (la tâche passe en ⚠️ Blocked avec le reste chiffré par modèle ; on ne touche ni aux tolérances ni à la mesure pour le faire disparaître) ; une règle de l'original qui demanderait de changer un asset cuit.
+- Commits : un par cause distincte, chacun compilable, par exemple `fix(racing-casa): place the rail posts and column segments as the original does`, `feat(racing-casa): place the random scenery in the original's draw order`. La validation complète porte sur le dernier.
+
+### ⏳ T6.2 — Ombres portées et reçues comme l'original
+
+- Objectif : chaque objet placé projette et reçoit une ombre quand, et seulement quand, celui de l'original le fait.
+- Fichiers : `RacingGame.Gameplay/Track/LegacyTrackSceneFactory*.cs`, `RaceTrackLayout*.cs`, `Components/RaceGeneratedModelComponent.cs` ou les générateurs, selon l'endroit où les indicateurs sont posés.
+- Règles : la règle vient du code de l'original, citée en commentaire ; elle est appliquée aux composants des entités ; les maillages générés (route, terrain, rails, colonnes) ne sont pas touchés.
+- Validation : mesure relancée, 0 écart d'ombre projetée et 0 écart d'ombre reçue sur les objets appariés des trois pistes ; le reste de la validation de T6.1 inchangé.
+- Arrêts : la règle de l'original dépend d'un état que le moteur ne sait pas exprimer (tâche ⚠️ Blocked, sans contournement).
+- Commit : `fix(racing-casa): cast and receive object shadows as the original does`
+
+### ⏳ T6.3 — Références reprises et décisions écrites
+
+- Objectif : la référence « avant PBR » est celle de la version alignée, et les décisions sont écrites.
+- Fichiers : `docs/racinggame-3d-capture-bench-local-baseline.md` (section ajoutée « After the alignment », les chiffres d'avant gardés), un ADR du jeu (skill `adr`, numéro libre suivant) qui amende l'ADR-0019 : ordre de tirage et chemin d'ajout de l'original, graine, table des tailles, ombres ; `docs/decisions/README.md` ; l'ADR-0019 marqué amendé ; ce plan.
+- Étapes : banc complet relancé (deux rejeux, comparaisons `nopost`, `full`, sondes, répétabilité) vers `artifacts/pbr-handover/s1a/` ; nouvelles références d'ici notées : `--capture-track-audit` et `--capture-ui-screens` dans `artifacts/pbr-handover/s1a/` ; chaque chiffre du doc cité avec son fichier de sortie, tableaux recopiés par script, pas à la main.
+- Validation : les lancements en succès ; le doc et l'ADR relus contre les sorties.
+- Commit : `docs(racing-casa): record the alignment on the original's object placement`
+
+### ⏳ T6.4 — Vérification indépendante de S1a
+
+- Objectif : un `verifier` frais confirme ou réfute, par ses propres lancements : les décomptes d'objets et d'ombres de T6.1 et T6.2 ; chaque règle portée correspond au code de l'original cité ; la graine est celle de `views.json` sous le banc et fixe par piste ailleurs ; pas de régression des autres modes ; les chiffres du doc sont ceux des sorties.
+- Étapes et verdicts : comme T5.4 (un appel ; `INCONCLUSIVE`, un seul nouvel appel après preuve fournie ; P0 ou P1, arrêt et question ; P2 introduit par S1a, corrigé dans les fichiers de T6.1 à T6.3, deux passes au plus, `verifier` frais sur l'affirmation touchée ; le reste noté).
+- Commit : `docs(ai-agent): record the verification of the alignment on the original`
 
 ---
 
