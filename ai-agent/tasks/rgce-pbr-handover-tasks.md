@@ -15,7 +15,7 @@ Tranches :
 |---|---|---|---|
 | S1 | Fusion du moteur (T1.1) | — | Faite le 2026-11-16, avec la réserve D5 |
 | S1b | Fusion de `origin/remaster` en gardant le code et le contenu du jeu d'ici (Phase 3) : histoires jointes, docs, outils et original repris, ADR renumérotés. Le travail PBR de l'autre PC n'est pas actif après cette tranche | S1 | Faite le 2026-11-16 |
-| S1v | HANDOVER §7 : vérification indépendante des fusions du moteur et du jeu (`verifier` frais), captures UI et audit de piste du jeu sur le moteur fusionné. Avant toute tranche qui change le moteur, le contenu ou les matériaux | S1b | À détailler |
+| S1v | HANDOVER §7 : vérification indépendante des fusions du moteur et du jeu (`verifier` frais), captures UI et audit de piste du jeu sur le moteur fusionné. Avant toute tranche qui change le moteur, le contenu ou les matériaux | S1b | Détaillée (Phase 4) |
 | S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1v | À détailler |
 | S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1c | À détailler |
 | S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | À détailler |
@@ -261,6 +261,32 @@ Constats de l'étude du 2026-11-16 (trois lectures en parallèle, faits décisif
 
 ---
 
+## Phase 4 — Vérification indépendante des fusions (S1v)
+
+### ⏳ T4.1 — Empreintes de référence du moteur sur ce PC
+
+- Objectif : relever une fois, sur ce PC et sur le moteur fusionné (`e942caa54`), les empreintes des scripts `pbr-baseline` (HANDOVER §2 et §6). Elles dépendent du GPU : elles servent de référence d'ici, pas de comparaison avec l'autre PC.
+- Sources : `CasaEngine/CasaEngine/artifacts/pbr-baseline/*.sh` (copie de `ai-agent/handover/pbr-baseline/`), les démos du moteur construites par T1.1.
+- Étapes : lire chaque script avant de le lancer ; les lancer un à la fois, jamais pendant un build, avec `BIN` pointé sur le build de ce PC ; noter les empreintes sous cette tâche.
+- Validation : chaque script se termine et donne une empreinte ; un script qui ne tourne pas est noté avec son erreur, sans correction du moteur.
+- Commit : `docs(ai-agent): record the engine baseline fingerprints of this machine`
+
+### ⏳ T4.2 — Vérification indépendante des deux fusions
+
+- Objectif : faire réfuter ou confirmer par un `verifier` frais ce que T1.1 et T3.1 affirment. Aucune modification de code par le vérificateur.
+- Sources : moteur `chantier/merge-editor-project` (`e942caa54`, parents `187a420d7` et `87fc5f01b`) ; jeu `chantier/rgce-pbr-handover` (`61c465e`, parents `a53133b` et `90e3d99`) ; ce plan.
+- Affirmations à vérifier :
+  1. Moteur : la fusion contient `origin/main` et les 24 commits du chantier ; dans les 7 fichiers en conflit, aucun comportement d'un des deux côtés n'est perdu ; les deux adaptations (`EditorWorldOperations.IsAddableComponentType`, `LitPbrTransparentGpuTests`) sont justifiées ; les ADR 0118 à 0122 et leurs renvois sont cohérents, sans renvoi vers un mauvais ADR 0071 à 0075.
+  2. Moteur : les deux solutions se construisent à 0 erreur ; `dotnet test CasaEngine.Tests/CasaEngine.Tests.csproj --blame-hang-timeout 5m` donne 6370 succès sur 6378, et les 8 échecs sont ceux nommés en T1.1.
+  3. Jeu : dans `61c465e`, les dossiers gardés sont identiques à `a53133b`, aux trois fichiers nommés près ; rien de ce que `origin/remaster` a ajouté hors de ces dossiers n'est perdu ; les ADR 0023 à 0026 et leurs renvois sont cohérents, et les docs de l'autre PC pointent toujours vers leurs ADR 0015 à 0018.
+  4. Jeu : build à 0 erreur ; cuiseur `--check` et `--verify` sans écart ; `--smoke-frontend` et `--verify-legacy-import-profile` en succès.
+- Étapes : un seul appel au `verifier`, avec ces affirmations, les commits et les commandes ; un lancement du jeu à la fois. Verdict et constats notés sous cette tâche. Un constat P0 ou P1 bloque la suite ; un P2 introduit par les fusions est corrigé puis revérifié ; le reste est noté.
+- Validation : verdict `CONFIRMED`, ou constats traités comme ci-dessus.
+- Hors périmètre : le banc de capture contre l'original (S1c) ; la cause des écarts faibles des vues 3D relevés en T3.1, notée en O7.
+- Commit : `docs(ai-agent): record the independent verification of the merges`
+
+---
+
 ## Points ouverts
 
 À trancher pendant l'exécution, ou à remonter en ⚠️ Blocked si la réponse manque.
@@ -284,3 +310,4 @@ Constats de l'étude du 2026-11-16 (trois lectures en parallèle, faits décisif
   Tranché par D7 : la version de ce PC sert de référence.
 - O5 (S1b) : les ADR du jeu 0015 à 0018 existent des deux côtés avec des sujets différents ; les ADR locaux 0015 à 0018 sont à renuméroter (0023 à 0026), avec leurs renvois, y compris ceux du moteur s'il y en a.
 - O6 (clos par T2.2, D9) : l'original de référence ne compilait pas sur ce PC. Essai du 2026-11-16 sur la copie `RacingGameOriginal/` d'`origin/remaster`, extraite hors du dépôt : `dotnet build Desktop/RacingGame.csproj` échoue avec `NU1101`, package `MonoGame.Xna.Framework.Net` introuvable sur nuget.org (`Core/Core.csproj` et `Desktop/RacingGame.csproj` ; version `1.0.0-preview.1` d'après `Documentation/LAN-Multiplayer.md`). Cinq fichiers l'utilisent, tous du multijoueur LAN (`Core/Multiplayer/*`, `LanBrowserScreen.cs`, `MultiplayerGameScreen.cs`). Deux voies : recopier le package depuis le cache NuGet de l'autre PC, ou retirer le multijoueur LAN de la copie (D8 l'autorise). Choix de l'auteur attendu.
+- O7 : depuis le moteur fusionné, les vues 3D du jeu ne sont plus identiques au pixel à la référence d'ici (T3.1 : pire canal 0,352 sur 255 pour l'audit de piste, 0,09 pour les captures UI avec 3D). Cause non cherchée. Décision en mode AUTO : écart faible, hors du code du jeu (identique), non bloquant ; une nouvelle référence est prise en S1c. À confirmer par l'auteur.
