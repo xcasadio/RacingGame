@@ -353,8 +353,9 @@ Source à porter : le code de l'autre PC, lisible par `git show origin/remaster:
 - Validation :
   - build du jeu à 0 erreur ;
   - avec la référence de T5.3 étape 1 : sortie 0, 15 images (3 pistes, 5 vues), 15 lignes d'alignement et 15 lignes `[CaptureBench]` ;
+  - alignement : pour chacune des 15 vues, la distance entre la voiture de l'original convertie et l'ancre la plus proche reste sous 5 m (l'autre PC relevait 0,5 à 3,7 m, `docs/racinggame-3d-capture-bench-findings.md`) ; les 15 distances sont citées dans la note de validation ; la conversion tient compte de l'origine du tracé et de la matrice de monde du générateur de route, comme `TrackMigrationCaptureValidator.cs:414-415` ;
   - les autres modes ne bougent pas : `--smoke-frontend` en succès ; `--capture-ui-screens` contre `artifacts/pbr-handover/s1b/ui`, les 10 états sous le seuil de `UiCaptureCompare`.
-- Arrêts : besoin de modifier le moteur ; besoin de changer le tracé, les placements ou les matériaux du jeu.
+- Arrêts : besoin de modifier le moteur ; besoin de changer le tracé, les placements ou les matériaux du jeu ; une distance d'alignement au-dessus de 5 m (la tâche passe en ⚠️ Blocked avec la question, l'écart n'est pas enregistré comme résultat).
 - Commit : `feat(racing-casa): replay the original's reference views`
 
 ### ⏳ T5.2 — Mesure de la scène contre `scene.json`
@@ -386,7 +387,7 @@ Source à porter : le code de l'autre PC, lisible par `git show origin/remaster:
 
 ### ⏳ T5.4 — Vérification indépendante de S1c
 
-- Objectif : un `verifier` frais confirme ou réfute : le mode rejoue bien les vues de l'original (taille, projection, positions) ; la mesure compare dans le bon repère ; les autres modes d'automation ne régressent pas ; les chiffres du doc sont ceux des sorties.
+- Objectif : un `verifier` frais confirme ou réfute : le mode rejoue bien les vues de l'original (taille, projection, positions : les 15 distances d'alignement sous 5 m, critère de T5.1) ; la mesure compare dans le bon repère ; les autres modes d'automation ne régressent pas ; les chiffres du doc sont ceux des sorties.
 - Étapes : commandes longues éventuelles lancées par la session principale ; un appel au `verifier` ; verdict noté ici. `INCONCLUSIVE` : un seul nouvel appel après avoir fourni la preuve manquante, sinon S1c en pause. Constats : P0 ou P1, arrêt et question à l'auteur ; P2 introduit par S1c, corrigé dans les fichiers de T5.1 à T5.3 (un commit par correction, deux passes au plus, `verifier` frais sur l'affirmation touchée) ; le reste noté et reporté.
 - Validation : `CONFIRMED`, ou constats traités comme ci-dessus.
 - Commit : `docs(ai-agent): record the verification of the capture bench port`
