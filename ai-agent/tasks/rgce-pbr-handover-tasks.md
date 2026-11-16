@@ -15,13 +15,14 @@ Tranches :
 |---|---|---|---|
 | S1 | Fusion du moteur (T1.1) | — | Faite le 2026-11-16, avec la réserve D5 |
 | S1b | Fusion de `origin/remaster` en gardant le code et le contenu du jeu d'ici (Phase 3) : histoires jointes, docs, outils et original repris, ADR renumérotés. Le travail PBR de l'autre PC n'est pas actif après cette tranche | S1 | Détaillée, à approuver |
-| S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1b | À détailler |
-| S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1b | À détailler |
+| S1v | HANDOVER §7 : vérification indépendante des fusions du moteur et du jeu (`verifier` frais), captures UI et audit de piste du jeu sur le moteur fusionné. Avant toute tranche qui change le moteur, le contenu ou les matériaux | S1b | À détailler |
+| S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1v | À détailler |
+| S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1v | À détailler |
 | S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | À détailler |
-| S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, vérificateurs, suppression des tables de réglage | S1e | À détailler |
-| S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route et des tunnels, texture de détail du terrain | S1f | À détailler |
+| S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import | S1e | À détailler |
+| S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | À détailler |
 | S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville, décor de remplissage aléatoire | S1f | À détailler |
-| S2 | HANDOVER §7 : vérification indépendante des fusions, banc de capture du jeu et captures UI sur le moteur fusionné, nouvelle référence sur ce PC | S1g, S1h | À détailler après S1 |
+| S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1g, S1h | À détailler après S1 |
 | S3 | Tunnel presque noir | S2 | À détailler ; choix de l'auteur attendu (O1) |
 | S4 | Voiture centrale du carrousel trop blanche | S2 | À détailler ; choix de l'auteur attendu (O2) |
 | S5 | Défauts connus du §4 de la note (moteur sur une branche moteur dédiée, jeu sur cette branche) | S2 | À détailler |
@@ -62,13 +63,13 @@ Hors périmètre : tout push ; tout commit sur `main` (moteur), `master` ou `rem
 - **Ne jamais indexer** `.serena/`, `log.txt`, `.codegraph/` ; `git add` fichier par fichier.
 - **Aucune commande git dans `MGUI` ni `NvgSharp`.**
 - Un seul lancement du jeu ou de l'éditeur à la fois, jamais pendant un build ou des tests.
-- **Règle de conflit du jeu** :
-  - (a) matériaux, éclairage, PBR du monde de course, tables de réglage héritées : la version d'`origin/remaster` l'emporte ; chaque modification locale d'un fichier supprimé là-bas est d'abord relue, puis classée obsolète ou reportée là où la logique a été déplacée ; une modification qu'on ne sait pas placer bloque la tâche ;
-  - (b) interface, automatisation, captures, projet éditeur : la version locale est gardée ;
-  - (c) fichier touché pour les deux raisons : les deux intentions gardées, bloc par bloc, après lecture des commits des deux côtés ;
-  - (d) fichiers binaires : si un seul côté diffère de la base, prendre ce côté ; si les deux diffèrent et que le commit local porte une correction indépendante, bloquer la tâche ;
-  - (e) index des ADR et des plans : garder les lignes des deux côtés ; numéros d'ADR en double : renuméroter les ADR locaux et corriger leurs renvois ;
-  - (f) API du moteur qui a bougé : adaptation minimale du point d'appel du jeu, listée dans le commit ; une correction qui demande de toucher au moteur bloque la tâche.
+- **Règle de fusion du jeu** (remplace la règle de conflit écrite pour T1.2, abandonnée avec D7) :
+  - (a) code et contenu du jeu : la version d'ici est la référence (D7). S1b garde l'état d'ici tel quel ; ce qui n'existe que sur l'autre PC est porté dans l'architecture d'ici par la tranche nommée dans la « Carte des commits de l'autre PC », jamais repris tel quel ;
+  - (b) docs, plans, ADR, outils autonomes et original de référence ajoutés là-bas : repris par S1b ;
+  - (c) index des ADR et des plans : lignes des deux côtés gardées ; numéros d'ADR en double : les ADR d'ici sont renumérotés, avec leurs renvois ;
+  - (d) API du moteur qui a bougé : adaptation minimale du point d'appel du jeu, listée dans le commit ; une correction qui demande de toucher au moteur bloque la tâche ;
+  - (e) sujet fait en double dont les deux versions divergent : la version d'ici reste, l'écart est mesuré par le banc (S1c) et remis à l'auteur. Aucune correction d'office ;
+  - ces règles valent pour S1b et pour toutes les tranches de portage S1c à S1h.
 
 ## Légende des statuts
 
@@ -85,6 +86,44 @@ Hors périmètre : tout push ; tout commit sur `main` (moteur), `master` ou `rem
 - S1 n'affirme pas l'équivalence visuelle : c'est l'objet de S2.
 
 Retour arrière de S1 : jeu, `git switch remaster` puis `git branch -D chantier/rgce-pbr-handover` ; moteur, `git switch chantier/rgce-editor-project`, `git branch -D chantier/merge-editor-project`, `git branch -f main 778f6aa8c`.
+
+---
+
+## Carte des commits de l'autre PC
+
+Les 46 commits d'`origin/remaster` depuis `d8ac303`, chacun avec la tranche qui le reprend ou ce qu'il devient. « Porté » veut dire réécrit dans l'architecture d'ici, pas repris tel quel.
+
+| Commit | Sujet | Devenir |
+|---|---|---|
+| `7686c0a`, `de010a2`, `b4374f4` | Copie de l'original, mode de capture, voiture sur la grille | S1b (déjà dans la branche par T2.1, multijoueur retiré par T2.2) |
+| `337a43c` | `ThrowOnScriptTypeResolution` dans la politique d'exécution | S1b : propriété `required` du moteur fusionné, absente ici ; adaptation du point d'appel (règle d) |
+| `c6a0372`, `868c8a7` | `TrackCaptureCompare` et ses sondes | S1b (outil repris), utilisé à partir de S1c |
+| `b4642e8` | Rejeu des vues de référence de l'original | S1c, porté |
+| `c3338a3`, `62f7956` | Export des points, objets et ombres ; mesure du port contre l'original | Côté original : S1b. Côté port : S1c, porté |
+| `c24e677` | Lecture des aides de largeur et de route | Fait en double : version d'ici (D7). Écarts mesurés en S1c (règle e) |
+| `80c667c` | Placement exact des objets | Fait en double : version d'ici (D7). Écarts mesurés en S1c (règle e) |
+| `0ac894d` | Dessous de la route, tunnels, sol de la ville | Tunnels : faits en double, version d'ici (D7). Dessous de la route et sol de la ville : S1h, portés |
+| `b406f4f` | Normal maps au format standard | S1e, porté |
+| `8b30f98` | Tangentes des modèles importés | S1e, porté (dépend de S1d) |
+| `074f242` | Cube du ciel aux axes du port | S1e, porté |
+| `4c058ad` | Couleurs importées arrondies, matériaux sans effet par défaut | S1e, porté (lecteur glTF utilisé par le cuiseur, puis recuisson) |
+| `58bb871` | Textures du monde de course avec mipmaps | S1e, porté (textures cuites) |
+| `a18b364` | Tangentes et normal map de la route | Maillage : S1g. Matériau : S1f |
+| `f309d6b` | Texture de détail du terrain | S1f, porté (matériau `lit-pbr`, pas de changement de maillage) |
+| `fb7daa2` | Terme spéculaire retiré du terrain | S1f : sans objet en `lit-pbr` (pas de propriété spéculaire), à constater sur le matériau cuit |
+| `46f2013` | Ambiant des panneaux, banderoles et éoliennes plus relevé | S1f : le relèvement existe encore ici dans le profil d'import ; retiré avec les tables de réglage |
+| `d0db72f` | Terrain, route, rails et structures en PBR | Matériaux : S1f. Tangentes des maillages générés : S1g |
+| `09f1c54` | Décor importé en PBR, immeubles de verre en miroir | S1f, porté |
+| `d35a25a` | Peinture PBR vernie de la voiture, course et carrousel | S1f, porté |
+| `b5391fe` | Suppression des tables de réglage spéculaire | S1f |
+| `d66c210` | Lumière unique de l'original et ambiant par matériau | Lumière : S1g. Ambiant par matériau : sans objet en `lit-pbr`, à constater en S1f |
+| `d40b020` | Ombres douces et teintées | S1g, porté |
+| `09e4a9f` | Rendu `LinearHdr`, mode `Legacy` pour le banc | S1g, porté |
+| `037f5a5` | Éclairage par le cube du ciel, lumière clé remise à l'échelle | S1g, porté |
+| `08a4a32`, `c4b400c`, `9bd1693`, `32a7eb7`, `484c498`, `b2e54bb`, `3e4256e`, `7331eef`, `738902d`, `93cea46`, `392e4aa`, `2991d70`, `f8b73b0`, `4f3311b` | Docs, plans, constats du banc, note de passation | S1b (repris tels quels) |
+| `734541a`, `7c46e5c`, `90e3d99` | Pointeur du sous-module | Remplacés par le pointeur `e942caa54` en S1b ; les renvois de docs de `7c46e5c` sont repris par S1b |
+
+Ce qui reste de la note de passation : §7 → S1v ; §4 tunnel → S3, carrousel → S4, défauts connus → S5 ; réglages à l'œil et contrôles visuels de l'auteur → hors de ce plan, rappelés au rapport final.
 
 ---
 
@@ -185,10 +224,11 @@ Constats de l'étude du 2026-11-16 (trois lectures en parallèle, faits décisif
   - **fusionnés** : `ai-agent/README.md`, `docs/decisions/README.md` (lignes des deux côtés) ;
   - **renumérotés** : ADR locaux du jeu 0015 → 0023, 0016 → 0024, 0017 → 0025, 0018 → 0026, fichiers et renvois (index, ADR 0002, 0019 et 0023 à 0026, `ai-agent/README.md`, plans `rgce-editor-project`, `rgce-track-helpers` et celui-ci, `RacingGameCasaEngine/Assets/README.md`, `RacingGameCasaEngine.csproj`) ; les renvois vers les ADR de MGUI de même numéro ne bougent pas ;
   - **renvois vers les ADR du moteur** renumérotés par T1.1 : 0071 → 0118 et 0075 → 0122 dans les docs du jeu ;
+  - `RacingGameCasaEngine/Bootstrap/RacingGameCasaEngineGame.cs` : `ThrowOnScriptTypeResolution` renseigné dans la politique d'exécution, propriété `required` du moteur fusionné (seule modification de code du jeu attendue, valeur de `337a43c`) ;
   - pointeur `CasaEngine` sur `e942caa54` ; ce plan.
 - Étapes :
   1. `git merge --no-ff --no-commit origin/remaster`.
-  2. Remettre les dossiers « gardés » dans l'état de `HEAD` (`git restore --source=HEAD --staged --worktree -- <dossier>`), puis vérifier `git diff --cached --quiet HEAD -- <dossier>` pour chacun. Exception : dans `RacingGameCasaEngine/`, les deux fichiers touchés par la renumérotation des ADR (`Assets/README.md`, `RacingGameCasaEngine.csproj`) ne diffèrent de `HEAD` que par ces numéros.
+  2. Remettre les dossiers « gardés » dans l'état de `HEAD` (`git restore --source=HEAD --staged --worktree -- <dossier>`), puis vérifier `git diff --cached --quiet HEAD -- <dossier>` pour chacun. Exception : dans `RacingGameCasaEngine/`, les deux fichiers touchés par la renumérotation des ADR (`Assets/README.md`, `RacingGameCasaEngine.csproj`) ne diffèrent de `HEAD` que par ces numéros, et `Bootstrap/RacingGameCasaEngineGame.cs` que par la ligne `ThrowOnScriptTypeResolution`.
   3. Résoudre les deux index en gardant les lignes des deux côtés.
   4. Renuméroter les ADR locaux avec `git mv` ; corriger les renvois ligne par ligne, uniquement sur les lignes ajoutées ici depuis `d8ac303` (même méthode que T1.1) ; contrôler par `rg` qu'il ne reste aucun renvoi local vers 0015 à 0018 et que les docs de là-bas pointent toujours vers leurs propres ADR.
   5. Dans `ai-agent/README.md`, écrire sur la ligne du plan `rgce-pbr-race-world-tasks.md` (là-bas) que son code n'est pas dans l'arbre et sera porté par S1c à S1h. Ne pas modifier les docs de là-bas eux-mêmes.
