@@ -19,8 +19,9 @@ Tranches :
 | S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1v | Faite le 2026-11-16, verdict CONFIRMED après une correction du doc |
 | S1a | Alignement sur l'original des sujets faits en double (D11) : poteaux de rail, segments de colonne, lanternes, palmiers, panneaux, ombres portées, avec le décor de remplissage aléatoire, qui partage les mêmes tirages. Prouvé par la mesure de scène de S1c ; nouvelle référence « avant PBR » en fin de tranche | S1c | Faite le 2026-11-16, verdict CONFIRMED après une correction (rail et supports) ; un critère réduit (O9) |
 | S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1a | Faite le 2026-11-16 (Phase 7), verdict CONFIRMED |
-| S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | À détailler |
-| S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1e | À détailler |
+| S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | Détaillée (Phase 8) ; les mipmaps passent en S1m |
+| S1m | Textures du monde de course avec mipmaps (`58bb871`) : un réglage par asset pour une texture cuite, avec une évolution du moteur | S1e | À détailler |
+| S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1m | À détailler |
 | S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | À détailler |
 | S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | À détailler |
 | S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1c, S1g, S1h | À détailler après S1 |
@@ -28,7 +29,7 @@ Tranches :
 | S4 | Voiture centrale du carrousel trop blanche | S2 | À détailler ; choix de l'auteur attendu (O2) |
 | S5 | Défauts connus du §4 de la note (moteur sur une branche moteur dédiée, jeu sur cette branche) | S2 | À détailler |
 
-Les tranches S1b, S1v, S1c, S1a, S1d, S1e, S1f s'exécutent dans cet ordre, une à la fois ; S1g et S1h suivent S1f ; S2 vient après S1g et S1h. La mesure « avant PBR » de S1c est donc toujours prise avant tout changement du moteur, du contenu ou des matériaux.
+Les tranches S1b, S1v, S1c, S1a, S1d, S1e, S1m, S1f s'exécutent dans cet ordre, une à la fois ; S1g et S1h suivent S1f ; S2 vient après S1g et S1h. La mesure « avant PBR » de S1c est donc toujours prise avant tout changement du moteur, du contenu ou des matériaux.
 
 Hors périmètre : tout push ; tout commit sur `main` (moteur), `master` ou `remaster` (jeu) ; les branches `claude/*` et les autres branches `chantier/*` ; toute commande git dans `MGUI` ou `NvgSharp` ; tout réglage visuel autre que ceux nommés ; tout refactor.
 
@@ -112,7 +113,7 @@ Les 46 commits d'`origin/remaster` depuis `d8ac303`, chacun avec la tranche qui 
 | `8b30f98` | Tangentes des modèles importés | S1e, porté (dépend de S1d) |
 | `074f242` | Cube du ciel aux axes du port | S1e, porté |
 | `4c058ad` | Couleurs importées arrondies, matériaux sans effet par défaut | S1e, porté (lecteur glTF utilisé par le cuiseur, puis recuisson) |
-| `58bb871` | Textures du monde de course avec mipmaps | S1e, porté (textures cuites) |
+| `58bb871` | Textures du monde de course avec mipmaps | S1m, porté (réglage par asset, évolution du moteur) |
 | `a18b364` | Tangentes et normal map de la route | Maillage : S1g. Matériau : S1f |
 | `f309d6b` | Texture de détail du terrain | S1f, porté (matériau `lit-pbr`, pas de changement de maillage) |
 | `fb7daa2` | Terme spéculaire retiré du terrain | S1f : sans objet en `lit-pbr` (pas de propriété spéculaire), à constater sur le matériau cuit |
@@ -541,6 +542,69 @@ Tranche menée dans le dépôt du moteur, avec son propre plan : `CasaEngine/ai-
 > - Remarques P4, notées sans suite : une entrée de `tangents` à laquelle il manque une composante lève une exception sans contexte, comme le font déjà les sommets ; une clé `tangents` qui n'est pas un tableau est traitée comme absente, sans message.
 > - Jeu : pointeur `CasaEngine` avancé sur `61b4e6fae` ; build à 0 erreur, cuiseur `--verify` à 0 écart, `--smoke-frontend` en succès. Les modèles du jeu n'ont pas encore de tangentes : c'est S1e.
 > - Reste à l'auteur : valider l'ADR-0123, décider de la remontée de `chantier/static-model-tangents` dans `main` et du push.
+
+---
+
+## Phase 8 — Assets : tangentes, normal maps, cube du ciel (S1e)
+
+Source à porter : le convertisseur de l'autre PC (`git show origin/remaster:scripts/LegacyModelGltfConverter/…`, commits `8b30f98`, `b406f4f`, `074f242`) et sa lecture des couleurs (`4c058ad`). Le contenu converti de l'autre PC sert d'oracle : le même convertisseur, sur les mêmes sources, doit redonner les mêmes fichiers.
+
+État vérifié (2026-11-16) :
+
+- Convertisseur d'ici (`scripts/LegacyModelGltfConverter/`) : modes `<x> <gltf> <png> [--skip]`, `--textures`, `--verify-textures`. Celui de l'autre PC a en plus `--normal-map <tga>` (canaux réécrits : R = V d'origine, V = alpha d'origine, B = B, A = 255), `--sky-cube <dds>` (`SkyCubeConverter.cs`, miroir en Z par permutation de blocs DXT1) et les tangentes (`AddTangents`, `ComputeTangents`, pour les primitives dont le matériau a une normal map) ; il n'a pas `--textures` ni `--verify-textures`. Les deux `.csproj` sont identiques.
+- Sources d'origine présentes sur ce PC : `RacingGame/Content/Models` (56 `.X` et `Car.x`), `RacingGame/Content/Textures` (129 `.tga`, `SkyCubeMap.dds`).
+- Contenu d'ici : 56 glTF sans `TANGENT` ; 55 normal maps PNG, toutes différentes de celles d'`origin/remaster` ; `SkyCubeMap.dds` identique à la source d'origine, donc non converti.
+- Le cuiseur lit les glTF par le lecteur du moteur, qui lit `TANGENT`, et écrit par le sérialiseur du moteur, qui écrit `tangents` depuis S1d. `Verifier.cs:167` compare `HasTangents`, pas les valeurs des tangentes.
+- `LegacyGltfModelReader.cs:176` tronque les couleurs ; l'autre PC les arrondit et donne aux matériaux sans effet d'origine un ambiant de 40 et un diffus de 210.
+- 81 matériaux cuits nomment une normal map. Dès que leurs modèles auront des tangentes, les matériaux `lit-diffuse` dessineront avec : le rendu change dans cette tranche, avant le PBR.
+- Le cube du ciel est lu par chemin au lancement (`RacingGameCasaEngineGame.cs`), aucun contrôle d'empreinte ne porte sur lui.
+- Textures avec mipmaps (`58bb871`) : le moteur n'a qu'un réglage en code (`Texture2DLoader.GenerateMipmaps`), aucun champ par asset pour une texture cuite. Ce sujet sort de cette tranche : tranche S1m, à détailler, avec une évolution du moteur.
+
+Retour arrière de S1e : relever `git rev-parse HEAD` avant T8.1 et le noter sous T8.1 ; annuler les commits de S1e sur `chantier/rgce-pbr-handover` seulement ; `artifacts/pbr-handover/s1a/` reste la référence d'avant. Sur demande de l'auteur seulement.
+
+Budget de S1e : T8.1, au plus quatre tours « correction puis comparaison à l'oracle » ; T8.2, au plus trois tours de recuisson. Un tour sans progrès passe la tâche en ⚠️ Blocked avec l'écart chiffré.
+
+### ⏳ T8.1 — Convertisseur porté
+
+- Objectif : le convertisseur d'ici sait écrire les tangentes, convertir les normal maps et le cube du ciel, en gardant ses modes `--textures` et `--verify-textures`.
+- Fichiers : `scripts/LegacyModelGltfConverter/Program.cs`, `LegacyTextureConverter.cs`, `SkyCubeConverter.cs` (nouveau), `README.md`.
+- Règles : mêmes algorithmes que l'autre PC (tangentes par triangle, orthogonalisées contre la normale, `w = +1`, seulement pour les primitives à normal map ; canaux des normal maps ; permutation des blocs du cube) ; une texture utilisée à la fois comme couleur et comme normal map est refusée ; aucune dépendance ajoutée.
+- Validation, vers un dossier de sortie hors du dépôt (`artifacts/pbr-handover/s1e/converted/`) :
+  - build du convertisseur à 0 erreur ;
+  - les 56 `.gltf` et leurs `.bin` produits sont identiques à l'octet à ceux d'`origin/remaster` ;
+  - `SkyCubeMap.dds` produit est identique à l'octet à celui d'`origin/remaster` ;
+  - les 55 normal maps produites ont les mêmes pixels que celles d'`origin/remaster` (comparaison des pixels décodés ; l'identité à l'octet est notée si elle tient) ;
+  - les PNG de couleur produits ont les mêmes pixels que ceux d'ici (aucune régression du mode existant).
+- Arrêts : un fichier qui diffère de l'oracle sans cause trouvée dans le code du convertisseur ; besoin de modifier le moteur.
+- Commit : `feat(scripts): write tangents and convert the normal maps and the sky cube`
+
+### ⏳ T8.2 — Contenu régénéré et recuit
+
+- Objectif : le contenu du jeu porte les tangentes, les normal maps converties et le cube du ciel réorienté, et les assets cuits en découlent.
+- Fichiers : `RacingGameCasaEngine/Content/Models/*.gltf` et `*.bin`, `Content/Textures/*Normal*.png`, `Content/Textures/SkyCubeMap.dds`, les assets cuits (`Content/Models/*.staticModel`, `Content/Materials/**`, `Content/Textures/*.texture`, `Content/AssetInfos.json` si le cuiseur le touche) ; `RacingGame.Gameplay/Import/LegacyGltfModelReader.cs` (arrondi des couleurs, valeurs par défaut des matériaux sans effet d'origine) ; `scripts/RgceAssetCooker/Verifier.cs` (comparer aussi les valeurs des tangentes) et son `README.md`.
+- Étapes : recopier dans le contenu les fichiers produits par T8.1 ; porter l'arrondi et les valeurs par défaut de `4c058ad` ; faire comparer les tangentes par `--verify` ; recuire ; relancer `--check` et `--verify`.
+- Validation :
+  - build du jeu et du cuiseur à 0 erreur ; cuiseur `--check` et `--verify` sans écart ;
+  - chaque maillage cuit dont le glTF a des tangentes a `tangents`, avec autant d'entrées que de sommets ; le nombre de maillages avec tangentes est noté et égal à celui des primitives à tangentes des glTF ;
+  - un second passage du cuiseur ne réécrit aucun fichier ;
+  - `--smoke-frontend` et `--verify-legacy-import-profile` en succès (ce dernier adapté seulement si l'arrondi ou les valeurs par défaut changent ce qu'il vérifie, chaque adaptation notée) ;
+  - mesure de scène inchangée : 1147, 1693 et 3404 objets appariés, 0 manquant, 0 en trop, 0 écart d'ombre ; les 15 distances d'alignement inchangées.
+- Arrêts : `--verify` en écart sans cause trouvée ; besoin de modifier le moteur ; un changement de taille de modèle qui déplacerait des objets.
+- Commit : `feat(racing-casa): regenerate the models with tangents, the normal maps and the sky cube`
+
+### ⏳ T8.3 — Banc relancé et références reprises
+
+- Objectif : mesurer ce que la tranche change à l'écran et reprendre les références d'ici.
+- Fichiers : `docs/racinggame-3d-capture-bench-local-baseline.md` (section ajoutée, générée par script depuis les sorties), ce plan. Sorties dans `artifacts/pbr-handover/s1e/`.
+- Étapes : deux rejeux des vues de l'original, comparaisons `nopost`, `full`, sondes, répétabilité ; `--capture-track-audit` et `--capture-ui-screens` comme nouvelles références d'ici.
+- Validation : lancements en succès ; la section cite ses fichiers de sortie ; le ciel n'est plus le miroir de celui de l'original, constaté sur une planche de comparaison et noté.
+- Commit : `docs(racing-casa): record the bench after the tangents, normal maps and sky cube`
+
+### ⏳ T8.4 — Vérification indépendante de S1e
+
+- Objectif : un `verifier` frais confirme ou réfute : les sorties du convertisseur sont celles de l'oracle ; le contenu du dépôt est celui que produit le convertisseur ; les assets cuits sont ceux que produit le cuiseur et portent les tangentes ; pas de régression ; les chiffres du doc sont ceux des sorties.
+- Étapes et verdicts : comme T5.4 (un appel ; `INCONCLUSIVE`, un seul nouvel appel après preuve fournie ; P0 ou P1, arrêt et question ; P2 introduit par S1e, corrigé dans les fichiers de T8.1 à T8.3, deux passes au plus, `verifier` frais sur l'affirmation touchée ; le reste noté).
+- Commit : `docs(ai-agent): record the verification of the asset slice`
 
 ---
 
