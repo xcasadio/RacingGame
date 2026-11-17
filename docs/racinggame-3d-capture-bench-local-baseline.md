@@ -1582,7 +1582,7 @@ Slice S5, task T17.2 (plan `ai-agent/tasks/rgce-pbr-handover-tasks.md`, phase 17
 | Expert-overview | 17 | 8 |
 | Total | 48 | 13 |
 
-3 of the 15 views in `linear` and 3 in `legacy` have at least one pixel that differs; the views are the same in both modes, and so are the places (below). Each such pixel takes two values across the six replays (three at most in the car), and the replay that gets one or the other is not the same from a cluster to the next.
+3 of the 15 views in `linear` and 3 in `legacy` have at least one pixel that differs; the views are the same in both modes, and so are the places (below). Each such pixel takes two values across the six replays, and the replay that gets one or the other is not the same from a cluster to the next.
 
 ### Where the pixels are
 
