@@ -681,13 +681,13 @@ Budget de S1m : deux tours de recuisson ; deux passes de correction après véri
   - `--smoke-frontend` et `--verify-legacy-import-profile` en succès ;
   - mesure de scène inchangée (1147, 1693, 3404 appariés, 0 manquant, 0 en trop, 0 écart d'ombre ; 15 distances inchangées) ;
   - banc relancé vers `artifacts/pbr-handover/s1m/` (deux rejeux, `nopost`, `full`, sondes, répétabilité, comparaison avec `s1e`), section du doc générée par script ; nouvelles références `--capture-track-audit` et `--capture-ui-screens` ;
-  - contrôle de la chaîne : sous `--capture-reference-views`, une fois le premier monde de course prêt, le validateur journalise pour `Texture.Road` (`438bfe97-634a-50cc-a008-7661c239ab25`), `Texture.Landscape` (`ee748e62-6069-552c-a7cb-2656da413b49`) et `Texture.Building` (`5dd4c964-020b-59c5-9d59-b40fc856c0f9`) une ligne `[CaptureBench] mipmaps <nom> levels <n> expected <m>`, avec `n` le `LevelCount` de `Resource` du `Texture` acquis et chargé par identifiant, et `m` = `MipmapChain.GetLevelCount(largeur, hauteur)`. Réussite : trois lignes, `n` = `m` > 1 pour chacune. Le validateur fait partie des fichiers de cette tâche.
+  - contrôle de la chaîne : sous `--capture-reference-views`, une fois le premier monde de course prêt, le validateur journalise pour `Texture.Road` (`438bfe97-634a-50cc-a008-7661c239ab25`), `Texture.Landscape` (`ee748e62-6069-552c-a7cb-2656da413b49`) et `Texture.Building` (`5dd4c964-020b-59c5-9d59-b40fc856c0f9`) une ligne `[CaptureBench] mipmaps <nom> levels <n> expected <m>`, avec `n` le `LevelCount` de `Resource` du `Texture` acquis et chargé par identifiant, et `m` = `MipmapChain.GetLevelCount(largeur, hauteur)`. Réussite : trois lignes, `n` = `m` > 1 pour chacune. Le validateur fait partie des fichiers de cette tâche. Même contrôle pour la peinture de la voiture : le validateur journalise aussi `[CaptureBench] mipmaps CarPaint.Painted levels <n> expected <m> chain <ok|KO>` et la même ligne pour `CarPaint.Unpainted`, lues par un accès interne ajouté à `LegacyCarVisualFactory` ; `chain ok` veut dire que le niveau 1 lu sur la texture est égal à `MipmapChain.ComputeNextLevel` de son niveau 0, ce qui prouve que la chaîne suit la dernière peinture. Réussite : deux lignes de plus, `n` = `m` > 1 et `chain ok`.
 - Arrêts : `--verify` en écart sans cause trouvée ; un écart de mesure de scène.
 - Commit : `feat(racing-casa): draw the race world textures with their mipmaps`
 
 ### ⏳ T9.3 — Vérification indépendante de S1m
 
-- Objectif : un `verifier` frais confirme ou réfute : les textures cuites et la peinture de la voiture ont leur chaîne, en relançant le contrôle de chaîne de T9.2 (les trois lignes `[CaptureBench] mipmaps`) ; pas de régression ; les chiffres du doc sont ceux des sorties.
+- Objectif : un `verifier` frais confirme ou réfute : les textures cuites et la peinture de la voiture ont leur chaîne, en relançant le contrôle de chaîne de T9.2 (les cinq lignes `[CaptureBench] mipmaps`, dont les deux de la peinture) ; pas de régression ; les chiffres du doc sont ceux des sorties.
 - Étapes et verdicts : comme T5.4.
 - Commit : `docs(ai-agent): record the verification of the mipmap slice`
 
