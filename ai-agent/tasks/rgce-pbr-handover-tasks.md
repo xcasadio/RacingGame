@@ -1374,6 +1374,43 @@ Les quatre défauts du §4 de la note de passation, un par un :
 
 ---
 
+## Phase 18 — Derniers changements de MGUI et du moteur, fusion dans `main` et `develop`
+
+Demande de l'auteur (2026-11-17) : récupérer les derniers changements de MGUI et de CasaEngine, puis fusionner dans `main` (moteur) et `develop` (MGUI). Cette demande lève, pour cette phase, la règle « aucune commande git dans `MGUI` » : seule l'avance rapide de `develop` y est faite. `NvgSharp` n'est pas touché.
+
+État vérifié après `git fetch` (2026-11-17) :
+
+- MGUI : `develop` local à `d0efd9b4`, en retard de 14 commits sur `origin/develop` (`f6ed1fcd`), sans commit local : avance rapide. MGUI n'a pas de branche `main` ; `origin/master` est 667 commits derrière `develop`, hors sujet.
+- Moteur : `origin/main` est passé de `187a420d7` à `7e3b8ff52` (26 commits, fin du chantier « MGUI zéro allocation », pointeur MGUI à `f6ed1fcd`) ; `main` local (`b429b79ec`) a 26 commits que `origin/main` n'a pas. Fusion simulée (`git merge-tree`) sans conflit, pour `main` comme pour le sommet des branches empilées. `origin/main` n'ajoute pas d'ADR du moteur (son dernier est 0117 ; `main` local va jusqu'à 0122, les branches du chantier jusqu'à 0124) : pas de renumérotation.
+- Réponses de l'auteur : `main` reçoit `origin/main` seulement, les quatre branches empilées du chantier restent à part (O15) ; le jeu pointe ensuite sur le moteur fusionné, avec banc.
+
+Règles : aucun commit sur `main` (la fusion se fait sur une branche, puis `main` avance en avance rapide, comme en D10) ; aucun push ; `git add` fichier par fichier ; le jeu n'est ni construit ni lancé tant que le sous-module n'est pas sur le commit visé.
+
+### ⏳ T18.1 — Moteur : fusion d'`origin/main`, `main` avancé, `develop` de MGUI avancé
+
+- Étapes : dans `CasaEngine`, branche `chantier/merge-origin-main-2` depuis `main` ; `git merge origin/main` ; dans `CasaEngine/MGUI`, `git merge --ff-only origin/develop` (arbre propre vérifié avant), qui donne le commit que le pointeur fusionné attend ; builds des deux solutions ; tests du moteur ; empreintes de référence de T4.1 relancées. Puis `main` avance sur la branche de fusion, en avance rapide, sans être extraite.
+- Validation : les deux solutions à 0 erreur ; tests : aucun échec hors des 8 connus sur ce PC (un changement de cette liste est noté : `origin/main` contient une correction des tests GPU pour un second GPU) ; empreintes des démos notées avec celles de T4.1, tout changement expliqué par les commits d'`origin/main` ou signalé ; `git -C CasaEngine rev-list --left-right --count main...origin/main` rend `N 0`.
+- Arrêts : un conflit ; un test en échec nouveau ; une empreinte qui change sans commit d'`origin/main` qui l'explique.
+
+### ⏳ T18.2 — Moteur : branche du jeu sur le moteur fusionné
+
+- Étapes : branche `chantier/rgce-pbr-on-main-2` depuis `chantier/pbr-ggx-back-facing` (`8a3933b36`, ce dont le jeu a besoin : tangentes, mipmaps, GGX) ; `git merge main`. La branche `chantier/known-defects-gltf-alpha-probe` n'y entre pas et reste empilée sur `8a3933b36`.
+- Validation : builds à 0 erreur ; tests comme T18.1 ; `pbrdemo.sh` par défaut : empreinte notée avec `54e406a1dde8c171`.
+
+### ⏳ T18.3 — Jeu : pointeur avancé, banc
+
+- Étapes : pointeur du sous-module sur le sommet de `chantier/rgce-pbr-on-main-2` ; build du jeu ; cuiseur `--verify` et `--check` ; `--smoke-frontend`, `--verify-legacy-import-profile` ; rejeux `linear` et `legacy` des 15 vues et des vues de tunnel contre `s3b` ; `--capture-ui-screens` contre `s3b/ref-ui` ; audit des pistes contre `s3b/ref-audit`. Sorties sous `artifacts/pbr-handover/s18/`.
+- Validation : build à 0 erreur ; journaux sans avertissement ni erreur ; vues et mesure de scène identiques à `s3b` ; interface : tout écart est mesuré, regardé et attribué (le backend d'interface du moteur change) ; s'il y a un écart d'interface, nouvelle référence `s18/ref-ui` et section du doc de banc.
+- Arrêts : une vue du monde de course change ; un écran d'interface visiblement cassé.
+- Commit : `chore(engine): point the CasaEngine submodule at the merge of origin/main`
+
+### ⏳ T18.4 — Vérification indépendante
+
+- Objectif : un `verifier` frais confirme ou réfute T18.1 à T18.3 par ses propres lancements (moteur : builds, tests, empreintes ; jeu : build, rejeux, interface).
+- Commit : `docs(ai-agent): record the merge of the engine's origin/main and its verification`
+
+---
+
 ## Points ouverts
 
 À trancher pendant l'exécution, ou à remonter en ⚠️ Blocked si la réponse manque.
