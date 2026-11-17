@@ -19,7 +19,7 @@ Tranches :
 | S1c | Banc de mesure porté ici : `--capture-reference-views`, points d'export de la scène, `ReferenceSceneMeasure`, `TrackCaptureCompare`. Première mesure de la version d'ici contre l'original sur ce PC, avant PBR ; écarts des sujets faits en double remis à l'auteur | S1v | Faite le 2026-11-16, verdict CONFIRMED après une correction du doc |
 | S1a | Alignement sur l'original des sujets faits en double (D11) : poteaux de rail, segments de colonne, lanternes, palmiers, panneaux, ombres portées, avec le décor de remplissage aléatoire, qui partage les mêmes tirages. Prouvé par la mesure de scène de S1c ; nouvelle référence « avant PBR » en fin de tranche | S1c | Faite le 2026-11-16, verdict CONFIRMED après une correction (rail et supports) ; un critère réduit (O9) |
 | S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1a | Faite le 2026-11-16 (Phase 7), verdict CONFIRMED |
-| S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | Détaillée (Phase 8) ; les mipmaps passent en S1m |
+| S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | Faite le 2026-11-17, verdict CONFIRMED ; les mipmaps passent en S1m |
 | S1m | Textures du monde de course avec mipmaps (`58bb871`) : un réglage par asset pour une texture cuite, avec une évolution du moteur | S1e | À détailler |
 | S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1m | À détailler |
 | S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | À détailler |
@@ -631,11 +631,24 @@ Budget de S1e : T8.1, au plus quatre tours « correction puis comparaison à l'o
 > - sondes inchangées dans leurs verdicts ; rapport ombre sur lumière de la ville passé de 0,682 à 0,965, celui de l'original étant 0,276 : les ombres restent l'affaire de S1g ;
 > - nouvelles références d'ici : `audit/` (30 captures, de 1,671 à 28,136 d'écart au pire canal avec les précédentes) et `ui/` (états de menu à 0,00 ; `race-hud` 15,02, `pause` 4,89, `race-finished` 5,24 au pire canal, `car-selection` 1,56 : le ciel et les normal maps).
 
-### ⏳ T8.4 — Vérification indépendante de S1e
+### ✅ T8.4 — Vérification indépendante de S1e
 
 - Objectif : un `verifier` frais confirme ou réfute : les sorties du convertisseur sont celles de l'oracle ; le contenu du dépôt est celui que produit le convertisseur ; les assets cuits sont ceux que produit le cuiseur et portent les tangentes ; pas de régression ; les chiffres du doc sont ceux des sorties.
 - Étapes et verdicts : comme T5.4 (un appel ; `INCONCLUSIVE`, un seul nouvel appel après preuve fournie ; P0 ou P1, arrêt et question ; P2 introduit par S1e, corrigé dans les fichiers de T8.1 à T8.3, deux passes au plus, `verifier` frais sur l'affirmation touchée ; le reste noté).
 - Commit : `docs(ai-agent): record the verification of the asset slice`
+
+> Validation (2026-11-17) : `verifier` frais, **CONFIRMED** sur les six affirmations, par ses propres lancements.
+> - Sortie du convertisseur identique à `origin/remaster` et au contenu de `HEAD` (les `.gltf` ne diffèrent que par les fins de ligne CRLF écrites sous Windows, identiques une fois normalisées).
+> - Code du convertisseur identique à `origin/remaster` hors des deux modes gardés ici ; une paire volontairement fausse fait bien échouer `--verify-textures`.
+> - Le cuiseur détecte une tangente modifiée dans une copie du contenu ; les 39 matériaux changés s'expliquent tous par le port de `4c058ad`.
+> - Placement et alignement inchangés ; ciel constaté à l'œil sur deux vues.
+> - Chiffres du doc contrôlés cellule par cellule.
+> - Remarques notées sans suite (candidat confirmé) :
+>   - P3, note de T8.3 : « sondes inchangées dans leurs verdicts » ne vaut que pour les totaux par critère ; 14 verdicts du critère 1 ont basculé, 7 dans chaque sens, sur des sondes de terrain ;
+>   - P4, note de T8.2 : un des 10 matériaux par défaut passait de 107 et non de 149 à 210 (`RoadColumnSegment/PDX04 - Default 04 - Default`) ;
+>   - P4 : `--verify-textures` classe une paire comme normal map convertie d'après ses pixels, pas d'après son nom ; une texture de couleur convertie par erreur passerait, seule la liste affichée la montre ;
+>   - P4 : le convertisseur écrit les `.gltf` en CRLF sous Windows, le dépôt les garde en LF ; une comparaison d'octets brute avec `git show` montre de fausses différences.
+> - Fichiers laissés par la vérification, ignorés par git, à supprimer à votre convenance : `artifacts/pbr-handover/s1e/verify/mut-content` (253 Mo) et ses voisins `remaster`, `head`, `mut-tex`.
 
 ---
 
