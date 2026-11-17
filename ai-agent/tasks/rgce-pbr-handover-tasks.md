@@ -20,7 +20,7 @@ Tranches :
 | S1a | Alignement sur l'original des sujets faits en double (D11) : poteaux de rail, segments de colonne, lanternes, palmiers, panneaux, ombres portées, avec le décor de remplissage aléatoire, qui partage les mêmes tirages. Prouvé par la mesure de scène de S1c ; nouvelle référence « avant PBR » en fin de tranche | S1c | Faite le 2026-11-16, verdict CONFIRMED après une correction (rail et supports) ; un critère réduit (O9) |
 | S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1a | Faite le 2026-11-16 (Phase 7), verdict CONFIRMED |
 | S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | Faite le 2026-11-17, verdict CONFIRMED ; les mipmaps passent en S1m |
-| S1m | Textures du monde de course avec mipmaps (`58bb871`) : un réglage par asset pour une texture cuite, avec une évolution du moteur | S1e | Détaillée (Phase 9) |
+| S1m | Textures du monde de course avec mipmaps (`58bb871`) : un réglage par asset pour une texture cuite, avec une évolution du moteur | S1e | Faite le 2026-11-17, verdict CONFIRMED |
 | S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1m | À détailler |
 | S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | À détailler |
 | S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | À détailler |
@@ -706,11 +706,19 @@ Budget de S1m : deux tours de recuisson ; deux passes de correction après véri
 > - Banc vers `artifacts/pbr-handover/s1m/` : `nopost`, `full`, sondes, répétabilité (12 fichiers identiques sur 15), comparaison avec `s1e`, nouvelles références `audit` (30 captures) et `ui` (10), comparaisons `UiCaptureCompare` et `compare_track_audit.py` ; section « After the mipmaps » du doc générée par script (`gen_section_s1m.py`, hors dépôt).
 > - Écart des vues avec `s1e`, moyenne des trois canaux : de 0,41 à 1,44 ; arêtes appariées (`nopost`) plus basses sur les 15 vues, de 0,1 à 5,7 points ; totaux des sondes inchangés (11, 0, 21, 0) ; UI au plus 0,79 de différence, audit au plus 1,589.
 
-### ⏳ T9.3 — Vérification indépendante de S1m
+### ✅ T9.3 — Vérification indépendante de S1m
 
 - Objectif : un `verifier` frais confirme ou réfute : les textures cuites et la peinture de la voiture ont leur chaîne, en relançant le contrôle de chaîne de T9.2 (les cinq lignes `[CaptureBench] mipmaps`, dont les deux de la peinture) ; pas de régression ; les chiffres du doc sont ceux des sorties.
 - Étapes et verdicts : comme T5.4.
 - Commit : `docs(ai-agent): record the verification of the mipmap slice`
+
+> Validation (2026-11-17) : `verifier` frais, **CONFIRMED** sur les quatre affirmations, par ses propres lancements (jeu reconstruit avant).
+> - Contenu : les 107 `.texture` ne changent que par `"generate_mipmaps": true` ; le cuiseur, remis sur les anciennes textures dans une copie, signale bien 107 écarts.
+> - Exécution : les cinq lignes `[CaptureBench] mipmaps` retrouvées à l'identique ; les textures mesurées sont celles que dessinent les matériaux ; la chaîne de la peinture est encore juste après une repeinte ; le changement `<` → `!=` du tampon de peinture ne réalloue pas à chaque peinture (textures de 2048 × 2048).
+> - Pas de régression ; chiffres du doc contrôlés par script (131 contrôles).
+> - Remarques notées sans suite (candidat confirmé) :
+>   - P3 : une repeinte de la voiture coûte maintenant 62 à 67 ms au lieu de 10 à 21 ms, parce que la chaîne est recalculée sur le processeur à chaque couleur ; un à-coup ponctuel à la sélection de voiture, comme sur l'autre PC ;
+>   - P4 : « 0 avertissement » dans la note de T9.2 vaut pour un build incrémental ; un build complet en compte dans `CasaEngine/`, aucun dans le code du jeu.
 
 ---
 
