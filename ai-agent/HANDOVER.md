@@ -163,4 +163,6 @@ Rien n'est poussé. Détail : Phase 18 du plan.
 - Jeu sur le moteur fusionné : 15 vues, vues de tunnel, dix écrans d'interface et audit identiques octet pour octet à la référence `artifacts/pbr-handover/s3b/` ; le nouveau MGUI ne change aucun pixel de ces écrans.
 - Vérifié par deux vérificateurs indépendants (lancements, audit des fusions).
 
-À décider par l'auteur : pousser `main` du moteur ; remonter dans `main` les branches du chantier après le contrôle de déterminisme de GGX sur l'autre PC (O15, O18).
+`main` du moteur a été poussé par l'auteur le 2026-11-17 (`origin/main` = `006a245aa`) ; les branches du chantier restent locales, donc le commit du moteur sur lequel le jeu pointe (`29d3d2de2`) n'est pas sur le dépôt distant.
+
+À décider par l'auteur : remonter dans `main` les branches du chantier après le contrôle de déterminisme de GGX sur l'autre PC (O15, O18).
