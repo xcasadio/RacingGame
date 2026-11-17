@@ -1,6 +1,7 @@
 using CasaEngine.Framework.Entities;
 using CasaEngine.Framework.Entities.Components;
 using CasaEngine.Framework.Rendering.Environment;
+using CasaEngine.Framework.Rendering.Shadows;
 using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
 using RacingGameCasaEngine.Bootstrap;
@@ -28,32 +29,51 @@ public static class RaceWorldFactory
     internal const string TrackColumnsEntityNamePrefix = RaceWorldNames.TrackColumnsEntityNamePrefix;
     internal const string TrackColumnSegmentEntityNamePrefix = RaceWorldNames.TrackColumnSegmentEntityNamePrefix;
 
-    // The implicit lighting the old CasaEngine applied to every view (CasaEngine 295db0c6,
-    // EnvironmentLightingResolver.CreateLegacyLighting). CasaEngine now lights a world only through its
-    // LightComponents (CasaEngine 604c2fbea). Each old color is a gray level: it becomes the intensity of a white
-    // light, so the shader receives the same values (ForwardLightBinder multiplies both colors by the intensity).
+    // RacingGame lights the world with ONE white directional light. The direction towards the light is
+    // normalize(8500, -7250, 15000) in the original's Z-up space (Core/Graphics/LensFlare.cs:45-47, DefaultLightPos). The
+    // port's axes are (x, y, z) -> (x, z, -y), so the direction towards the light is (8500, 15000, 7250) and the light
+    // travels along its opposite.
     private const string KeyLightName = "Light.Key";
+    private static readonly Vector3 KeyLightDirection = Vector3.Normalize(new Vector3(-8500f, -15000f, -7250f));
+
+    // The specular colour of the key light, as it was when this light was one of three (white specular colour x intensity
+    // 0.92). The engine's lit-pbr shader ignores the specular colour of a light (docs/engine/pbr-rendering.md, Units): it is
+    // kept for the legacy shaders that read it.
+    private static readonly Color KeyLightSpecularColor = new(235, 235, 235);
+
+    // pi: a lit-pbr surface lit head-on is pi times darker than a lit-diffuse one at the same intensity (CasaEngine
+    // docs/engine/pbr-rendering.md, Units), so the key light of a PBR world keeps the level the original had at intensity 1.
+    private const float KeyLightIntensity = MathF.PI;
 
     // Shadow map of the race world, tuned on the track audit views (ai-agent/tasks/rgce-hud-shadows-start-tasks.md, T3.1):
-    // - 4096 texels over 2 x 150 units: a texel of 0.07 unit instead of 0.2 with the engine's 1024 over 2 x 100, so road and
-    //   car shadow edges step far less, and shadows reach about as far as RacingGame's visible range of 129 units;
+    // - the original multiplies the whole image by a shadow colour of (0.25, 0.26, 0.27) (Core/Content/Shaders/ShadowMap.fx:36,
+    //   240) and softens the shadow in screen space: MultiplyLitColor with that colour, and a 3 texel filter radius for the
+    //   soft edge (2 left the edge sharper than the original, 5 showed the 12-tap pattern as grain on the boards: the other
+    //   machine's measurement, not repeated here);
+    // - 4096 texels over 2 x ShadowMaxDistance units, centred on the camera. The original's map is centred on a point
+    //   virtualVisibleRange / 6 = 21.5 m ahead of the car and its visible range is 5.5 x 23.5 = 129.25 m
+    //   (Core/Shaders/ShadowMapShader.cs:215, 250-261), which covers about +-42 m across the light and +-80 m along it
+    //   (scripts/TrackCaptureCompare/README.md); the camera of a bench view is about 40 m from that point, so 100 units
+    //   leaves the probed shadows inside the full-strength zone, and a texel of 0.05 unit steps road and car shadow edges
+    //   far less than 0.2;
+    // - fade over the last 15 units, so the end of the map does not show as an edge;
+    // - depth range 150, apart from the lateral extent: the depth bias in metres is 2 x DepthBias x (2 x DepthRange - 0.1)
+    //   on DesktopGL (CasaEngine docs/engine/shadow-settings.md), 0.6 m with 150 and 0.001, as when both were 150;
     // - normal bias 0.1 unit: the terrain only receives shadows, as in RacingGame, so it has no acne at grazing angles, and
     //   a small bias keeps cast shadows at their full width
     //   (ai-agent/tasks/archive/rgce-start-beeps-shadow-shimmer-tasks.md, T2.2);
     // - depth bias: the engine's 0.001.
-    // Measured uncapped in 1920x1080: 1.6 ms per frame, as with the engine's settings (1.4 ms without shadows). The map
-    // takes about 128 MB of video memory instead of 8.
+    // Measured uncapped in 1920x1080 with a 150 unit map and no filter (ai-agent/tasks/rgce-hud-shadows-start-tasks.md, T3.1):
+    // 1.6 ms per frame, as with the engine's settings (1.4 ms without shadows). The map takes about 128 MB of video memory
+    // instead of 8. The 12-tap filter of FilterRadius has not been timed here.
     private const int ShadowMapResolution = 4096;
-    private const float ShadowMaxDistance = 150f;
+    private const float ShadowMaxDistance = 100f;
+    private const float ShadowFadeDistance = 15f;
+    private const float ShadowDepthRange = 150f;
+    private const float ShadowFilterRadius = 3f;
+    private static readonly Vector3 ShadowColor = new(0.25f, 0.26f, 0.27f);
     private const float ShadowDepthBias = 0.001f;
     private const float ShadowNormalBias = 0.1f;
-
-    private static readonly (string Name, Vector3 Direction, float Intensity, bool HasSpecular)[] LegacyDirectionalLights =
-    [
-        (KeyLightName, new Vector3(-0.5265408f, -0.5735765f, -0.6275069f), 0.92f, true),
-        ("Light.Fill", new Vector3(0.7198464f, 0.3420201f, 0.6040227f), 0.71f, false),
-        ("Light.Back", new Vector3(0.4545195f, -0.7660444f, 0.4545195f), 0.36f, true),
-    ];
 
     internal static bool IsRaceWorld(World world)
     {
@@ -111,18 +131,31 @@ public static class RaceWorldFactory
         world.EnvironmentSettings.Shadows.Enabled = state.EnableShadows;
         world.EnvironmentSettings.Shadows.Resolution = ShadowMapResolution;
         world.EnvironmentSettings.Shadows.MaxDistance = ShadowMaxDistance;
+        world.EnvironmentSettings.Shadows.FadeDistance = ShadowFadeDistance;
+        world.EnvironmentSettings.Shadows.DepthRange = ShadowDepthRange;
+        world.EnvironmentSettings.Shadows.FilterRadius = ShadowFilterRadius;
+        world.EnvironmentSettings.Shadows.Mode = ShadowMode.MultiplyLitColor;
+        world.EnvironmentSettings.Shadows.ShadowColor = ShadowColor;
         world.EnvironmentSettings.Shadows.DepthBias = ShadowDepthBias;
         world.EnvironmentSettings.Shadows.NormalBias = ShadowNormalBias;
-        foreach (Entity entity in CreateLegacyLightEntities(keyLightCastsShadows: state.EnableShadows))
-        {
-            world.AddEntity(entity);
-        }
+
+        // Image-based lighting from the sky cube (Bootstrap/RacingGameCasaEngineGame.cs binds it to the race world as its
+        // specular environment cube): the cube gives both the ambient diffuse (irradiance) and the reflections of the PBR
+        // materials, as CasaEngine.Demos PbrMaterialDemo.ApplyIbl. Same in both colour pipeline modes. These values are the
+        // ones the world has to have, written out so that it does not depend on the engine's defaults (the engine's flat
+        // ambient colour defaults to 0.05, which also scales the diffuse IBL term of lit-pbr).
+        world.EnvironmentSettings.AmbientSource = AmbientSource.Auto;
+        world.EnvironmentSettings.AmbientColor = Vector3.One;
+        world.EnvironmentSettings.AmbientIntensity = 1f;
+        world.EnvironmentSettings.SpecularIntensity = 1f;
 
         if (game.UseLinearColorPipeline)
         {
             ConfigureLinearColorPipeline(world.EnvironmentSettings.ColorPipeline);
             world.EnvironmentSettings.MarkDirty();
         }
+
+        world.AddEntity(CreateKeyLightEntity(castShadows: state.EnableShadows));
 
         foreach (Entity entity in trackScene.TrackEntities)
         {
@@ -178,27 +211,24 @@ public static class RaceWorldFactory
         return cameraEntity;
     }
 
-    private static IEnumerable<Entity> CreateLegacyLightEntities(bool keyLightCastsShadows)
+    private static Entity CreateKeyLightEntity(bool castShadows)
     {
-        foreach (var light in LegacyDirectionalLights)
+        var entity = new Entity
         {
-            var entity = new Entity
+            Name = KeyLightName,
+            RootComponent = new LightComponent
             {
-                Name = light.Name,
-                RootComponent = new LightComponent
-                {
-                    Name = nameof(LightComponent),
-                    Type = LightType.Directional,
-                    LocalOrientation = CreateOrientationFromForward(light.Direction),
-                    Color = Color.White,
-                    SpecularColor = light.HasSpecular ? Color.White : Color.Black,
-                    Intensity = light.Intensity,
-                    CastShadows = keyLightCastsShadows && light.Name == KeyLightName,
-                },
-            };
-            entity.ApplyExplicitPolicies(EntityPolicySet.StaticDecoration);
-            yield return entity;
-        }
+                Name = nameof(LightComponent),
+                Type = LightType.Directional,
+                LocalOrientation = CreateOrientationFromForward(KeyLightDirection),
+                Color = Color.White,
+                SpecularColor = KeyLightSpecularColor,
+                Intensity = KeyLightIntensity,
+                CastShadows = castShadows,
+            },
+        };
+        entity.ApplyExplicitPolicies(EntityPolicySet.StaticDecoration);
+        return entity;
     }
 
     // A LightComponent shines along its Forward. Same as CasaEngine.Demos DemoSceneLightRig.CreateOrientationFromForward.
