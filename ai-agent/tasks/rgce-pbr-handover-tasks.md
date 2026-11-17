@@ -1386,23 +1386,53 @@ Demande de l'auteur (2026-11-17) : récupérer les derniers changements de MGUI 
 
 Règles : aucun commit sur `main` (la fusion se fait sur une branche, puis `main` avance en avance rapide, comme en D10) ; aucun push ; `git add` fichier par fichier ; le jeu n'est ni construit ni lancé tant que le sous-module n'est pas sur le commit visé.
 
-### ⏳ T18.1 — Moteur : fusion d'`origin/main`, `main` avancé, `develop` de MGUI avancé
+### ✅ T18.1 — Moteur : fusion d'`origin/main`, `main` avancé, `develop` de MGUI avancé
 
 - Étapes : dans `CasaEngine`, branche `chantier/merge-origin-main-2` depuis `main` ; `git merge origin/main` ; dans `CasaEngine/MGUI`, `git merge --ff-only origin/develop` (arbre propre vérifié avant), qui donne le commit que le pointeur fusionné attend ; builds des deux solutions ; tests du moteur ; empreintes de référence de T4.1 relancées. Puis `main` avance sur la branche de fusion, en avance rapide, sans être extraite.
 - Validation : les deux solutions à 0 erreur ; tests : aucun échec hors des 8 connus sur ce PC (un changement de cette liste est noté : `origin/main` contient une correction des tests GPU pour un second GPU) ; empreintes des démos notées avec celles de T4.1, tout changement expliqué par les commits d'`origin/main` ou signalé ; `git -C CasaEngine rev-list --left-right --count main...origin/main` rend `N 0`.
 - Arrêts : un conflit ; un test en échec nouveau ; une empreinte qui change sans commit d'`origin/main` qui l'explique.
 
-### ⏳ T18.2 — Moteur : branche du jeu sur le moteur fusionné
+> Résultat (2026-11-17). Intégration git faite par la session principale (rien refait ici) : MGUI `develop` avancé en avance rapide de `d0efd9b4` à `f6ed1fcd` (= `origin/develop`, 14 commits, arbre propre) ; moteur, branche `chantier/merge-origin-main-2` = fusion d'`origin/main` (`7e3b8ff52`) dans `main` local, commit de fusion `006a245aa`, aucun conflit ; les deux solutions à 0 erreur ; tests du moteur reconstruits et lancés sur cette fusion : 6394 lancés, 6394 verts, 0 échec (un premier essai avec `--no-build` donnait 9 échecs : binaire de test périmé de la branche précédente, nul et non avenu) ; `main` avancé en avance rapide sur `006a245aa` sans être extrait, `git rev-list --left-right --count main...origin/main` = `27 0`. **Les 8 échecs GPU connus sur ce PC (O3) ont disparu** : `origin/main` contient `2a0a3712d fix(tests): make the GPU reference frames and the cube level probe hold on a second GPU`.
+> - Empreintes de référence de T4.1 relancées (scripts de `CasaEngine/artifacts/pbr-baseline/`, sorties `artifacts/pbr-handover/s18/engine-baseline/`), **sur `29d3d2de2`** (l'arbre du moteur est sur `chantier/rgce-pbr-on-main-2` : contenu de `main` plus les trois branches empilées, ce qui est le contenu dont le jeu a besoin), après reconstruction des deux solutions de ce commit, `exceptions=0` et `files=yes` partout :
+>
+> | Script | Avant (T4.1, ou valeur notée après la correction de GGX) | Maintenant |
+> |---|---|---|
+> | `capture-v2.sh` : material | `40e2df3c20090e1f` | `40e2df3c20090e1f` (deux captures égales) |
+> | environment | `4423dd1487a939b6` | `4423dd1487a939b6` (égales) |
+> | static-model | `efae412c45225453` | `efae412c45225453` (égales) |
+> | static-shadow | `536a8183f8100d2e` | `536a8183f8100d2e` (égales) |
+> | render-to-texture | `e62b6b73a06f0939` | `e62b6b73a06f0939` (égales) |
+> | ui-overlay | `08df0ac0282ae9c5` (deux captures égales) | `9d6c39bc6a2398b5` et `08df0ac0282ae9c5` (**voir ci-dessous**) |
+> | frozen-frame | `eb25f3917cfa6a0c` | `eb25f3917cfa6a0c` (égales) |
+> | tile-map | `625f42300bcbd4ff` | `625f42300bcbd4ff` (égales) |
+> | `lin-v2.sh` (`LinearHdr`) | `39f8355d905a14a8` | `39f8355d905a14a8` |
+> | `pbrdemo.sh` | `54e406a1dde8c171` | `54e406a1dde8c171` |
+> | `pbrdemo.sh` `Legacy` | `580dca11e3f9c87e` | `580dca11e3f9c87e` |
+> | `pbrdemo.sh` vernis | `4ac58625144dafa6` | `4ac58625144dafa6` |
+>
+> - `skinned`, `particles` et `split-screen` diffèrent d'une capture à l'autre, comme avant (non déterministes d'après la note de passation), `files=yes`, `exceptions=0`.
+> - **Constat (P3) : `ui-overlay`.** Les deux captures du script diffèrent (`9d6c39bc6a2398b5` puis `08df0ac0282ae9c5`) alors que T4.1 les notait égales. Six captures de plus de cette démo seule donnent les deux mêmes valeurs en alternance (`08df…`, `9d6c…`, `9d6c…`, `08df…`, `9d6c…`, `08df…`), jamais une troisième. La différence entre les deux images : 85 pixels dans une boîte de 8 x 13 pixels (x 77 à 84, y 52 à 64), écart maximal 174 niveaux, c'est le compteur de temps écoulé de la démo (« 1,5s » contre « 1,4s ») ; la démo l'annonce (`UIOverlayDemo.cs`, « elapsed-time counter »). Aucun commit d'`origin/main` ne touche cette démo depuis `8a3933b36` (`git log 8a3933b36..HEAD -- CasaEngine.Demos/Demos/UIOverlayDemo.cs` est vide) ; l'une des deux valeurs est exactement celle de T4.1. C'est donc la capture d'une horloge, qui dépend de l'instant de la capture (à la milliseconde près selon le rythme des images) ; l'égalité des deux captures de T4.1 était un hasard de rythme, pas une propriété de la démo. Non attribué à un commit précis (la cadence des images avec les changements de MGUI n'a pas été mesurée) ; le rendu du reste de l'écran est identique.
+> - Écart au plan : les empreintes sont prises sur `29d3d2de2` et non sur `006a245aa` seul, l'arbre étant déjà sur la branche du jeu ; elles sont égales à celles d'avant partout, donc aussi sur le contenu de `main`.
+
+### ✅ T18.2 — Moteur : branche du jeu sur le moteur fusionné
 
 - Étapes : branche `chantier/rgce-pbr-on-main-2` depuis `chantier/pbr-ggx-back-facing` (`8a3933b36`, ce dont le jeu a besoin : tangentes, mipmaps, GGX) ; `git merge main`. La branche `chantier/known-defects-gltf-alpha-probe` n'y entre pas et reste empilée sur `8a3933b36`.
 - Validation : builds à 0 erreur ; tests comme T18.1 ; `pbrdemo.sh` par défaut : empreinte notée avec `54e406a1dde8c171`.
 
-### ⏳ T18.3 — Jeu : pointeur avancé, banc
+> Résultat (2026-11-17). Branche `chantier/rgce-pbr-on-main-2` créée par la session principale depuis `chantier/pbr-ggx-back-facing` (`8a3933b36`) et fusionnée avec `main` : commit de fusion `29d3d2de2b33d9039bc116bd27fad47fc2f22536`, aucun conflit ; la branche `chantier/known-defects-gltf-alpha-probe` n'en fait pas partie. Validation sur place, sur ce commit : `dotnet build CasaEngine.MonoGame.sln` et `dotnet build CasaEngine.Editor.MonoGame.sln` à 0 erreur (189 et 205 avertissements du moteur, déjà présents) ; `dotnet test CasaEngine.Tests/CasaEngine.Tests.csproj --blame-hang-timeout 5m` avec construction : **6407 tests lancés, 6407 verts, 0 échec, 0 ignoré** (`artifacts/pbr-handover/s18/engine-tests.txt` ; la session principale avait 6394 sur `main`, les 13 de plus sont les tests des trois branches empilées) ; `pbrdemo.sh` par défaut : `54e406a1dde8c171`, égal à celui d'avant.
+
+### ✅ T18.3 — Jeu : pointeur avancé, banc
 
 - Étapes : pointeur du sous-module sur le sommet de `chantier/rgce-pbr-on-main-2` ; build du jeu ; cuiseur `--verify` et `--check` ; `--smoke-frontend`, `--verify-legacy-import-profile` ; rejeux `linear` et `legacy` des 15 vues et des vues de tunnel contre `s3b` ; `--capture-ui-screens` contre `s3b/ref-ui` ; audit des pistes contre `s3b/ref-audit`. Sorties sous `artifacts/pbr-handover/s18/`.
 - Validation : build à 0 erreur ; journaux sans avertissement ni erreur ; vues et mesure de scène identiques à `s3b` ; interface : tout écart est mesuré, regardé et attribué (le backend d'interface du moteur change) ; s'il y a un écart d'interface, nouvelle référence `s18/ref-ui` et section du doc de banc.
 - Arrêts : une vue du monde de course change ; un écran d'interface visiblement cassé.
 - Commit : `chore(engine): point the CasaEngine submodule at the merge of origin/main`
+
+> Validation (2026-11-17), jeu sur `eec8ac4` plus le pointeur du sous-module sur `29d3d2de2b33d9039bc116bd27fad47fc2f22536` (le `git diff --cached` ne change que cette ligne), MGUI à `f6ed1fcd`. Sorties sous `artifacts/pbr-handover/s18/`.
+> - Build du jeu et du cuiseur à 0 erreur, 0 avertissement (le moteur était déjà construit). Cuiseur `--verify` : 0 écart ; `--check` : 0 manquant ; `git status` du contenu vide. `--verify-legacy-import-profile` : « Legacy import profile verification passed. » ; `--smoke-frontend` : sortie 0, « Smoke validation completed successfully », aucun `[Warning]` ni `[Error]`.
+> - Rejeux des 15 vues (`s18/linear-a`, `s18/legacy-a`, sortie 0, 15 lignes `pipeline` attendues, aucun avertissement) : **identiques à `s3b` par empreinte sur 15 vues sur 15 dans chaque mode**, mesure de scène identique (3 fichiers sur 3 par mode). Vues de tunnel (`s18/tunnel-<mode>`, 3 lignes de pipeline, aucun avertissement) : identiques à `s3b/tunnel-<mode>` par empreinte, 3 sur 3 dans chaque mode. Aucun arrêt : le monde de course ne change pas.
+> - Interface (`--capture-ui-screens` vers `s18/ui`, journal sans avertissement ni erreur) : **les dix écrans sont identiques par empreinte à `s3b/ref-ui`** (0 pixel qui diffère, écart maximal 0, par écran) ; le backend d'interface du moteur (MGUI à `f6ed1fcd`) ne change donc aucun pixel de ces écrans ; aucun écran n'est cassé. Il n'y a pas d'écart à attribuer : pas de nouvelle référence `s18/ref-ui` (`s3b/ref-ui` reste la référence d'interface) et pas de section de doc de banc. Audit des pistes (`s18/audit`, 30 captures) : identiques à `s3b/ref-audit` par empreinte, 30 sur 30 (0,000).
+> - Limites : les écrans capturés sont ceux du mode d'automatisation, avec une voiture et une couleur ; les autres états de l'interface (survols, saisie, autres résolutions) ne sont pas capturés. Le jeu ne tourne que dans les modes d'automatisation.
 
 ### ⏳ T18.4 — Vérification indépendante
 
@@ -1417,7 +1447,7 @@ Règles : aucun commit sur `main` (la fusion se fait sur une branche, puis `main
 
 - O1 (S3) : tunnel presque noir, relever sa couleur de base ou lui donner une lumière ? Choix de l'auteur. **Traité en S3 (Phase 15, ADR-0030 `Proposed`) : émissive texturée portant l'ambiant du matériau ; voir O16.**
 - O2 (S4) : voiture centrale du carrousel, quelle intensité viser ? Choix de l'auteur. **Traité en S4 (Phase 16, ADR-0031 `Proposed`) : lumière à π, cible l'écran d'avant le PBR ; à confirmer par l'auteur.** Après vérification : lumière à π committée (ADR-0031 `Proposed`) ; la peinture grise ressort plus claire et plus froide qu'avant le PBR (toit 172 / 182 / 189 pour 129 / 128 / 130), les plateaux sont bleutés et la brillance de la peinture a disparu : à confirmer ou à régler par l'auteur.
-- O3 : 8 tests GPU du moteur échouent sur ce PC, sur `origin/main` comme sur la branche fusionnée (références prises sur l'autre PC). À traiter dans le moteur, hors de ce plan sauf demande.
+- O3 : 8 tests GPU du moteur échouent sur ce PC, sur `origin/main` comme sur la branche fusionnée (références prises sur l'autre PC). À traiter dans le moteur, hors de ce plan sauf demande. **Levé par la fusion de la Phase 18 : `origin/main` contient `2a0a3712d` (tests GPU valables sur un second GPU) ; 6407 tests sur 6407 verts sur `29d3d2de2`.**
 - O4 (S1b) : au-delà des matériaux, les deux PC ont fait en double plusieurs sujets du monde de course, relevés le 2026-11-16 par les commits des deux côtés depuis `d8ac303` :
 
   | Sujet | Ici (`remaster` local) | Autre PC (`origin/remaster`) |
