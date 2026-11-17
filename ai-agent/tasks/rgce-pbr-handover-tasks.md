@@ -25,7 +25,7 @@ Tranches :
 | S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | Faite le 2026-11-17, verdict CONFIRMED ; luminosité en question (O13) |
 | S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | Faite le 2026-11-17, verdict CONFIRMED |
 | S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1c, S1g, S1h | Faite le 2026-11-17, verdict CONFIRMED après correction de deux constats (couleurs de base, ombres des colonnes) |
-| S3 | Tunnel presque noir | S2 | À détailler ; choix de l'auteur attendu (O1) |
+| S3 | Tunnel presque noir | S2 | Détaillée (Phase 15) |
 | S4 | Voiture centrale du carrousel : trop blanche sur l'autre PC (lumière π et ciel sans tonemapping, non portés ici) ; ici environ deux fois plus sombre qu'avant le PBR (mesuré en S2) | S2 | À détailler ; choix de l'auteur attendu (O2) |
 | S5 | Défauts connus du §4 de la note (moteur sur une branche moteur dédiée, jeu sur cette branche) | S2 | À détailler |
 
@@ -1148,6 +1148,60 @@ Sorties sous `artifacts/pbr-handover/s2/`. Un seul agent lance les builds et le 
 > - P3 (doc, introduit par T14.5, corrigé dans ce commit) : le paragraphe « Column shadows » du doc expliquait la mesure d'`Expert-sector-50` par une ombre portée sur la roche ; les pixels mesurés sont les colonnes elles-mêmes, qui ne reçoivent plus l'ombre de la dalle. La phrase équivalente de la note de T14.5 se lit de la même façon. Les chiffres étaient justes.
 > - P4, notés : sans texture, `ForRoadTunnel` donnerait 80 là où l'autre PC donnerait 57, sans effet tant que la texture existe ; en `linear`, la variante `full` de l'original s'éloigne sur plusieurs vues alors que `nopost` se rapproche partout.
 > - **Verdict de S2 : CONFIRMED après correction.** Le portage PBR de l'autre PC est complet sur ce PC, aux écarts près qui sont écrits et attendent l'auteur (O9 à O15, S3, S4, S5). Référence du port sur ce PC : `artifacts/pbr-handover/s2/` (`linear-a`, `legacy-a`, `ref-ui`, `ref-audit`), section « Port reference on this PC » du doc de banc. Note de passation mise à jour (`ai-agent/HANDOVER.md`, section 8).
+
+---
+
+## Phase 15 — Tunnel presque noir (S3)
+
+Demande de l'auteur (2026-11-17) : faire S3 puis enchaîner S4 et S5, en autonomie. Le choix laissé ouvert par O1 (relever la couleur de base ou donner une lumière) est pris ici selon la règle de mesure ci-dessous et inscrit dans une ADR `Proposed`, à confirmer.
+
+État vérifié (2026-11-17, jeu `172ccfe`) :
+
+- Original : `roadTunnelMaterial` = ambiant 182, diffus 80, spéculaire 64, `("RoadTunnel", "RoadTunnelNormal")`, avec le commentaire « Use mainly ambient color (tunnel uses lightmaps) » (`RacingGameOriginal/Core/Tracks/Track.cs:84-89`). L'original rend `texture × (A + D × N.L)` ; la route et le tunnel projettent et reçoivent les ombres (`Track.GenerateShadow`, `Track.UseShadow`), et le masque d'ombre multiplie l'image par (0,25 ; 0,26 ; 0,27).
+- Ici : `Material.Track.RoadTunnel` est en `lit-pbr`, couleur de base 80, sans émissive ; `lit-pbr` n'a pas d'ambiant par matériau, et l'ambiant du monde vaut 0,05 de l'irradiance du ciel. L'intérieur du tunnel est presque noir : 57,1 % de pixels de luminance inférieure à 10 sur les captures d'audit (T13.2), depuis avant le PBR (ADR-0019, conséquences).
+- Le moteur a de quoi reproduire le terme `texture × A` : dans `LitPbr.fx`, l'émissive vaut `EmissiveColor × EmissiveTexture`, toutes deux des couleurs d'affichage, décodées ensemble puis ajoutées ; elle n'est pas touchée par la teinte d'ombre (`LitPbr.fx:521-557`). Clés `emissive_color` et `emissive_texture` de `lit-pbr`.
+- La recette n'a que `EmissiveColor` (`RaceMaterialRecipe.cs:71`) et le cuiseur n'écrit que `emissive_color` (`Cooker.cs:134`) : pas de texture d'émissive.
+- Aucune vue de référence de l'original n'est prise dans un tunnel : les 15 vues sont `start`, `sector-20`, `sector-50`, `sector-80`, `overview` (`TrackAuditCaptureScreen.BuildViews`). Les captures `audit-<piste>-helper-tunnel` sont celles du port seulement. Le port rejoue n'importe quelle liste de vues de `views.json` (`ReferenceViewCaptureValidator.cs:114-127`).
+
+Décisions de la tranche (mode AUTO, à confirmer avec l'ADR) :
+
+- T1 : la référence de l'original reçoit une vue dans le tunnel par piste, dans un dossier à part ; la référence des 15 vues (`artifacts/pbr-handover/s1c/ref`) n'est pas touchée et ses chiffres restent comparables.
+- T2 : le tunnel reçoit une émissive texturée, `emissive_texture` = sa texture diffuse, qui porte le terme d'ambiant propre au matériau de l'original. Pas de lumière ajoutée dans le tunnel.
+- T3 : deux candidats pour `emissive_color`, mesurés sur les trois vues de tunnel contre l'original (`nopost`, mode `linear`) : (a) 182/255, la valeur de l'original ; (b) 182/255 multiplié par la couleur d'ombre (0,25 ; 0,26 ; 0,27), puisque l'émissive du moteur échappe à la teinte d'ombre alors que l'ambiant de l'original la subit. Est retenu le candidat dont l'écart moyen par canal avec l'original est le plus petit sur les trois vues. Aucune autre valeur n'est essayée.
+
+Retour arrière : relever `git rev-parse HEAD` avant T15.1 ; annuler les commits de la phase. Budget : deux tours de recuisson dans le dépôt (la cuisson du candidat retenu est le premier) ; deux passes de correction après vérification. Règles communes : celles de S1g. Sorties sous `artifacts/pbr-handover/s3/`.
+
+### ⏳ T15.1 — Vue de référence dans le tunnel
+
+- Objectif : l'original exporte, sur demande, une vue prise dans le plus long tunnel de chaque piste ; le port la rejoue.
+- Fichiers : `RacingGameOriginal/Core/GameScreens/TrackAuditCaptureScreen.cs`, `Core/Helpers/CaptureOptions.cs`, `Desktop/Program.cs` et ce que le build désigne (dont un accès en lecture aux plages d'aide de `TrackLine`, `helperPositions` étant protégé) (option `--tunnel-views` de `--capture-track-audit` : seules les vues `tunnel` sont exportées, une par piste ; sans l'option, rien ne change) ; `scripts/TrackCaptureCompare/README.md` (l'option) ; ce plan. Définition de la vue, écrite en commentaire : plage `Tunnel` la plus longue de la piste (`helperPositions`), caméra à un point de route situé au quart de la plage, relevée de 2 m selon le vecteur haut du point, cible à un point de route plus loin dans le tunnel (au moins 15 m), relevée de 1,5 m ; voiture placée au point de la caméra, non dessinée. L'exécutant ajuste ces nombres seulement si la caméra sort du tunnel ou regarde hors de lui, et note les valeurs finales.
+- Validation :
+  - build de l'original à 0 erreur ; `--capture-track-audit --seed 1 --size 1280x720 --out artifacts/pbr-handover/s3/ref-tunnel --tunnel-views` : sortie 0, 3 vues en deux variantes, `views.json` et `scene.json` ;
+  - sans l'option, un rejeu de l'original vers `s3/ref-check` donne des images à 0,00 de moyenne par canal de `s1c/ref` sur les 15 vues, et un `scene.json` identique octet pour octet ;
+  - les trois images de l'original regardées : la caméra est dans le tunnel, parois et plafond visibles ;
+  - le port rejoue `s3/ref-tunnel/views.json` en `linear` et `legacy` vers `s3/base-tunnel-<mode>` (sortie 0, 3 lignes de pipeline par lancement) ; comparaison avec l'original notée (luminance, écart par canal) : c'est la mesure d'avant.
+- Arrêts : une des 15 vues ou `scene.json` change ; une piste sans tunnel ; la caméra ne tient pas dans le tunnel.
+- Commit : `feat(original): export a reference view inside the longest tunnel`
+
+### ⏳ T15.2 — Émissive du tunnel
+
+- Objectif : l'intérieur du tunnel a le niveau de l'original.
+- Fichiers : `RacingGame.Gameplay/Import/RaceMaterialRecipe.cs` (texture d'émissive, membre ajouté), `RaceMaterialRecipes.cs` (`ForRoadTunnel` : émissive = facteur retenu × texture diffuse ; le facteur en constante, avec sa source dans l'original), `scripts/RgceAssetCooker/CookPlan.cs`, `Cooker.cs`, `Verifier.cs` (règle : le cuiseur n'écrit la clé `emissive_texture` que si la recette nomme une texture d'émissive ; le vérificateur lit une clé absente comme l'identifiant nul et la compare à la recette ; les 98 autres fichiers ne reçoivent donc aucune ligne), `scripts/RgceAssetCooker/README.md` ; `RoadTunnel.material` recuit ; `docs/decisions/` (ADR-0030, `Proposed`, skill `adr` : T1 à T3, amende la conséquence de l'ADR-0019 sur le tunnel sombre ; ligne d'état de l'ADR-0019 et index) ; `docs/racinggame-3d-capture-bench-local-baseline.md` (section « After the tunnel emissive », générée par script) ; ce plan.
+- Étapes : mesure des candidats (a) et (b) de T3 sur les trois vues de tunnel, selon cette procédure : le dossier de build entier du jeu (`RacingGameCasaEngine/bin/Debug/net9.0-windows`, exécutable et `Content`) est copié dans un dossier de travail hors du dépôt, un par candidat ; le candidat est cuit par `RgceAssetCooker --content <copie>/Content` (le jeu ne lit son contenu que dans le dossier `Content` de son exécutable, `Program.cs:37-38`) ; l'exécutable de la copie rejoue les trois vues de tunnel ; rien n'est jamais cuit dans `RacingGameCasaEngine/Content` ni dans `RacingGameCasaEngine/bin` pour une mesure ; puis le retenu, et lui seul, est écrit dans la recette et cuit une fois dans le dépôt ; l'autre mesure est notée. Les deux cuissons de mesure ne comptent pas dans le budget ; `--verify`, `--check` et le second passage sans écriture ne sont pas des recuissons.
+- Validation :
+  - builds à 0 erreur ; cuiseur `--verify` avant la cuisson dans le dépôt, recette déjà modifiée (écart sur `RoadTunnel.material` seulement) et après (0 écart sur les 99 matériaux), `--check`, second passage sans écriture ; `git status` du contenu : `RoadTunnel.material` seulement (et `AssetInfos.json` s'il change, avec la raison) ; les 98 autres matériaux inchangés octet pour octet (`git diff --stat` du contenu égal à cette liste) ;
+  - tableau des deux candidats et de la mesure d'avant sur les trois vues de tunnel, mode `linear` puis `legacy` : luminance moyenne, écart moyen par canal avec l'original, part des pixels de luminance inférieure à 10 ; le retenu est celui de la règle T3 ; son écart moyen sur les trois vues est inférieur à celui d'avant ;
+  - avant le banc et avant tout rejeu de validation : `RoadTunnel.material` du dossier de build égal octet pour octet à celui du dépôt (le build copie le contenu en `PreserveNewest`), contrôle noté ;
+  - banc complet des 15 vues vers `s3/` (deux rejeux par mode, sondes, répétabilité, comparaison avec `s2`) : mesure de scène égale octet pour octet à `s2` ; critère 3 des sondes au moins 27 sur 33 dans les deux modes ; les vues des 15 qui changent sont nommées (faces extérieures des tunnels) et regardées contre l'original ; sept écrans hors course à 0,00 contre `s2/ref-ui` ; nouvelles références d'audit et d'interface ;
+  - `--smoke-frontend` et `--verify-legacy-import-profile` en succès ;
+  - les trois vues de tunnel du port regardées contre l'original : pas d'aplat saturé, relief de la normal map encore lisible.
+- Arrêts : aucun des deux candidats ne réduit l'écart d'avant ; le retenu sature le tunnel (plus de 1 % de pixels à 255 sur une vue de tunnel en `linear`) ; critère 3 sous 27 ; besoin de toucher le moteur.
+- Commit : `feat(racing-casa): light the tunnel with the original's material ambient as an emissive texture`
+
+### ⏳ T15.3 — Vérification indépendante de S3
+
+- Objectif : un `verifier` frais confirme ou réfute les validations de T15.1 et T15.2 par ses propres lancements, la règle T3 comprise : il refait la mesure des deux candidats par la procédure de T15.2 (copie du dossier de build hors du dépôt, cuisson dans la copie, exécutable de la copie), sans rien cuire dans le dépôt ni dans son dossier de build, et contrôle avant ses rejeux finaux que `RoadTunnel.material` du dossier de build est égal à celui du dépôt.
+- Commit : `docs(ai-agent): record the verification of the tunnel lighting`
 
 ---
 
