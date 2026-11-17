@@ -60,13 +60,15 @@ Relevé par six enquêteurs en lecture seule ; rien n'a été lancé, donc toute
 
 ## Tâches
 
-### ⏳ R1 — Suppression de `scripts/TrackPlacementExporter`
+### ✅ R1 — Suppression de `scripts/TrackPlacementExporter`
 
 - Fichiers : les trois fichiers suivis de l'outil (`git rm`) ; `ai-agent/tasks/rgce-editor-project-tasks.md` (`:1662` : retirer l'outil des arrêts de S6 ; `:1740` : remplacer la ligne d'acceptation par la mesure de placement du banc de captures, « objets appariés, 0 manquant, 0 en trop ») ; `ai-agent/tasks/rgce-3d-geometry-fidelity-tasks.md:107` (O2 clos) ; ce plan. Les documents d'historique qui nomment l'outil ne sont pas modifiés. `TrackRuntimeSceneExporter` et `scripts/compare_race_scene_exports.py` restent.
 - Validation : `dotnet build RacingGame.slnx` à 0 erreur ; `rg -l TrackPlacementExporter` hors `artifacts/` ne rend que des fichiers d'historique, listés dans la note, et aucune ligne de tâche ⏳ ou 🚧 ; aucun fichier du jeu ni de son contenu ne change.
 - Arrêts : un fichier hors des documents d'historique qui construit, lit ou nomme l'outil comme une étape vivante ; une erreur de build ; un changement sous `RacingGame*/` ou dans le contenu.
 - Retour arrière : `git revert` du commit de R1.
 - Commit : `chore(scripts): remove the track placement exporter`
+
+> Validation (2026-11-17) : les trois fichiers suivis retirés par `git rm` ; `dotnet build RacingGame.slnx` à 0 erreur ; aucune mention de l'outil dans un fichier de code, de projet, de solution ou de script ; mentions restantes, toutes d'historique : `ai-agent/tasks/rgce-track-helpers-tasks.md`, `rgce-hud-shadows-start-tasks.md`, `rgce-pbr-handover-tasks.md`, `rgce-3d-geometry-fidelity-tasks.md` (O2 clos), `rgce-editor-project-tasks.md` (ligne d'acceptation remplacée, qui nomme la suppression), ce plan, `docs/decisions/0019-…`, `docs/decisions/0027-…`, `docs/racinggame-casaengine-update-tasks.md`, `docs/racinggame-circuit-migration-verification-plan.md` ; aucune ligne de tâche ⏳ ou 🚧 ne le nomme hors de R1. Aucun fichier du jeu ni de son contenu ne change. Les dossiers `bin/` et `obj/` de l'outil, non suivis, restent sur le disque.
 
 ### ⏳ R2 — Jeu sur le moteur de `chantier/draw-order-emissive-shadow`
 

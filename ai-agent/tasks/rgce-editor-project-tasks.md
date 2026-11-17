@@ -1659,7 +1659,7 @@ Faits relevés pour cette phase (2026-10-09), à `2fa7ac7`. Les sources :
 - **Prérequis** : S5 close (✅) ; plan O7 exécuté, références `artifacts/o7-track-helpers/after/` (T3.1 en 🧪 pour le seul contrôle visuel de l'auteur).
 - **Références de parité** : `after/` (export, audit, audits des voitures, captures d'interface), avec le témoin construit à `HEAD` quand les captures d'interface sont bruitées.
 - **Arrêts** (en plus de ceux de l'enveloppe) :
-  - un écart inexpliqué de l'export par maillage ou de `TrackPlacementExporter` contre `after/` ;
+  - un écart inexpliqué de l'export par maillage contre `after/` ;
   - un audit des voitures qui change ;
   - un champ perdu à l'aller-retour d'un monde ;
   - un `.entity` que l'automatisation de l'éditeur n'ouvre pas : la tâche reste en 🧪, avec l'étape manuelle écrite.
@@ -1737,7 +1737,7 @@ Faits relevés pour cette phase (2026-10-09), à `2fa7ac7`. Les sources :
     - audit dans le seuil de 0,5 ;
     - audits des voitures identiques ;
     - captures d'interface (témoin à `HEAD` si bruit) ;
-  - `TrackPlacementExporter` : les lignes de `after/` ;
+  - placement des objets : la mesure de scène du banc de captures (`scripts/TrackCaptureCompare` contre le `scene.json` de l'original) rend tous les objets appariés, 0 manquant, 0 en trop (`scripts/TrackPlacementExporter` a été supprimé le 2026-11-17, `rgce-render-gaps-tasks.md` R1) ;
   - `--smoke-frontend`, qui enchaîne front-end et course, et `--verify-legacy-import-profile` : code 0 ;
   - une sonde enchaîne deux courses puis revient au front-end : aucune erreur dans le journal, aucun son de course après le retour ;
   - l'option des ombres désactivée : la course n'a ni carte d'ombres ni lumière qui en projette.

@@ -104,7 +104,7 @@ Sur les 15 vues du banc, la route, ses ouvrages et les objets de la conversion s
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
 | O1 | La règle de doublon utilise une table des tailles de modèle de l'original (`LegacyModelSizes`, relevée sur les `.xnb` de l'original) : les tailles déduites des glTF diffèrent (ordre des maillages pour les palmiers, Windmill, Casino01, Hotel01 ; RoadColumnSegment à 2,05 au lieu de 49,05). À instruire avec les matériaux : est-ce une erreur d'export des modèles ? | T2, S3 |
-| O2 | `scripts/TrackPlacementExporter/RuntimeSceneComparison.cs` réimplémente l'ancien placement et ne correspond plus à la conversion. À supprimer ou à réaligner : décision de l'auteur. | T2 |
+| O2 | `scripts/TrackPlacementExporter/RuntimeSceneComparison.cs` réimplémente l'ancien placement et ne correspond plus à la conversion. À supprimer ou à réaligner : décision de l'auteur. **Clos le 2026-11-17 : outil supprimé sur décision de l'auteur (`rgce-render-gaps-tasks.md`, A1 et R1).** | T2 |
 | O3 | Le maillage de route de la conversion utilise le vecteur droite normalisé ; l'original, le dessous de route et les tunnels utilisent le vecteur brut (non normalisé). Écart d'une fraction de pour cent sur la largeur là où sa norme est sous 1 : non mesuré par le banc, à aligner ou à accepter. | T3 |
 | O4 | La conversion n'a pas de réglage « ne reçoit pas d'ombre » par maillage : dans l'original, le dessous de route et le plan de ville n'en reçoivent pas. À traiter dans le moteur avec S2. | T3, S2 |
 
