@@ -112,3 +112,31 @@ git -C D:/development/repo/RacingGame/CasaEngine push origin main
 ```bash
 git -C D:/development/repo/RacingGame push origin remaster
 ```
+
+## 8. État sur ce PC après la reprise (2026-11-17)
+
+Le travail PBR de l'autre PC est porté sur ce PC, dans l'architecture d'ici (code du jeu dans `RacingGame.Gameplay`, générateurs, assets cuits). Registre complet : `ai-agent/tasks/rgce-pbr-handover-tasks.md` (tranches, décisions D1 à D11, carte des 46 commits de l'autre PC, Phases 1 à 14, points ouverts O1 à O15).
+
+Branches et commits, rien n'est poussé :
+
+- Jeu : `chantier/rgce-pbr-handover`, 144 commits d'avance sur `origin/remaster` (`90e3d99`), qu'elle contient ; `remaster` local à `ad9f892`, non touché.
+- Moteur : `main` local à `b429b79ec` (fusion d'`origin/main`, décision D10), `origin/main` à `187a420d7`. Trois branches empilées au-dessus de `main` : `chantier/static-model-tangents` (`61b4e6fae`, tangentes dans `.staticModel`, ADR-0123), `chantier/texture-asset-mipmaps` (`2b64b0591`, mipmaps par asset `.texture`, ADR-0124), `chantier/pbr-ggx-back-facing` (`8a3933b36`, correction de GGX côté dos). Le pointeur du jeu est sur `8a3933b36`.
+
+Fait et vérifié (chaque tranche par un vérificateur indépendant, l'ensemble par S2) :
+
+- fusions du moteur et du jeu ; original de référence qui compile sur ce PC, multijoueur LAN retiré ;
+- banc de capture contre l'original, mesure de scène, sondes ; placement des objets et ombres alignés sur l'original ;
+- assets : tangentes, normal maps, cube du ciel, mipmaps ; matériaux cuits en `lit-pbr` par famille ;
+- monde de course : lumière linéaire HDR (mode `--color-pipeline legacy` pour le banc), lumière unique de l'original à π, ambiant par le cube du ciel à 0,05, ombres douces et teintées, tangentes de la route et des tunnels, dessous de la route, sol de la ville, couleurs de base de l'original sur les matériaux de piste.
+
+Référence du port sur ce PC : `artifacts/pbr-handover/s2/` (non versionné) et la section « Port reference on this PC » de `docs/racinggame-3d-capture-bench-local-baseline.md`. En `linear`, luminance moyenne 104,0 pour 96,3 dans l'original ; écart moyen par canal 19,8 / 19,4 / 19,0 ; sondes de classe ombre ou lumière 27 sur 33.
+
+Ce qui reste :
+
+- S3, tunnel presque noir (O1) ; S4, voiture du carrousel : ici environ deux fois plus sombre qu'avant le PBR, l'éclairage du carrousel de l'autre PC n'est pas porté (O2) ; S5, défauts connus du §4.
+- O13, écarts de rendu avec l'original : faces à l'ombre dos au soleil bouchées et froides depuis l'ambiant à 0,05 ; ombres du terrain trop sombres en `linear` ; pavés de la ville sombres, ombre et lumière inversées sur `Beginner-sector-20` ; rapport route sur terrain 0,655 pour 0,348.
+- O14 : famille du sol de la ville ; verre et feux arrière de la voiture noirs unis ; points ouverts de l'autre PC (cube du ciel de 512 sans mipmaps, `Casino01`).
+- Décisions en attente de l'auteur : O9, O10, O11 ; ADR-0027 et ADR-0029 du jeu en `Proposed` ; ADR-0123 et 0124 du moteur ; O15 : contrôle du déterminisme de la correction de GGX sur l'autre PC avant toute remontée du moteur dans `main` ou tout push ; disposition prise en mode AUTO sur la cible de pixels blancs de S1f.
+- Jamais contrôlé à l'œil ni joué à la main : une course lancée du menu sur chaque piste, les couleurs de voiture, le carrousel ; les preuves d'exécution viennent des modes d'automatisation.
+
+Correction à cette note : l'ADR-0018 du jeu est `Accepted`, et non « encore en Proposed » comme le dit le §4.

@@ -24,7 +24,7 @@ Tranches :
 | S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1m | Faite le 2026-11-17, verdict CONFIRMED après la correction du moteur (GGX côté dos) |
 | S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | Faite le 2026-11-17, verdict CONFIRMED ; luminosité en question (O13) |
 | S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | Faite le 2026-11-17, verdict CONFIRMED |
-| S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1c, S1g, S1h | Détaillée (Phase 14) |
+| S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1c, S1g, S1h | Faite le 2026-11-17, verdict CONFIRMED après correction de deux constats (couleurs de base, ombres des colonnes) |
 | S3 | Tunnel presque noir | S2 | À détailler ; choix de l'auteur attendu (O1) |
 | S4 | Voiture centrale du carrousel : trop blanche sur l'autre PC (lumière π et ciel sans tonemapping, non portés ici) ; ici environ deux fois plus sombre qu'avant le PBR (mesuré en S2) | S2 | À détailler ; choix de l'auteur attendu (O2) |
 | S5 | Défauts connus du §4 de la note (moteur sur une branche moteur dédiée, jeu sur cette branche) | S2 | À détailler |
@@ -1086,18 +1086,18 @@ Référence du port sur ce PC : `artifacts/pbr-handover/s13/` (prise sur `ccce94
 
 Sorties sous `artifacts/pbr-handover/s2/`. Un seul agent lance les builds et le jeu ; les autres sont en lecture seule.
 
-### ⏳ T14.1 — Complétude du portage
+### ✅ T14.1 — Complétude du portage
 
 - Objectif : pour chacun des 46 commits de la « Carte des commits de l'autre PC », un verdict lu dans le code d'ici et dans `git show` : porté (où), fait en double et aligné (où), sans objet (pourquoi), différé (vers quelle tranche ou quel point ouvert), ou **manquant**. Même contrôle pour chaque décision D1 à D11, chaque règle (a) à (e) de la fusion du jeu, et les parties du plan de l'autre PC (`rgce-pbr-race-world-tasks.md` d'`origin/remaster`, T0.1 à T4.2) : en particulier l'éclairage du carrousel de sa T3.1 (différé à S4 par S1g) et ses vérificateurs.
 - Validation : un tableau complet (46 lignes de commits) dans la note de la tâche ou dans un fichier de `artifacts/pbr-handover/s2/` cité par la note ; chaque « manquant » devient un constat avec priorité.
 
-### ⏳ T14.2 — Contrôles de bout en bout sur `HEAD`
+### ✅ T14.2 — Contrôles de bout en bout sur `HEAD`
 
 - Objectif : tout ce qui se lance, relancé une fois sur le `HEAD` final, par un seul agent.
 - Étapes : build du jeu (`RacingGameCasaEngine`, Debug) et du cuiseur ; tests du moteur (`dotnet test CasaEngine/CasaEngine.Tests/CasaEngine.Tests.csproj`) : seuls les 8 échecs connus de la Phase 1 ; cuiseur `--verify`, `--check`, second passage sans écriture ; `--smoke-frontend` ; `--verify-legacy-import-profile` ; rejeux `linear` et `legacy` contre `s13` (0,00) avec mesure de scène et sondes ; `--capture-ui-screens` contre `s13/ref-ui` ; `--capture-track-audit` contre `s13/ref-audit` et `python scripts/compare_track_audit.py` s'il s'applique ; `--capture-car-profile-audit` et `--capture-car-top-speed-audit` (ils roulent une voiture : preuve que la course tourne en PBR), comparés à leur dernière référence connue du dépôt si elle existe, sinon résultats notés ; `--export-track-runtime-scene` pour une piste, comparé par `scripts/compare_race_scene_exports.py` si une référence existe ; journaux sans avertissement, erreur ni exception.
 - Validation : chaque étape avec sa commande, son code de sortie et son résultat ; tout écart est un constat.
 
-### 🧪 T14.3 — Évolution des mesures et doc de référence
+### ✅ T14.3 — Évolution des mesures et doc de référence
 
 - Objectif : un tableau de l'évolution, de la mesure « avant PBR » (S1c, S1a) à `s13`, lu dans les sorties : luminance moyenne, écart moyen par canal avec l'original, arêtes appariées, critères 1 à 4 des sondes, par mode quand il existe ; plus la liste de ce qui reste hors cible (O13, S3, S4).
 - Fichiers : `docs/racinggame-3d-capture-bench-local-baseline.md` (section « Port reference on this PC », générée par script, relue par un second script) ; `ai-agent/HANDOVER.md` (section 8, en français : état au 2026-11-17 sur ce PC, branches et commits du jeu et du moteur, ce qui est fait, ce qui reste, décisions en attente, ce qui n'a jamais été contrôlé à l'œil ; les sections précédentes ne sont pas réécrites) ; ce plan.
@@ -1105,7 +1105,7 @@ Sorties sous `artifacts/pbr-handover/s2/`. Un seul agent lance les builds et le 
 
 > État (2026-11-17) : la section « Port reference on this PC » du doc, avec le tableau d'évolution, est faite dans le commit de T14.5 (générée par script sur les sorties de `s2/`, relue par un second script) ; la partie `ai-agent/HANDOVER.md` (section 8) reste à faire par la session principale, d'où 🧪.
 
-### ⏳ T14.4 — Contre-vérification et dispositions
+### ✅ T14.4 — Contre-vérification et dispositions
 
 - Objectif : chaque constat P0 à P2 de T14.1 et T14.2 est contre-vérifié par un agent frais qui cherche à le réfuter ; la session principale dispose chaque constat (`FIX`, `DEFER`, `REJECT`) et l'écrit ici. Verdict de S2 : CONFIRMED, REFUTED ou INCONCLUSIVE.
 - Commit : celui de T14.3 si aucun correctif n'est nécessaire.
@@ -1138,10 +1138,16 @@ Sorties sous `artifacts/pbr-handover/s2/`. Un seul agent lance les builds et le 
 > - Section « Port reference on this PC » du doc (T14.3) générée par script (`gen_section_s2.py`, hors dépôt) avec le tableau d'évolution de `s1c` à `s2` (douze lignes, par mode quand il existe) lu dans les sorties existantes ; relecture par un second script indépendant (`check_doc_s2.py`, hors dépôt, qui relit aussi les D dans le texte de l'original et les couleurs de base dans les `.material`) : 320 valeurs comparées au doc, 0 différence.
 > - Écarts au plan : aucun. `scripts/TrackCaptureCompare/README.md` non touché (aucune commande ne change).
 
-### ⏳ T14.6 — Vérification de la correction et verdict de S2
+### ✅ T14.6 — Vérification de la correction et verdict de S2
 
 - Objectif : un `verifier` frais reprend F1 et F2 sur le nouveau `HEAD` (recheck des deux constats d'origine, plus une régression de base : rejeux, mesure de scène, sondes, interface, cuiseur), et la session principale rend le verdict de S2.
 - Commit : `docs(ai-agent): record the overall verification of the PBR port`
+
+> Validation (2026-11-17), sorties dans `artifacts/pbr-handover/s2/verify/`.
+> - `verifier` frais sur `558a5d9` : **CONFIRMED**. F1 : chaque D relu dans l'original (`Material.cs:31`, `Track.cs`, `Landscape.cs`), recette, six `.material` cuits et résultat de `CreateLegacyLighting` de l'autre PC concordants ; seuls ces six fichiers de contenu changent ; cuiseur propre. F2 : drapeaux d'ombre du maillage `<piste>.Columns` faux, comme l'original (`Track.cs:1313-1315`, `:1336-1338`) et `d40b020` ; à l'exécution, les colonnes sous la dalle passent de 5,4 à 16,6 de luminance (original 22,4) et les taches d'ombre qu'elles portaient sur le terrain disparaissent (`Advanced-sector-50`, `Advanced-sector-20`, `Beginner-start`), sans nouvel artefact. Régression de base propre : rejeux à 0,00 de ceux de l'exécutant, mesure de scène égale à `s13`, critère 3 à 27 sur 33 dans les deux modes, sept écrans hors course à 0,00, `--smoke-frontend` et `--verify-legacy-import-profile` en succès ; 286 valeurs du doc et de la note relues, 0 écart.
+> - P3 (doc, introduit par T14.5, corrigé dans ce commit) : le paragraphe « Column shadows » du doc expliquait la mesure d'`Expert-sector-50` par une ombre portée sur la roche ; les pixels mesurés sont les colonnes elles-mêmes, qui ne reçoivent plus l'ombre de la dalle. La phrase équivalente de la note de T14.5 se lit de la même façon. Les chiffres étaient justes.
+> - P4, notés : sans texture, `ForRoadTunnel` donnerait 80 là où l'autre PC donnerait 57, sans effet tant que la texture existe ; en `linear`, la variante `full` de l'original s'éloigne sur plusieurs vues alors que `nopost` se rapproche partout.
+> - **Verdict de S2 : CONFIRMED après correction.** Le portage PBR de l'autre PC est complet sur ce PC, aux écarts près qui sont écrits et attendent l'auteur (O9 à O15, S3, S4, S5). Référence du port sur ce PC : `artifacts/pbr-handover/s2/` (`linear-a`, `legacy-a`, `ref-ui`, `ref-audit`), section « Port reference on this PC » du doc de banc. Note de passation mise à jour (`ai-agent/HANDOVER.md`, section 8).
 
 ---
 
