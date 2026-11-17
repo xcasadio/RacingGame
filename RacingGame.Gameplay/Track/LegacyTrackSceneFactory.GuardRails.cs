@@ -254,7 +254,10 @@ internal static partial class LegacyTrackSceneFactory
                 Scale = Vector3.One,
             };
 
-            return new RaceGeneratedModel($"{trackName}.Columns", model, Matrix.Identity, CastShadows: true, OwnsBuffers: true);
+            // Neither cast nor received: Track.GenerateShadow and Track.UseShadow leave the columns out ("not required, we don't see near
+            // columns anyway", Track.cs:1313-1315 and :1336-1338, both calls commented out), and TrackColumns has no shadow method. The
+            // placed column segments are scenery objects with their own flags (CreateColumnSegmentModels).
+            return new RaceGeneratedModel($"{trackName}.Columns", model, Matrix.Identity, CastShadows: false, OwnsBuffers: true, ReceiveShadows: false);
         }
 
         // The segment model is the catalogued one: each placement holds it through the engine, the generator never owns it.

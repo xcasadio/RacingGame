@@ -17,9 +17,9 @@
     "detail_texture": "afabb175-1413-5bd8-b522-afcecd9c9a9e",
     "detail_tiling": 24.0,
     "base_color": {
-      "r": 255,
-      "g": 255,
-      "b": 255,
+      "r": 234,
+      "g": 234,
+      "b": 234,
       "a": 255
     },
     "metallic": 0.0,

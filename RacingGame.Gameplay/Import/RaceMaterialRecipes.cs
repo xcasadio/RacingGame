@@ -44,6 +44,31 @@ public static class RaceMaterialRecipes
     // (Model.RenderCar: Material.DefaultDiffuseColor).
     private static readonly Color LegacyCarDefaultDiffuseColor = new(210, 210, 210, 255);
 
+    // The diffuse colour D of the generated track materials of the original, which the original multiplies into every pixel
+    // (texture * (A + D * N.L), NormalMapping.fx) and which the base colour of a lit-pbr material carries here, as on the other
+    // machine (CreateLegacyLighting of origin/remaster). Each value is read in RacingGameOriginal/Core:
+    // - the road, its underside and the columns are built with Material(diffuse texture, normal texture), which leaves the
+    //   default diffuse colour 210 (Tracks/Track.cs:73-79 and :94-96, Graphics/Material.cs:31);
+    // - the terrain's diffuse is 234 (Landscapes/Landscape.cs:597-606, "diffuse (also bright)");
+    // - the guard rails' diffuse is 182 (Tracks/Track.cs:101-105);
+    // - the city ground's diffuse is 200 (Landscapes/Landscape.cs:614-620);
+    // - the tunnel's diffuse is 80 (Tracks/Track.cs:84-89), see ForRoadTunnel.
+    private const byte LegacyDefaultDiffuse = 210;
+    private const byte LegacyTerrainDiffuse = 234;
+    private const byte LegacyGuardRailDiffuse = 182;
+    private const byte LegacyCityGroundDiffuse = 200;
+
+    // The tint of a material times its diffuse colour D, rounded as CreateLegacyLighting of the other machine does:
+    // (c * D + 127) / 255 per channel. The tint is white when the material has a texture.
+    private static Color WithLegacyDiffuse(Color tint, byte diffuse)
+    {
+        return new Color(
+            (byte)((tint.R * diffuse + 127) / 255),
+            (byte)((tint.G * diffuse + 127) / 255),
+            (byte)((tint.B * diffuse + 127) / 255),
+            (byte)255);
+    }
+
     /// <summary>A scenery, post, segment or start light material of the model <paramref name="modelName"/>.</summary>
     public static RaceMaterialRecipe ForScenery(string modelName, StaticModelImportedMaterial importedMaterial)
     {
@@ -125,7 +150,7 @@ public static class RaceMaterialRecipes
             BaseTextureFilePath = diffuseTexturePath,
             NormalTextureFilePath = normalTexturePath,
             Family = RacingGamePbrMaterialMapping.Road,
-            BaseColor = diffuseTexturePath != null ? Color.White : new Color(60, 62, 66),
+            BaseColor = WithLegacyDiffuse(diffuseTexturePath != null ? Color.White : new Color(60, 62, 66), LegacyDefaultDiffuse),
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
         };
@@ -143,7 +168,7 @@ public static class RaceMaterialRecipes
             BaseTextureFilePath = diffuseTexturePath,
             NormalTextureFilePath = normalTexturePath,
             Family = RacingGamePbrMaterialMapping.Road,
-            BaseColor = diffuseTexturePath != null ? Color.White : new Color(60, 62, 66),
+            BaseColor = WithLegacyDiffuse(diffuseTexturePath != null ? Color.White : new Color(60, 62, 66), LegacyDefaultDiffuse),
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
         };
@@ -162,7 +187,7 @@ public static class RaceMaterialRecipes
             BaseTextureFilePath = diffuseTexturePath,
             NormalTextureFilePath = normalTexturePath,
             Family = RacingGamePbrMaterialMapping.Terrain,
-            BaseColor = diffuseTexturePath != null ? Color.White : new Color(182, 166, 118),
+            BaseColor = WithLegacyDiffuse(diffuseTexturePath != null ? Color.White : new Color(182, 166, 118), LegacyCityGroundDiffuse),
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
         };
@@ -182,7 +207,7 @@ public static class RaceMaterialRecipes
             DetailTextureFilePath = detailTexturePath,
             DetailTiling = TerrainDetailTiling,
             Family = RacingGamePbrMaterialMapping.Terrain,
-            BaseColor = diffuseTexturePath != null ? Color.White : new Color(182, 166, 118),
+            BaseColor = WithLegacyDiffuse(diffuseTexturePath != null ? Color.White : new Color(182, 166, 118), LegacyTerrainDiffuse),
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
         };
@@ -197,7 +222,7 @@ public static class RaceMaterialRecipes
             BaseTextureFilePath = diffuseTexturePath,
             NormalTextureFilePath = normalTexturePath,
             Family = RacingGamePbrMaterialMapping.GuardRail,
-            BaseColor = diffuseTexturePath != null ? Color.White : new Color(182, 182, 182),
+            BaseColor = WithLegacyDiffuse(diffuseTexturePath != null ? Color.White : new Color(182, 182, 182), LegacyGuardRailDiffuse),
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
         };
@@ -212,7 +237,7 @@ public static class RaceMaterialRecipes
             BaseTextureFilePath = diffuseTexturePath,
             NormalTextureFilePath = normalTexturePath,
             Family = RacingGamePbrMaterialMapping.Road,
-            BaseColor = diffuseTexturePath != null ? Color.White : new Color(176, 176, 176),
+            BaseColor = WithLegacyDiffuse(diffuseTexturePath != null ? Color.White : new Color(176, 176, 176), LegacyDefaultDiffuse),
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
         };
