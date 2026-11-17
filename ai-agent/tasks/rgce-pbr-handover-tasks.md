@@ -1003,12 +1003,20 @@ Règles communes : celles de S1g. Sorties sous `artifacts/pbr-handover/s1h/`. R�
 > - Regard en recadrage (`crops/t2-*.png`, original `nopost`, `base`, après) : `Beginner-sector-20` : les pavés de la ville recouvrent le sol à gauche et à droite de la route, au même endroit qu'à l'original, l'ombre des immeubles et du palmier tombe sur le plan (il reçoit les ombres) ; `Expert-overview` : la silhouette du plan est celle de l'original, y compris les bords où le relief le traverse, à la même place et à la même taille, aucun plan flottant, aucun scintillement ; `Beginner-overview` de même. Le plan est nettement plus clair et plus bleuté que le gris de l'original (luminance du monde, point O13, non réglé ici).
 > - Écart au plan : aucun écart de fichiers (le nouveau fichier est `LegacyTrackSceneFactory.CityGround.cs`, « fichier voisin » de la tâche) ; `GroundTextureCandidates` reste utilisé par le seul terrain.
 
-### ⏳ T12.3 — ADR, banc et références
+### ✅ T12.3 — ADR, banc et références
 
 - Objectif : la décision écrite et la référence du port après S1h.
 - Étapes : ADR-0029 (skill `adr`, `Proposed`) : H1 à H4, qui amende l'ADR-0019 (sa conséquence « nothing is missing » était fausse) ; ligne d'état de l'ADR-0019 et index mis à jour. Banc complet vers `artifacts/pbr-handover/s1h/` comme en T11.4 (deux modes, comparaisons avec `s1h/base` et `s1g`), nouvelles références d'audit et d'interface ; section « After the road underside and the city ground » du doc de banc générée par script.
 - Validation : chiffres du doc relus par script contre les sorties ; interface : écrans hors course à 0,00 contre `s1h/base` (captures d'interface prises avec `s1h/base`).
 - Commit : `docs(racing-casa): record the road underside and the city ground`
+
+> Validation (2026-11-17), jeu sur `1f9d5da` (T12.2), build refait avant les lancements, moteur `8a3933b36`. Sorties sous `artifacts/pbr-handover/s1h/`.
+> - ADR-0029 (`docs/decisions/0029-rgce-builds-the-road-underside-and-the-city-ground.md`, `Proposed`, skill `adr`) : H1 à H4, source citée ; la ligne d'état de l'ADR-0019 devient « Accepted; amended by ADR-0027, ADR-0029 » (seule modification de ce fichier) et l'index est mis à jour (ADR-0019 et ADR-0029). Écart à la procédure du skill : l'ADR est dans le commit de la tâche, pas dans un commit `docs(adr)` à part (un commit par tâche, règle du plan).
+> - Banc complet : deux rejeux par mode (`legacy-a`, `-b`, `linear-a`, `-b`), tous de sortie 0, 15 lignes `pipeline` attendues chacun, aucun `[Warning]`, `[Error]` ni exception ; comparaisons `nopost`, `full` et sondes par mode (`compare-<mode>-nopost`, `-full`, `-probes`), répétabilité (13 fichiers égaux sur 15 dans chaque mode, écarts moyens de 0,00), comparaison avec `base` (`compare-<mode>-vs-base`) et avec `s1g` (`compare-<mode>-vs-s1g`) ; nouvelles références d'interface (`ref-ui`, 10 captures) et d'audit (`ref-audit`, 30 captures), prises dans le mode par défaut du jeu (`linear`).
+> - Section « After the road underside and the city ground » du doc générée par script (`gen_section_s1h.py`, hors dépôt) : les tableaux viennent des fichiers de sortie, des `.material` cuits et de la source. Relecture par un second script indépendant (`check_doc_s1h.py`, hors dépôt), qui relit en texte brut les `report.md`, `probes.md`, `run.log`, `t1-geometry.txt`, `t2-geometry.txt`, les sorties d'ancre, `ui-compare/report.txt` et l'audit : 290 valeurs comparées au doc, 0 différence.
+> - Mesure de scène : les douze `scene-measure-*.txt` (trois pistes, deux modes, deux rejeux) égaux octet pour octet à ceux de `base`. Sondes : critère 3 de 27 sur 33 dans les deux modes (`base` : 27 sur 33), critères 1, 2 et 4 inchangés. Luminance moyenne : `legacy` 142,2 (140,5 avant), `linear` 134,8 (133,5).
+> - Interface contre `s1h/base-ui` : `splash`, `main-menu`, `highscores`, `options`, `help`, `car-selection` et `track-selection` à **0,00** ; `race-hud` 0,04 / 0,05 / 0,06, `pause` 0,01 / 0,01 / 0,02, `race-finished` 0,04 / 0,05 / 0,06 (le plan de ville et le dessous de la route sont visibles dans l'arrière-plan de course). Audit contre `s1h/base-audit` : au plus 23,808 (`audit-Expert-helper-laterns`), au moins 0,000 (`audit-Advanced-helper-laterns`).
+> - `scripts/TrackCaptureCompare/README.md` : aucune commande ne change ; non modifié.
 
 ### ⏳ T12.4 — Vérification indépendante de S1h
 

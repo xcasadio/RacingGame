@@ -665,3 +665,208 @@ UI captures (`ref-ui/`, default colour pipeline, `linear`) against the state bef
 
 Track audit (`ref-audit/`, 30 captures, default colour pipeline, `linear`) against `artifacts/pbr-handover/s1g/base-audit` (`legacy`): largest channel difference 110.816 (`audit-Advanced-sector-80`), smallest 24.087 (`audit-Beginner-helper-tunnel`). The new references of this machine are `artifacts/pbr-handover/s1g/ref-ui` and `ref-audit`.
 
+
+## After the road underside and the city ground
+
+Seventh run, on 2026-11-17, after slice S1h of the plan: the road generator builds the underside of the road and the terrain generator builds the city ground plane, both as the original builds them (ADR-0029). The run before it is the previous section, `artifacts/pbr-handover/s1g/` (`legacy-a`, `linear-a`, after the race world lighting). The state just before this slice, taken again on the same engine, is `artifacts/pbr-handover/s1h/base-legacy-a` and `base-linear-a` (the previous section's content, code at `4b2d4f8`). The previous runs above stay as their record.
+
+Outputs under `artifacts/pbr-handover/s1h/`; the original's export is the same one, `artifacts/pbr-handover/s1c/ref`. The tables of this section are generated from the output files, from the cooked `.material` files and from the source by a script. **Every figure below that depends on the colour pipeline is for one mode, stated in its table: `legacy` is the engine's legacy colour chain (no tonemapping, no anti-aliasing), and `linear` is the default of the game, linear HDR with the ACES approximation, exposure 1, FXAA, bloom and SSAO off.** The colours of both are brighter than the original's (open point O13 of the plan); the scene measure and the geometry checks do not depend on them.
+
+### Run
+
+- Game `RacingGameCasaEngine.exe --capture-reference-views artifacts/pbr-handover/s1c/ref/views.json --reference-capture-out <folder> --color-pipeline <mode>`, Debug build, engine `8a3933b36`. Folders: `legacy-a`, `legacy-b`, `linear-a`, `linear-b` (two runs per mode), each with its `run.log`.
+- `legacy`: lines `[CaptureBench] view ... pipeline legacy fxaaPasses 0` in `legacy-a/run.log` and `legacy-b/run.log`: 15 and 15 of 15; lines with a warning, an error or an exception: 0 and 0.
+- `linear`: lines `[CaptureBench] view ... pipeline linear fxaaPasses 1` in `linear-a/run.log` and `linear-b/run.log`: 15 and 15 of 15; lines with a warning, an error or an exception: 0 and 0.
+
+### Road underside
+
+Control run by a throwaway tool (not in git, `t1-geometry.txt`) that rebuilds the road and its underside for the three tracks with the game's own code and compares every vertex and index with the formulas of the original (`TrackVertex.cs:49` and `:171-197`, `Track.cs:33`, `:48` and `:408-486`) recomputed in double precision from the road points. Each cell is the result of the check and its largest deviation. Failures in total: 0.
+
+| Check | Beginner | Advanced | Expert |
+|---|---|---|---|
+| Road points | 1332 | 2172 | 4466 |
+| Vertices (4 per point) | 5328 OK | 8688 OK | 17864 OK |
+| Indices (18 per segment) | 23958 OK | 39078 OK | 80370 OK |
+| Upper vertex positions equal the road mesh edge vertices (1e-5) | OK (max 0.00E+000) | OK (max 0.00E+000) | OK (max 0.00E+000) |
+| Upper vertex normals equal the road mesh's (1e-5) | OK (max 0.00E+000) | OK (max 0.00E+000) | OK (max 0.00E+000) |
+| Upper vertex tangents equal the road mesh's (1e-5) | OK (max 0.00E+000) | OK (max 0.00E+000) | OK (max 0.00E+000) |
+| Texture coordinates equal (TextureU x 1, V), V = 0, 0.135, 0.865, 1 (1e-6) | OK (max 9.54E-009) | OK (max 9.54E-009) | OK (max 9.54E-009) |
+| Normals equal the expected vectors (1e-5) | OK (max 1.24E-007) | OK (max 1.26E-007) | OK (max 1.29E-007) |
+| Tangents equal the expected vectors (1e-5) | OK (max 1.30E-007) | OK (max 1.46E-007) | OK (max 1.34E-007) |
+| Normals and tangents of unit length (1e-5) | OK (max 1.19E-007) | OK (max 1.79E-007) | OK (max 1.19E-007) |
+| Normal orthogonal to tangent (1e-5) | OK (max 8.94E-008) | OK (max 8.94E-008) | OK (max 9.87E-008) |
+| Upper and lower positions equal the original's own float expression `pos -/+ RoadWidthScale * roadWidth * right / 2 - up * RoadThickness * roadWidth`, converted, minus the origin | max 0.00E+000 (upper), 0.00E+000 (lower) | max 0.00E+000 (upper), 0.00E+000 (lower) | max 0.00E+000 (upper), 0.00E+000 (lower) |
+| Same positions against double precision (informative: float rounding of coordinates of the order of 1e3 m) | upper 1.23E-004, lower 2.39E-004 | upper 1.23E-004, lower 2.36E-004 | upper 1.22E-004, lower 2.41E-004 |
+| Tangent `w` = 1 | OK (0 different) | OK (0 different) | OK (0 different) |
+| Indices equal the pattern of `Track.cs:464-486` (step 4) | OK (0 different) | OK (0 different) | OK (0 different) |
+| Bottom triangles whose cross product is along the normal (0 means front face seen from below under `CullCounterClockwise`) | 0 of 2662 | 0 of 4342 | 0 of 8930 |
+| Model casts / receives shadows | false / false | false / false | false / false |
+
+### City ground plane
+
+Anchor, the constant `LegacyCityGroundAnchor` of `RacingGame.Gameplay/Track/LegacyTrackSceneFactory.CityGround.cs`, in the original's coordinates: `new(994.9773f, 426.16977f, 28.235294f)`; half size of the plane `min(x, y)` = 426.1697692871094. The plane is made once, for Beginner, and kept for the three tracks.
+
+Two independent derivations:
+
+| Method | Output | Result |
+|---|---|---|
+| (a) throwaway tool on this port's placement of Beginner (`t2-anchor-port.txt`): first placement, in the order the objects were added, whose model name contains `hotel` or `building` | 1274 placements, placement #0 `Building` | (994.9773, 426.16977, 28.235294), size 426.16977 |
+| (b) a log line added for the occasion to `CreateCityPlane` of the original, run by `--capture-track-audit --seed 1` on the three levels, then removed (`t2-anchor-original.txt`) | 1 line | level Beginner object count 1155 first big building index 0 position 994.9773 426.16977 28.235294 size min(x,y) 426.16977 |
+
+The constant against (a): largest deviation 0.00E+000 (tolerance 1e-3); against (b): the digits of the line above (the same position, to the last digit of a float). Failures in total: 0.
+
+Control by a second throwaway tool (`t2-geometry.txt`) of the plane the terrain generator builds, against the formulas of `PlaneRenderer.cs` and `Landscape.CreateCityPlane` (the four vertices `(+-right +-dir) * size + up * 0.1` of the strip, the anchor as translation, `up` = (0, 0, 1), `right` = (1, 0, 0), UV `+-size / 20`), converted with the port's point conversion minus the origin of each track:
+
+| Check | Beginner | Advanced | Expert |
+|---|---|---|---|
+| Vertices, indices | 4, 6 (OK) | 4, 6 (OK) | 4, 6 (OK) |
+| Indices are the strip triangles (0, 1, 2), (2, 1, 3) | OK | OK | OK |
+| Positions equal the original's own float expression | OK (max 0.00E+000, tolerance 1E-005) | OK (max 0.00E+000, tolerance 1E-005) | OK (max 0.00E+000, tolerance 1E-005) |
+| Positions against double precision (informative) | OK (max 3.05E-005, tolerance 1E-003) | OK (max 3.05E-005, tolerance 1E-003) | OK (max 3.05E-005, tolerance 1E-003) |
+| Texture coordinates equal +-size / 20 | OK (max 3.81E-007, tolerance 1E-004) | OK (max 3.81E-007, tolerance 1E-004) | OK (max 3.81E-007, tolerance 1E-004) |
+| Normal equals `up` | OK (max 0.00E+000, tolerance 1E-005) | OK (max 0.00E+000, tolerance 1E-005) | OK (max 0.00E+000, tolerance 1E-005) |
+| Tangent equals `right` | OK (max 0.00E+000, tolerance 1E-005) | OK (max 0.00E+000, tolerance 1E-005) | OK (max 0.00E+000, tolerance 1E-005) |
+| Normals and tangents of unit length | OK (max 0.00E+000, tolerance 1E-005) | OK (max 0.00E+000, tolerance 1E-005) | OK (max 0.00E+000, tolerance 1E-005) |
+| Normal orthogonal to tangent | OK (max 0.00E+000, tolerance 1E-005) | OK (max 0.00E+000, tolerance 1E-005) | OK (max 0.00E+000, tolerance 1E-005) |
+| Tangent `w` = 1 | OK (0 different) | OK (0 different) | OK (0 different) |
+| Triangles whose cross product is along the normal (0 of 2: front face seen from above, like the road) | 0 of 2 | 0 of 2 | 0 of 2 |
+| Model casts / receives shadows | false / true | false / true | false / true |
+
+### Cooked track materials
+
+Values read back from `RacingGameCasaEngine/Content/Materials/Track/*.material`:
+
+| Material | Base texture | Normal map | Rasterizer state | Emissive colour |
+|---|---|---|---|---|
+| Road | Texture.Road | Texture.RoadNormal | CullCounterClockwise | 0, 0, 0 |
+| RoadBack | Texture.RoadBack | Texture.RoadBackNormal | CullCounterClockwise | 0, 0, 0 |
+| Ground | Texture.CityGround | Texture.CityGroundNormal | CullCounterClockwise | 0, 0, 0 |
+| Terrain | Texture.Landscape | Texture.LandscapeNormal | CullCounterClockwise | 0, 0, 0 |
+| GuardRail | Texture.Leitplanke | Texture.LeitplankeNormal | CullCounterClockwise | 0, 0, 0 |
+| RoadColumn | Texture.RoadCement | Texture.RoadCementNormal | CullCounterClockwise | 0, 0, 0 |
+| RoadTunnel | Texture.RoadTunnel | Texture.RoadTunnelNormal | CullNone | 0, 0, 0 |
+
+Cooker, T12.1 (road underside): `--verify` before the recook: 6 mismatches; recook: 3 files written, 263 unchanged, catalogue 609 -> 612 entries; `--verify` after: 0 mismatches; second pass: 0 files written (`t1-cook-*.txt`).
+
+Cooker, T12.2 (city ground): `--verify` before the recook: 6 mismatches; recook: 3 files written, 265 unchanged, catalogue 612 -> 614 entries; `--verify` after: 0 mismatches; second pass: 0 files written (`t2-cook-*.txt`).
+
+`Material.Track.Terrain` is unchanged between `4b2d4f8` and the commit of this run (`git diff`).
+
+### Scene against the original
+
+`legacy-a/run.log`, scene measure of each track (the `linear` runs give the same lines):
+
+| Track | Objects original / port | Matched | Missing | Extra | Shadow cast / receive mismatches |
+|---|---|---|---|---|---|
+| Beginner | 1147 / 1147 | 1147 | 0 | 0 | 0 / 0 |
+| Advanced | 1693 / 1693 | 1693 | 0 | 0 | 0 / 0 |
+| Expert | 3404 / 3404 | 3404 | 0 | 0 | 0 / 0 |
+
+12 of the 12 `scene-measure-*.txt` files (3 tracks, 2 modes, 2 runs) are identical, byte for byte, to those of the state before this slice (`base-<mode>-a`). The underside and the plane are not objects the scene measure counts.
+
+The five `[CaptureBench] mipmaps` lines are the same as the previous run's in both modes; `car paint slots`: legacy painted 1 unpainted 10, linear painted 1 unpainted 10.
+
+### Pictures against the original
+
+`compare-<mode>-nopost/report.md`, `compare-<mode>-full/report.md` (mean difference per channel R, G, B, and share of the original's edges found within 2 pixels in the port; `nopost` is the original without its post screen shaders). The edges of the previous run come from `artifacts/pbr-handover/s1g/compare-<mode>-nopost/report.md`.
+
+| View | `legacy` R, G, B `nopost` | Edges | `linear` R, G, B `nopost` | Edges | Edges previous run (`legacy`) | Edges previous run (`linear`) | `legacy` R, G, B `full` | `linear` R, G, B `full` |
+|---|---|---|---|---|---|---|---|---|
+| Beginner-start | 40.80, 53.23, 53.45 | 99.8 % | 37.24, 45.93, 45.84 | 99.3 % | 99.8 % | 99.3 % | 33.50, 48.72, 52.65 | 32.01, 40.22, 42.85 |
+| Beginner-sector-20 | 53.52, 63.56, 62.45 | 92.3 % | 50.91, 56.41, 55.44 | 77.6 % | 72.9 % | 65.3 % | 50.47, 61.68, 61.63 | 48.70, 54.50, 54.31 |
+| Beginner-sector-50 | 43.46, 57.96, 58.25 | 95.7 % | 39.31, 48.52, 48.72 | 88.6 % | 95.7 % | 88.6 % | 31.63, 46.10, 49.85 | 32.51, 39.05, 41.85 |
+| Beginner-sector-80 | 50.38, 66.02, 64.51 | 99.1 % | 40.24, 50.91, 51.32 | 98.7 % | 99.0 % | 98.5 % | 38.94, 53.69, 56.78 | 38.15, 42.41, 44.24 |
+| Beginner-overview | 30.16, 38.62, 37.35 | 99.8 % | 35.55, 39.40, 36.18 | 99.7 % | 99.9 % | 99.7 % | 29.26, 41.09, 42.89 | 25.92, 35.13, 36.86 |
+| Advanced-start | 41.84, 56.89, 57.98 | 96.2 % | 33.75, 43.50, 45.70 | 94.7 % | 96.2 % | 94.7 % | 29.92, 44.36, 49.75 | 29.21, 32.54, 36.25 |
+| Advanced-sector-20 | 42.82, 49.29, 46.31 | 96.6 % | 36.41, 40.45, 39.25 | 91.5 % | 96.6 % | 91.5 % | 43.42, 48.37, 47.44 | 38.97, 39.33, 39.76 |
+| Advanced-sector-50 | 41.56, 52.66, 52.11 | 96.0 % | 34.40, 41.65, 41.20 | 89.7 % | 96.0 % | 89.7 % | 28.25, 39.49, 42.60 | 30.29, 32.52, 34.02 |
+| Advanced-sector-80 | 50.82, 68.94, 72.15 | 98.6 % | 41.62, 55.11, 58.87 | 97.8 % | 98.3 % | 97.5 % | 33.83, 54.88, 61.87 | 33.27, 43.35, 48.66 |
+| Advanced-overview | 28.37, 36.67, 33.70 | 99.8 % | 33.70, 37.88, 33.30 | 98.9 % | 99.8 % | 98.9 % | 28.78, 40.32, 41.40 | 26.48, 34.66, 35.39 |
+| Expert-start | 34.65, 46.02, 45.11 | 99.4 % | 28.93, 36.62, 36.04 | 98.9 % | 99.1 % | 98.6 % | 25.13, 39.85, 42.02 | 22.25, 29.34, 31.31 |
+| Expert-sector-20 | 51.29, 69.56, 67.30 | 99.2 % | 44.22, 57.69, 57.58 | 97.5 % | 99.0 % | 97.2 % | 36.37, 56.18, 59.57 | 36.58, 45.65, 49.33 |
+| Expert-sector-50 | 45.96, 63.23, 65.81 | 96.4 % | 41.18, 53.58, 56.39 | 92.1 % | 95.4 % | 91.1 % | 33.80, 52.68, 59.19 | 33.46, 42.55, 48.23 |
+| Expert-sector-80 | 38.05, 51.66, 52.36 | 99.2 % | 39.71, 49.93, 49.96 | 98.4 % | 99.1 % | 98.7 % | 27.65, 45.83, 50.40 | 28.82, 42.69, 46.82 |
+| Expert-overview | 29.46, 37.92, 36.56 | 99.9 % | 34.60, 37.97, 35.28 | 99.4 % | 99.9 % | 99.3 % | 32.45, 43.27, 44.67 | 27.66, 35.33, 37.28 |
+
+Change from the picture of the same view in another state, mean of the three channels (`compare-<mode>-vs-base/report.md` for the state before this slice, `compare-<mode>-vs-s1g/report.md` for the previous run):
+
+| View | `legacy` vs before this slice | `linear` vs before this slice | `legacy` vs previous run | `linear` vs previous run |
+|---|---|---|---|---|
+| Beginner-start | 0.07 | 0.05 | 0.07 | 0.05 |
+| Beginner-sector-20 | 19.52 | 15.54 | 19.52 | 15.54 |
+| Beginner-sector-50 | 0.11 | 0.08 | 0.11 | 0.08 |
+| Beginner-sector-80 | 1.02 | 1.16 | 1.02 | 1.16 |
+| Beginner-overview | 2.55 | 1.85 | 2.55 | 1.85 |
+| Advanced-start | 0.01 | 0.01 | 0.01 | 0.01 |
+| Advanced-sector-20 | 0.09 | 0.05 | 0.09 | 0.05 |
+| Advanced-sector-50 | 0.18 | 0.16 | 0.18 | 0.16 |
+| Advanced-sector-80 | 0.23 | 0.24 | 0.23 | 0.24 |
+| Advanced-overview | 0.06 | 0.03 | 0.06 | 0.03 |
+| Expert-start | 0.57 | 0.54 | 0.57 | 0.54 |
+| Expert-sector-20 | 0.18 | 0.14 | 0.18 | 0.14 |
+| Expert-sector-50 | 1.57 | 1.67 | 1.57 | 1.67 |
+| Expert-sector-80 | 0.52 | 0.43 | 0.52 | 0.43 |
+| Expert-overview | 4.79 | 3.69 | 4.79 | 3.69 |
+
+`legacy` against the state before this slice: largest 19.52 (`Beginner-sector-20`), smallest 0.01 (`Advanced-start`); 7 of 15 views change by 0.5 or more.
+`linear` against the state before this slice: largest 15.54 (`Beginner-sector-20`), smallest 0.01 (`Advanced-start`); 6 of 15 views change by 0.5 or more.
+
+Mean luminance of the 15 pictures: original 96.3; port in `legacy` 142.2 (before this slice 140.5); port in `linear` 134.8 (before this slice 133.5).
+
+Saturated pixels (the three channels at 255, and at 250 or more) of the full picture:
+
+| Run | `Beginner-start` at 255 | at 250 or more | `Expert-start` at 255 | at 250 or more |
+|---|---|---|---|---|
+| `base-legacy-a` (before this slice) | 6062 | 6824 | 6500 | 6800 |
+| `legacy-a` | 6062 | 6824 | 6500 | 6800 |
+| `base-linear-a` (before this slice) | 0 | 0 | 0 | 0 |
+| `linear-a` | 0 | 0 | 0 | 0 |
+
+### Light and shadow probes
+
+`compare-<mode>-probes/probes.md`; the base columns are `compare-base-<mode>-probes/probes.md`, the state before this slice. The criterion 3 of the base is the figure this slice must not lower.
+
+| Criterion | `legacy` passed | `linear` passed | Judged | `base` `legacy` passed | `base` `linear` passed |
+|---|---|---|---|---|---|
+| 1. lit and away within +-12 | 0 | 1 | 34 | 0 | 1 |
+| 2. shadow/lit ratio within +-0.05 (per view and surface) | 2 | 0 | 4 | 2 | 0 |
+| 3. class agreement (shadow shadowed, lit lit) | 27 | 27 | 33 | 27 | 27 |
+| 4. away-shadowed within +-12 | 0 | 3 | 3 | 0 | 3 |
+
+Shadow over lit luminance ratio, in the order of the report (terrain, city, road, terrain): original 0.284, 0.276, 0.228, 0.267; port in `legacy` 0.282, 1.850, 0.835, 0.263 (before this slice 0.282, 1.921, 0.835, 0.263); port in `linear` 0.183, 2.556, 0.905, 0.141 (before this slice 0.183, 3.133, 0.905, 0.141).
+
+Road over terrain luminance of the lit probes of `Beginner-start` (`road-lit-1` over `terrain-lit-1`): original 0.348; port in `legacy` 0.756 (before this slice 0.756); port in `linear` 0.806 (before this slice 0.806).
+
+Probes of the city ground in the shadow (`Beginner-sector-20`, criterion 3, mean colour of the 9x9 square, R,G,B), the original's colour, then the port before and after this slice in each mode:
+
+| Probe | Original | `legacy` before | `legacy` after | `linear` before | `linear` after | Verdict `legacy` after / `linear` after |
+|---|---|---|---|---|---|---|
+| city-shadow-1 | 31,34,37 | 124,139,132 | 195,225,234 | 120,131,123 | 184,204,213 | FAIL (cand. lit) / FAIL (cand. lit) |
+| city-shadow-2 | 29,33,35 | 39,45,44 | 69,87,99 | 26,30,28 | 56,72,84 | FAIL (cand. lit) / FAIL (cand. lit) |
+| city-shadow-3 | 30,33,35 | 40,46,46 | 56,71,79 | 20,24,24 | 32,43,51 | FAIL (cand. lit) / FAIL (cand. lit) |
+
+### Repeatability
+
+`legacy`: two runs (`legacy-a`, `legacy-b`, `compare-legacy-repeat/report.md`): 13 identical files of 15. Different by their hash: `Advanced-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-overview.png` (mean difference 0.00, 0.00, 0.00).
+
+`linear`: two runs (`linear-a`, `linear-b`, `compare-linear-repeat/report.md`): 13 identical files of 15. Different by their hash: `Advanced-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-start.png` (mean difference 0.00, 0.00, 0.00).
+
+### Other references of this machine
+
+UI captures (`ref-ui/`, default colour pipeline, `linear`) against the state before this slice `artifacts/pbr-handover/s1h/base-ui` (`ui-compare/report.txt`). The race states change because the race world below the interface changes (the city ground plane and the road underside); the other screens are not touched by this slice.
+
+| State | R | G | B |
+|---|---|---|---|
+| splash | 0.00 | 0.00 | 0.00 |
+| main-menu | 0.00 | 0.00 | 0.00 |
+| highscores | 0.00 | 0.00 | 0.00 |
+| options | 0.00 | 0.00 | 0.00 |
+| help | 0.00 | 0.00 | 0.00 |
+| car-selection | 0.00 | 0.00 | 0.00 |
+| track-selection | 0.00 | 0.00 | 0.00 |
+| race-hud | 0.04 | 0.05 | 0.06 |
+| pause | 0.01 | 0.01 | 0.02 |
+| race-finished | 0.04 | 0.05 | 0.06 |
+
+Track audit (`ref-audit/`, 30 captures, default colour pipeline, `linear`) against `artifacts/pbr-handover/s1h/base-audit` (the state before this slice): largest channel difference 23.808 (`audit-Expert-helper-laterns`), smallest 0.000 (`audit-Advanced-helper-laterns`). The new references of this machine are `artifacts/pbr-handover/s1h/ref-ui` and `ref-audit`.
+
