@@ -176,3 +176,13 @@ Dernière étape du 2026-11-17 : `chantier/known-defects-gltf-alpha-probe` fusio
 Ces deux branches ont été poussées par l'auteur le 2026-11-17 (`origin/main` du moteur = `e8d65a6fa`, `origin/remaster` du jeu = `144912e`, relevés après `git fetch`). Ensuite : ligne du plan des défauts connus corrigée dans `CasaEngine/ai-agent/README.md` (`8a73c5329`, documentation seulement, `main` local du moteur avancé dessus), et pointeur du jeu avancé sur ce commit sans relancer le banc.
 
 À pousser par l'auteur : ce commit de `main` du moteur, puis `remaster` du jeu.
+
+## 11. Écarts de rendu restants (2026-11-17)
+
+Plan : `ai-agent/tasks/rgce-render-gaps-tasks.md` (R1 à R6, chaque tranche relue avant exécution, vérification finale **CONFIRMED** en trois volets). Rien n'est poussé ; `main` du moteur, `master` et `remaster` du jeu n'ont pas été avancés par ce plan.
+
+- Moteur, branche `chantier/draw-order-emissive-shadow` (`4e867fec3`, 4 commits sur `main` `8a73c5329`) : ordre de dessin déterministe (ADR-0125), clé `emissive_shadow_factor` de `lit-pbr` (ADR-0126), deux corrections de documentation ; 6441 tests, 0 échec. Le jeu pointe dessus (`772d830`).
+- Jeu : outil `scripts/TrackPlacementExporter` supprimé ; exposition du monde de course à 0,9 (ADR-0032) ; vitres de la voiture réfléchissantes, panneaux éclairés par une émissive qui porte l'ambiant de l'original, émissive du tunnel ombrée au niveau 0,6 à la place du 0,5 choisi par l'auteur (ADR-0033) ; carrousel mesuré, rien de retenu.
+- Mesure contre l'original, 15 vues en `linear` : luminance 99,05 pour 96,29 (104,0 avant) ; écart moyen par canal 17,76 (19,41 avant) ; critère 3 des sondes 27 sur 33.
+- Référence du port : `artifacts/pbr-handover/s20/r4/ref/` (15 vues, tunnel, interface, audit) ; `s20/r5/ref/ui` est identique.
+- Laissés à l'auteur : O4 à O8 du plan (défauts de l'ombre sur l'émissive du tunnel et replis mesurés, teinte des vitres, carrousel, ombres du terrain, écarts les plus visibles restants) ; ADR 0032 et 0033 du jeu, 0125 et 0126 du moteur à valider ; avance de `main` du moteur et de `remaster`, push.
