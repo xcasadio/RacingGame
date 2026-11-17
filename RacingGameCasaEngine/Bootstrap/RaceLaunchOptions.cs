@@ -29,6 +29,13 @@ internal sealed class RaceLaunchOptions
 
     public string? ReferenceCaptureOutputDirectory { get; init; }
 
+    /// <summary>
+    /// --color-pipeline legacy|linear: the colour pipeline of the race world. Linear (the default) renders it in linear HDR with
+    /// tonemapping and FXAA; legacy keeps the engine's legacy colour chain, for the capture bench's geometry and shadow-placement
+    /// checks (plan rgce-pbr-handover-tasks.md, S1g).
+    /// </summary>
+    public bool UseLinearColorPipeline { get; init; } = true;
+
     /// <summary>True when one of the automation modes runs: the game then ignores the player input (ADR-0021).</summary>
     public bool IsAutomation => ValidateFrontEndNavigation
         || CaptureTrackAudit

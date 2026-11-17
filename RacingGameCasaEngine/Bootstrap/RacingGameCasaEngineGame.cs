@@ -67,6 +67,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
         : base(runtimeContext: runtimeContext)
     {
         launchOptions ??= new RaceLaunchOptions();
+        UseLinearColorPipeline = launchOptions.UseLinearColorPipeline;
         _displaySettingsFileName = displaySettingsFileName;
         _frontEndOptionsFileName = frontEndOptionsFileName;
         _ignorePlayerInput = launchOptions.IsAutomation;
@@ -130,6 +131,9 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
     }
 
     internal RuntimeRaceSession RaceSession { get; }
+
+    /// <summary>True when the race world renders in linear HDR (--color-pipeline linear, the default).</summary>
+    internal bool UseLinearColorPipeline { get; }
 
     /// <summary>True during an automation mode: the player input does not reach the game (ADR-0021).</summary>
     internal bool IgnoresPlayerInput => _ignorePlayerInput;
