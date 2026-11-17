@@ -24,7 +24,7 @@ Tranches :
 | S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1m | Faite le 2026-11-17, verdict CONFIRMED après la correction du moteur (GGX côté dos) |
 | S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | Faite le 2026-11-17, verdict CONFIRMED ; luminosité en question (O13) |
 | S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | Faite le 2026-11-17, verdict CONFIRMED |
-| S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1c, S1g, S1h | À détailler après S1 |
+| S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1c, S1g, S1h | Détaillée (Phase 14) |
 | S3 | Tunnel presque noir | S2 | À détailler ; choix de l'auteur attendu (O1) |
 | S4 | Voiture centrale du carrousel trop blanche | S2 | À détailler ; choix de l'auteur attendu (O2) |
 | S5 | Défauts connus du §4 de la note (moteur sur une branche moteur dédiée, jeu sur cette branche) | S2 | À détailler |
@@ -1075,6 +1075,38 @@ Retour arrière : annuler les commits de cette phase. Référence d'avant : `art
 > - A1 (P3, introduit, valeur choisie par l'auteur) : les faces à l'ombre qui tournent le dos au soleil sont bouchées vers le noir, avec une teinte froide. Colline gauche de `Beginner-start` : luminance 16,9 pour 24,8 dans l'original (44,9 avec le blanc), 86,4 % de pixels sous 20 pour 30,9 % dans l'original ; collines lointaines d'`Expert-sector-50` : 37,8 % de pixels sous 20 pour 6,0 %. Joint à O13.
 > - A2 (P4, non introduit) : les pavés à gauche de `Beginner-sector-20` restent bien plus sombres que l'original (luminance 40,3 pour 114,1 ; 52,1 avec le blanc). Déjà dans O13.
 > - Incident déclaré par le vérificateur : un fichier vide créé par erreur sous `artifacts/pbr-handover/s13/`, supprimé aussitôt ; dépôt intact.
+
+---
+
+## Phase 14 — Vérification d'ensemble du portage PBR et référence de ce PC (S2)
+
+Chaque tranche S1c à S1h et la Phase 13 ont eu leur vérification propre. S2 regarde l'ensemble, sur le `HEAD` final : ce que les vérifications par tranche ne voient pas (un commit de l'autre PC oublié, une régression entre tranches, un mode du jeu jamais relancé). S2 ne modifie ni code ni contenu : elle lit, lance, et écrit des docs. Tout défaut trouvé est noté et disposé (corrigé dans une tâche à part s'il est P0 à P2 et introduit ; sinon différé avec sa raison).
+
+Référence du port sur ce PC : `artifacts/pbr-handover/s13/` (prise sur `ccce94c` ; seuls des docs ont changé depuis). S2 la confirme par un rejeu et ne la reprend pas, sauf écart.
+
+Sorties sous `artifacts/pbr-handover/s2/`. Un seul agent lance les builds et le jeu ; les autres sont en lecture seule.
+
+### ⏳ T14.1 — Complétude du portage
+
+- Objectif : pour chacun des 46 commits de la « Carte des commits de l'autre PC », un verdict lu dans le code d'ici et dans `git show` : porté (où), fait en double et aligné (où), sans objet (pourquoi), différé (vers quelle tranche ou quel point ouvert), ou **manquant**. Même contrôle pour chaque décision D1 à D11, chaque règle (a) à (e) de la fusion du jeu, et les parties du plan de l'autre PC (`rgce-pbr-race-world-tasks.md` d'`origin/remaster`, T0.1 à T4.2) : en particulier l'éclairage du carrousel de sa T3.1 (différé à S4 par S1g) et ses vérificateurs.
+- Validation : un tableau complet (46 lignes de commits) dans la note de la tâche ou dans un fichier de `artifacts/pbr-handover/s2/` cité par la note ; chaque « manquant » devient un constat avec priorité.
+
+### ⏳ T14.2 — Contrôles de bout en bout sur `HEAD`
+
+- Objectif : tout ce qui se lance, relancé une fois sur le `HEAD` final, par un seul agent.
+- Étapes : build du jeu (`RacingGameCasaEngine`, Debug) et du cuiseur ; tests du moteur (`dotnet test CasaEngine/CasaEngine.Tests/CasaEngine.Tests.csproj`) : seuls les 8 échecs connus de la Phase 1 ; cuiseur `--verify`, `--check`, second passage sans écriture ; `--smoke-frontend` ; `--verify-legacy-import-profile` ; rejeux `linear` et `legacy` contre `s13` (0,00) avec mesure de scène et sondes ; `--capture-ui-screens` contre `s13/ref-ui` ; `--capture-track-audit` contre `s13/ref-audit` et `python scripts/compare_track_audit.py` s'il s'applique ; `--capture-car-profile-audit` et `--capture-car-top-speed-audit` (ils roulent une voiture : preuve que la course tourne en PBR), comparés à leur dernière référence connue du dépôt si elle existe, sinon résultats notés ; `--export-track-runtime-scene` pour une piste, comparé par `scripts/compare_race_scene_exports.py` si une référence existe ; journaux sans avertissement, erreur ni exception.
+- Validation : chaque étape avec sa commande, son code de sortie et son résultat ; tout écart est un constat.
+
+### ⏳ T14.3 — Évolution des mesures et doc de référence
+
+- Objectif : un tableau de l'évolution, de la mesure « avant PBR » (S1c, S1a) à `s13`, lu dans les sorties : luminance moyenne, écart moyen par canal avec l'original, arêtes appariées, critères 1 à 4 des sondes, par mode quand il existe ; plus la liste de ce qui reste hors cible (O13, S3, S4).
+- Fichiers : `docs/racinggame-3d-capture-bench-local-baseline.md` (section « Port reference on this PC », générée par script, relue par un second script) ; `ai-agent/HANDOVER.md` (section 8, en français : état au 2026-11-17 sur ce PC, branches et commits du jeu et du moteur, ce qui est fait, ce qui reste, décisions en attente, ce qui n'a jamais été contrôlé à l'œil ; les sections précédentes ne sont pas réécrites) ; ce plan.
+- Commit : `docs(racing-casa): record the port reference and the overall verification`
+
+### ⏳ T14.4 — Contre-vérification et dispositions
+
+- Objectif : chaque constat P0 à P2 de T14.1 et T14.2 est contre-vérifié par un agent frais qui cherche à le réfuter ; la session principale dispose chaque constat (`FIX`, `DEFER`, `REJECT`) et l'écrit ici. Verdict de S2 : CONFIRMED, REFUTED ou INCONCLUSIVE.
+- Commit : celui de T14.3 si aucun correctif n'est nécessaire.
 
 ---
 
