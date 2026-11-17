@@ -802,6 +802,8 @@ Budget de S1f : T10.2, au plus trois tours de recuisson ; deux passes de correct
 > - Correction tentée dans le moteur, plan `CasaEngine/ai-agent/tasks/pbr-ggx-back-facing-tasks.md`, branche `chantier/pbr-ggx-back-facing` : bloquée au budget, 6 tests GPU de `lit-pbr` passent au noir avec les deux formes essayées, alors que le calcul reste juste dans le cas mesuré ; hypothèse d'une limite d'instructions de la chaîne OpenGL, non vérifiée. Aucun code du moteur n'est committé ; le pointeur du jeu reste sur `2b64b0591`.
 > - Remarques P4 du vérificateur, notées : `Material.Track.Ground` n'est utilisé par aucune scène ; l'ADR-0028 et un commentaire citent un dessous de route qui n'existe pas encore ici ; `Material.Track.Road` n'a pas de normal map, comme avant.
 > - Effet sur le programme : S1f reste ouverte tant que F1 n'est pas corrigé ; S1g, S1h et les tranches suivantes en dépendent et attendent. Question à l'auteur, notée en O12.
+> - Reprise demandée par l'auteur (réponse à O12, 2026-11-17). Correction, passe 1 sur 2 de cette tâche : moteur `8a3933b36` sur `chantier/pbr-ggx-back-facing` (plan moteur `pbr-ggx-back-facing-tasks.md`, T2) : dénominateur `(1 - NoH)(1 + NoH) + NoH^2 alpha^2`. Tests du moteur : seuls les 8 échecs connus. Démo PBR identique sur trois lancements dans chaque variante.
+> - Jeu, sur ce commit du moteur : zone de la traînée de `Beginner-start` à 0 pixel blanc (2354 avant) ; image entière 791 et 760 pixels blancs pour `Beginner-start` et `Expert-start`, comme le cas sans normal map du vérificateur (792 et 760). Mesure de scène, mipmaps et peinture inchangées. Pointeur du sous-module avancé dans ce commit. Un `verifier` frais revoit F1.
 
 ---
 
