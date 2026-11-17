@@ -151,3 +151,16 @@ Faits et vérifiés après la section 8, rien n'est poussé. Détail : Phases 15
 - Référence du port sur ce PC : `artifacts/pbr-handover/s3b/` (15 vues, vues de tunnel, `ref-ui`, `ref-audit`), prise après le choix du niveau du tunnel ; depuis S5 un rejeu les reproduit à 0,00 de moyenne, et deux rejeux d'un même build sont identiques octet pour octet.
 
 Décisions en attente de l'auteur, en plus de celles de la section 8 : O16 (écarts restants dans les tunnels), O2 (carrousel, ADR-0031), O17 (remontée de la quatrième branche du moteur ; tri des objets opaques du moteur).
+
+## 10. Fusion du 2026-11-17 : derniers changements de MGUI et du moteur
+
+Rien n'est poussé. Détail : Phase 18 du plan.
+
+- MGUI : `develop` avancé de `d0efd9b4` à `f6ed1fcd` (= `origin/develop`, 14 commits).
+- Moteur : `origin/main` (`7e3b8ff52`, fin du chantier « MGUI zéro allocation ») fusionné dans `main`, qui est à `006a245aa` (27 commits d'avance, 0 de retard) ; tests du moteur : 6394 lancés, 0 échec. Les 8 échecs GPU connus sur ce PC ont disparu (corrigés par `2a0a3712d` d'`origin/main`).
+- Branche sur laquelle le jeu pointe : `chantier/rgce-pbr-on-main-2` (`29d3d2de2`) = `main` + tangentes, mipmaps, correction de GGX ; 6407 tests, 0 échec. Elle remplace `chantier/pbr-ggx-back-facing` (`8a3933b36`) comme pointeur du jeu (commit du jeu `a3957e6`).
+- `chantier/known-defects-gltf-alpha-probe` (`092835885`) n'est fusionnée nulle part.
+- Jeu sur le moteur fusionné : 15 vues, vues de tunnel, dix écrans d'interface et audit identiques octet pour octet à la référence `artifacts/pbr-handover/s3b/` ; le nouveau MGUI ne change aucun pixel de ces écrans.
+- Vérifié par deux vérificateurs indépendants (lancements, audit des fusions).
+
+À décider par l'auteur : pousser `main` du moteur ; remonter dans `main` les branches du chantier après le contrôle de déterminisme de GGX sur l'autre PC (O15, O18).
