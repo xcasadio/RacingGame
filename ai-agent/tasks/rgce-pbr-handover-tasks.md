@@ -25,7 +25,7 @@ Tranches :
 | S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | Faite le 2026-11-17, verdict CONFIRMED ; luminosité en question (O13) |
 | S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | Faite le 2026-11-17, verdict CONFIRMED |
 | S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1c, S1g, S1h | Faite le 2026-11-17, verdict CONFIRMED après correction de deux constats (couleurs de base, ombres des colonnes) |
-| S3 | Tunnel presque noir | S2 | Détaillée (Phase 15) |
+| S3 | Tunnel presque noir | S2 | Faite le 2026-11-17, verdict CONFIRMED ; niveau à choisir par l'auteur (O16) |
 | S4 | Voiture centrale du carrousel : trop blanche sur l'autre PC (lumière π et ciel sans tonemapping, non portés ici) ; ici environ deux fois plus sombre qu'avant le PBR (mesuré en S2) | S2 | À détailler ; choix de l'auteur attendu (O2) |
 | S5 | Défauts connus du §4 de la note (moteur sur une branche moteur dédiée, jeu sur cette branche) | S2 | À détailler |
 
@@ -1219,10 +1219,18 @@ Retour arrière : relever `git rev-parse HEAD` avant T15.1 ; annuler les commits
 > - Section « After the tunnel emissive » du doc générée par script (`gen_section_s3.py`, hors dépôt) ; relecture par un second script indépendant (`check_doc_s3.py`, hors dépôt, qui recalcule la mesure des candidats sur les images) : 393 valeurs comparées au doc, 0 différence. ADR-0030 (`Proposed`) : T1 à T3 ; ligne d'état de l'ADR-0019 et index mis à jour (seule modification du corps de l'ADR-0019 : sa ligne d'état).
 > - Écart au plan : aucun.
 
-### ⏳ T15.3 — Vérification indépendante de S3
+### ✅ T15.3 — Vérification indépendante de S3
 
 - Objectif : un `verifier` frais confirme ou réfute les validations de T15.1 et T15.2 par ses propres lancements, la règle T3 comprise : il refait la mesure des deux candidats par la procédure de T15.2 (copie du dossier de build hors du dépôt, cuisson dans la copie, exécutable de la copie), sans rien cuire dans le dépôt ni dans son dossier de build, et contrôle avant ses rejeux finaux que `RoadTunnel.material` du dossier de build est égal à celui du dépôt.
 - Commit : `docs(ai-agent): record the verification of the tunnel lighting`
+
+> Validation (2026-11-17), sorties dans `artifacts/pbr-handover/s3/verify/`.
+> - `verifier` frais sur `79c8494` : **CONFIRMED** sur les six affirmations vérifiables, par ses propres lancements : sans `--tunnel-views`, les 30 images, `scene.json` et `views.json` de l'original sont identiques à `s1c/ref` ; avec l'option, trois vues identiques à celles de l'exécutant, caméras dans les tunnels ; mesure des candidats refaite sur trois copies du dossier de build hors du dépôt, images identiques pixel pour pixel à celles de l'exécutant, (b) retenu par la règle écrite (16,39 contre 20,56 pour (a) et 17,79 avant, en `linear`) ; seul `RoadTunnel.material` change dans le contenu, cuiseur propre, valeurs cuites égales à 182/255 × (0,25 ; 0,26 ; 0,27) ; rejeux des 15 vues à 0,0001 de ceux de l'exécutant, mesure de scène égale à `s2`, critère 3 à 27 sur 33, dix écrans d'interface à 0,00 ; chiffres du doc, de l'ADR-0030 et des notes relus.
+> - P3 (introduit, corrigé dans ce commit) : l'ADR-0030 et l'« État vérifié » de cette phase attribuaient 57,1 % de pixels presque noirs à toutes les captures de tunnel ; c'est la capture de Beginner seule (1,4 % sur Advanced, 0,4 % sur Expert, 19,7 % en moyenne). Phrase de l'ADR corrigée ; celle de l'« État vérifié » se lit ainsi.
+> - Jugement demandé sur les candidats, pour l'auteur (O16) : à l'œil, (a) est plus proche de l'original (parois, lampes et plafond lisibles ; arêtes de l'original retrouvées à 59,6 %, 29,3 % et 53,8 % avec (a) contre 34,7 %, 20,2 % et 30,9 % avec (b)) ; la mesure écrite préfère (b) même sans le halo du soleil ni les panneaux (12,56 contre 17,46), surtout à cause de la vue de Beginner. Aucun des deux n'est juste : l'original a des zones au niveau de (b) (plafond de Beginner 8,3) et d'autres au niveau de (a) (paroi gauche d'Expert 83,5). Hypothèse du vérificateur, non vérifiée : l'ambiant de l'original ne prend la teinte d'ombre que là où sa carte d'ombre couvre ; l'émissive du moteur n'est jamais ombrée, et la rendre sensible à l'ombre toucherait le moteur.
+> - P3, antérieurs à la tranche, notés en O16 : les panneaux à chevrons dans le tunnel de Beginner sont noirs ici (rouges et blancs dans l'original) ; le plafond du tunnel a une teinte bleue et des reflets blancs que l'original n'a pas. Les « blocs sombres » le long des parois sont les faces du tunnel elles-mêmes, pas une différence de géométrie.
+> - P4 : le décompte « 8 vues changent » inclut du bruit de répétabilité (7 hors bruit).
+> - S3 close avec le candidat (b) committé ; le choix du niveau reste à l'auteur (O16).
 
 ---
 
@@ -1230,7 +1238,7 @@ Retour arrière : relever `git rev-parse HEAD` avant T15.1 ; annuler les commits
 
 À trancher pendant l'exécution, ou à remonter en ⚠️ Blocked si la réponse manque.
 
-- O1 (S3) : tunnel presque noir, relever sa couleur de base ou lui donner une lumière ? Choix de l'auteur.
+- O1 (S3) : tunnel presque noir, relever sa couleur de base ou lui donner une lumière ? Choix de l'auteur. **Traité en S3 (Phase 15, ADR-0030 `Proposed`) : émissive texturée portant l'ambiant du matériau ; voir O16.**
 - O2 (S4) : voiture centrale du carrousel, quelle intensité viser ? Choix de l'auteur.
 - O3 : 8 tests GPU du moteur échouent sur ce PC, sur `origin/main` comme sur la branche fusionnée (références prises sur l'autre PC). À traiter dans le moteur, hors de ce plan sauf demande.
 - O4 (S1b) : au-delà des matériaux, les deux PC ont fait en double plusieurs sujets du monde de course, relevés le 2026-11-16 par les commits des deux côtés depuis `d8ac303` :
@@ -1260,3 +1268,4 @@ Retour arrière : relever `git rev-parse HEAD` avant T15.1 ; annuler les commits
   - Ambiant passé à 0,05 sur décision de l'auteur (Phase 13, `ccce94c`, vérifié). Restent ouverts : 16 points de luminance en trop en `linear` ; faces à l'ombre dos au soleil bouchées et froides depuis ce changement (A1 de T13.2 ; une valeur d'ambiant intermédiaire ou teintée est une piste, non mesurée) ; ombres du terrain trop sombres en `linear` ; pavés de la ville sombres et inversés ; route blanc bleuté ; couleur de base du sol de ville.
 - O14 (S2, non bloquant) : écarts à l'autre PC ou à l'original à trancher par l'auteur. (1) Sol de la ville cuit en famille `Terrain` (rugosité 1) ; l'autre PC le fait en famille `Road` (0,85) ; H2 de l'ADR-0029 est à confirmer ou à changer. (2) Verre et feux arrière de la voiture noirs unis depuis S1f (famille `CarGlass` : métal 1, rugosité 0,05, base 13), portage fidèle de l'autre PC ; avant le PBR ils reflétaient le ciel. (3) Points ouverts de l'autre PC non repris par leur nom : qualité de l'éclairage par l'image avec un cube du ciel de 512 sans mipmaps ; matériaux de `Casino01`, cause possible du mur noir.
 - O15 (S2, non bloquant) : conditions du moteur dont dépend le pointeur du jeu. Le déterminisme des captures d'une surface très lisse, raison de `6ead47308`, n'est pas établi pour la correction de GGX : à contrôler sur l'autre PC avant toute remontée dans `main` ou tout push (plan moteur `pbr-ggx-back-facing-tasks.md`, O2). En attente de l'auteur aussi : la disposition prise en mode AUTO sur la cible de pixels blancs de S1f (T10.3, A1) ; la validation des ADR-0123 et 0124 du moteur ; la remontée et le push des trois branches du moteur empilées.
+- O16 (S3, non bloquant) : niveau de l'émissive du tunnel. Committé : (b) 182/255 × teinte d'ombre, retenu par la règle de mesure, qui change peu l'image (luminance 17,8 pour 29,7 dans l'original, lampes à peine visibles). Autre candidat mesuré : (a) 182/255, plus proche à l'œil (lampes et briques lisibles) mais trop clair (35,0). Une valeur intermédiaire n'a pas été essayée. Choix de l'auteur : garder (b), passer à (a), ou viser entre les deux ; l'ADR-0030 est à confirmer en conséquence. Aussi, antérieurs à S3 : panneaux à chevrons noirs dans le tunnel de Beginner ; plafond du tunnel bleuté avec des reflets blancs.

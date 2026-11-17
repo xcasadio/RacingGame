@@ -7,7 +7,7 @@
 ## Context
 
 - The original's tunnel material is `roadTunnelMaterial`: ambient 182, diffuse 80, specular 64, with the comment "Use mainly ambient color (tunnel uses lightmaps)". The original lights a pixel as `texture x (A + D x N.L)`; the road and the tunnels cast and receive shadows (`Track.GenerateShadow`, `Track.UseShadow`), and its shadow mask multiplies the image by (0.25, 0.26, 0.27).
-- Here the tunnel material is a cooked `lit-pbr` material with a base colour of 80 and no emissive. `lit-pbr` has no ambient colour per material, and the ambient of the race world is the sky cube's irradiance times 0.05. The inside of the tunnel is almost black: 57.1 % of the pixels of the audit captures of the tunnels have a luminance under 10 (verification of phase 13), as it was before PBR (ADR-0019, Consequences, open point O1 of the plan).
+- Here the tunnel material is a cooked `lit-pbr` material with a base colour of 80 and no emissive. `lit-pbr` has no ambient colour per material, and the ambient of the race world is the sky cube's irradiance times 0.05. The inside of the tunnel is almost black: 57.1 % of the pixels of the Beginner tunnel audit capture have a luminance under 10 (verification of phase 13; 1.4 % on Advanced and 0.4 % on Expert, 19.7 % on average), as it was before PBR (ADR-0019, Consequences, open point O1 of the plan).
 - The engine can carry the term `texture x A`: in `LitPbr.fx` the emissive is `EmissiveColor x EmissiveTexture`, both display colours, decoded together and added to the pixel, and the shadow tint does not touch it.
 - The recipes had an emissive colour only, and the cooker wrote no emissive texture.
 - None of the 15 reference views of the original is taken in a tunnel; the usual views never enter one.
