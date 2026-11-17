@@ -870,3 +870,195 @@ UI captures (`ref-ui/`, default colour pipeline, `linear`) against the state bef
 
 Track audit (`ref-audit/`, 30 captures, default colour pipeline, `linear`) against `artifacts/pbr-handover/s1h/base-audit` (the state before this slice): largest channel difference 23.808 (`audit-Expert-helper-laterns`), smallest 0.000 (`audit-Advanced-helper-laterns`). The new references of this machine are `artifacts/pbr-handover/s1h/ref-ui` and `ref-audit`.
 
+
+## After the ambient colour change
+
+Eighth run, on 2026-11-17, after phase 13 of the plan: the ambient colour of the race world goes from white to 0.05, the engine's default (decision of the author after the measurement of open point O13). Nothing else changes: the content, the generators and the light are those of the previous section. The run before it is the previous section, `artifacts/pbr-handover/s1h/` (`legacy-a`, `linear-a`, white ambient colour). The measurement the author asked for, taken by the main session with that single value changed, is `artifacts/pbr-handover/o13/amb005-legacy` and `amb005-linear`; the runs below reproduce it. The previous runs above stay as their record.
+
+Outputs under `artifacts/pbr-handover/s13/`; the original's export is the same one, `artifacts/pbr-handover/s1c/ref`. The tables of this section are generated from the output files and from the source by a script. **Every figure below that depends on the colour pipeline is for one mode, stated in its table: `legacy` is the engine's legacy colour chain (no tonemapping, no anti-aliasing), and `linear` is the default of the game, linear HDR with the ACES approximation, exposure 1, FXAA, bloom and SSAO off.**
+
+### Run
+
+- Game `RacingGameCasaEngine.exe --capture-reference-views artifacts/pbr-handover/s1c/ref/views.json --reference-capture-out <folder> --color-pipeline <mode>`, Debug build, engine `8a3933b36`. Folders: `legacy-a`, `legacy-b`, `linear-a`, `linear-b` (two runs per mode), each with its `run.log`.
+- `legacy`: lines `[CaptureBench] view ... pipeline legacy fxaaPasses 0` in `legacy-a/run.log` and `legacy-b/run.log`: 15 and 15 of 15; lines with a warning, an error or an exception: 0 and 0.
+- `linear`: lines `[CaptureBench] view ... pipeline linear fxaaPasses 1` in `linear-a/run.log` and `linear-b/run.log`: 15 and 15 of 15; lines with a warning, an error or an exception: 0 and 0.
+- `--smoke-frontend` (`smoke-run.log`): "Smoke validation completed successfully" 2 time(s); lines with `[Warning]` or `[Error]`: 0.
+- Files of the content, of `RacingGame.Gameplay` and of the cooker changed since the commit this change starts from (`git diff --name-only`): 0.
+
+### Race world settings
+
+Read from `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs` at the commit of this run. Only the ambient colour changes; the previous value, in the previous section, was `Vector3.One`.
+
+| Setting | Value |
+|---|---|
+| Key light direction | normalize(-8500, -15000, -7250) |
+| Key light intensity | MathF.PI |
+| Key light specular colour | new(235, 235, 235) |
+| ShadowMapResolution | 4096 |
+| ShadowMaxDistance | 100f |
+| ShadowFadeDistance | 15f |
+| ShadowDepthRange | 150f |
+| ShadowFilterRadius | 3f |
+| ShadowColor | new(0.25f, 0.26f, 0.27f) |
+| ShadowDepthBias | 0.001f |
+| ShadowNormalBias | 0.1f |
+| Shadows.Mode | ShadowMode.MultiplyLitColor |
+| AmbientSource | AmbientSource.Auto |
+| AmbientColor | AmbientColor = new(0.05f) |
+| AmbientIntensity | 1f |
+| SpecularIntensity | 1f |
+| Colour pipeline (`linear`) | Mode = ColorPipelineMode.LinearHdr, Tonemapper = TonemapOperator.AcesApprox, Exposure = 1.0f, BloomEnabled = false, SsaoEnabled = false, AntiAliasing = AntiAliasingMode.Fxaa |
+
+### Against the measurement of the main session
+
+Mean difference per channel (0 to 255) of each of the 15 views of a run against the same view of `artifacts/pbr-handover/o13/amb005-<mode>` (`compare-o13-<mode>/report.md` for run `a`, `compare-o13-<mode>-b/report.md` for run `b`), and the number of files identical by their hash:
+
+| Run | Largest mean difference of the 15 views (R, G, B) | Identical files |
+|---|---|---|
+| `legacy-a` | 0.00, 0.00, 0.00 | 14 of 15 |
+| `legacy-b` | 0.00, 0.00, 0.00 | 12 of 15 |
+| `linear-a` | 0.00, 0.00, 0.00 | 14 of 15 |
+| `linear-b` | 0.00, 0.00, 0.00 | 13 of 15 |
+
+### Scene against the original
+
+`legacy-a/run.log`, scene measure of each track (the `linear` runs give the same lines):
+
+| Track | Objects original / port | Matched | Missing | Extra | Shadow cast / receive mismatches |
+|---|---|---|---|---|---|
+| Beginner | 1147 / 1147 | 1147 | 0 | 0 | 0 / 0 |
+| Advanced | 1693 / 1693 | 1693 | 0 | 0 | 0 / 0 |
+| Expert | 3404 / 3404 | 3404 | 0 | 0 | 0 / 0 |
+
+12 of the 12 `scene-measure-*.txt` files (3 tracks, 2 modes, 2 runs) are identical, byte for byte, to those of the previous run (`s1h/<mode>-a`).
+
+### Pictures against the original
+
+`compare-<mode>-nopost/report.md`, `compare-<mode>-full/report.md` (mean difference per channel R, G, B, and share of the original's edges found within 2 pixels in the port; `nopost` is the original without its post screen shaders). "Before" is the previous run, `artifacts/pbr-handover/s1h/compare-<mode>-nopost/report.md` (white ambient colour).
+
+`legacy`, mean difference per channel against the original, `nopost` and `full`:
+
+| View | R, G, B `nopost` | Before | Edges | Edges before | R, G, B `full` | Before |
+|---|---|---|---|---|---|---|
+| Beginner-start | 20.35, 18.61, 15.84 | 40.80, 53.23, 53.45 | 96.5 % | 99.8 % | 38.41, 30.86, 24.99 | 33.50, 48.72, 52.65 |
+| Beginner-sector-20 | 33.83, 35.02, 34.03 | 53.52, 63.56, 62.45 | 80.4 % | 92.3 % | 44.15, 40.60, 39.04 | 50.47, 61.68, 61.63 |
+| Beginner-sector-50 | 24.73, 21.59, 18.12 | 43.46, 57.96, 58.25 | 81.3 % | 95.7 % | 51.88, 40.75, 32.49 | 31.63, 46.10, 49.85 |
+| Beginner-sector-80 | 22.48, 21.02, 17.27 | 50.38, 66.02, 64.51 | 98.4 % | 99.1 % | 50.52, 42.68, 33.64 | 38.94, 53.69, 56.78 |
+| Beginner-overview | 16.61, 14.88, 12.34 | 30.16, 38.62, 37.35 | 92.8 % | 99.8 % | 40.70, 32.21, 26.81 | 29.26, 41.09, 42.89 |
+| Advanced-start | 19.85, 17.19, 13.84 | 41.84, 56.89, 57.98 | 93.0 % | 96.2 % | 48.68, 37.86, 29.49 | 29.92, 44.36, 49.75 |
+| Advanced-sector-20 | 29.56, 24.99, 20.83 | 42.82, 49.29, 46.31 | 83.9 % | 96.6 % | 57.97, 44.33, 36.56 | 43.42, 48.37, 47.44 |
+| Advanced-sector-50 | 25.37, 20.82, 17.28 | 41.56, 52.66, 52.11 | 85.2 % | 96.0 % | 53.40, 38.62, 30.63 | 28.25, 39.49, 42.60 |
+| Advanced-sector-80 | 20.14, 17.59, 14.25 | 50.82, 68.94, 72.15 | 96.0 % | 98.6 % | 44.09, 32.83, 25.04 | 33.83, 54.88, 61.87 |
+| Advanced-overview | 18.99, 15.89, 12.04 | 28.37, 36.67, 33.70 | 92.8 % | 99.8 % | 46.64, 36.26, 28.19 | 28.78, 40.32, 41.40 |
+| Expert-start | 18.31, 16.66, 13.96 | 34.65, 46.02, 45.11 | 97.0 % | 99.4 % | 36.98, 27.43, 21.64 | 25.13, 39.85, 42.02 |
+| Expert-sector-20 | 24.71, 21.86, 16.99 | 51.29, 69.56, 67.30 | 92.9 % | 99.2 % | 48.30, 38.54, 29.29 | 36.37, 56.18, 59.57 |
+| Expert-sector-50 | 22.21, 20.24, 17.07 | 45.96, 63.23, 65.81 | 88.2 % | 96.4 % | 47.44, 38.58, 31.43 | 33.80, 52.68, 59.19 |
+| Expert-sector-80 | 17.96, 15.37, 12.45 | 38.05, 51.66, 52.36 | 84.5 % | 99.2 % | 39.70, 28.98, 22.08 | 27.65, 45.83, 50.40 |
+| Expert-overview | 16.57, 15.03, 12.75 | 29.46, 37.92, 36.56 | 97.1 % | 99.9 % | 41.94, 34.31, 29.25 | 32.45, 43.27, 44.67 |
+
+`legacy`, mean over the 15 views of the `nopost` difference: 22.1, 19.8, 16.6 (before 41.5, 54.1, 53.7).
+
+`linear`, mean difference per channel against the original, `nopost` and `full`:
+
+| View | R, G, B `nopost` | Before | Edges | Edges before | R, G, B `full` | Before |
+|---|---|---|---|---|---|---|
+| Beginner-start | 25.75, 25.66, 24.29 | 37.24, 45.93, 45.84 | 98.3 % | 99.3 % | 32.91, 30.07, 28.11 | 32.01, 40.22, 42.85 |
+| Beginner-sector-20 | 45.32, 46.95, 45.87 | 50.91, 56.41, 55.44 | 71.1 % | 77.6 % | 46.74, 47.13, 46.13 | 48.70, 54.50, 54.31 |
+| Beginner-sector-50 | 27.62, 27.44, 27.22 | 39.31, 48.52, 48.72 | 85.7 % | 88.6 % | 36.34, 31.33, 29.50 | 32.51, 39.05, 41.85 |
+| Beginner-sector-80 | 23.79, 24.94, 23.59 | 40.24, 50.91, 51.32 | 98.7 % | 98.7 % | 39.55, 36.58, 31.89 | 38.15, 42.41, 44.24 |
+| Beginner-overview | 22.93, 20.74, 19.12 | 35.55, 39.40, 36.18 | 98.4 % | 99.7 % | 26.85, 24.90, 24.73 | 25.92, 35.13, 36.86 |
+| Advanced-start | 21.50, 22.13, 21.84 | 33.75, 43.50, 45.70 | 95.5 % | 94.7 % | 32.40, 27.86, 24.15 | 29.21, 32.54, 36.25 |
+| Advanced-sector-20 | 27.62, 26.57, 24.93 | 36.41, 40.45, 39.25 | 88.4 % | 91.5 % | 41.09, 34.35, 31.83 | 38.97, 39.33, 39.76 |
+| Advanced-sector-50 | 19.89, 19.24, 19.01 | 34.40, 41.65, 41.20 | 88.8 % | 89.7 % | 35.06, 27.13, 25.19 | 30.29, 32.52, 34.02 |
+| Advanced-sector-80 | 24.77, 26.38, 26.84 | 41.62, 55.11, 58.87 | 97.9 % | 97.8 % | 31.53, 28.20, 26.22 | 33.27, 43.35, 48.66 |
+| Advanced-overview | 20.94, 17.93, 15.20 | 33.70, 37.88, 33.30 | 98.9 % | 98.9 % | 30.03, 25.34, 22.42 | 26.48, 34.66, 35.39 |
+| Expert-start | 20.05, 19.72, 18.60 | 28.93, 36.62, 36.04 | 98.1 % | 98.9 % | 26.01, 21.73, 20.61 | 22.25, 29.34, 31.31 |
+| Expert-sector-20 | 26.28, 28.62, 27.49 | 44.22, 57.69, 57.58 | 97.5 % | 97.5 % | 35.70, 33.42, 30.08 | 36.58, 45.65, 49.33 |
+| Expert-sector-50 | 26.85, 29.00, 28.86 | 41.18, 53.58, 56.39 | 92.1 % | 92.1 % | 34.41, 32.51, 29.73 | 33.46, 42.55, 48.23 |
+| Expert-sector-80 | 22.81, 23.73, 24.10 | 39.71, 49.93, 49.96 | 96.0 % | 98.4 % | 26.84, 26.10, 26.07 | 28.82, 42.69, 46.82 |
+| Expert-overview | 23.87, 21.59, 19.48 | 34.60, 37.97, 35.28 | 98.4 % | 99.4 % | 29.46, 27.40, 26.34 | 27.66, 35.33, 37.28 |
+
+`linear`, mean over the 15 views of the `nopost` difference: 25.3, 25.4, 24.4 (before 38.1, 46.4, 46.1).
+
+Change from the picture of the same view of the previous run, mean of the three channels (`compare-<mode>-vs-s1h/report.md`):
+
+| View | `legacy` | `linear` |
+|---|---|---|
+| Beginner-start | 48.76 | 21.31 |
+| Beginner-sector-20 | 45.22 | 16.05 |
+| Beginner-sector-50 | 62.06 | 26.32 |
+| Beginner-sector-80 | 65.08 | 26.46 |
+| Beginner-overview | 37.59 | 18.08 |
+| Advanced-start | 56.78 | 20.83 |
+| Advanced-sector-20 | 45.68 | 17.58 |
+| Advanced-sector-50 | 61.51 | 26.78 |
+| Advanced-sector-80 | 68.18 | 28.79 |
+| Advanced-overview | 38.59 | 19.74 |
+| Expert-start | 44.32 | 18.36 |
+| Expert-sector-20 | 65.24 | 26.73 |
+| Expert-sector-50 | 62.11 | 24.89 |
+| Expert-sector-80 | 53.04 | 24.98 |
+| Expert-overview | 36.02 | 16.85 |
+
+`legacy` against the previous run: largest 68.18 (`Advanced-sector-80`), smallest 36.02 (`Expert-overview`).
+`linear` against the previous run: largest 28.79 (`Advanced-sector-80`), smallest 16.05 (`Beginner-sector-20`).
+
+Mean luminance of the 15 pictures: original 96.3; port in `legacy` 88.4 (before 142.2); port in `linear` 112.3 (before 134.8).
+
+Saturated pixels (the three channels at 255, and at 250 or more) of the full picture:
+
+| Run | `Beginner-start` at 255 | at 250 or more | `Expert-start` at 255 | at 250 or more |
+|---|---|---|---|---|
+| previous `legacy-a` | 6062 | 6824 | 6500 | 6800 |
+| `legacy-a` | 12 | 15 | 1547 | 1579 |
+| previous `linear-a` | 0 | 0 | 0 | 0 |
+| `linear-a` | 0 | 0 | 0 | 0 |
+
+### Light and shadow probes
+
+`compare-<mode>-probes/probes.md`; the previous columns are `s1h/compare-<mode>-probes/probes.md` (white ambient colour). The criterion 3 of the previous run, 27 of 33, is the figure this change must not lower.
+
+| Criterion | `legacy` passed | `linear` passed | Judged | previous `legacy` passed | previous `linear` passed |
+|---|---|---|---|---|---|
+| 1. lit and away within +-12 | 3 | 9 | 34 | 0 | 1 |
+| 2. shadow/lit ratio within +-0.05 (per view and surface) | 2 | 0 | 4 | 2 | 0 |
+| 3. class agreement (shadow shadowed, lit lit) | 27 | 27 | 33 | 27 | 27 |
+| 4. away-shadowed within +-12 | 3 | 3 | 3 | 0 | 3 |
+
+Shadow over lit luminance ratio, in the order of the report (terrain, city, road, terrain): original 0.284, 0.276, 0.228, 0.267; port in `legacy` 0.271, 1.894, 0.717, 0.267 (before 0.282, 1.850, 0.835, 0.263); port in `linear` 0.159, 2.903, 0.838, 0.138 (before 0.183, 2.556, 0.905, 0.141).
+
+Road over terrain luminance of the lit probes of `Beginner-start` (`road-lit-1` over `terrain-lit-1`): original 0.348; port in `legacy` 0.711 (before 0.756); port in `linear` 0.745 (before 0.806).
+
+Probes of the city ground in the shadow (`Beginner-sector-20`, criterion 3, mean colour of the 9x9 square, R,G,B), the original's colour, then the port before and after this change in each mode:
+
+| Probe | Original | `legacy` before | `legacy` after | `linear` before | `linear` after | Verdict `legacy` after / `linear` after |
+|---|---|---|---|---|---|---|
+| city-shadow-1 | 31,34,37 | 195,225,234 | 119,129,135 | 184,204,213 | 166,175,180 | FAIL (cand. lit) / FAIL (cand. lit) |
+| city-shadow-2 | 29,33,35 | 69,87,99 | 42,47,51 | 56,72,84 | 46,53,57 | FAIL (cand. lit) / FAIL (cand. lit) |
+| city-shadow-3 | 30,33,35 | 56,71,79 | 34,39,41 | 32,43,51 | 27,31,33 | FAIL (cand. lit) / FAIL (cand. lit) |
+
+### Repeatability
+
+`legacy`: two runs (`legacy-a`, `legacy-b`, `compare-legacy-repeat/report.md`): 13 identical files of 15. Different by their hash: `Expert-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-start.png` (mean difference 0.00, 0.00, 0.00).
+
+`linear`: two runs (`linear-a`, `linear-b`, `compare-linear-repeat/report.md`): 13 identical files of 15. Different by their hash: `Expert-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-start.png` (mean difference 0.00, 0.00, 0.00).
+
+### Other references of this machine
+
+UI captures (`ref-ui/`, default colour pipeline, `linear`) against the previous run's `artifacts/pbr-handover/s1h/ref-ui` (`ui-compare/report.txt`). The race states change because the race world below the interface changes; the other screens are not touched.
+
+| State | R | G | B |
+|---|---|---|---|
+| splash | 0.00 | 0.00 | 0.00 |
+| main-menu | 0.00 | 0.00 | 0.00 |
+| highscores | 0.00 | 0.00 | 0.00 |
+| options | 0.00 | 0.00 | 0.00 |
+| help | 0.00 | 0.00 | 0.00 |
+| car-selection | 0.00 | 0.00 | 0.00 |
+| track-selection | 0.00 | 0.00 | 0.00 |
+| race-hud | 15.04 | 21.99 | 23.40 |
+| pause | 4.37 | 6.33 | 6.63 |
+| race-finished | 14.44 | 20.82 | 21.44 |
+
+Track audit (`ref-audit/`, 30 captures, default colour pipeline, `linear`) against `artifacts/pbr-handover/s1h/ref-audit`: largest channel difference 36.927 (`audit-Beginner-helper-laterns`), smallest 4.410 (`audit-Beginner-helper-tunnel`). The new references of this machine are `artifacts/pbr-handover/s13/ref-ui` and `ref-audit`.
+

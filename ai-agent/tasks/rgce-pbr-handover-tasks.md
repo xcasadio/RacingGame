@@ -1041,7 +1041,7 @@ Décision de l'auteur (2026-11-17, après la mesure notée en O13) : la couleur 
 
 Retour arrière : annuler les commits de cette phase. Référence d'avant : `artifacts/pbr-handover/s1h/` ; mesure attendue : `artifacts/pbr-handover/o13/amb005-linear` et `amb005-legacy`.
 
-### ⏳ T13.1 — Ambiant à 0,05, banc et références
+### ✅ T13.1 — Ambiant à 0,05, banc et références
 
 - Fichiers : `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs` (`AmbientColor` = `new Vector3(0.05f)`, en constante nommée ; le commentaire dit que c'est le défaut du moteur, qu'il multiplie l'irradiance du ciel dans `lit-pbr`, et renvoie à cette phase ; le commentaire actuel, qui dit que ces valeurs sont celles que le monde doit avoir, est corrigé) ; `docs/racinggame-3d-capture-bench-local-baseline.md` (section « After the ambient colour change », générée par script, mode de chaque chiffre indiqué) ; ce plan.
 - Étapes : changement ; build ; banc complet vers `artifacts/pbr-handover/s13/` comme en T12.3 (deux rejeux par mode, `nopost`, `full`, sondes, répétabilité, comparaison avec `s1h`), nouvelles références d'audit et d'interface.
@@ -1053,6 +1053,16 @@ Retour arrière : annuler les commits de cette phase. Référence d'avant : `art
   - aucun fichier de contenu changé ; chiffres du doc relus par script contre les sorties.
 - Arrêts : un rejeu différent de la mesure `o13` ; critère 3 sous 27.
 - Commit : `fix(racing-casa): use the engine's default ambient colour in the race world`
+
+> Validation (2026-11-17), jeu sur `7c21223` plus le changement de cette tâche, moteur `8a3933b36`, aucune recuisson. Sorties sous `artifacts/pbr-handover/s13/`.
+> - Changement : `RaceWorldFactory.cs` seul (constante nommée `AmbientColor` = `new(0.05f)` avec son commentaire, commentaire des réglages d'ambiant corrigé ; fins de ligne CRLF gardées, le diff ne montre que les lignes voulues). Build à 0 erreur, 0 avertissement ; `--smoke-frontend` : sortie 0, « Smoke validation completed successfully », aucun `[Warning]` ni `[Error]` (`smoke-run.log`). Aucun fichier de contenu, de `RacingGame.Gameplay` ni du cuiseur changé.
+> - Banc complet : deux rejeux par mode (`legacy-a`, `-b`, `linear-a`, `-b`), tous de sortie 0, 15 lignes `pipeline` attendues chacun, aucun `[Warning]`, `[Error]` ni exception ; `nopost`, `full` et sondes par mode, répétabilité (13 fichiers égaux sur 15 dans chaque mode, écarts moyens de 0,00), comparaison avec `s1h` (`compare-<mode>-vs-s1h`) ; nouvelles références d'interface (`ref-ui`, 10 captures) et d'audit (`ref-audit`, 30), prises en `linear`.
+> - **Mesure `o13` reproduite** : les quatre rejeux sont à 0,00 de moyenne par canal de `o13/amb005-legacy` et `amb005-linear` sur les 15 vues (14 et 12 fichiers égaux par empreinte sur 15 en `legacy`, 14 et 13 en `linear`).
+> - Mesure de scène : les douze `scene-measure-*.txt` égaux octet pour octet à ceux de `s1h`. Sondes (valeurs de `s1h` entre parenthèses) : `legacy` critère 1 : 3 sur 34 (0) ; critère 2 : 2 sur 4 (2) ; **critère 3 : 27 sur 33 (27)** ; critère 4 : 3 sur 3 (0) ; `linear` 9 sur 34 (1) ; 0 sur 4 (0) ; **27 sur 33 (27)** ; 3 sur 3 (3). Rapports ombre sur lumière, terrain, ville, route, terrain (original 0,284, 0,276, 0,228, 0,267) : `legacy` 0,271, 1,894, 0,717, 0,267 (0,282, 1,850, 0,835, 0,263) ; `linear` 0,159, 2,903, 0,838, 0,138 (0,183, 2,556, 0,905, 0,141). Rapport `road-lit-1` / `terrain-lit-1` de `Beginner-start` : `legacy` 0,711 (0,756), `linear` 0,745 (0,806) ; original 0,348. Les sondes `city-shadow-1` à `-3` de `Beginner-sector-20` restent en échec (le port est éclairé là où l'original est à l'ombre) : `legacy` 119,129,135 / 42,47,51 / 34,39,41 (195,225,234 / 69,87,99 / 56,71,79), `linear` 166,175,180 / 46,53,57 / 27,31,33 (184,204,213 / 56,72,84 / 32,43,51), original 31,34,37 / 29,33,35 / 30,33,35.
+> - Luminance moyenne des 15 vues (original 96,3) : `legacy` 88,4 (142,2), `linear` 112,3 (134,8). Écart moyen par canal avec l'original (`nopost`, moyenne des 15 vues) : `linear` 25,3 / 25,4 / 24,4 (38,1 / 46,4 / 46,1) ; `legacy` 22,1 / 19,8 / 16,6 (41,5 / 54,1 / 53,7). Pixels blancs de `Beginner-start` et `Expert-start` à 255, puis à 250 au moins : `linear` 0 et 0 (inchangé) ; `legacy` 12 puis 15 et 1547 puis 1579 (6062 puis 6824 et 6500 puis 6800).
+> - Interface contre `s1h/ref-ui` : `splash`, `main-menu`, `highscores`, `options`, `help`, `car-selection` et `track-selection` à **0,00** ; `race-hud` 15,04 / 21,99 / 23,40, `pause` 4,37 / 6,33 / 6,63, `race-finished` 14,44 / 20,82 / 21,44 (le monde de course change dessous). Audit contre `s1h/ref-audit` : au plus 36,927 (`audit-Beginner-helper-laterns`), au moins 4,410 (`audit-Beginner-helper-tunnel`).
+> - Section « After the ambient colour change » du doc générée par script (`gen_section_s13.py`, hors dépôt), chaque chiffre disant son mode ; relecture par un second script indépendant (`check_doc_s13.py`, hors dépôt) : 278 valeurs comparées au doc, 0 différence.
+> - Écart au plan : aucun. `scripts/TrackCaptureCompare/README.md` non touché (aucune commande ne change).
 
 ### ⏳ T13.2 — Vérification indépendante
 

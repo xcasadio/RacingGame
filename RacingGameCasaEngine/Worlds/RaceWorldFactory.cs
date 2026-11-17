@@ -45,6 +45,12 @@ public static class RaceWorldFactory
     // docs/engine/pbr-rendering.md, Units), so the key light of a PBR world keeps the level the original had at intensity 1.
     private const float KeyLightIntensity = MathF.PI;
 
+    // The ambient colour of the race world is 0.05, the engine's default (WorldEnvironmentSettings.ResetToDefaults), written out
+    // here. lit-pbr multiplies the irradiance of the sky cube by it (LitPbr.fx), so it sets how much of that irradiance lights the
+    // world: the white of the other machine took it from 5 % to 100 % and made the world brighter than the original. The author
+    // chose 0.05 on 2026-11-17, after the measurement of open point O13 (ai-agent/tasks/rgce-pbr-handover-tasks.md, phase 13).
+    private static readonly Vector3 AmbientColor = new(0.05f);
+
     // Shadow map of the race world, tuned on the track audit views (ai-agent/tasks/rgce-hud-shadows-start-tasks.md, T3.1):
     // - the original multiplies the whole image by a shadow colour of (0.25, 0.26, 0.27) (Core/Content/Shaders/ShadowMap.fx:36,
     //   240) and softens the shadow in screen space: MultiplyLitColor with that colour, and a 3 texel filter radius for the
@@ -141,11 +147,10 @@ public static class RaceWorldFactory
 
         // Image-based lighting from the sky cube (Bootstrap/RacingGameCasaEngineGame.cs binds it to the race world as its
         // specular environment cube): the cube gives both the ambient diffuse (irradiance) and the reflections of the PBR
-        // materials, as CasaEngine.Demos PbrMaterialDemo.ApplyIbl. Same in both colour pipeline modes. These values are the
-        // ones the world has to have, written out so that it does not depend on the engine's defaults (the engine's flat
-        // ambient colour defaults to 0.05, which also scales the diffuse IBL term of lit-pbr).
+        // materials, as CasaEngine.Demos PbrMaterialDemo.ApplyIbl. Same in both colour pipeline modes. The values are written
+        // out so that the world does not depend on the engine's defaults; the ambient colour is AmbientColor.
         world.EnvironmentSettings.AmbientSource = AmbientSource.Auto;
-        world.EnvironmentSettings.AmbientColor = Vector3.One;
+        world.EnvironmentSettings.AmbientColor = AmbientColor;
         world.EnvironmentSettings.AmbientIntensity = 1f;
         world.EnvironmentSettings.SpecularIntensity = 1f;
 
