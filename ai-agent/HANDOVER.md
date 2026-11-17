@@ -165,4 +165,6 @@ Rien n'est poussé. Détail : Phase 18 du plan.
 
 `main` du moteur a été poussé par l'auteur le 2026-11-17 (`origin/main` = `006a245aa`) ; les branches du chantier restent locales, donc le commit du moteur sur lequel le jeu pointe (`29d3d2de2`) n'est pas sur le dépôt distant.
 
-À décider par l'auteur : remonter dans `main` les branches du chantier après le contrôle de déterminisme de GGX sur l'autre PC (O15, O18).
+Le 2026-11-17 aussi : `remaster` local du jeu avancé en avance rapide sur `61c465e`, la fusion d'`origin/remaster` (82 d'avance, 0 de retard ; la branche du chantier garde 81 commits de plus), sans push ; l'auteur abandonne le contrôle de déterminisme de GGX sur l'autre PC (O15, O19).
+
+À décider par l'auteur : remonter dans `main` du moteur les branches du chantier (O18) ; avancer `remaster` du jeu sur la branche du chantier.
