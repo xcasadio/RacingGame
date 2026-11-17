@@ -26,7 +26,7 @@ Tranches :
 | S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | Faite le 2026-11-17, verdict CONFIRMED |
 | S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1c, S1g, S1h | Faite le 2026-11-17, verdict CONFIRMED après correction de deux constats (couleurs de base, ombres des colonnes) |
 | S3 | Tunnel presque noir | S2 | Faite le 2026-11-17, verdict CONFIRMED ; niveau à choisir par l'auteur (O16) |
-| S4 | Voiture centrale du carrousel : trop blanche sur l'autre PC (lumière π et ciel sans tonemapping, non portés ici) ; ici environ deux fois plus sombre qu'avant le PBR (mesuré en S2) | S2 | À détailler ; choix de l'auteur attendu (O2) |
+| S4 | Voiture centrale du carrousel : trop blanche sur l'autre PC (lumière π et ciel sans tonemapping, non portés ici) ; ici environ deux fois plus sombre qu'avant le PBR (mesuré en S2) | S2 | Détaillée (Phase 16) |
 | S5 | Défauts connus du §4 de la note (moteur sur une branche moteur dédiée, jeu sur cette branche) | S2 | À détailler |
 
 Les tranches S1b, S1v, S1c, S1a, S1d, S1e, S1m, S1f s'exécutent dans cet ordre, une à la fois ; S1g et S1h suivent S1f ; S2 vient après S1g et S1h. La mesure « avant PBR » de S1c est donc toujours prise avant tout changement du moteur, du contenu ou des matériaux.
@@ -1231,6 +1231,39 @@ Retour arrière : relever `git rev-parse HEAD` avant T15.1 ; annuler les commits
 > - P3, antérieurs à la tranche, notés en O16 : les panneaux à chevrons dans le tunnel de Beginner sont noirs ici (rouges et blancs dans l'original) ; le plafond du tunnel a une teinte bleue et des reflets blancs que l'original n'a pas. Les « blocs sombres » le long des parois sont les faces du tunnel elles-mêmes, pas une différence de géométrie.
 > - P4 : le décompte « 8 vues changent » inclut du bruit de répétabilité (7 hors bruit).
 > - S3 close avec le candidat (b) committé ; le choix du niveau reste à l'auteur (O16).
+
+---
+
+## Phase 16 — Voiture du carrousel (S4)
+
+État vérifié (2026-11-17, jeu `c679caf`) :
+
+- `RacingGameCasaEngine/UI/CarSelectionCarousel.cs` : monde à part (`FrontEnd.CarSelectionCarousel`), une lumière directionnelle blanche d'intensité 1 (`:104-113`), le cube du ciel comme `SpecularEnvironmentCubemap` (`:98`), aucun réglage d'ambiant (défauts du moteur : `AmbientSource.Auto`, couleur 0,05), pas de `ColorPipeline` (chaîne `Legacy`). Les matériaux de la voiture et du plateau sont en `lit-pbr` depuis S1f.
+- Une surface `lit-pbr` éclairée de face est π fois plus sombre qu'une surface `lit-diffuse` à intensité égale (`CasaEngine/docs/engine/pbr-rendering.md`) : c'est la raison de l'intensité π du monde de course (S1g), non appliquée au carrousel.
+- Autre PC (`origin/remaster`, même fichier) : intensité π, `AmbientSource.Auto`, couleur d'ambiant blanche, intensités 1, chaîne `Legacy` ; résultat jugé « trop blanc » dans sa note de passation.
+- Mesure sur `ui-car-selection.png` (1920x1080), boîte centrale x 640 à 1279, y 360 à 719 : luminance 61,7 avant le PBR (`artifacts/pbr-handover/s1m/ui`), 42,6 maintenant (`s3/ref-ui`) ; les voitures sont ternes, les plateaux bleutés (famille `CarouselPlate`, métal 1, qui reflète le ciel).
+- L'ADR-0018 décrit un carrousel à π avec l'ambiant et le spéculaire du ciel à 1 ; la Phase 13 a mis l'ambiant du monde de course à 0,05 sans ADR.
+
+Décision de la tranche (mode AUTO, à confirmer avec l'ADR) : la lumière du carrousel passe à π, pour la même raison que le monde de course ; l'ambiant reste au défaut 0,05, comme le monde de course depuis la Phase 13 ; la chaîne reste `Legacy`. Cible : l'écran d'avant le PBR. Une seule valeur est essayée ; pas de réglage à l'œil.
+
+Retour arrière : annuler les commits de la phase. Sorties sous `artifacts/pbr-handover/s4/`.
+
+### ⏳ T16.1 — Lumière du carrousel à π
+
+- Fichiers : `RacingGameCasaEngine/UI/CarSelectionCarousel.cs` (constante d'intensité π avec son commentaire ; couleur d'ambiant écrite explicitement à 0,05 avec le renvoi à la Phase 13) ; `docs/decisions/` (ADR-0031, `Proposed`, skill `adr` : couleur d'ambiant 0,05 dans le monde de course et le carrousel, lumière du carrousel à π, qui amende l'ADR-0018 ; ligne d'état de l'ADR-0018 et index) ; `docs/racinggame-3d-capture-bench-local-baseline.md` (section « After the carousel light », générée par script) ; ce plan.
+- Validation :
+  - build à 0 erreur ; `--smoke-frontend` en succès ;
+  - `--capture-ui-screens` vers `s4/ui` : contre `s3/ref-ui`, tous les écrans à 0,00 sauf `car-selection` ; sur `car-selection`, boîte centrale (x 640 à 1279, y 360 à 719) : luminance notée avec celles d'avant le PBR (61,7) et de `s3` (42,6) ; elle est plus proche de 61,7 que ne l'est 42,6 ; écart moyen par canal de l'écran entier avec `s1m/ui` plus petit que celui de `s3/ref-ui` ; part des pixels de la boîte dont les trois canaux valent 255 notée pour les trois états ;
+  - l'écran regardé, avec celui d'avant le PBR et celui de `s3` côte à côte : pas d'aplat blanc sur la carrosserie ;
+  - les autres couleurs de voiture et les trois voitures ne sont pas capturées par le mode d'automatisation : le dire, sans autre contrôle ;
+  - rejeux des 15 vues en `linear` et `legacy` à 0,00 de `s3` (le monde de course n'est pas touché), mesure de scène identique ; nouvelle référence d'interface `s4/ref-ui`.
+- Arrêts : luminance de la boîte au-dessus de 77 (61,7 × 1,25) ; plus de 2 % de pixels saturés dans la boîte ; un autre écran change.
+- Commit : `fix(racing-casa): light the car selection carousel at the PBR scale`
+
+### ⏳ T16.2 — Vérification indépendante de S4
+
+- Objectif : un `verifier` frais confirme ou réfute les validations de T16.1 par ses propres lancements et regarde l'écran.
+- Commit : `docs(ai-agent): record the verification of the carousel light`
 
 ---
 
