@@ -21,7 +21,7 @@ Tranches :
 | S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1a | Faite le 2026-11-16 (Phase 7), verdict CONFIRMED |
 | S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | Faite le 2026-11-17, verdict CONFIRMED ; les mipmaps passent en S1m |
 | S1m | Textures du monde de course avec mipmaps (`58bb871`) : un réglage par asset pour une texture cuite, avec une évolution du moteur | S1e | Faite le 2026-11-17, verdict CONFIRMED |
-| S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1m | À détailler |
+| S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1m | Détaillée (Phase 10) |
 | S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | À détailler |
 | S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | À détailler |
 | S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1c, S1g, S1h | À détailler après S1 |
@@ -719,6 +719,59 @@ Budget de S1m : deux tours de recuisson ; deux passes de correction après véri
 > - Remarques notées sans suite (candidat confirmé) :
 >   - P3 : une repeinte de la voiture coûte maintenant 62 à 67 ms au lieu de 10 à 21 ms, parce que la chaîne est recalculée sur le processeur à chaque couleur ; un à-coup ponctuel à la sélection de voiture, comme sur l'autre PC ;
 >   - P4 : « 0 avertissement » dans la note de T9.2 vaut pour un build incrémental ; un build complet en compte dans `CasaEngine/`, aucun dans le code du jeu.
+
+---
+
+## Phase 10 — Matériaux PBR cuits (S1f)
+
+Décision D6 : les assets restent cuits, et le cuiseur cuit des matériaux `lit-pbr`. Source à porter : `RacingGameCasaEngine/Bootstrap/RacingGamePbrMaterialMapping.cs` d'`origin/remaster` (familles, règle de correspondance) et les commits `d0db72f`, `09f1c54`, `d35a25a`, `f309d6b`, `fb7daa2`, `b5391fe`, `46f2013` (lisibles par `git show`). Le monde de course reste dans le pipeline couleur `Legacy` et sous sa lumière actuelle jusqu'à S1g : le rendu de cette tranche est un état intermédiaire, mesuré mais pas réglé.
+
+État vérifié (2026-11-17) :
+
+- Le cuiseur écrit 98 matériaux `lit-diffuse` (`scripts/RgceAssetCooker/Cooker.cs`, `CreateMaterialAsset`), depuis les recettes de `RacingGame.Gameplay/Import/RaceMaterialRecipes.cs` (`ForScenery`, `ForCar`, `ForPlate`, `ForRoad`, `ForGround`, `ForTerrain`, `ForGuardRail`, `ForRoadColumn`, `ForRoadTunnel`), qui passent par `RacingGameLegacyMaterialTuning`.
+- Clés de `lit-pbr` dans le moteur : `base_color_texture`, `normal_texture`, `metallic_roughness_texture`, `occlusion_texture`, `emissive_texture`, `detail_texture`, `detail_tiling`, `base_color`, `metallic`, `roughness`, `emissive_color`, `occlusion_strength`, `normal_scale`, `clear_coat`, `clear_coat_roughness`, `alpha_cutoff` (`BuiltInMaterialDefinitions.cs`) ; pas de clé d'ambiant, de spéculaire ni de réflexion.
+- Familles de l'autre PC (métal, rugosité, vernis, rugosité du vernis) : Terrain 0 / 1 ; Road 0 / 0,85 ; GuardRail 1 / 0,45 ; LampPost 1 / 0,5 ; Masonry 0 / 0,9 ; Signage 0 / 0,6 ; Vegetation 0 / 0,95 ; MatteIndustrial 0 / 0,7 ; BuildingGlass 1 / 0,05 ; CarPaint 0 / 0,5, vernis 1 / 0,05 ; CarChrome 1 / 0,1 ; CarGlass 1 / 0,05 ; CarTyre 0 / 0,9 ; CarouselPlate 1 / 0,3 ; Default 0 / 0,8. Règle : le verre des immeubles par son effet d'origine (`ReflectionSimpleGlass.fx`), les autres par le nom de la texture diffuse ; la voiture par le nom du matériau (verre, chrome, pneu, peinture).
+- La peinture de la voiture copie en code le matériau cuit de chaque emplacement à texture de voiture (`LegacyCarVisualFactory.CreateCarTextureCopy`, `CopyWithBaseTexture`, sur `LitDiffuseMaterial`) et choisit peint ou non peint par le nom de l'emplacement et par `Reflects(source)`, qui lit des champs de réflexion que `lit-pbr` n'a pas.
+- `LandscapeDetail.png` a une entrée `Image.LandscapeDetail` mais pas d'asset `.texture`.
+- `RacingGameCasaEngine/Bootstrap/LegacyImportProfileVerifier.cs` vérifie le réglage spéculaire et l'ambiant relevé par `RacingGameLegacyMaterialTuning` ; celui de l'autre PC vérifie les familles.
+
+Retour arrière de S1f : relever `git rev-parse HEAD` avant T10.1 et le noter sous T10.1 ; annuler les commits de S1f sur `chantier/rgce-pbr-handover` seulement ; `artifacts/pbr-handover/s1m/` reste la référence d'avant. Sur demande de l'auteur seulement.
+
+Budget de S1f : T10.2, au plus trois tours de recuisson ; deux passes de correction après vérification.
+
+### ⏳ T10.1 — Recettes PBR
+
+- Objectif : les recettes calculent, pour chaque matériau cuit, les valeurs `lit-pbr` de l'autre PC.
+- Fichiers : `RacingGame.Gameplay/Import/RaceMaterialRecipe.cs`, `RaceMaterialRecipes.cs`, `RacingGamePbrFamily.cs` et `RacingGamePbrMaterialMapping.cs` (nouveaux, portés de l'autre PC dans `RacingGame.Gameplay/Import`) ; suppression de `RacingGameLegacyMaterialTuning.cs` et du relèvement d'ambiant de `RacingGameLegacyMaterialImportProfile.cs` (`b5391fe`, `46f2013`) ; `RacingGameCasaEngine/Bootstrap/LegacyImportProfileVerifier.cs` porté pour vérifier les familles (comme `b5391fe` là-bas).
+- Règles (celles de `RacingGamePbrMaterialMapping.Create` de l'autre PC) :
+  1. la texture diffuse devient `base_color_texture`, la normal map reste ;
+  2. la couleur diffuse devient `base_color`, alpha forcé à 255 ; pour la voiture, 210 sur tout sauf le verre (`LegacyCarDefaultDiffuseColor`, `Model.RenderCar` de l'original) ;
+  3. l'émissive est gardée ; l'ambiant, le spéculaire et la réflexion par matériau disparaissent ;
+  4. file, seuil alpha, culling et échantillonneur gardés ;
+  5. familles : décor par `ResolveImportedFamily` ; voiture par le nom du matériau ; plateau du carrousel `CarouselPlate` ; route, dessous de route, tunnel, colonnes `Road` ; terrain et sol `Terrain` ; rails `GuardRail` ;
+  6. terrain : `detail_texture` = `Texture.LandscapeDetail`, `detail_tiling` = 24 (`f309d6b`).
+- Validation : build du jeu et du cuiseur à 0 erreur ; aucune référence restante à `RacingGameLegacyMaterialTuning` (`rg`).
+- Commit : `feat(racing-casa): compute PBR material recipes from the surface families`
+
+### ⏳ T10.2 — Cuisson en `lit-pbr`, peinture de la voiture
+
+- Objectif : les 98 matériaux sont recuits en `lit-pbr`, la voiture peinte reste juste, rien d'autre ne bouge.
+- Fichiers : `scripts/RgceAssetCooker/Cooker.cs` (`CreateMaterialAsset` en `lit-pbr` ; cuisson de `Texture.LandscapeDetail`, avec `generate_mipmaps`, et son entrée de catalogue), `CookPlan.cs`, `Verifier.cs` (compare les valeurs `lit-pbr`), `README.md` ; les `.material` recuits, `Content/Textures/LandscapeDetail.texture`, `Content/AssetInfos.json` ; `RacingGame.Gameplay/Components/LegacyCarVisualFactory.cs` (copie d'un `LitPbrMaterial` cuit ; un emplacement à texture de voiture est peint quand son matériau cuit porte un vernis, `clear_coat` > 0, la famille `CarPaint` étant la seule à en avoir) ; `docs/decisions/` (ADR de la décision, skill `adr` : ADR-0018 de l'autre PC et ADR-0026 d'ici réunis, l'un et l'autre marqués amendés) ; ce plan.
+- Validation :
+  - builds à 0 erreur ; cuiseur `--check` et `--verify` sans écart ; second passage sans écriture ;
+  - les 98 `.material` ont `lit-pbr` pour définition ; un script compte les matériaux par famille et le note (le décompte doit couvrir les 98) ;
+  - `--verify-legacy-import-profile` en succès, avec les contrôles de familles de l'autre PC ;
+  - `--smoke-frontend` en succès ; mesure de scène inchangée (1147, 1693, 3404 appariés, 0 manquant, 0 en trop, 0 écart d'ombre ; 15 distances inchangées) ; les cinq lignes `[CaptureBench] mipmaps` inchangées ;
+  - peinture : sous `--capture-reference-views`, le validateur journalise pour la voiture 0 le nombre d'emplacements peints et non peints ; ils sont égaux à ceux d'avant la tranche (relevés une fois au début de la tâche, avant tout changement, par la même ligne ajoutée temporairement ou par lecture des recettes) ;
+  - banc relancé vers `artifacts/pbr-handover/s1f/` (deux rejeux, `nopost`, `full`, sondes, répétabilité, comparaison avec `s1m`), section du doc générée par script ; nouvelles références d'audit et d'interface.
+- Arrêts : `--verify` en écart sans cause trouvée ; un écart de mesure de scène ; un matériau sans famille qui ne soit pas un cas `Default` voulu ; besoin de modifier le moteur.
+- Commit : `feat(racing-casa): cook the race world materials as PBR`
+
+### ⏳ T10.3 — Vérification indépendante de S1f
+
+- Objectif : un `verifier` frais confirme ou réfute : chaque matériau cuit porte les valeurs de sa famille selon les règles de T10.1 ; la peinture de la voiture et le plateau du carrousel sont justes ; les tables de réglage ont disparu ; pas de régression ; les chiffres du doc sont ceux des sorties.
+- Étapes et verdicts : comme T5.4.
+- Commit : `docs(ai-agent): record the verification of the PBR materials`
 
 ---
 
