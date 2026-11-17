@@ -169,4 +169,6 @@ Le 2026-11-17 aussi : `remaster` local du jeu avancé en avance rapide sur `61c4
 
 Puis `remaster` local a été avancé au sommet de `chantier/rgce-pbr-handover` (commit qui porte cette ligne), sur demande de l'auteur, sans push : il contient tout le portage vérifié.
 
-À décider par l'auteur : remonter dans `main` du moteur les branches du chantier (O18).
+Enfin `main` local du moteur a été avancé sur `29d3d2de2` (`chantier/rgce-pbr-on-main-2`), sur demande de l'auteur, sans push : 16 commits d'avance sur `origin/main`, et le pointeur du jeu est dans `main`.
+
+À décider par l'auteur : pousser `main` du moteur puis `remaster` du jeu ; fusionner ou non `chantier/known-defects-gltf-alpha-probe` (O17).
