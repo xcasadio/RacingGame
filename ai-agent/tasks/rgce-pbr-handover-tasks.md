@@ -1300,20 +1300,23 @@ Les quatre défauts du §4 de la note de passation, un par un :
 ### ⏳ T17.1 — Moteur : alpha d'un matériau glTF opaque, sonde de réflexion en échec
 
 - Plan : `CasaEngine/ai-agent/tasks/known-defects-gltf-alpha-probe-tasks.md` (T0 à T3), branche du moteur `chantier/known-defects-gltf-alpha-probe`, empilée sur `chantier/pbr-ggx-back-facing`. Le pointeur du sous-module du jeu n'est pas avancé : le jeu n'a besoin d'aucune des deux corrections.
-- Validation, côté jeu : à la fin, le moteur est revenu sur `chantier/pbr-ggx-back-facing` (`8a3933b36`), `git status` du jeu ne montre pas le sous-module modifié, build du jeu à 0 erreur, un rejeu `linear` des 15 vues à 0,00 de `s3`.
+- Ordre : l'exécutant fait T0 à T2 du plan moteur et laisse le sous-module sur la branche du plan ; la première passe de T17.3 vérifie le moteur à cet endroit ; puis la session principale fait T3 du plan moteur (retour sur `chantier/pbr-ggx-back-facing`). T17.2 ne se lance qu'après ce retour : le jeu n'est jamais construit ni lancé sur la branche du plan moteur.
+- Validation, côté jeu, après le retour : `git -C CasaEngine rev-parse HEAD` commence par `8a3933b36`, `git status` du jeu ne montre pas le sous-module modifié, build du jeu à 0 erreur, un rejeu `linear` des 15 vues à 0,00 de `s3`.
 - Commit, côté jeu : `docs(ai-agent): record the engine fixes of two known defects`
 
 ### ⏳ T17.2 — Banc de capture : pixels qui diffèrent d'un rejeu à l'autre
 
 - Constat : sur un même build, 12 à 14 des 15 vues sont identiques octet pour octet d'un rejeu à l'autre ; les autres diffèrent par quelques pixels isolés (par exemple `Expert-overview`, `Advanced-overview`, `Expert-start`), avec des écarts moyens de 0,00.
 - Objectif : trouver la cause, sans élargir. Méthode : six rejeux `linear` et six `legacy` du même build vers `artifacts/pbr-handover/s5/` ; carte des pixels qui diffèrent, par vue et par mode ; pour chaque amas, l'objet de la scène qui s'y trouve (recadrage) ; au plus trois hypothèses essayées, chacune par un rejeu sur une copie du dossier de build ou par un changement temporaire non committé : (1) un élément animé par l'horloge (éoliennes, bannières, particules, eau) capturé à un instant différent ; (2) l'ordre de dessin ou de tri d'objets à profondeur égale ; (3) le bord de la carte d'ombre, dont le centre suit la caméra.
-- Issue : si la cause est dans le code du jeu et se corrige en un changement borné (un fichier, sans toucher au rendu en jeu hors capture), la correction est faite, avec douze rejeux identiques octet pour octet pour preuve ; si elle est dans le moteur ou demande plus, elle est décrite avec sa preuve dans `docs/racinggame-3d-capture-bench-local-baseline.md` (section « Capture repeatability ») et dans les points ouverts, sans correction.
+- Issue : si la cause est dans le code du jeu et se corrige en un changement borné (un fichier, sans toucher au rendu en jeu hors capture), la correction est faite, avec douze rejeux identiques octet pour octet pour preuve ; si elle est dans le moteur ou demande plus, ou si aucune des trois hypothèses ne l'explique, ce qui a été établi est décrit avec sa preuve dans `docs/racinggame-3d-capture-bench-local-baseline.md` (section « Capture repeatability ») et dans les points ouverts, sans correction.
 - Validation : la section du doc donne les vues, le nombre de pixels, les hypothèses essayées et leur résultat ; rien d'autre ne change (rejeux à 0,00 de `s3`, mesure de scène identique).
 - Commit : `fix(racing-casa): make the reference captures repeatable` ou `docs(racing-casa): record the cause of the capture repeatability noise`
 
 ### ⏳ T17.3 — Vérification indépendante de S5
 
-- Objectif : un `verifier` frais confirme ou réfute : les deux corrections du moteur (tests qui échouent avant et passent après, seuls les 8 échecs connus, empreinte de la démo PBR inchangée) ; l'état du sous-module et du jeu à la fin ; la conclusion de T17.2 par ses propres rejeux.
+- Objectif, en deux passes, par un `verifier` frais chacune :
+  - moteur, pendant que le sous-module est sur la branche du plan moteur, les commits de T1 et T2 et leurs parents nommés dans le brief : dans `CasaEngine`, sur place, tests du moteur (les nouveaux passent, seuls les 8 échecs connus) et `pbrdemo.sh` (empreinte `54e406a1dde8c171`) ; preuve de l'échec d'avant sans rien extraire dans le sous-module : copie de l'arbre de travail du moteur (sans `.git`, `bin`, `obj`) dans un dossier hors du dépôt, où les fichiers source corrigés sont remplacés par leur version du commit parent (`git -C CasaEngine show <parent>:<chemin>` redirigé dans la copie), puis les tests nouveaux y sont lancés et doivent échouer ; aucune commande git qui modifie l'état du sous-module ;
+  - jeu, après le retour du sous-module sur `chantier/pbr-ggx-back-facing` et après T17.2 : état du sous-module (`rev-parse` commençant par `8a3933b36`, `git status` du jeu propre), build du jeu, et la conclusion de T17.2 par ses propres rejeux.
 - Commit : `docs(ai-agent): record the verification of the known defect fixes`
 
 ---
