@@ -901,12 +901,21 @@ Règles communes : un seul lancement du jeu à la fois, jamais pendant un build 
 > - Écart au plan : aucun écart de fichiers ; la validation de géométrie passe par un outil jetable hors dépôt (assembly nommé `RgceAssetCooker` pour lire les membres internes de `RacingGame.Gameplay`), non versionné.
 
 
-### ⏳ T11.4 — Banc complet et références
+### ✅ T11.4 — Banc complet et références
 
 - Objectif : la référence du port après S1g, dans les deux modes.
 - Étapes : banc complet vers `artifacts/pbr-handover/s1g/` comme en T10.2 (deux rejeux par mode, `nopost`, `full`, sondes, répétabilité, comparaison avec `base` et avec `s1f/cand-a`), nouvelles références d'audit et d'interface ; section « After the race world lighting » de `docs/racinggame-3d-capture-bench-local-baseline.md` générée par script, qui dit quel mode chaque chiffre mesure ; `scripts/TrackCaptureCompare/README.md` si le mode change une commande.
 - Validation : les chiffres de la section sont ceux des sorties (relus par script) ; interface, contre `s1g/base-ui` : `splash`, `main-menu`, `highscores`, `options`, `help`, `car-selection` et `track-selection` à 0,00 (le carrousel n'est pas touché par S1g) ; `race-hud`, `pause` et `race-finished` notés (le monde de course change dessous) ; audit comparé à `s1g/base-audit` et noté.
 - Commit : `docs(racing-casa): record the capture bench after the race world lighting`
+
+> Validation (2026-11-17), jeu sur `8f1471b` (T11.3), contenu recuit, moteur `8a3933b36`, build refait avant les lancements. Sorties sous `artifacts/pbr-handover/s1g/`.
+> - Banc complet : deux rejeux par mode (`legacy-a`, `-b`, `linear-a`, `-b`), tous de sortie 0, 15 lignes `pipeline` attendues chacun, aucun `[Warning]`, `[Error]` ni exception ; comparaisons `nopost`, `full` et sondes par mode (`compare-<mode>-nopost`, `-full`, `-probes`) ; répétabilité (`legacy` : 14 fichiers égaux sur 15, `linear` : 13 sur 15, écarts moyens de 0,00) ; comparaison avec `base` (`legacy` : de 48,54 à 111,27 ; `linear` : de 51,42 à 98,22, moyenne des trois canaux) et avec `s1f/cand-a` ; nouvelles références d'interface (`ref-ui`, 10 captures) et d'audit (`ref-audit`, 30 captures), prises dans le mode par défaut du jeu (`linear`).
+> - Section « After the race world lighting » du doc générée par script (`gen_section_s1g.py`, hors dépôt) : les tableaux viennent des fichiers de sortie et des `.material` cuits ; chaque chiffre dit son mode (`legacy` ou `linear`). Relecture par un second script, qui relit en texte brut les `report.md`, `probes.md` et `report.txt` : 78 valeurs (images `nopost` et `full` des deux modes avec les arêtes, critères de sondes, interface) comparées au doc, 0 différence.
+> - Mesure de scène : les douze `scene-measure-*.txt` (trois pistes, deux modes, deux rejeux) égaux octet pour octet à ceux de `base`. Mipmaps et lignes `car paint slots` (1 peint, 10 non peints) comme avant.
+> - Interface contre `base-ui` : `splash`, `main-menu`, `highscores`, `options`, `help`, `car-selection` et `track-selection` à 0,00 (le carrousel n'est pas touché) ; `race-hud` 62,77 / 69,11 / 68,43, `pause` 18,36 / 19,97 / 19,54, `race-finished` 56,24 / 62,67 / 60,56 (le monde de course change dessous : lumière et pipeline couleur). Audit contre `base-audit` : au plus 110,816 (`audit-Advanced-sector-80`), au moins 24,087 (`audit-Beginner-helper-tunnel`).
+> - `scripts/TrackCaptureCompare/README.md` : aucune commande ne change (l'option `--color-pipeline` y est déjà décrite telle que le code la fait) ; non modifié.
+> - Chiffres de référence de S1g : critère 3 des sondes 27 sur 33 dans les deux modes (21 sur 33 pour `base`) ; luminance moyenne `legacy` 140,5, `linear` 133,5, original 96,3, `base` 55,9 ; rapports ombre sur lumière du terrain en `legacy` 0,282 et 0,263 (original 0,284 et 0,267) ; pixels blancs de `Beginner-start` et `Expert-start` en `linear` : 0 et 0 (`legacy` : 6062 et 6500 à 255 exactement).
+
 
 ### ⏳ T11.5 — Vérification indépendante de S1g
 

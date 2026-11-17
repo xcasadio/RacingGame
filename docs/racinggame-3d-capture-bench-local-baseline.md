@@ -489,3 +489,179 @@ UI captures (`ui/`) against the previous reference `artifacts/pbr-handover/s1m/u
 
 Track audit (`audit/`, 30 captures) against `artifacts/pbr-handover/s1m/audit`: largest channel difference 56.691 (`audit-Advanced-sector-50`), smallest 14.910 (`audit-Expert-helper-tunnel`).
 
+
+## After the race world lighting
+
+Sixth run, on 2026-11-17, after slice S1g of the plan: the race world renders in linear HDR by default (`--color-pipeline legacy` keeps the previous chain), lit by the original's single key light with an image-based ambient from the sky cube and the original's soft tinted shadows, the road and the tunnels have tangents so that their normal maps apply, and the generated track materials have no emissive. The run before it is the previous section, `artifacts/pbr-handover/s1f/cand-a` (cooked PBR materials, `legacy` colour pipeline, three lights). The state just before this slice, taken again on the engine it ends on, is `artifacts/pbr-handover/s1g/base` (`legacy` pipeline). The previous runs above stay as their record.
+
+Outputs under `artifacts/pbr-handover/s1g/`; the original's export is the same one, `artifacts/pbr-handover/s1c/ref`. The tables of this section are generated from the output files and from the cooked `.material` files by a script. **Every figure below is for one colour pipeline mode, stated in its table: `legacy` is the engine's legacy colour chain (no tonemapping, no anti-aliasing), the mode of the earlier runs, and `linear` is the default of the game, linear HDR with the ACES approximation, exposure 1, FXAA, bloom and SSAO off.** The colours of `legacy` are no longer comparable to the original's now that the light is PBR-scaled (see the luminance below); its use is the geometry and shadow-placement checks.
+
+### Run
+
+- Game `RacingGameCasaEngine.exe --capture-reference-views artifacts/pbr-handover/s1c/ref/views.json --reference-capture-out <folder> --color-pipeline <mode>`, Debug build, engine `8a3933b36`. Folders: `legacy-a`, `legacy-b`, `linear-a`, `linear-b` (two runs per mode), each with its `run.log`.
+- `legacy`: lines `[CaptureBench] view ... pipeline legacy fxaaPasses 0` in `legacy-a/run.log` and `legacy-b/run.log`: 15 and 15 of 15; lines with a warning, an error or an exception: 0 and 0.
+- `linear`: lines `[CaptureBench] view ... pipeline linear fxaaPasses 1` in `linear-a/run.log` and `linear-b/run.log`: 15 and 15 of 15; lines with a warning, an error or an exception: 0 and 0.
+
+### Race world settings
+
+Read from `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs` at the commit of this run:
+
+| Setting | Value |
+|---|---|
+| Key light direction | normalize(-8500, -15000, -7250) |
+| Key light intensity | MathF.PI |
+| Key light specular colour | new(235, 235, 235) |
+| ShadowMapResolution | 4096 |
+| ShadowMaxDistance | 100f |
+| ShadowFadeDistance | 15f |
+| ShadowDepthRange | 150f |
+| ShadowFilterRadius | 3f |
+| ShadowColor | new(0.25f, 0.26f, 0.27f) |
+| ShadowDepthBias | 0.001f |
+| ShadowNormalBias | 0.1f |
+| Shadows.Mode | ShadowMode.MultiplyLitColor |
+| AmbientSource | AmbientSource.Auto |
+| AmbientColor | Vector3.One |
+| AmbientIntensity | 1f |
+| SpecularIntensity | 1f |
+| Colour pipeline (`linear`) | Mode = ColorPipelineMode.LinearHdr, Tonemapper = TonemapOperator.AcesApprox, Exposure = 1.0f, BloomEnabled = false, SsaoEnabled = false, AntiAliasing = AntiAliasingMode.Fxaa |
+
+### Road and tunnel meshes
+
+Control run by a throwaway tool (not in git) that rebuilds the road and tunnel meshes of the three tracks with the game's own code (`t3-geometry-before.txt` before the change, `t3-geometry-after.txt` after):
+
+| Mesh | Vertices | Hash of positions, normals, UVs, indices before | after | Tangent check after |
+|---|---|---|---|---|
+| Beginner road | 6660 | 4CCD29EF95BE1220 | 4CCD29EF95BE1220 | 0 failure(s) |
+| Beginner tunnel | 404 | 8E67E1C88327E007 | 8E67E1C88327E007 | 0 failure(s) |
+| Advanced road | 10860 | E42D99EF7B5262C3 | E42D99EF7B5262C3 | 0 failure(s) |
+| Advanced tunnel | 860 | F4F96C47C74CD791 | F4F96C47C74CD791 | 0 failure(s) |
+| Expert road | 22330 | 8A4E39D94005A7E1 | 8A4E39D94005A7E1 | 0 failure(s) |
+| Expert tunnel | 896 | EBA77D793F9950E5 | EBA77D793F9950E5 | 0 failure(s) |
+
+The check, for each vertex: tangent of unit length, orthogonal to the normal and equal to the expected vector (the road point's right vector with the port's axes, its opposite for the tunnel), to 1e-4, with `w` = 1. Before the change the meshes have no tangents, which is why the engine ignored the normal maps of the road and the tunnel.
+
+### Cooked track materials
+
+Values read back from `RacingGameCasaEngine/Content/Materials/Track/*.material`:
+
+| Material | Normal map | Emissive colour |
+|---|---|---|
+| Road | yes | 0, 0, 0 |
+| Ground | no | 0, 0, 0 |
+| Terrain | yes | 0, 0, 0 |
+| GuardRail | yes | 0, 0, 0 |
+| RoadColumn | yes | 0, 0, 0 |
+| RoadTunnel | yes | 0, 0, 0 |
+
+Cooker: `--verify` before the recook: 8 mismatches; recook: 6 files written, 257 unchanged; `--verify` after: 0 mismatches; second pass: 0 files written (`t3-cook-*.txt`).
+
+### Scene against the original
+
+`legacy-a/run.log`, scene measure of each track (the `linear` runs give the same lines):
+
+| Track | Objects original / port | Matched | Missing | Extra | Shadow cast / receive mismatches |
+|---|---|---|---|---|---|
+| Beginner | 1147 / 1147 | 1147 | 0 | 0 | 0 / 0 |
+| Advanced | 1693 / 1693 | 1693 | 0 | 0 | 0 / 0 |
+| Expert | 3404 / 3404 | 3404 | 0 | 0 | 0 / 0 |
+
+12 of the 12 `scene-measure-*.txt` files (3 tracks, 2 modes, 2 runs) are identical, byte for byte, to those of `base` (the state before this slice).
+
+The five `[CaptureBench] mipmaps` lines are the same as the previous run's in both modes; `car paint slots`: legacy painted 1 unpainted 10, linear painted 1 unpainted 10.
+
+### Pictures against the original
+
+`compare-<mode>-nopost/report.md`, `compare-<mode>-full/report.md` (mean difference per channel R, G, B, and share of the original's edges found within 2 pixels in the port; `nopost` is the original without its post screen shaders). The edges of the previous run come from `artifacts/pbr-handover/s1f/compare-nopost/report.md`.
+
+| View | `legacy` R, G, B `nopost` | Edges | `linear` R, G, B `nopost` | Edges | Edges previous run (`legacy`) | `legacy` R, G, B `full` | `linear` R, G, B `full` |
+|---|---|---|---|---|---|---|---|
+| Beginner-start | 40.74, 53.16, 53.37 | 99.8 % | 37.21, 45.89, 45.78 | 99.3 % | 41.7 % | 33.45, 48.65, 52.57 | 31.98, 40.18, 42.79 |
+| Beginner-sector-20 | 43.71, 52.40, 50.58 | 72.9 % | 44.52, 49.60, 48.00 | 65.3 % | 15.5 % | 44.28, 51.84, 51.46 | 46.62, 50.11, 49.97 |
+| Beginner-sector-50 | 43.48, 57.96, 58.20 | 95.7 % | 39.32, 48.52, 48.68 | 88.6 % | 24.1 % | 31.62, 46.08, 49.79 | 32.51, 39.05, 41.80 |
+| Beginner-sector-80 | 49.56, 65.05, 63.34 | 99.0 % | 39.21, 49.79, 50.11 | 98.5 % | 34.3 % | 38.12, 52.72, 55.61 | 37.16, 41.28, 43.01 |
+| Beginner-overview | 28.18, 36.05, 34.41 | 99.9 % | 34.07, 37.70, 33.94 | 99.7 % | 32.6 % | 27.47, 38.52, 40.03 | 24.91, 33.58, 34.99 |
+| Advanced-start | 41.84, 56.90, 57.98 | 96.2 % | 33.75, 43.50, 45.70 | 94.7 % | 22.7 % | 29.92, 44.37, 49.75 | 29.21, 32.54, 36.25 |
+| Advanced-sector-20 | 42.86, 49.32, 46.31 | 96.6 % | 36.44, 40.47, 39.25 | 91.5 % | 22.2 % | 43.39, 48.34, 47.41 | 38.95, 39.32, 39.74 |
+| Advanced-sector-50 | 41.63, 52.72, 52.12 | 96.0 % | 34.48, 41.71, 41.22 | 89.7 % | 23.5 % | 28.30, 39.52, 42.60 | 30.35, 32.57, 34.04 |
+| Advanced-sector-80 | 50.76, 68.81, 71.95 | 98.3 % | 41.49, 54.94, 58.65 | 97.5 % | 36.5 % | 33.79, 54.76, 61.67 | 33.23, 43.23, 48.48 |
+| Advanced-overview | 28.42, 36.71, 33.72 | 99.8 % | 33.72, 37.89, 33.30 | 98.9 % | 22.6 % | 28.76, 40.32, 41.39 | 26.47, 34.66, 35.38 |
+| Expert-start | 34.23, 45.54, 44.62 | 99.1 % | 28.54, 36.19, 35.60 | 98.6 % | 39.6 % | 24.70, 39.34, 41.50 | 21.91, 28.91, 30.83 |
+| Expert-sector-20 | 51.38, 69.65, 67.35 | 99.0 % | 44.31, 57.77, 57.63 | 97.2 % | 27.0 % | 36.37, 56.18, 59.53 | 36.61, 45.68, 49.33 |
+| Expert-sector-50 | 47.10, 64.64, 67.38 | 95.4 % | 42.64, 55.24, 58.14 | 91.1 % | 37.4 % | 34.71, 53.85, 60.49 | 34.67, 43.98, 49.74 |
+| Expert-sector-80 | 38.05, 51.55, 52.02 | 99.1 % | 39.62, 49.76, 49.60 | 98.7 % | 26.6 % | 27.64, 45.70, 50.04 | 28.72, 42.50, 46.45 |
+| Expert-overview | 25.95, 33.20, 31.49 | 99.9 % | 31.97, 34.84, 31.63 | 99.3 % | 44.2 % | 29.60, 38.70, 39.90 | 26.15, 32.74, 34.37 |
+
+Change from the picture of the same view in another state, mean of the three channels (`compare-<mode>-vs-base/report.md`, `compare-<mode>-vs-s1f/report.md`):
+
+| View | `legacy` vs `base` | `linear` vs `base` | `legacy` vs previous run | `linear` vs previous run |
+|---|---|---|---|---|
+| Beginner-start | 77.37 | 71.46 | 77.73 | 71.74 |
+| Beginner-sector-20 | 66.98 | 58.93 | 66.98 | 58.92 |
+| Beginner-sector-50 | 100.93 | 91.08 | 100.92 | 91.07 |
+| Beginner-sector-80 | 111.27 | 98.22 | 111.28 | 98.22 |
+| Beginner-overview | 51.44 | 54.12 | 51.43 | 54.12 |
+| Advanced-start | 102.87 | 91.20 | 102.86 | 91.20 |
+| Advanced-sector-20 | 78.34 | 75.37 | 78.34 | 75.37 |
+| Advanced-sector-50 | 98.58 | 85.92 | 98.57 | 85.91 |
+| Advanced-sector-80 | 106.75 | 94.39 | 106.77 | 94.40 |
+| Advanced-overview | 52.30 | 54.63 | 52.30 | 54.63 |
+| Expert-start | 70.71 | 62.87 | 70.94 | 63.04 |
+| Expert-sector-20 | 104.79 | 95.42 | 104.76 | 95.39 |
+| Expert-sector-50 | 98.89 | 90.77 | 98.89 | 90.77 |
+| Expert-sector-80 | 79.68 | 78.78 | 79.65 | 78.75 |
+| Expert-overview | 48.54 | 51.42 | 48.54 | 51.42 |
+
+`legacy` against `base`: largest 111.27 (`Beginner-sector-80`), smallest 48.54 (`Expert-overview`).
+`linear` against `base`: largest 98.22 (`Beginner-sector-80`), smallest 51.42 (`Expert-overview`).
+
+Mean luminance of the 15 pictures: original 96.3; port in `legacy` 140.5; port in `linear` 133.5; port before this slice (`base`, `legacy`) 55.9; port in the previous run 56.0.
+
+Saturated pixels (the three channels at 255, and at 250 or more) of the full picture, which is where the specular glints of the rails and lamp posts show:
+
+| Run | `Beginner-start` at 255 | at 250 or more | `Expert-start` at 255 | at 250 or more |
+|---|---|---|---|---|
+| `base` (`legacy`, before this slice) | 728 | 791 | 691 | 760 |
+| `legacy-a` | 6062 | 6824 | 6500 | 6800 |
+| `linear-a` | 0 | 0 | 0 | 0 |
+
+### Light and shadow probes
+
+`compare-<mode>-probes/probes.md`; the base column is `compare-base-probes/probes.md`, the state before this slice in `legacy`. The criterion 3 of the base is the figure this slice must not lower.
+
+| Criterion | `legacy` passed | `linear` passed | Judged | `base` passed |
+|---|---|---|---|---|
+| 1. lit and away within +-12 | 0 | 1 | 34 | 10 |
+| 2. shadow/lit ratio within +-0.05 (per view and surface) | 2 | 0 | 4 | 0 |
+| 3. class agreement (shadow shadowed, lit lit) | 27 | 27 | 33 | 21 |
+| 4. away-shadowed within +-12 | 0 | 3 | 3 | 0 |
+
+Shadow over lit luminance ratio, in the order of the report (terrain, city, road, terrain): original 0.284, 0.276, 0.228, 0.267; port in `legacy` 0.282, 1.921, 0.835, 0.263; port in `linear` 0.183, 3.133, 0.905, 0.141; `base` 1.038, 1.037, 0.804, 1.015. Only the two terrain ratios in `legacy` were a target of this slice (within 0.03 of the original).
+
+Road over terrain luminance of the lit probes of `Beginner-start` (`road-lit-1` over `terrain-lit-1`): original 0.348; port in `legacy` 0.756; port in `linear` 0.806; `base` 0.815.
+
+### Repeatability
+
+`legacy`: two runs (`legacy-a`, `legacy-b`, `compare-legacy-repeat/report.md`): 14 identical files of 15. Different by their hash: `Expert-overview.png` (mean difference 0.00, 0.00, 0.00).
+
+`linear`: two runs (`linear-a`, `linear-b`, `compare-linear-repeat/report.md`): 13 identical files of 15. Different by their hash: `Expert-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-start.png` (mean difference 0.00, 0.00, 0.00).
+
+### Other references of this machine
+
+UI captures (`ref-ui/`, default colour pipeline, `linear`) against the state before this slice `artifacts/pbr-handover/s1g/base-ui` (`ui-compare/report.txt`). The race states change because the race world below the interface changes; the car selection carousel has its own world and is not touched by this slice.
+
+| State | R | G | B |
+|---|---|---|---|
+| splash | 0.00 | 0.00 | 0.00 |
+| main-menu | 0.00 | 0.00 | 0.00 |
+| highscores | 0.00 | 0.00 | 0.00 |
+| options | 0.00 | 0.00 | 0.00 |
+| help | 0.00 | 0.00 | 0.00 |
+| car-selection | 0.00 | 0.00 | 0.00 |
+| track-selection | 0.00 | 0.00 | 0.00 |
+| race-hud | 62.77 | 69.11 | 68.43 |
+| pause | 18.36 | 19.97 | 19.54 |
+| race-finished | 56.24 | 62.67 | 60.56 |
+
+Track audit (`ref-audit/`, 30 captures, default colour pipeline, `linear`) against `artifacts/pbr-handover/s1g/base-audit` (`legacy`): largest channel difference 110.816 (`audit-Advanced-sector-80`), smallest 24.087 (`audit-Beginner-helper-tunnel`). The new references of this machine are `artifacts/pbr-handover/s1g/ref-ui` and `ref-audit`.
+
