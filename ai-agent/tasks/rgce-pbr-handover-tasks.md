@@ -1232,6 +1232,25 @@ Retour arrière : relever `git rev-parse HEAD` avant T15.1 ; annuler les commits
 > - P4 : le décompte « 8 vues changent » inclut du bruit de répétabilité (7 hors bruit).
 > - S3 close avec le candidat (b) committé ; le choix du niveau reste à l'auteur (O16).
 
+### ⏳ T15.4 — Émissive du tunnel à 0,5 (décision de l'auteur)
+
+- Décision de l'auteur (2026-11-17, après la mesure notée en O16) : `emissive_color` du tunnel vaut 0,5 sur les trois canaux, gris neutre, à la place de 182/255 × teinte d'ombre.
+- Fichiers : `RacingGame.Gameplay/Import/RaceMaterialRecipes.cs` (`ForRoadTunnel` : facteur d'émissive en constante nommée, 0,5 ; le commentaire dit que c'est le niveau choisi par l'auteur entre l'ambiant du matériau de l'original, 182/255, et ce même ambiant multiplié par la teinte d'ombre, et renvoie à O16 ; les constantes devenues inutiles sont retirées si plus rien ne les lit) ; `RoadTunnel.material` recuit ; `docs/decisions/0030-…` (ADR encore `Proposed` : sa décision est mise à la valeur retenue, avec la mesure des intermédiaires, et son état passe à `Accepted` à la date du jour, l'auteur ayant choisi le niveau ; index mis à jour) ; `docs/racinggame-3d-capture-bench-local-baseline.md` (section « After the tunnel emissive level », générée par script) ; ce plan.
+- Validation :
+  - builds du jeu et du cuiseur à 0 erreur ; cuiseur `--verify` avant la cuisson (écart sur `RoadTunnel.material` seulement) et après (0 écart), `--check`, second passage sans écriture ; `git status` du contenu : `RoadTunnel.material` seulement, dont seul `emissive_color` change ;
+  - `RoadTunnel.material` du dossier de build égal octet pour octet à celui du dépôt avant tout rejeu ;
+  - rejeu des trois vues de tunnel en `linear` : à 0,00 de moyenne par canal de `artifacts/pbr-handover/o16/f0.5` ; en `legacy` : mesuré et noté ; aucun pixel à 255 ;
+  - banc des 15 vues vers `artifacts/pbr-handover/s3b/` (deux rejeux par mode, identiques octet pour octet entre eux depuis S5 ; sondes ; comparaison avec `s3`) : mesure de scène égale à `s3` ; critère 3 des sondes au moins 27 sur 33 dans les deux modes ; les vues qui changent sont nommées (faces extérieures des tunnels), les deux plus grandes regardées contre l'original ;
+  - interface : les dix écrans à 0,00 de moyenne contre `s4/ref-ui` ; audit des pistes comparé à `s3/ref-audit`, les captures de tunnel notées ; nouvelles références `s3b/ref-ui` et `s3b/ref-audit` ;
+  - `--smoke-frontend` et `--verify-legacy-import-profile` en succès ; chiffres du doc relus par un second script.
+- Arrêts : le rejeu des vues de tunnel diffère de `o16/f0.5` ; critère 3 sous 27 ; un autre matériau change.
+- Commit : `fix(racing-casa): set the tunnel emissive to the level chosen by the author`
+
+### ⏳ T15.5 — Vérification indépendante de T15.4
+
+- Objectif : un `verifier` frais confirme ou réfute les validations de T15.4 par ses propres lancements et regarde les trois vues de tunnel contre l'original.
+- Commit : `docs(ai-agent): record the verification of the tunnel emissive level`
+
 ---
 
 ## Phase 16 — Voiture du carrousel (S4)
