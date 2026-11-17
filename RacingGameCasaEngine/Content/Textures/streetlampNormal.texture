@@ -2,6 +2,7 @@
   "id": "44b40f69-7d55-5bfb-91fc-363f882c5772",
   "name": "Texture.streetlampNormal",
   "texture_asset_id": "ba129b51-e737-5a88-93dc-0e2a1945fee3",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

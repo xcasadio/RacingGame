@@ -2,6 +2,7 @@
   "id": "575ba5db-0534-5416-86db-612712ca4bec",
   "name": "Texture.SchildNormal",
   "texture_asset_id": "c40f01b3-2699-561d-a6b6-9c45e64cac75",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

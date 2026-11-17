@@ -145,6 +145,8 @@ internal sealed class Cooker
         var texture = new Texture(Uuid5.ForAsset($"Image.{cooked.Stem}"), null!)
         {
             PreferredSamplerState = ToSamplerState(cooked.SamplerName),
+            // The textures of the race world are drawn with their mipmap chain, as the original's content project builds them.
+            GenerateMipmaps = true,
         };
         CookPlanner.SetIdentity(texture, cooked.Name);
         return texture;

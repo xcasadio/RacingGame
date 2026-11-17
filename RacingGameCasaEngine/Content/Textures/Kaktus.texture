@@ -2,6 +2,7 @@
   "id": "446fc65a-376a-54fa-85c9-defe51566bcf",
   "name": "Texture.Kaktus",
   "texture_asset_id": "2c80c1d7-33b6-58e3-811d-ba416cd43e01",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

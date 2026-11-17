@@ -2,6 +2,7 @@
   "id": "3642db3a-388c-5379-b033-9df0d07f58bb",
   "name": "Texture.WindmillNormal",
   "texture_asset_id": "8978dfdd-f02f-5eff-b12b-d86817f0e726",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

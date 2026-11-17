@@ -2,6 +2,7 @@
   "id": "83abb111-8ba1-57eb-ae86-3f508fcc5dee",
   "name": "Texture.CarSelectionPlate",
   "texture_asset_id": "1a51ba38-6f51-5d99-901b-7e296bdd3cc6",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

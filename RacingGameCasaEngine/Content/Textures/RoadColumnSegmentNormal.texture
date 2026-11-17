@@ -2,6 +2,7 @@
   "id": "4bae0ab6-d503-5a1e-bba2-84bac5ad6918",
   "name": "Texture.RoadColumnSegmentNormal",
   "texture_asset_id": "6e83536d-9290-5fbe-9f96-8dd7a35049c4",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

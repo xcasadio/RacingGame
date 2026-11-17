@@ -2,6 +2,7 @@
   "id": "52b96ab5-a11c-5f0a-8cf9-6a8d17e560ff",
   "name": "Texture.KaktusSegNormal",
   "texture_asset_id": "da4ee988-bf65-595c-a0a4-5ac8a953b9a6",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

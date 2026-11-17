@@ -2,6 +2,7 @@
   "id": "04116e05-6045-528f-a90d-f42d6d698966",
   "name": "Texture.Schild2",
   "texture_asset_id": "fe84fc49-0b3a-503b-a96f-deb1a86b84f7",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

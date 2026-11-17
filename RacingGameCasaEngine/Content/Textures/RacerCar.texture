@@ -2,6 +2,7 @@
   "id": "41fa73a2-729a-54f1-ae75-b61b4d4a26da",
   "name": "Texture.RacerCar",
   "texture_asset_id": "9baa869e-f7eb-5434-b52e-c5a3adfe7e88",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

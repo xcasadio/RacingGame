@@ -2,6 +2,7 @@
   "id": "134f3d5e-9c1b-5fd3-bd54-462cddb4fcdb",
   "name": "Texture.Trunk",
   "texture_asset_id": "37e6996e-d81a-5f3c-8938-18064f267f0d",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

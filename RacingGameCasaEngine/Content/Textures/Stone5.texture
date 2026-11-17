@@ -2,6 +2,7 @@
   "id": "ffad8b73-3a42-5642-a5ef-8ea71546b2dd",
   "name": "Texture.Stone5",
   "texture_asset_id": "9b5f29b4-fed9-5472-9620-1bc7bf1c0a33",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

@@ -2,6 +2,7 @@
   "id": "36a32797-5ea9-5696-a027-1d5593b2994d",
   "name": "Texture.PalmLeave2",
   "texture_asset_id": "51adba54-6ce8-5fa4-a9cd-7b43cbb82201",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

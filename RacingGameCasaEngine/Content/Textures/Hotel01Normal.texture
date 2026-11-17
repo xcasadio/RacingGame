@@ -2,6 +2,7 @@
   "id": "7166e1ab-0631-5fc3-84e0-3f707ebdcf12",
   "name": "Texture.Hotel01Normal",
   "texture_asset_id": "9a9720b6-30fe-5d3d-a29b-d7102cf23c47",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

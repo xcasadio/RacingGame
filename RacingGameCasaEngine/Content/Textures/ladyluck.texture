@@ -2,6 +2,7 @@
   "id": "e5c1c7c3-e196-5799-b8a3-3c40cc825e1e",
   "name": "Texture.ladyluck",
   "texture_asset_id": "0ecd7a7a-d2f6-5343-bffa-090987fbff04",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

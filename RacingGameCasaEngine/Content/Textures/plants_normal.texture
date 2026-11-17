@@ -2,6 +2,7 @@
   "id": "0b445133-d346-5ba9-b4a5-5605c05403a0",
   "name": "Texture.plants_normal",
   "texture_asset_id": "c3f8197c-b638-5721-967b-f6532709b22c",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

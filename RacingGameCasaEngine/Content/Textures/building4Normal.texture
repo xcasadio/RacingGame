@@ -2,6 +2,7 @@
   "id": "6d6b83b1-58c5-55c5-9410-fc0e448eca49",
   "name": "Texture.building4Normal",
   "texture_asset_id": "94de5317-6429-53dc-9dca-8d50710a62d0",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

@@ -2,6 +2,7 @@
   "id": "2e12e05b-cd5c-57e0-859e-844d25ad455b",
   "name": "Texture.FortNormal",
   "texture_asset_id": "ec5f3417-39fd-57c9-8b01-b0f54e18b154",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

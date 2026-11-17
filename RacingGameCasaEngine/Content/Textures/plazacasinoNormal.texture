@@ -2,6 +2,7 @@
   "id": "64d193ca-0111-5335-a38c-0dc4ceb35252",
   "name": "Texture.plazacasinoNormal",
   "texture_asset_id": "b23066d7-aa06-5b37-ba9d-888d2cd6bf81",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

@@ -2,6 +2,7 @@
   "id": "e10be4bc-3e16-5d15-9202-c749438905d9",
   "name": "Texture.TLight",
   "texture_asset_id": "4d9ec4a3-8a17-591e-8b45-faf27bad8a91",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

@@ -666,13 +666,23 @@ Retour arrière de S1m : jeu, relever `git rev-parse HEAD` avant T9.2 et annuler
 
 Budget de S1m : deux tours de recuisson ; deux passes de correction après vérification.
 
-### ⏳ T9.1 — Moteur : réglage de mipmaps par asset `.texture`
+### ✅ T9.1 — Moteur : réglage de mipmaps par asset `.texture`
 
 - Plan propre dans le dépôt du moteur : `CasaEngine/ai-agent/tasks/texture-asset-mipmaps-tasks.md`, branche moteur `chantier/texture-asset-mipmaps` (partie de `chantier/static-model-tangents`).
 - Validation : celle du plan du moteur, puis un `verifier` frais sur ce plan avant T9.2.
 - Commits : ceux du plan du moteur ; dans le jeu, pointeur du sous-module avancé dans le commit de T9.2.
 
-### ⏳ T9.2 — Textures cuites et peinture de la voiture avec mipmaps
+> Validation (2026-11-17) : moteur, branche `chantier/texture-asset-mipmaps`, commits `b9cc2ef23` (code et tests) et `2b64b0591` (ADR-0124 et doc).
+> - Tests du moteur : 6391 lancés, 6383 réussis ; les 8 échecs sont les 8 tests GPU connus (O3), aucun autre.
+> - `verifier` frais : **CONFIRMED**.
+> - Remarques notées sans suite (P3, P4) :
+>   - une image qui n'est pas au format Color donne une erreur avalée par le `catch` général déjà présent dans `MaterialCompiler` ;
+>   - un exemple JSON du doc a un `sampler_state` vide ;
+>   - un réglage changé après `Load` laisserait fuir une prise ;
+>   - les matériaux déjà compilés gardent l'ancienne texture après une perte de périphérique (comportement antérieur à ce plan) ;
+>   - aucun test de la branche de remise à zéro quand le réglage est faux.
+
+### ✅ T9.2 — Textures cuites et peinture de la voiture avec mipmaps
 
 - Fichiers : `scripts/RgceAssetCooker/Cooker.cs` (`generate_mipmaps` vrai sur chaque `.texture` cuit), `Verifier.cs` (le compare), `README.md` ; les 107 `Content/Textures/*.texture` recuits ; `RacingGameCasaEngine/Bootstrap/ReferenceViewCaptureValidator.cs` (contrôle de chaîne ci-dessous) ; `RacingGame.Gameplay/Components/LegacyCarVisualFactory.cs` (les deux textures de peinture créées avec `mipMap: true`, chaîne écrite par `MipmapChain.UploadChain` à la création et après chaque peinture, comme `58bb871`) ; pointeur `CasaEngine` ; ce plan.
 - Validation :
@@ -684,6 +694,17 @@ Budget de S1m : deux tours de recuisson ; deux passes de correction après véri
   - contrôle de la chaîne : sous `--capture-reference-views`, une fois le premier monde de course prêt, le validateur journalise pour `Texture.Road` (`438bfe97-634a-50cc-a008-7661c239ab25`), `Texture.Landscape` (`ee748e62-6069-552c-a7cb-2656da413b49`) et `Texture.Building` (`5dd4c964-020b-59c5-9d59-b40fc856c0f9`) une ligne `[CaptureBench] mipmaps <nom> levels <n> expected <m>`, avec `n` le `LevelCount` de `Resource` du `Texture` acquis et chargé par identifiant, et `m` = `MipmapChain.GetLevelCount(largeur, hauteur)`. Réussite : trois lignes, `n` = `m` > 1 pour chacune. Le validateur fait partie des fichiers de cette tâche. Même contrôle pour la peinture de la voiture : le validateur journalise aussi `[CaptureBench] mipmaps CarPaint.Painted levels <n> expected <m> chain <ok|KO>` et la même ligne pour `CarPaint.Unpainted`, lues par un accès interne ajouté à `LegacyCarVisualFactory` ; `chain ok` veut dire que le niveau 1 lu sur la texture est égal à `MipmapChain.ComputeNextLevel` de son niveau 0, ce qui prouve que la chaîne suit la dernière peinture. Réussite : deux lignes de plus, `n` = `m` > 1 et `chain ok`.
 - Arrêts : `--verify` en écart sans cause trouvée ; un écart de mesure de scène.
 - Commit : `feat(racing-casa): draw the race world textures with their mipmaps`
+
+> Validation (2026-11-17), jeu relevé à `e7a0200` avant la tâche, pointeur du moteur avancé de `61b4e6fae` à `2b64b0591` (cinq commits du moteur).
+> - Builds du jeu (`RacingGameCasaEngine.csproj`, Debug) et du cuiseur à 0 erreur, 0 avertissement.
+> - Cuiseur : avant recuisson `--verify` donnait 107 écarts (`generate_mipmaps` absent), preuve que le contrôle mord ; un tour de recuisson (sur deux) : 107 fichiers écrits, 154 inchangés, `--verify` 0 écart ; `--check` 0 manquant ; second passage : 0 écrit, 261 inchangés, 0 écart.
+> - Les 107 `Content/Textures/*.texture` changent, chacun d'une seule ligne ajoutée, `"generate_mipmaps": true` ; contrôlé par script contre `HEAD` (champs JSON et lignes), 0 anomalie ; aucun autre fichier de contenu changé.
+> - `--smoke-frontend` (« Smoke validation completed successfully » au journal) et `--verify-legacy-import-profile` (« Legacy import profile verification passed. ») : sortie 0, relancés après la reconstruction qui copie le contenu recuit dans `bin`.
+> - Deux rejeux `--capture-reference-views` (`cand-a`, `cand-b`) : sortie 0 ; mesure de scène inchangée (1147/1147, 1693/1693, 3404/3404 appariés, 0 manquant, 0 en trop, 0 écart d'ombre d'émission et de réception) ; les 15 distances d'alignement inchangées.
+> - Contrôle de chaîne, journal des deux rejeux : `Texture.Road` 11 niveaux pour 11 attendus, `Texture.Landscape` 12 pour 12, `Texture.Building` 10 pour 10, `CarPaint.Painted` 12 pour 12 `chain ok`, `CarPaint.Unpainted` 12 pour 12 `chain ok`.
+> - Premier essai du rejeu (non gardé) : 1 niveau pour les trois textures de la piste, parce que le jeu avait été reconstruit avant la recuisson et que `bin` avait encore les anciens `.texture` ; reconstruit, puis rejeué.
+> - Banc vers `artifacts/pbr-handover/s1m/` : `nopost`, `full`, sondes, répétabilité (12 fichiers identiques sur 15), comparaison avec `s1e`, nouvelles références `audit` (30 captures) et `ui` (10), comparaisons `UiCaptureCompare` et `compare_track_audit.py` ; section « After the mipmaps » du doc générée par script (`gen_section_s1m.py`, hors dépôt).
+> - Écart des vues avec `s1e`, moyenne des trois canaux : de 0,41 à 1,44 ; arêtes appariées (`nopost`) plus basses sur les 15 vues, de 0,1 à 5,7 points ; totaux des sondes inchangés (11, 0, 21, 0) ; UI au plus 0,79 de différence, audit au plus 1,589.
 
 ### ⏳ T9.3 — Vérification indépendante de S1m
 

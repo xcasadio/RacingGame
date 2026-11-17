@@ -2,6 +2,7 @@
   "id": "682cfd75-480d-5604-a015-be56f9c12d45",
   "name": "Texture.gelaenderNormal",
   "texture_asset_id": "98aafd8a-6b88-5332-b224-6589eeda70f6",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

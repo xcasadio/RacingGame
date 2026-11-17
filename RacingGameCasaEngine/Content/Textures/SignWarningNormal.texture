@@ -2,6 +2,7 @@
   "id": "d32e7ebe-6bfa-573e-a9a0-128d43ee4708",
   "name": "Texture.SignWarningNormal",
   "texture_asset_id": "a69b4b51-5999-558f-9f23-bfc0eeac23fe",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

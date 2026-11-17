@@ -2,6 +2,7 @@
   "id": "4b5d6d2a-e5c2-5683-a670-8392b2924c2d",
   "name": "Texture.RoadTunnelNormal",
   "texture_asset_id": "cf17efb0-97ad-55dc-8322-30d85d3b8255",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

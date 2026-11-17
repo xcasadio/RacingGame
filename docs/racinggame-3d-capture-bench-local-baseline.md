@@ -262,3 +262,95 @@ UI captures (`ui/`) against the previous reference `artifacts/pbr-handover/s1a/u
 
 Track audit (`audit/`, 30 captures) against `artifacts/pbr-handover/s1a/audit-1`: largest channel difference 28.136 (`audit-Advanced-road-only-start`), smallest 1.671 (`audit-Expert-helper-tunnel`).
 
+## After the mipmaps
+
+Fourth run, on 2026-11-17, after slice S1m of the plan: every cooked `.texture` asks for its mipmap chain (`generate_mipmaps`, ADR-0124 of the engine) and the two car paint textures are created with theirs, rewritten after each paint. The run before it is the previous section, `artifacts/pbr-handover/s1e/`. This run is the reference before the next slices. The previous runs above stay as their record.
+
+Outputs under `artifacts/pbr-handover/s1m/`; the original's export is the same one, `artifacts/pbr-handover/s1c/ref`. The tables of this section are generated from the output files by a script.
+
+### Mipmap chains
+
+The lines `[CaptureBench] mipmaps` of `cand-a/run.log`, written once the first race world is ready (`Levels` is the level count read from the texture, `Expected` the full chain of its size, `Chain` compares level 1 read back with the box average of level 0 read back):
+
+| Texture | Levels | Expected | Chain |
+|---|---|---|---|
+| Texture.Road | 11 | 11 | - |
+| Texture.Landscape | 12 | 12 | - |
+| Texture.Building | 10 | 10 | - |
+| CarPaint.Painted | 12 | 12 | ok |
+| CarPaint.Unpainted | 12 | 12 | ok |
+
+`cand-b/run.log` has the same lines.
+
+### Scene against the original
+
+`cand-a/run.log`, scene measure of each track:
+
+| Track | Objects original / port | Matched | Missing | Extra | Shadow cast / receive mismatches |
+|---|---|---|---|---|---|
+| Beginner | 1147 / 1147 | 1147 | 0 | 0 | 0 / 0 |
+| Advanced | 1693 / 1693 | 1693 | 0 | 0 | 0 / 0 |
+| Expert | 3404 / 3404 | 3404 | 0 | 0 | 0 / 0 |
+
+### Pictures against the original
+
+`compare-nopost/report.md`, `compare-full/report.md`; the `nopost` edges of the previous run come from `artifacts/pbr-handover/s1e/compare-nopost/report.md`. The last column is the mean difference with the previous run's picture of the same view (`compare-vs-s1e/report.md`), the size of this slice's change on screen.
+
+| View | R, G, B `nopost` | Edges `nopost` | Edges `nopost` before | R, G, B `full` | Edges `full` | Change from the previous run, R, G, B |
+|---|---|---|---|---|---|---|
+| Beginner-start | 26.20, 24.37, 21.29 | 60.7 % | 61.3 % | 39.53, 35.35, 30.43 | 76.6 % | 1.08, 1.08, 0.92 |
+| Beginner-sector-20 | 47.59, 49.24, 50.48 | 33.8 % | 34.1 % | 61.76, 60.67, 62.18 | 47.7 % | 1.46, 1.47, 1.24 |
+| Beginner-sector-50 | 28.15, 25.22, 21.41 | 48.1 % | 53.8 % | 48.60, 40.95, 33.88 | 71.3 % | 1.30, 1.32, 1.23 |
+| Beginner-sector-80 | 27.17, 25.86, 22.39 | 56.3 % | 56.5 % | 49.52, 42.94, 34.84 | 75.0 % | 1.50, 1.47, 1.35 |
+| Beginner-overview | 15.90, 14.90, 13.45 | 86.3 % | 86.4 % | 36.99, 31.64, 28.23 | 98.4 % | 0.79, 0.77, 0.67 |
+| Advanced-start | 23.78, 21.40, 18.69 | 40.6 % | 41.8 % | 50.90, 41.01, 33.89 | 62.3 % | 0.78, 0.80, 0.69 |
+| Advanced-sector-20 | 39.58, 34.46, 28.55 | 41.5 % | 45.4 % | 63.31, 50.90, 42.61 | 67.2 % | 0.62, 0.63, 0.59 |
+| Advanced-sector-50 | 23.55, 20.96, 18.58 | 52.7 % | 56.5 % | 45.61, 37.20, 31.70 | 75.3 % | 1.31, 1.29, 1.22 |
+| Advanced-sector-80 | 25.18, 22.70, 19.54 | 46.9 % | 47.5 % | 42.47, 36.10, 30.20 | 60.9 % | 1.17, 1.17, 1.12 |
+| Advanced-overview | 18.04, 16.14, 13.43 | 90.9 % | 91.1 % | 38.82, 33.88, 29.10 | 99.0 % | 0.46, 0.43, 0.34 |
+| Expert-start | 23.65, 21.93, 19.01 | 57.9 % | 58.8 % | 38.36, 33.59, 28.70 | 72.0 % | 1.33, 1.38, 1.16 |
+| Expert-sector-20 | 27.55, 25.13, 21.63 | 39.5 % | 40.3 % | 47.32, 39.43, 32.03 | 56.7 % | 1.12, 1.20, 0.94 |
+| Expert-sector-50 | 25.24, 24.15, 22.37 | 53.3 % | 54.3 % | 44.28, 38.83, 34.40 | 72.5 % | 1.11, 1.12, 1.09 |
+| Expert-sector-80 | 21.56, 19.07, 16.00 | 42.1 % | 42.4 % | 40.54, 31.13, 24.95 | 75.3 % | 0.80, 0.81, 0.74 |
+| Expert-overview | 16.74, 16.16, 15.43 | 96.4 % | 96.8 % | 37.95, 33.79, 31.38 | 98.7 % | 0.99, 0.95, 0.80 |
+
+Change from the previous run, mean of the three channels: largest 1.44 (`Beginner-sector-80`), smallest 0.41 (`Advanced-overview`).
+
+Change of the `nopost` edges matched since the previous run, in points: highest -0.1 (`Beginner-overview`), lowest -5.7 (`Beginner-sector-50`); 15 of 15 views are lower, 0 higher.
+
+### Light and shadow probes
+
+`compare-probes/probes.md`; the column before comes from `artifacts/pbr-handover/s1e/compare-probes/probes.md`.
+
+| Criterion | Passed | Failed | Judged | Passed before |
+|---|---|---|---|---|
+| 1. lit and away within +-12 | 11 | 23 | 34 | 11 |
+| 2. shadow/lit ratio within +-0.05 (per view and surface) | 0 | 4 | 4 | 0 |
+| 3. class agreement (shadow shadowed, lit lit) | 21 | 12 | 33 | 21 |
+| 4. away-shadowed within +-12 | 0 | 3 | 3 | 0 |
+
+Shadow over lit luminance ratio, original then port: terrain 0.284 then 1.049; city 0.276 then 0.965; road 0.228 then 0.679; terrain 0.267 then 1.010.
+
+### Repeatability
+
+Two runs (`cand-a`, `cand-b`, `compare-repeat/report.md`): 12 identical files of 15. Different by their hash: `Advanced-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-start.png` (mean difference 0.00, 0.00, 0.00).
+
+### Other references of this machine
+
+UI captures (`ui/`) against the previous reference `artifacts/pbr-handover/s1e/ui` (`ui-compare/report.txt`):
+
+| State | R | G | B |
+|---|---|---|---|
+| splash | 0.00 | 0.00 | 0.00 |
+| main-menu | 0.00 | 0.00 | 0.00 |
+| highscores | 0.00 | 0.00 | 0.00 |
+| options | 0.00 | 0.00 | 0.00 |
+| help | 0.00 | 0.00 | 0.00 |
+| car-selection | 0.22 | 0.20 | 0.20 |
+| track-selection | 0.00 | 0.00 | 0.00 |
+| race-hud | 0.79 | 0.79 | 0.75 |
+| pause | 0.17 | 0.17 | 0.16 |
+| race-finished | 0.19 | 0.20 | 0.18 |
+
+Track audit (`audit/`, 30 captures) against `artifacts/pbr-handover/s1e/audit`: largest channel difference 1.589 (`audit-Expert-sector-80`), smallest 0.005 (`audit-Beginner-terrain-overview`).
+

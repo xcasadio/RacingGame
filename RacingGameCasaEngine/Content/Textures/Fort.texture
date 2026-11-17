@@ -2,6 +2,7 @@
   "id": "ef8c88ef-de63-5a98-ab78-3b3a9cdcf5d5",
   "name": "Texture.Fort",
   "texture_asset_id": "66036cf7-f2fd-5446-8bb4-c1c451e24894",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

@@ -2,6 +2,7 @@
   "id": "e3ea4176-c059-59fb-9f9a-e868aec92025",
   "name": "Texture.LeitplankeNormal",
   "texture_asset_id": "e3bf62b8-5a9d-59dc-94c8-bfea95cd9c68",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

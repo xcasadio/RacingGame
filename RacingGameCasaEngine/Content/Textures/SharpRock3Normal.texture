@@ -2,6 +2,7 @@
   "id": "443fc575-732c-541e-a862-eefaa1020999",
   "name": "Texture.SharpRock3Normal",
   "texture_asset_id": "5d0bec6c-651f-5eef-a74e-5f50cca0d056",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

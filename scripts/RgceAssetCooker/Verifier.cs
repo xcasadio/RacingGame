@@ -388,6 +388,11 @@ internal sealed class Verifier
             Mismatch($"{where}: sampler {sampler.Filter}/{sampler.AddressU}/{sampler.MaxAnisotropy}, expected {cooked.SamplerName}");
         }
 
+        if (json["generate_mipmaps"]?.Value<bool>() != true || !actual.GenerateMipmaps)
+        {
+            Mismatch($"{where}: generate_mipmaps {json["generate_mipmaps"]}, expected true");
+        }
+
         if (!File.Exists(Path.Combine(_contentDirectory, cooked.ImageFileName)))
         {
             Mismatch($"{where}: image {cooked.ImageFileName} is missing");

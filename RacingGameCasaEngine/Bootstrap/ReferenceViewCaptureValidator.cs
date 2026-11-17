@@ -1,16 +1,23 @@
 using System.Text.Json;
 using CasaEngine.Core.Log;
 using CasaEngine.Framework.Application;
+using CasaEngine.Framework.Assets;
+using CasaEngine.Framework.Assets.Loaders;
+using CasaEngine.Framework.Assets.Textures;
 using CasaEngine.Framework.Entities;
 using CasaEngine.Framework.Entities.Components;
 using CasaEngine.Framework.Rendering;
 using CasaEngine.Framework.Rendering.Environment;
 using CasaEngine.Framework.World;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using RacingGame.Gameplay.Components;
 using RacingGame.Gameplay.Race;
 using RacingGame.Gameplay.Track;
 using RacingGameCasaEngine.Worlds;
+
+using Color = Microsoft.Xna.Framework.Color;
+using Texture = CasaEngine.Framework.Assets.Textures.Texture;
 
 namespace RacingGameCasaEngine.Bootstrap;
 
@@ -70,6 +77,7 @@ internal sealed class ReferenceViewCaptureValidator
     private int _captureCount;
     private ReferenceTrackSpace? _trackSpace;
     private string? _pendingCaptureName;
+    private bool _hasLoggedMipmaps;
 
     public ReferenceViewCaptureValidator(RacingGameCasaEngineGame game, RaceFrontEndFlow flow, string? viewsFilePath, string? outputDirectory)
     {
@@ -228,6 +236,12 @@ internal sealed class ReferenceViewCaptureValidator
 
                     LogAlignment(_tracks[_trackIndex], _trackSpace!);
                     MeasureScene(_tracks[_trackIndex], _trackSpace!);
+                    if (!_hasLoggedMipmaps)
+                    {
+                        _hasLoggedMipmaps = true;
+                        LogMipmaps();
+                    }
+
                     Advance(CaptureStep.PrepareView, totalTime, $"Race world ready for {_tracks[_trackIndex].Name}");
                 }
                 break;
@@ -308,6 +322,52 @@ internal sealed class ReferenceViewCaptureValidator
 
         string pipeline = world.EnvironmentSettings.ColorPipeline.Mode == ColorPipelineMode.LinearHdr ? "linear" : "legacy";
         Logs.WriteInfo($"[CaptureBench] view {captureName} pipeline {pipeline} fxaaPasses {raceView.RenderStats.FxaaPasses}");
+    }
+
+    // Proof of the mipmap chains of the race world (S1m), once the first race world is ready: the level count of three cooked
+    // textures of the world, acquired by id and loaded as the materials load them, and the level count and the chain of the
+    // two paint textures of the first car. "expected" is the full chain of the texture's size.
+    private static readonly (string Name, Guid Id)[] MipmapTextures =
+    [
+        ("Texture.Road", new Guid("438bfe97-634a-50cc-a008-7661c239ab25")),
+        ("Texture.Landscape", new Guid("ee748e62-6069-552c-a7cb-2656da413b49")),
+        ("Texture.Building", new Guid("5dd4c964-020b-59c5-9d59-b40fc856c0f9")),
+    ];
+
+    private void LogMipmaps()
+    {
+        AssetContentManager assetContentManager = _game.AssetContentManager;
+        foreach ((string name, Guid id) in MipmapTextures)
+        {
+            using AssetHandle<Texture> handle = assetContentManager.Acquire<Texture>(id);
+            handle.Asset.Load(assetContentManager);
+            Texture2D resource = handle.Asset.Resource;
+            Logs.WriteInfo(FormattableString.Invariant(
+                $"[CaptureBench] mipmaps {name} levels {resource.LevelCount} expected {MipmapChain.GetLevelCount(resource.Width, resource.Height)}"));
+        }
+
+        (Texture2D Painted, Texture2D Unpainted)? paint = LegacyCarVisualFactory.GetCarPaintTextures(0);
+        if (paint == null)
+        {
+            Logs.WriteWarning("[CaptureBench] mipmaps CarPaint: no paint textures for the first car.");
+            return;
+        }
+
+        LogPaintMipmaps("CarPaint.Painted", paint.Value.Painted);
+        LogPaintMipmaps("CarPaint.Unpainted", paint.Value.Unpainted);
+    }
+
+    // chain ok: level 1 read back from the texture is the box average of the level 0 read back from it.
+    private static void LogPaintMipmaps(string name, Texture2D texture)
+    {
+        var level0 = new Color[texture.Width * texture.Height];
+        texture.GetData(0, null, level0, 0, level0.Length);
+        Color[] expectedLevel1 = MipmapChain.ComputeNextLevel(level0, texture.Width, texture.Height);
+        var level1 = new Color[expectedLevel1.Length];
+        texture.GetData(1, null, level1, 0, level1.Length);
+        string chain = level1.AsSpan().SequenceEqual(expectedLevel1) ? "ok" : "KO";
+        Logs.WriteInfo(FormattableString.Invariant(
+            $"[CaptureBench] mipmaps {name} levels {texture.LevelCount} expected {MipmapChain.GetLevelCount(texture.Width, texture.Height)} chain {chain}"));
     }
 
     private bool IsRaceReady()

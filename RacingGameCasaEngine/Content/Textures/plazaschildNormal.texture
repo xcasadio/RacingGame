@@ -2,6 +2,7 @@
   "id": "dcfea5dd-0dd3-55fb-b311-559803736d1a",
   "name": "Texture.plazaschildNormal",
   "texture_asset_id": "27175350-5de3-52dc-932f-dd54a5121cef",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

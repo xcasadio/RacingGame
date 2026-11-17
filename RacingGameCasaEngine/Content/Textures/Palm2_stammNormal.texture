@@ -2,6 +2,7 @@
   "id": "4978fdde-ab9e-5e6f-99bd-2125fd8bda42",
   "name": "Texture.Palm2_stammNormal",
   "texture_asset_id": "c885e8e6-ae0f-5220-8313-efbaad48d98d",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

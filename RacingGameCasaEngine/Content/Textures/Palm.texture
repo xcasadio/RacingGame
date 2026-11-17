@@ -2,6 +2,7 @@
   "id": "b153a04a-14e4-5efe-b513-9c3117010af5",
   "name": "Texture.Palm",
   "texture_asset_id": "5ce71071-9c8c-5776-b78c-984d1020a2d2",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

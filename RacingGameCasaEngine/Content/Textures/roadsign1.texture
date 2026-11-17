@@ -2,6 +2,7 @@
   "id": "d6ef3fd8-b1f3-5ca4-bbe3-eba82bf6fe56",
   "name": "Texture.roadsign1",
   "texture_asset_id": "b3ebdd53-d195-56ae-a4dd-37f9cb214637",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

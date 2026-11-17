@@ -2,6 +2,7 @@
   "id": "79136d8c-712e-537b-96af-6c6d92b7aa8d",
   "name": "Texture.garbagecanNormal",
   "texture_asset_id": "2ac2826b-c035-5944-8d67-a5b4b2537267",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

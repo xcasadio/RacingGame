@@ -2,6 +2,7 @@
   "id": "bedb9c92-2388-5dc6-bd32-aa281d2e1e60",
   "name": "Texture.KaktusBennyNormal",
   "texture_asset_id": "52d67a63-2ae0-528b-90c6-2359d8ccc7a8",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

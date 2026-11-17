@@ -2,6 +2,7 @@
   "id": "0d6c0065-ba1a-5057-935d-b3d1b95d2a10",
   "name": "Texture.RoadCementNormal",
   "texture_asset_id": "724a5bf5-8099-5a6e-94d1-bc468c19a1d6",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

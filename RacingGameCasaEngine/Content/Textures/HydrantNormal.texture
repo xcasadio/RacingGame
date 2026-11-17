@@ -2,6 +2,7 @@
   "id": "6b555315-ff71-5ea3-8ef4-e0a06dc72915",
   "name": "Texture.HydrantNormal",
   "texture_asset_id": "71e32549-60b8-51d7-95bd-0e3511c87ebd",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

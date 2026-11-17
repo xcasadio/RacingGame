@@ -2,6 +2,7 @@
   "id": "fb9ac3bb-5364-51ce-98a4-3e0abbfe2296",
   "name": "Texture.OilWell",
   "texture_asset_id": "980cdf81-84c6-5ced-8d6e-cc0e958e0272",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

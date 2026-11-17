@@ -2,6 +2,7 @@
   "id": "186967ba-4271-55f9-8d80-0c89d28ff7c4",
   "name": "Texture.LandscapeNormal",
   "texture_asset_id": "cc19934c-a935-583c-b108-f6d891d535fc",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

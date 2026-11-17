@@ -2,6 +2,7 @@
   "id": "24a2b32b-c1ba-584c-9ef0-be606bcd8557",
   "name": "Texture.banner3",
   "texture_asset_id": "1472b23a-3914-5602-92f0-490912f5630f",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

@@ -2,6 +2,7 @@
   "id": "78d74b5d-4477-5870-b9f0-2fb2785fb73a",
   "name": "Texture.Oiltank",
   "texture_asset_id": "7023b12e-6dd7-58cb-9dce-11beee9b8d70",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

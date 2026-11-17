@@ -2,6 +2,7 @@
   "id": "740a8ce7-6054-54c7-80d2-f851c260b3dd",
   "name": "Texture.Schild_Kurve_links",
   "texture_asset_id": "aa1f440d-9f0a-530f-9941-37103ebd9611",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

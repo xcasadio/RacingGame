@@ -2,6 +2,7 @@
   "id": "c529a66d-51c1-59a2-acd0-1291aef08599",
   "name": "Texture.BlockadeNormal",
   "texture_asset_id": "db1a7750-b579-56ab-a12f-dba55cc871e4",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

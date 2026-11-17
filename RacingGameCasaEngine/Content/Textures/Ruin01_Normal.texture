@@ -2,6 +2,7 @@
   "id": "93bc5917-691e-5cdd-95a7-7067679245d5",
   "name": "Texture.Ruin01_Normal",
   "texture_asset_id": "f86184a0-8b34-5089-8b34-da9af49a9cb5",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

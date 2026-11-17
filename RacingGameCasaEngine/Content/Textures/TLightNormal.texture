@@ -2,6 +2,7 @@
   "id": "8ba22f5e-ea00-5423-8cfc-ef9d6277a615",
   "name": "Texture.TLightNormal",
   "texture_asset_id": "720461d6-6ffa-5643-87e3-3ac0a750bc68",
+  "generate_mipmaps": true,
   "sampler_state": {
     "texture_filter": "Anisotropic",
     "address_u": "Wrap",

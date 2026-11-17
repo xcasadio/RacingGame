@@ -34,7 +34,7 @@ The default `--content` is `RacingGameCasaEngine/Content` of the repository that
   game leaves `null` is written as the state the renderer applies: blend `Opaque`, depth `Default`, rasterizer `CullCounterClockwise`,
   sampler `AnisotropicClamp`. The slots of the car that sample the car texture (painted or not) use `Texture.RacerCar`; the game replaces it
   at run time (T5.6). `<Slot>` is the display name of the glTF material, with a numeric suffix if two materials of a model share it.
-- **Textures**: the sampler is the one of the recipes (`AnisotropicWrap`).
+- **Textures**: the sampler is the one of the recipes (`AnisotropicWrap`). `generate_mipmaps` is true on every `.texture`: the engine then draws the texture with a full mipmap chain, built at load time from the image (ADR-0124 of CasaEngine); the png of the image entry is not changed.
 
 No fallback material is cooked: no glTF has a mesh without a material (the fallback recipes were removed in T5.6).
 
@@ -55,5 +55,5 @@ same set of entries.
   contain. Writes nothing; exit code 1 if there is any.
 - `--verify`: re-reads every cooked file with the engine loaders (`StaticModel.Load`, `MaterialAsset.Load`, `Texture.Load`) and compares it with
   a fresh read of the glTF files and the recipes: vertices, tangents (the number of entries and every value), indices, nodes, material ids, every material value under the effective-state rule,
-  the render state the engine resolves for the asset, textures, the catalogue (no duplicate id or name, every entry's file exists), and the car
+  the render state the engine resolves for the asset, textures (image, sampler and `generate_mipmaps`), the catalogue (no duplicate id or name, every entry's file exists), and the car
   paint rule the game applies at run time against the paint role of each `Car.gltf` material in the recipes. Exit code 1 on any mismatch. It does not compile the materials (that needs a graphics device); the editor catalogue walk opens them.

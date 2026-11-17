@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using CasaEngine.Engine.Environment;
 using CasaEngine.Framework.Assets;
+using CasaEngine.Framework.Assets.Loaders;
 using CasaEngine.Framework.Materials.Runtime;
 using CasaEngine.Framework.Rendering.Models;
 using Microsoft.Xna.Framework;
@@ -246,6 +247,18 @@ internal static class LegacyCarVisualFactory
         };
     }
 
+    /// <summary>
+    /// The paint textures already built for the car <paramref name="carIndex"/>, or null when there are none yet. Read-only access for the
+    /// capture validator, which checks their mipmap chain; it builds nothing and changes no state.
+    /// </summary>
+    internal static (Texture2D Painted, Texture2D Unpainted)? GetCarPaintTextures(int carIndex)
+    {
+        lock (CacheLock)
+        {
+            return CarPaints.TryGetValue(carIndex, out CarPaint? paint) && paint != null ? (paint.Painted, paint.Unpainted) : null;
+        }
+    }
+
     // The car's paint, built on first use and kept for the game's life; null when the texture cannot be read.
     private static CarPaint? GetCarPaint(int carIndex, AssetContentManager assetContentManager)
     {
@@ -382,10 +395,11 @@ internal static class LegacyCarVisualFactory
                 source[pixelIndex] = isColorKey ? LegacyTextureColorKey : new Color(red, green, blue, alpha);
             }
 
-            var unpainted = new Texture2D(graphicsDevice, image.Width, image.Height, false, SurfaceFormat.Color);
-            unpainted.SetData(source);
-            var painted = new Texture2D(graphicsDevice, image.Width, image.Height, false, SurfaceFormat.Color);
-            painted.SetData(source);
+            // Both paint textures carry their full mipmap chain, as the original's content project builds it (S1m).
+            var unpainted = new Texture2D(graphicsDevice, image.Width, image.Height, true, SurfaceFormat.Color);
+            MipmapChain.UploadChain(unpainted, source);
+            var painted = new Texture2D(graphicsDevice, image.Width, image.Height, true, SurfaceFormat.Color);
+            MipmapChain.UploadChain(painted, source);
             return new CarPaint(source, unpainted, painted);
         }
 
@@ -400,7 +414,8 @@ internal static class LegacyCarVisualFactory
             long started = System.Diagnostics.Stopwatch.GetTimestamp();
             _colorIndex = colorIndex;
             Color color = RaceFrontEndCatalog.CarColors[colorIndex].Value;
-            if (_painted.Length < _source.Length)
+            // Exact size: the chain upload checks it against the texture.
+            if (_painted.Length != _source.Length)
             {
                 _painted = new Color[_source.Length];
             }
@@ -430,7 +445,8 @@ internal static class LegacyCarVisualFactory
                 }
             });
 
-            Painted.SetData(painted, 0, source.Length);
+            // The chain follows each paint: level 0 and every level below it are written again.
+            MipmapChain.UploadChain(Painted, painted);
             Logs.WriteTrace($"Car paint: colour {colorIndex} painted in {System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds:0.0} ms");
         }
     }
