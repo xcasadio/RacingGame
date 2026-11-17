@@ -187,3 +187,78 @@ Outside the bench the seed is fixed per track. Placement digests logged by two r
 | Advanced | 1757 | `FD0564E1183D98FE` | `FD0564E1183D98FE` |
 | Expert | 3432 | `29A2403A3F0CDCFA` | `29A2403A3F0CDCFA` |
 
+
+## After the tangents, the normal maps and the sky cube
+
+Third run, on 2026-11-17, after slice S1e of the plan: the models carry the original's tangents, the normal maps are converted to the standard channel layout and the sky cube to the port's axes (ADR-0016, ADR-0017), imported colours are rounded and materials without a legacy effect get the original's defaults. The `lit-diffuse` materials that name a normal map now draw with it. This run is the reference before the next slices. The two previous runs above stay as their record.
+
+Outputs under `artifacts/pbr-handover/s1e/`; the original's export is the same one, `artifacts/pbr-handover/s1c/ref`. The tables of this section are generated from the output files by a script.
+
+### Scene against the original
+
+`cand-a/scene-measure-<Track>.txt`, unchanged by this slice:
+
+| Track | Objects original / port | Matched | Missing | Extra | Shadow cast / receive mismatches |
+|---|---|---|---|---|---|
+| Beginner | 1147 / 1147 | 1147 | 0 | 0 | 0 / 0 |
+| Advanced | 1693 / 1693 | 1693 | 0 | 0 | 0 / 0 |
+| Expert | 3404 / 3404 | 3404 | 0 | 0 | 0 / 0 |
+
+### Pictures against the original
+
+`compare-nopost/report.md`, `compare-full/report.md`; the `nopost` edges of the previous run come from `artifacts/pbr-handover/s1a/compare-nopost/report.md`. The last column is the mean difference with the previous run's picture of the same view (`compare-vs-s1a/report.md`), the size of this slice's change on screen.
+
+| View | R, G, B `nopost` | Edges `nopost` | Edges `nopost` before | R, G, B `full` | Edges `full` | Change from the previous run, R, G, B |
+|---|---|---|---|---|---|---|
+| Beginner-start | 26.32, 24.50, 21.38 | 61.3 % | 58.9 % | 39.65, 35.45, 30.51 | 77.0 % | 14.36, 12.02, 9.30 |
+| Beginner-sector-20 | 47.57, 49.21, 50.41 | 34.1 % | 33.2 % | 61.96, 60.85, 62.29 | 48.1 % | 13.33, 11.89, 9.76 |
+| Beginner-sector-50 | 28.23, 25.31, 21.49 | 53.8 % | 53.2 % | 48.75, 41.13, 34.05 | 75.7 % | 14.98, 12.58, 9.17 |
+| Beginner-sector-80 | 27.29, 25.97, 22.46 | 56.5 % | 55.4 % | 49.65, 43.09, 34.97 | 75.3 % | 15.23, 13.96, 11.02 |
+| Beginner-overview | 16.06, 15.07, 13.60 | 86.4 % | 86.9 % | 37.10, 31.77, 28.35 | 98.5 % | 24.94, 20.84, 16.28 |
+| Advanced-start | 23.78, 21.42, 18.69 | 41.8 % | 42.3 % | 50.92, 41.05, 33.93 | 62.5 % | 12.45, 10.08, 7.45 |
+| Advanced-sector-20 | 39.65, 34.54, 28.63 | 45.4 % | 42.9 % | 63.36, 50.97, 42.67 | 70.5 % | 17.15, 12.54, 8.36 |
+| Advanced-sector-50 | 23.67, 21.08, 18.68 | 56.5 % | 55.4 % | 45.84, 37.42, 31.89 | 77.3 % | 13.00, 11.87, 10.20 |
+| Advanced-sector-80 | 25.17, 22.69, 19.53 | 47.5 % | 45.0 % | 42.63, 36.23, 30.33 | 61.3 % | 16.42, 14.30, 11.25 |
+| Advanced-overview | 18.13, 16.23, 13.50 | 91.1 % | 87.3 % | 38.86, 33.92, 29.15 | 99.1 % | 26.28, 22.12, 17.62 |
+| Expert-start | 23.68, 21.97, 19.03 | 58.8 % | 56.4 % | 38.52, 33.78, 28.83 | 73.2 % | 13.94, 11.73, 9.04 |
+| Expert-sector-20 | 27.47, 25.09, 21.56 | 40.3 % | 40.7 % | 47.29, 39.44, 32.01 | 57.5 % | 15.91, 14.02, 10.96 |
+| Expert-sector-50 | 25.20, 24.09, 22.31 | 54.3 % | 51.6 % | 44.33, 38.87, 34.43 | 72.9 % | 15.25, 11.79, 9.02 |
+| Expert-sector-80 | 21.59, 19.11, 16.03 | 42.4 % | 46.5 % | 40.62, 31.21, 25.01 | 75.4 % | 23.11, 19.73, 15.35 |
+| Expert-overview | 16.90, 16.33, 15.57 | 96.8 % | 93.7 % | 38.04, 33.89, 31.47 | 99.0 % | 24.68, 21.36, 17.79 |
+
+### Light and shadow probes
+
+`compare-probes/probes.md`.
+
+| Criterion | Passed | Failed | Judged |
+|---|---|---|---|
+| 1. lit and away within +-12 | 11 | 23 | 34 |
+| 2. shadow/lit ratio within +-0.05 (per view and surface) | 0 | 4 | 4 |
+| 3. class agreement (shadow shadowed, lit lit) | 21 | 12 | 33 |
+| 4. away-shadowed within +-12 | 0 | 3 | 3 |
+
+Shadow over lit luminance ratio, original then port: terrain 0.284 then 1.049; city 0.276 then 0.965; road 0.228 then 0.673; terrain 0.267 then 1.010.
+
+### Repeatability
+
+Two runs (`cand-a`, `cand-b`, `compare-repeat/report.md`): 12 identical files of 15. Different by their hash: `Advanced-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-start.png` (mean difference 0.00, 0.00, 0.00).
+
+### Other references of this machine
+
+UI captures (`ui/`) against the previous reference `artifacts/pbr-handover/s1a/ui` (`ui-compare/report.txt`). The 3D states change with the sky and the normal maps:
+
+| State | R | G | B |
+|---|---|---|---|
+| splash | 0.00 | 0.00 | 0.00 |
+| main-menu | 0.00 | 0.00 | 0.00 |
+| highscores | 0.00 | 0.00 | 0.00 |
+| options | 0.00 | 0.00 | 0.00 |
+| help | 0.00 | 0.00 | 0.00 |
+| car-selection | 1.56 | 1.55 | 1.51 |
+| track-selection | 0.00 | 0.00 | 0.00 |
+| race-hud | 15.02 | 14.96 | 13.97 |
+| pause | 4.89 | 4.87 | 4.51 |
+| race-finished | 5.24 | 4.83 | 4.13 |
+
+Track audit (`audit/`, 30 captures) against `artifacts/pbr-handover/s1a/audit-1`: largest channel difference 28.136 (`audit-Advanced-road-only-start`), smallest 1.671 (`audit-Expert-helper-tunnel`).
+

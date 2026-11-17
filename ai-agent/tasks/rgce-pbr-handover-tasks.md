@@ -564,7 +564,7 @@ Retour arrière de S1e : relever `git rev-parse HEAD` avant T8.1 et le noter sou
 
 Budget de S1e : T8.1, au plus quatre tours « correction puis comparaison à l'oracle » ; T8.2, au plus trois tours de recuisson. Un tour sans progrès passe la tâche en ⚠️ Blocked avec l'écart chiffré.
 
-### ⏳ T8.1 — Convertisseur porté
+### ✅ T8.1 — Convertisseur porté
 
 - Objectif : le convertisseur d'ici sait écrire les tangentes, convertir les normal maps et le cube du ciel, en gardant ses modes `--textures` et `--verify-textures`.
 - Fichiers : `scripts/LegacyModelGltfConverter/Program.cs`, `LegacyTextureConverter.cs`, `SkyCubeConverter.cs` (nouveau), `README.md`.
@@ -585,7 +585,13 @@ Budget de S1e : T8.1, au plus quatre tours « correction puis comparaison à l'o
 - Arrêts : un fichier qui diffère de l'oracle sans cause trouvée dans le code du convertisseur ; besoin de modifier le moteur.
 - Commit : `feat(scripts): write tangents and convert the normal maps and the sky cube`
 
-### ⏳ T8.2 — Contenu régénéré et recuit
+> Validation (2026-11-16), `HEAD` avant la tranche `770dd6d`, exécutant `executor`, commit `2be57f2` :
+> - Convertisseur construit à 0 erreur. Commande de l'oracle : 57 modèles, 1 ignoré (`Cube`), 0 échec, 100 textures converties, 6 normal maps en plus.
+> - Les 56 `.gltf` et 56 `.bin`, `SkyCubeMap.dds` et les 106 PNG produits sont identiques à l'octet à ceux d'`origin/remaster`, dont les 55 normal maps ; les 51 PNG de couleur sont identiques à l'octet à ceux d'ici.
+> - `--verify-textures` sur le dossier recouvert : 129 `.tga`, 129 paires, 74 copies de couleur, 55 normal maps converties, 0 différente, 0 sans `.png`, sortie 0 ; sur le contenu d'avant : 129 copies de couleur, 0 convertie, sortie 0. `--textures … Road RoadNormal:normal` redonne `Road.png` d'ici et `RoadNormal.png` de l'oracle.
+> - Un tour sur quatre.
+
+### ✅ T8.2 — Contenu régénéré et recuit
 
 - Objectif : le contenu du jeu porte les tangentes, les normal maps converties et le cube du ciel réorienté, et les assets cuits en découlent.
 - Fichiers : `RacingGameCasaEngine/Content/Models/*.gltf` et `*.bin`, `Content/Textures/*Normal*.png`, `Content/Textures/SkyCubeMap.dds`, les assets cuits (`Content/Models/*.staticModel`, `Content/Materials/**`, `Content/Textures/*.texture`, `Content/AssetInfos.json` si le cuiseur le touche) ; `RacingGame.Gameplay/Import/LegacyGltfModelReader.cs` (arrondi des couleurs, valeurs par défaut des matériaux sans effet d'origine) ; `scripts/RgceAssetCooker/Verifier.cs` (comparer aussi les valeurs des tangentes) et son `README.md` ; `RacingGameCasaEngine/Assets/README.md` (ce que vérifie `--verify-textures`) ; `docs/decisions/0024-rgce-content-holds-every-game-file.md` et l'index, statut seulement : amendé par les ADR-0016 et 0017, puisque les normal maps et le cube du ciel ne sont plus des copies de leur source.
@@ -600,13 +606,30 @@ Budget de S1e : T8.1, au plus quatre tours « correction puis comparaison à l'o
 - Arrêts : `--verify` en écart sans cause trouvée ; besoin de modifier le moteur ; un changement de taille de modèle qui déplacerait des objets.
 - Commit : `feat(racing-casa): regenerate the models with tangents, the normal maps and the sky cube`
 
-### ⏳ T8.3 — Banc relancé et références reprises
+> Validation (2026-11-16), commit `2e9f263`, 270 fichiers : 112 glTF et bin, 56 `.staticModel`, 39 `.material`, 55 normal maps, `SkyCubeMap.dds`, 7 fichiers de code, README et ADR ; aucun `.texture`, catalogue inchangé.
+> - Builds du jeu et du cuiseur à 0 erreur ; cuiseur : 95 fichiers écrits, `--check` et `--verify` sans écart ; un second passage n'écrit rien.
+> - Tangentes : 101 primitives glTF sur 105 en ont ; 101 maillages cuits sur 105 ont un tableau `tangents` de la taille de leurs sommets ; `--verify` compare désormais leurs valeurs.
+> - `--verify-textures` sur le contenu régénéré : 74 copies de couleur, 55 normal maps converties, sortie 0.
+> - `--smoke-frontend` et `--verify-legacy-import-profile` en succès, sans adaptation du vérificateur.
+> - Mesure de scène inchangée : 1147, 1693 et 3404 objets appariés, 0 manquant, 0 en trop, 0 écart d'ombre ; les 15 distances d'alignement inchangées.
+> - Couleurs : 39 matériaux changés, 10 par les valeurs par défaut des matériaux sans effet d'origine (ambiant 0 → 40/255, diffus 149 → 210), 29 par l'arrondi (un niveau sur 255).
+> - Écarts au plan : `scripts/RgceAssetCooker/Program.cs` touché pour afficher les comptes de tangentes ; les glTF copiés sont en fins de ligne LF dans l'arbre de travail, identiques à la sortie du convertisseur.
+> - Noté sans suite : un message de `LegacyImportProfileVerifier.cs` parle encore de l'exception d'ambiant relevé des éoliennes, que l'autre PC a reformulé.
+
+### ✅ T8.3 — Banc relancé et références reprises
 
 - Objectif : mesurer ce que la tranche change à l'écran et reprendre les références d'ici.
 - Fichiers : `docs/racinggame-3d-capture-bench-local-baseline.md` (section ajoutée, générée par script depuis les sorties), ce plan. Sorties dans `artifacts/pbr-handover/s1e/`.
 - Étapes : deux rejeux des vues de l'original, comparaisons `nopost`, `full`, sondes, répétabilité ; `--capture-track-audit` et `--capture-ui-screens` comme nouvelles références d'ici.
 - Validation : lancements en succès ; la section cite ses fichiers de sortie ; le ciel n'est plus le miroir de celui de l'original, constaté sur une planche de comparaison et noté.
 - Commit : `docs(racing-casa): record the bench after the tangents, normal maps and sky cube`
+
+> Validation (2026-11-17), sorties dans `artifacts/pbr-handover/s1e/`, section « After the tangents, the normal maps and the sky cube » du doc générée par script :
+> - deux rejeux en succès ; mesure de scène inchangée ; 12 fichiers identiques sur 15 entre les deux, les trois autres à une différence moyenne de 0,00 ;
+> - le ciel suit maintenant celui de l'original : sur la planche `compare-nopost/compare-Beginner-start.png`, la ligne des montagnes de l'original et celle du port coïncident ; avant, l'un était le miroir de l'autre ;
+> - différence moyenne `nopost` à l'original en baisse sur 11 vues sur 15 (par exemple `Beginner-overview` de 22,03 à 16,06 sur le rouge), en hausse sur `Beginner-sector-50`, `Advanced-sector-80`, `Expert-sector-20` et `Expert-sector-80` ; contours retrouvés en hausse sur 11 vues, en baisse sur 4 (`Expert-sector-80` de 46,5 % à 42,4 %) ;
+> - sondes inchangées dans leurs verdicts ; rapport ombre sur lumière de la ville passé de 0,682 à 0,965, celui de l'original étant 0,276 : les ombres restent l'affaire de S1g ;
+> - nouvelles références d'ici : `audit/` (30 captures, de 1,671 à 28,136 d'écart au pire canal avec les précédentes) et `ui/` (états de menu à 0,00 ; `race-hud` 15,02, `pause` 4,89, `race-finished` 5,24 au pire canal, `car-selection` 1,56 : le ciel et les normal maps).
 
 ### ⏳ T8.4 — Vérification indépendante de S1e
 
