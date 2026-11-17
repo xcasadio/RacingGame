@@ -173,4 +173,6 @@ Enfin `main` local du moteur a été avancé sur `29d3d2de2` (`chantier/rgce-pbr
 
 Dernière étape du 2026-11-17 : `chantier/known-defects-gltf-alpha-probe` fusionnée dans `main` local du moteur (`e8d65a6fa`, 6422 tests, 0 échec), le jeu pointe dessus (`f49e83e`), banc identique à `s3b`, vérifié par deux vérificateurs indépendants (O20). État distant relevé alors : `origin/main` du moteur = `29d3d2de2` (`main` local : avance et retard `6 0`) ; `origin/remaster` du jeu = `42f1d14`.
 
-À décider par l'auteur : pousser ce qui reste local (`main` du moteur, `remaster` du jeu).
+Ces deux branches ont été poussées par l'auteur le 2026-11-17 (`origin/main` du moteur = `e8d65a6fa`, `origin/remaster` du jeu = `144912e`, relevés après `git fetch`). Ensuite : ligne du plan des défauts connus corrigée dans `CasaEngine/ai-agent/README.md` (`8a73c5329`, documentation seulement, `main` local du moteur avancé dessus), et pointeur du jeu avancé sur ce commit sans relancer le banc.
+
+À pousser par l'auteur : ce commit de `main` du moteur, puis `remaster` du jeu.
