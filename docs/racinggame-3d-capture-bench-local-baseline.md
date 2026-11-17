@@ -1566,3 +1566,89 @@ Track audit (`ui-audit/`, 30 captures) against `artifacts/pbr-handover/s3/ref-au
 
 The reference of the port on this PC stays `artifacts/pbr-handover/s3/` for the race world (`legacy-a`, `linear-a`, `ref-audit`) and becomes `artifacts/pbr-handover/s4/ref-ui` for the interface.
 
+
+## Capture repeatability
+
+Slice S5, task T17.2 (plan `ai-agent/tasks/rgce-pbr-handover-tasks.md`, phase 17): on one build, 12 to 14 of the 15 views of a replay were identical byte for byte to the same view of another replay and the others differed by a few isolated pixels (mean difference 0.00). This section says where those pixels are, what causes them, and the correction. Outputs under `artifacts/pbr-handover/s5/`; game build of `961219f`, engine `8a3933b36`, Debug.
+
+### Six replays of the same build
+
+`--capture-reference-views artifacts/pbr-handover/s1c/ref/views.json --reference-capture-out artifacts/pbr-handover/s5/<folder> --color-pipeline <mode>`, six times per mode (`linear-1` to `linear-6`, `legacy-1` to `legacy-6`), one process after the other. Count of pixels, per view, whose value is not the same in all six replays (`pixmap-<mode>.txt`); the views that are not listed have no pixel that differs in either mode.
+
+| View | `linear` pixels that differ | `legacy` pixels that differ |
+|---|---|---|
+| Advanced-overview | 9 | 2 |
+| Expert-start | 22 | 3 |
+| Expert-overview | 17 | 8 |
+| Total | 48 | 13 |
+
+3 of the 15 views in `linear` and 3 in `legacy` have at least one pixel that differs; the views are the same in both modes, and so are the places (below). Each such pixel takes two values across the six replays (three at most in the car), and the replay that gets one or the other is not the same from a cluster to the next.
+
+### Where the pixels are
+
+Clusters of differing pixels (pixels at 6 pixels or less from one another), with the largest channel difference between two replays, and the placed objects of the scene (`scene.json` of the original, which the port places too) whose centres are the closest to the viewing ray through the cluster (the first is the best candidate). The car, which is not in `scene.json`, is drawn in the `start` views near the screen centre (the projection of its position on `Expert-start` is the pixel (619, 396)).
+
+| View | Mode | Pixels | Box (x0, y0, x1, y1) | Largest difference | Nearest placed objects (model at distance along the ray, in metres) |
+|---|---|---|---|---|---|
+| Advanced-overview | `linear` | 8 | 286, 492, 288, 494 | 39 | Stone5 at 632; Stone5 at 628; Stone5 at 624 |
+| Advanced-overview | `linear` | 1 | 136, 619, 136, 619 | 4 | Stone5 at 520; SharpRock at 524; SharpRock at 514 |
+| Expert-start | `linear` | 9 | 637, 369, 639, 371 | 38 | GuardRailHolder at 37; GuardRailHolder at 51; Sign at 43 |
+| Expert-start | `linear` | 13 | 622, 399, 628, 408 | 37 | Banner6 at 17; GuardRailHolder at 37; Sign at 43 |
+| Expert-overview | `linear` | 6 | 767, 362, 769, 364 | 9 | OilPump at 1302; GuardRailHolder at 1193; GuardRailHolder at 1206 |
+| Expert-overview | `linear` | 11 | 856, 511, 864, 515 | 1 | AlphaPalm at 670; Ruin at 662; AlphaPalm at 669 |
+| Advanced-overview | `legacy` | 1 | 287, 493, 287, 493 | 49 | Stone5 at 632; Stone5 at 628; Stone5 at 624 |
+| Advanced-overview | `legacy` | 1 | 136, 619, 136, 619 | 4 | Stone5 at 520; SharpRock at 524; SharpRock at 514 |
+| Expert-start | `legacy` | 1 | 638, 370, 638, 370 | 61 | GuardRailHolder at 37; GuardRailHolder at 51; Sign at 43 |
+| Expert-start | `legacy` | 1 | 623, 400, 623, 400 | 37 | Banner6 at 17; GuardRailHolder at 37; Sign at 43 |
+| Expert-start | `legacy` | 1 | 627, 407, 627, 407 | 9 | Banner6 at 17; GuardRailHolder at 37; Sign at 42 |
+| Expert-overview | `legacy` | 1 | 768, 363, 768, 363 | 1 | OilPump at 1302; GuardRailHolder at 1193; GuardRailHolder at 1206 |
+| Expert-overview | `legacy` | 7 | 857, 512, 864, 515 | 1 | AlphaPalm at 670; Ruin at 662; AlphaPalm at 669 |
+
+What is there, from the crops (`artifacts/pbr-handover/s5/crop-*.png`, the replays grouped by identical content):
+
+- `Expert-start`, the two clusters at (637 to 639, 369 to 371) and (622 to 628, 399 to 408): the car of the start grid, seen from above past a guard rail post (the roof stripes and the rear edge of the car; differences up to 38 levels). The cars of `Beginner-start` and `Advanced-start` do not differ.
+- `Advanced-overview`, (286 to 288, 492 to 494) and (136, 619), and `Expert-overview`, (767 to 769, 362 to 364) and (856 to 864, 511 to 515): a few pixels at the edge of small distant objects among rocks, an oil pump and palms, 500 to 1300 m from the camera; differences of 1 to 39 levels, mostly under 10.
+
+### Hypotheses
+
+The plan allows three hypotheses, each tried by a replay on a copy or by a temporary change that is not committed: (1) an element animated by the clock captured at a different instant; (2) the order in which objects of equal depth are drawn or sorted; (3) the edge of the shadow map, whose centre follows the camera. Only (2) was tried: it explained every pixel (below), so (1) and (3) were not needed. They were not excluded by a test. Reading the code gave no clock-driven element in the race world's shaders (no time constant in `CasaEngine/CasaEngine/Content/Shaders`), and the capture runs at a fixed time step (`IsFixedTimeStep`, `MaxElapsedTime` equal to `TargetElapsedTime`).
+
+Hypothesis (2), found by reading the engine: `StaticMeshRendererComponent` sorts its opaque items by a 64-bit key built from `EffectiveShaderId.GetHashCode()`, `mat.Id.GetHashCode()` and `vb.GetHashCode()` (the vertex buffer object's hash code), with `List<RenderItem>.Sort`, which is not stable. The id of a material the game copies at run time, the car's paint copies (`LegacyCarVisualFactory.CopyWithBaseTexture`, `Id = Guid.NewGuid()`), is random: its hash puts the car's items at another place in the sort from one replay to the next. Where two items cover the same pixel (silhouettes of overlapping or z-fighting surfaces), the draw order decides the value of the pixel.
+
+Tests, `linear`, six replays each:
+
+| Test | How | Pixels that differ, by view |
+|---|---|---|
+| No change | the build as it is (`linear-1` to `-6`) | Advanced-overview 9, Expert-start 22, Expert-overview 17 (total 48) |
+| (2a) engine copy, order made deterministic | a copy of the engine source outside the repository, `StaticMeshRendererComponent` with `vb.GetHashCode()` replaced by 0 in the sort key and a stable sort (the insertion index breaks ties); its `CasaEngine.dll` replaces the one of a copy of the game's build folder (`h2-linear-1` to `-6`) | Expert-start 22 (total 22) |
+| (2b) the same, with a deterministic material hash | as (2a), and `mat.Id.GetHashCode()` replaced by a hash of the material's name (a runtime copy has the name of its source) (`h2b-linear-1` to `-6`) | none (total 0) |
+| (2c) game only, deterministic ids of the car's material copies | a temporary change of `LegacyCarVisualFactory.CopyWithBaseTexture`, `Id` taken from a counter in the order the copies are made, on the real engine, not committed (`h2c-linear-1` to `-6`) | none (total 0) |
+| The correction, committed | the same idea written as the final change (below), `linear` (`fix-linear-1` to `-6`) | none (total 0) |
+| The correction, committed, `legacy` | `fix-legacy-1` to `-6` | none (total 0) |
+
+The engine copy and its build were made in the scratchpad, outside the repository; the engine of the repository (`8a3933b36`, submodule) was not changed. The temporary changes of the game ((2c), and a log of the car's pose that was not run) were reverted before the correction was written.
+
+### Conclusion and correction
+
+The cause is in the game's code: the random `Guid` of the car's material copies. The engine sorts its opaque items with an unstable sort keyed by the hash of the material's id, so a random id changes the order of the items from one replay to the next, and a few pixels where surfaces overlap take the other value. Evidence: (2a), which makes only the vertex-buffer hash and the tie-break deterministic, removes the clusters of the overview views (rocks, oil pump, palms) and leaves the pixels of the car of `Expert-start`; (2b) removes both; (2c), which changes nothing in the engine and only gives the car's material copies a deterministic id, removes all of them. The engine's part is only the sensitivity of its sort key to an id that the game makes random; the vertex-buffer hashes were the same from one replay to the next in these runs (otherwise (2c) would not have removed the overview clusters).
+
+**Correction** (`RacingGame.Gameplay/Components/LegacyCarVisualFactory.cs`, one file): `CopyWithBaseTexture` takes its id from `NextMaterialCopyId()`, a counter in a fixed namespace (`Interlocked.Increment`), instead of `Guid.NewGuid()`. The ids stay unique in the process, which is what keeps a copy out of the compiled-material cache, and are the same from one run to the next for the same sequence of copies. Nothing is drawn differently outside a capture, except that the order of items that was random is now fixed.
+
+Proof, the correction built and run, twelve replays (`fix-linear-1` to `-6`, `fix-legacy-1` to `-6`):
+
+| Mode | Pixels that differ between the six replays | Views identical by hash in the six replays | `scene-measure-*.txt` identical in the six replays |
+|---|---|---|---|
+| `linear` | 0 | 15 of 15 | 3 of 3 |
+| `legacy` | 0 | 15 of 15 | 3 of 3 |
+
+Against the reference of the port (`s3/linear-a`, `s3/legacy-a`), the replay `fix-<mode>-1`:
+
+| Mode | Largest mean difference per channel of the 15 views (R, G, B) | `scene-measure-*.txt` identical to `s3` | Views identical to `s3` by hash |
+|---|---|---|---|
+| `linear` | 0.00, 0.00, 0.00 | 3 of 3 | 14 of 15 |
+| `legacy` | 0.00, 0.00, 0.00 | 3 of 3 | 12 of 15 |
+
+The interface captures of the corrected build (`fixui/`, `--capture-ui-screens`) against `s4/ref-ui`: 10 of 10 screens at 0.00, the car selection screen included, whose carousel makes the same material copies (`ui-compare-fix/report.txt`).
+
+The other figures of the bench do not change. The repeatability figures of the earlier sections (12 to 14 identical files of 15) were this noise: at most 22 pixels in a view of 921,600, mean differences of 0.00.
+

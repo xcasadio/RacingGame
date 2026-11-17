@@ -175,6 +175,19 @@ internal static class LegacyCarVisualFactory
         return CopyWithBaseTexture(source, IsPaintSlot(source) ? paint.Painted : paint.Unpainted);
     }
 
+    // The id of a copy of a car material: unique in the process, as a random Guid is, and the same from one run to the next for the
+    // same sequence of copies. The renderer sorts its opaque items by a key that includes the hash of the material's id and sorts
+    // them with an unstable sort, so a random id moved the car's items in the sort from run to run and, with them, the order of
+    // other items of equal key, which flipped a few isolated pixels of the reference captures between two replays (plan
+    // ai-agent/tasks/rgce-pbr-handover-tasks.md, T17.2). A counter in a fixed namespace keeps the ids unique and the order stable.
+    private static int _materialCopyCounter;
+
+    private static Guid NextMaterialCopyId()
+    {
+        int counter = Interlocked.Increment(ref _materialCopyCounter);
+        return new Guid(counter, 0x4743, 0x4d43, [(byte)'R', (byte)'G', (byte)'C', (byte)'E', (byte)'C', (byte)'A', (byte)'R', (byte)'1']);
+    }
+
     /// <summary>
     /// A copy of a compiled <see cref="LitPbrMaterial"/> with every value of the cooked material, a new id and
     /// <paramref name="baseColor"/> for base texture. The new id keeps it out of the compiled-material cache, so the
@@ -184,7 +197,7 @@ internal static class LegacyCarVisualFactory
     {
         return new LitPbrMaterial
         {
-            Id = Guid.NewGuid(),
+            Id = NextMaterialCopyId(),
             Name = source.Name,
             ShaderAssetId = source.ShaderAssetId,
             IsTransparent = source.IsTransparent,
