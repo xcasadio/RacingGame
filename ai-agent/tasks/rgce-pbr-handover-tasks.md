@@ -26,8 +26,8 @@ Tranches :
 | S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | Faite le 2026-11-17, verdict CONFIRMED |
 | S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1c, S1g, S1h | Faite le 2026-11-17, verdict CONFIRMED après correction de deux constats (couleurs de base, ombres des colonnes) |
 | S3 | Tunnel presque noir | S2 | Faite le 2026-11-17, verdict CONFIRMED ; niveau à choisir par l'auteur (O16) |
-| S4 | Voiture centrale du carrousel : trop blanche sur l'autre PC (lumière π et ciel sans tonemapping, non portés ici) ; ici environ deux fois plus sombre qu'avant le PBR (mesuré en S2) | S2 | Détaillée (Phase 16) |
-| S5 | Défauts connus du §4 de la note (moteur sur une branche moteur dédiée, jeu sur cette branche) | S2 | À détailler |
+| S4 | Voiture centrale du carrousel : trop blanche sur l'autre PC (lumière π et ciel sans tonemapping, non portés ici) ; ici environ deux fois plus sombre qu'avant le PBR (mesuré en S2) | S2 | Faite le 2026-11-17, verdict CONFIRMED ; niveau à confirmer par l'auteur (O2) |
+| S5 | Défauts connus du §4 de la note (moteur sur une branche moteur dédiée, jeu sur cette branche) | S2 | Détaillée (Phase 17) |
 
 Les tranches S1b, S1v, S1c, S1a, S1d, S1e, S1m, S1f s'exécutent dans cet ordre, une à la fois ; S1g et S1h suivent S1f ; S2 vient après S1g et S1h. La mesure « avant PBR » de S1c est donc toujours prise avant tout changement du moteur, du contenu ou des matériaux.
 
@@ -1270,10 +1270,51 @@ Retour arrière : annuler les commits de la phase. Sorties sous `artifacts/pbr-h
 > - Section « After the carousel light » du doc générée par script (`gen_section_s4.py`, hors dépôt) ; relecture par un second script indépendant (`check_doc_s4.py`, hors dépôt, qui recalcule la boîte et les écarts sur les images) : 83 valeurs comparées au doc, 0 différence.
 > - Écart au plan : aucun.
 
-### ⏳ T16.2 — Vérification indépendante de S4
+### ✅ T16.2 — Vérification indépendante de S4
 
 - Objectif : un `verifier` frais confirme ou réfute les validations de T16.1 par ses propres lancements et regarde l'écran.
 - Commit : `docs(ai-agent): record the verification of the carousel light`
+
+> Validation (2026-11-17), sorties dans `artifacts/pbr-handover/s4/verify/`.
+> - `verifier` frais sur `26e5bdc` : **CONFIRMED** par ses propres lancements. Le diff ne change que l'intensité de la lumière (π) et écrit la couleur d'ambiant à 0,05, égale au défaut du moteur au bit près, donc sans effet ; build à 0 erreur, `--smoke-frontend` en succès ; neuf écrans sur dix à 0,00 contre `s3/ref-ui`, `car-selection` seul change ; boîte centrale : luminance 55,33 (61,70 avant le PBR, 42,57 en `s3`), 0,245 % de pixels à 255, écart de l'écran entier avec l'avant-PBR 3,64 / 3,65 / 3,78 (4,86 / 4,21 / 4,23 en `s3`) ; rejeux des 15 vues à 0,00 de `s3`, mesure de scène identique ; chiffres du doc, de l'ADR-0031 et de la note relus.
+> - À l'œil : aucun aplat blanc sur la carrosserie (99e centile du gris du toit à 219), pixels saturés sur les seuls bords des plateaux ; les trois voitures nettement plus lisibles qu'en `s3`.
+> - P3 (introduit, corrigé dans ce commit) : l'ADR-0031 attribuait à l'ADR-0018 une couleur d'ambiant blanche qu'elle n'écrit pas (elle dit « ambient and specular intensity 1 » ; le blanc est dans le code de l'autre PC). Deux phrases corrigées.
+> - P3 (introduit par la lumière à π, dans le critère écrit, pour l'arbitrage O2) : la peinture grise est plus claire et plus froide qu'avant le PBR : toit 172 / 182 / 189 pour 129 / 128 / 130, gris arrière 111 / 113 / 116 pour 99 / 98 / 100 ; la luminance de la boîte le masque parce que le pare-brise noir et les plateaux plus sombres compensent.
+> - P3, antérieurs à la tranche (déjà en O14 pour le verre) : vitres et feux noirs ; plateaux bleutés au lieu du gris neutre (famille `CarouselPlate`, métal 1) ; brillance de la peinture disparue, bandes orange plus mates.
+> - P4 : une seule couleur de voiture et une seule voiture au premier plan sont capturées.
+> - S4 close ; le niveau reste à confirmer par l'auteur (O2, ADR-0031 `Proposed`).
+
+---
+
+## Phase 17 — Défauts connus (S5)
+
+Les quatre défauts du §4 de la note de passation, un par un :
+
+| Défaut | Où | Devenir |
+|---|---|---|
+| Banc de capture : quelques pixels isolés diffèrent d'une capture à l'autre, cause non cherchée | jeu | T17.2 : recherche bornée de la cause |
+| Import glTF : un matériau `OPAQUE` dont la couleur de base a un alpha sous 1 est compilé en transparent | moteur | T17.1, plan moteur |
+| Une sonde de réflexion référencée par identifiant d'asset alloue et journalise à chaque image | moteur | T17.1, plan moteur |
+| Deux commentaires décrivent l'ancien éclairage et `CreateLegacyLighting` calcule un ambiant inutilisé | jeu | Sans objet ici : ce code est celui de l'autre PC (`RacingGameCasaEngine/Worlds/LegacyTrackSceneFactory.cs` d'`origin/remaster`), absent de cette branche (constat de S2) |
+
+### ⏳ T17.1 — Moteur : alpha d'un matériau glTF opaque, sonde de réflexion en échec
+
+- Plan : `CasaEngine/ai-agent/tasks/known-defects-gltf-alpha-probe-tasks.md` (T0 à T3), branche du moteur `chantier/known-defects-gltf-alpha-probe`, empilée sur `chantier/pbr-ggx-back-facing`. Le pointeur du sous-module du jeu n'est pas avancé : le jeu n'a besoin d'aucune des deux corrections.
+- Validation, côté jeu : à la fin, le moteur est revenu sur `chantier/pbr-ggx-back-facing` (`8a3933b36`), `git status` du jeu ne montre pas le sous-module modifié, build du jeu à 0 erreur, un rejeu `linear` des 15 vues à 0,00 de `s3`.
+- Commit, côté jeu : `docs(ai-agent): record the engine fixes of two known defects`
+
+### ⏳ T17.2 — Banc de capture : pixels qui diffèrent d'un rejeu à l'autre
+
+- Constat : sur un même build, 12 à 14 des 15 vues sont identiques octet pour octet d'un rejeu à l'autre ; les autres diffèrent par quelques pixels isolés (par exemple `Expert-overview`, `Advanced-overview`, `Expert-start`), avec des écarts moyens de 0,00.
+- Objectif : trouver la cause, sans élargir. Méthode : six rejeux `linear` et six `legacy` du même build vers `artifacts/pbr-handover/s5/` ; carte des pixels qui diffèrent, par vue et par mode ; pour chaque amas, l'objet de la scène qui s'y trouve (recadrage) ; au plus trois hypothèses essayées, chacune par un rejeu sur une copie du dossier de build ou par un changement temporaire non committé : (1) un élément animé par l'horloge (éoliennes, bannières, particules, eau) capturé à un instant différent ; (2) l'ordre de dessin ou de tri d'objets à profondeur égale ; (3) le bord de la carte d'ombre, dont le centre suit la caméra.
+- Issue : si la cause est dans le code du jeu et se corrige en un changement borné (un fichier, sans toucher au rendu en jeu hors capture), la correction est faite, avec douze rejeux identiques octet pour octet pour preuve ; si elle est dans le moteur ou demande plus, elle est décrite avec sa preuve dans `docs/racinggame-3d-capture-bench-local-baseline.md` (section « Capture repeatability ») et dans les points ouverts, sans correction.
+- Validation : la section du doc donne les vues, le nombre de pixels, les hypothèses essayées et leur résultat ; rien d'autre ne change (rejeux à 0,00 de `s3`, mesure de scène identique).
+- Commit : `fix(racing-casa): make the reference captures repeatable` ou `docs(racing-casa): record the cause of the capture repeatability noise`
+
+### ⏳ T17.3 — Vérification indépendante de S5
+
+- Objectif : un `verifier` frais confirme ou réfute : les deux corrections du moteur (tests qui échouent avant et passent après, seuls les 8 échecs connus, empreinte de la démo PBR inchangée) ; l'état du sous-module et du jeu à la fin ; la conclusion de T17.2 par ses propres rejeux.
+- Commit : `docs(ai-agent): record the verification of the known defect fixes`
 
 ---
 
@@ -1282,7 +1323,7 @@ Retour arrière : annuler les commits de la phase. Sorties sous `artifacts/pbr-h
 À trancher pendant l'exécution, ou à remonter en ⚠️ Blocked si la réponse manque.
 
 - O1 (S3) : tunnel presque noir, relever sa couleur de base ou lui donner une lumière ? Choix de l'auteur. **Traité en S3 (Phase 15, ADR-0030 `Proposed`) : émissive texturée portant l'ambiant du matériau ; voir O16.**
-- O2 (S4) : voiture centrale du carrousel, quelle intensité viser ? Choix de l'auteur. **Traité en S4 (Phase 16, ADR-0031 `Proposed`) : lumière à π, cible l'écran d'avant le PBR ; à confirmer par l'auteur.**
+- O2 (S4) : voiture centrale du carrousel, quelle intensité viser ? Choix de l'auteur. **Traité en S4 (Phase 16, ADR-0031 `Proposed`) : lumière à π, cible l'écran d'avant le PBR ; à confirmer par l'auteur.** Après vérification : lumière à π committée (ADR-0031 `Proposed`) ; la peinture grise ressort plus claire et plus froide qu'avant le PBR (toit 172 / 182 / 189 pour 129 / 128 / 130), les plateaux sont bleutés et la brillance de la peinture a disparu : à confirmer ou à régler par l'auteur.
 - O3 : 8 tests GPU du moteur échouent sur ce PC, sur `origin/main` comme sur la branche fusionnée (références prises sur l'autre PC). À traiter dans le moteur, hors de ce plan sauf demande.
 - O4 (S1b) : au-delà des matériaux, les deux PC ont fait en double plusieurs sujets du monde de course, relevés le 2026-11-16 par les commits des deux côtés depuis `d8ac303` :
 
