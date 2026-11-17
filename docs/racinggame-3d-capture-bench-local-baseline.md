@@ -1770,3 +1770,107 @@ Interface (`ref/ui`, 10 screens) against `s20/ref-engine/ui`: 7 of 10 identical;
 Track audit (`ref/audit`, 30 captures at 1920x1080) against `s20/ref-engine/audit`: 0 of 30 identical; all 30 captures show the race world and differ by the exposure: differing pixels 1915192 to 2042166, largest channel difference 24 to 78 (per capture in `bench-numbers.json`).
 
 The new references of this machine are `artifacts/pbr-handover/s20/r3/ref/` (`linear-a`, `legacy-a`, `tunnel-linear`, `tunnel-legacy`, `ui`, `audit`).
+
+## After the signs, car glass and tunnel materials
+
+Run of 2026-11-17, after slice R4 of `ai-agent/tasks/rgce-render-gaps-tasks.md` (ADR-0033, proposed): the car glass takes a base colour of 224 grey (was the original's diffuse 13); the 18 materials of the signage family take their own base texture as emissive texture and the imported ambient colour of the original as emissive colour (level 1.0); the tunnel gets an emissive level of 0.6 (was the author's 0.5) with `emissive_shadow_factor` 1 (was the default 0), and no occlusion texture. The measurement that chose each (candidates, rules, numbers) is in ADR-0033 and in `artifacts/pbr-handover/s20/r4/table.md`. The numbers below are produced by `artifacts/pbr-handover/s20/r4/scripts/gen_bench4.py` from the captures under `artifacts/pbr-handover/s20/r4/ref/` and read back from this document by `verify_bench4.py`. "Before" is the state of R3 (`artifacts/pbr-handover/s20/r3/ref/`).
+
+### Build and content
+
+Cooker, before cooking, with the new recipes (`artifacts/pbr-handover/s20/r4/apply/verify-before.txt`): `--verify` reports 39 mismatches, on 20 materials and no other: `Models/Car/Standard 19` (base colour), the 18 signage materials (`emissive_color`, `emissive_texture`; `Models/Banner`, `Banner2` to `Banner6`, `Casino01/153`, `Goal`, `Hotel02/163`, `Hotel02/casino`, `Hotel02/casino2`, `Roadsign`, `Roadsign2`, `Sign`, `Sign2`, `SignCurveLeft`, `SignCurveRight`, `SignWarning`) and `Track/RoadTunnel` (`emissive_color`, `emissive_shadow_factor`). After cooking (`apply/verify-after.txt` of the same folder): `--verify` 0 mismatches; `--check` (`apply/check.txt`): "0 glTF models, images or cooked files without a cooked asset"; a second cooking pass writes 0 files (`apply/cook-2.txt`, 268 unchanged). `git status` of the content lists the same 20 materials, and nothing else (no catalogue entry, no texture). `--smoke-frontend` (`ref/smoke/run.log`): "Smoke validation completed successfully" 2 time(s); lines with `[Warning]` or `[Error]`: 0. `--verify-legacy-import-profile` (`ref/profile/stdout.txt`): "Legacy import profile verification passed."; lines with `[Warning]` or `[Error]` in its log: 0.
+
+### The 15 views
+
+- `linear` (`linear-a`, `linear-b`): the two replays are identical byte for byte on 15 of 15 views, and identical to the final state of the measurement (`s20/r4/final-state`) on 15 of 15. Against the previous reference (`s20/r3/ref/linear-a`): 0 of 15 identical.
+- `legacy` (`legacy-a`, `legacy-b`): the two replays are identical byte for byte on 15 of 15 views; against `s20/r3/ref/legacy-a` 0 of 15 identical (the materials changed are the same in both modes). No measured state exists for `legacy`: it has no criterion of its own besides criterion 3.
+
+| Criterion | `legacy` passed | `linear` passed | Judged | `legacy` before | `linear` before |
+|---|---|---|---|---|---|
+| 1. lit and away within +-12 | 5 | 17 | 34 | 6 | 17 |
+| 2. shadow/lit ratio within +-0.05 (per view and surface) | 2 | 0 | 4 | 2 | 0 |
+| 3. class agreement (shadow shadowed, lit lit) | 27 | 27 | 33 | 27 | 27 |
+| 4. away-shadowed within +-12 | 3 | 3 | 3 | 3 | 3 |
+
+Mean luminance of the 15 pictures against the original (96.3): `legacy` 83.2 (82.4 before), `linear` 99.0 (98.7 before). Mean difference per channel with the original, over the 15 views: `legacy` 20.570 (21.000 before), `linear` 17.759 (17.947 before). Criteria 1/2/3/4 of the second replay of each mode: `legacy` 5/2/27/3, `linear` 17/0/27/3.
+
+### Car glass: the rear window of `Beginner-start`
+
+Box x 608-626, y 388-391 inclusive (76 pixels, glass only on the original and on the port). Mean R/G/B over the box: original 136.91 / 137.57 / 137.95; port before (`linear`) 3.12 / 4.91 / 5.84; port after (`linear`) 114.66 / 175.74 / 196.17; port after (`legacy`) 102.18 / 152.83 / 179.14. Mean of the three absolute differences of the box means (port minus original): `linear` 132.851 before, 39.548 after; `legacy` 129.136 before, 30.395 after. The glass is no longer black, but it is bluer and brighter in G and B than the original (difference after, `linear`: -22.25, +38.17, +58.22); that gap stays open.
+
+Probe `building-away-1` of `Beginner-overview` (the black wall of the casino tower, `linear`): reference 14,13,12 (0.1), port 23,22,21 (0.2) before and 26,24,23 (0.2) after, difference +10,+9,+9 before and +12,+11,+11 after, criterion 1 PASS after. The `BuildingGlass` material file is not changed (the cooker lists 20 materials, none of them is `BuildingGlass`) and the glass alone leaves the probe as it was (+10,+9,+9); the probe moves with the level of the signs' emissive, in the measurement of the levels 0.5, 0.75, 1.0 and 1.3: +10,+10,+9, +11,+10,+10, +12,+11,+11 (PASS), +13,+13,+12 (FAIL). The wall therefore gets 2 to 3 levels brighter from the signs' emissive (the signage family includes the materials of `Casino01` and `Hotel02`), and stays inside the tolerance of 12 only just (+12 on the red channel).
+
+### Signs: the chevron sign of the Beginner tunnel
+
+View `Beginner-tunnel` (`linear`), region x 770-850, y 140-220. "Most red pixel" maximises R - (G + B) / 2, "lightest pixel" maximises 0.299 R + 0.587 G + 0.114 B (the `Luminance` of `scripts/TrackCaptureCompare/Program.cs`), first in row-major order on ties, each searched in its own image.
+
+| State | Most red pixel (x, y) R, G, B | Difference with the original | Lightest pixel (x, y) R, G, B | Difference with the original | Sum of absolute differences |
+|---|---|---|---|---|---|
+| original | (816, 163) 87, 0, 0 | - | (825, 157) 87, 100, 111 | - | - |
+| before | (835, 147) 19, 17, 15 | -68, 17, 15 | (788, 140) 73, 81, 86 | -14, -19, -25 | 158 |
+| after | (816, 144) 79, 19, 19 | -8, 19, 19 | (772, 205) 82, 83, 88 | -5, -17, -23 | 91 |
+
+No level put both colours within +-15, so the rule took the level with the smallest sum of absolute differences (1.0). The red of the signs is still deeper in the original.
+
+### Tunnel views
+
+The three tunnel views of the original (`s3/ref-tunnel`, `nopost`) replayed in both modes (`ref/tunnel-linear`, `ref/tunnel-legacy`; each twice, `-b`). Luminance is computed here as 0.2126 R + 0.7152 G + 0.0722 B on the 0-255 values; the top band median is the median of that luminance over rows 0 to 251; the difference is the mean absolute difference per channel (mean of R, G, B). The state before is `s20/r3/ref/tunnel-<mode>`.
+
+`linear`: the two replays are identical byte for byte on 3 of 3 views, and identical to the final state of the measurement (`s20/r4/final-state-tunnel`) on 3 of 3; against the previous reference 0 of 3 identical. `legacy`: the two replays are identical on 3 of 3; against the previous reference 0 of 3 identical.
+
+| Mode | View | Luminance, port after (before) [original] | Top band median, port after (before) [original] | Mean difference per channel, after (before) |
+|---|---|---|---|---|
+| `linear` | Beginner | 22.9 (23.7) [18.2] | 24.4 (21.6) [11.1] | 10.68 (11.63) |
+| `linear` | Advanced | 20.7 (21.2) [37.0] | 26.6 (24.1) [39.3] | 21.29 (21.13) |
+| `linear` | Expert | 29.7 (31.3) [34.1] | 37.0 (38.4) [40.8] | 13.11 (16.37) |
+| `legacy` | Beginner | 25.6 (26.1) [18.2] | 28.7 (24.5) [11.1] | 10.53 (12.66) |
+| `legacy` | Advanced | 24.4 (25.5) [37.0] | 29.6 (25.6) [39.3] | 17.28 (18.29) |
+| `legacy` | Expert | 35.0 (38.4) [34.1] | 44.7 (48.3) [40.8] | 7.37 (11.80) |
+
+Over the three views in `linear`: mean luminance 24.4 (25.4 before; original 29.8), mean top band median 29.338 (28.051 before; original 30.382), mean difference per channel 15.030 (16.374 before).
+
+Over the three views in `legacy`: mean luminance 28.3 (30.0 before; original 29.8), mean top band median 34.339 (32.810 before; original 30.382), mean difference per channel 11.728 (14.249 before).
+
+The author's criterion of O16 (the mean of the three top band medians within 1.5 of the original's) holds in `linear` after the change; it is not a criterion of `legacy`, whose tunnel is brighter than the original's (see the mean top band median above).
+
+### Interface and audit
+
+Interface (`ref/ui`, 10 screens) against `s20/r3/ref/ui`: 6 of 10 identical, and the two replays (`ui`, `ui-b`) are identical on 10 of 10; the screens without a race world (splash, main menu, track selection, highscores, options, help) are identical byte for byte. The car selection screen shows the car and differs by its glass only. Differing, with the part that moves each (a copy of the build folder with that one change put back, `artifacts/pbr-handover/s20/r4/attribution.txt`; pixels that differ between the applied state and that copy):
+
+| Capture | Differing pixels (largest channel difference) against R3 | Glass alone | Signs alone | Tunnel alone | Not moved by any of the three |
+|---|---|---|---|---|---|
+| `ui-car-selection` | 12373 (240) | 12373 | 0 | 0 | 0 |
+| `ui-pause` | 84247 (68) | 26356 | 57891 | 0 | 0 |
+| `ui-race-finished` | 616133 (78) | 6932 | 609201 | 0 | 0 |
+| `ui-race-hud` | 109204 (205) | 26176 | 83028 | 0 | 0 |
+
+Track audit (`ref/audit`, 30 captures at 1920x1080, the arguments `--seed 1 --size 1280x720` being ignored by the game) against `s20/r3/ref/audit`: 8 of 30 identical, and the two replays (`audit`, `audit-b`) are identical on 30 of 30. The 22 that differ:
+
+| Capture | Differing pixels (largest channel difference) against R3 | Glass alone | Signs alone | Tunnel alone | Not moved by any of the three |
+|---|---|---|---|---|---|
+| `audit-Advanced-chase-road-only` | 3725 (40) | 0 | 0 | 3725 | 0 |
+| `audit-Advanced-helper-palms` | 5214 (92) | 0 | 5214 | 0 | 0 |
+| `audit-Advanced-helper-tunnel` | 1287496 (39) | 0 | 0 | 1287496 | 0 |
+| `audit-Advanced-road-only-start` | 116 (14) | 0 | 0 | 116 | 0 |
+| `audit-Advanced-sector-20` | 9789 (35) | 0 | 1416 | 8543 | 0 |
+| `audit-Advanced-sector-50` | 69208 (84) | 0 | 69208 | 0 | 0 |
+| `audit-Advanced-sector-80` | 3360 (38) | 0 | 3360 | 0 | 0 |
+| `audit-Advanced-start-full` | 172990 (202) | 4355 | 168635 | 0 | 0 |
+| `audit-Beginner-helper-laterns` | 8393 (65) | 0 | 8393 | 0 | 0 |
+| `audit-Beginner-helper-palms` | 1126 (36) | 0 | 1126 | 0 | 0 |
+| `audit-Beginner-helper-tunnel` | 1739725 (79) | 0 | 3278 | 1736583 | 0 |
+| `audit-Beginner-sector-20` | 144768 (49) | 0 | 144768 | 0 | 0 |
+| `audit-Beginner-sector-50` | 60668 (73) | 0 | 60668 | 0 | 0 |
+| `audit-Beginner-sector-80` | 257706 (43) | 0 | 257706 | 0 | 0 |
+| `audit-Beginner-start-full` | 289213 (201) | 4224 | 284989 | 0 | 0 |
+| `audit-Expert-helper-laterns` | 207918 (53) | 0 | 207918 | 0 | 0 |
+| `audit-Expert-helper-palms` | 206569 (97) | 0 | 206569 | 0 | 0 |
+| `audit-Expert-helper-tunnel` | 1707404 (31) | 0 | 0 | 1707404 | 0 |
+| `audit-Expert-sector-20` | 48065 (60) | 0 | 48065 | 0 | 0 |
+| `audit-Expert-sector-80` | 112825 (37) | 0 | 112825 | 0 | 0 |
+| `audit-Expert-start-full` | 229700 (206) | 3806 | 225894 | 0 | 0 |
+| `audit-Expert-terrain-overview` | 1237 (58) | 0 | 1237 | 0 | 0 |
+
+Every difference is moved by at least one of the three changes taken alone (the last column is 0 everywhere). By part, over the 26 captures of the interface and the audit that differ: glass: 1; glass + signs: 6; signs: 13; signs + tunnel: 2; tunnel: 4. The tunnel material alone moves `audit-Advanced-chase-road-only`, `audit-Advanced-helper-tunnel`, `audit-Advanced-road-only-start`, `audit-Expert-helper-tunnel`; the car glass moves the car selection screen alone, and the other screens and captures with the car in view together with the signs.
+
+The new references of this machine are `artifacts/pbr-handover/s20/r4/ref/` (`linear-a`, `legacy-a`, `tunnel-linear`, `tunnel-legacy`, `ui`, `audit`).
+

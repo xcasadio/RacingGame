@@ -134,8 +134,14 @@ internal sealed class Cooker
         asset.SetPropertyValue("emissive_color", MaterialValue.FromVector3(recipe.EmissiveColor));
         if (material.EmissiveTextureId != Guid.Empty)
         {
-            // Only the road tunnel has an emissive texture: the other materials keep their files as they are, without the key.
+            // Only the road tunnel and the signs have an emissive texture: the other materials keep their files as they are, without the key.
             asset.SetPropertyValue("emissive_texture", MaterialValue.FromTextureId(material.EmissiveTextureId));
+        }
+
+        if (recipe.EmissiveShadowFactor != 0f)
+        {
+            // Only the road tunnel asks for a shadowed emissive: the key is absent otherwise, and the engine default (0) applies.
+            asset.SetPropertyValue("emissive_shadow_factor", MaterialValue.FromFloat(recipe.EmissiveShadowFactor));
         }
 
         asset.SetPropertyValue("clear_coat", MaterialValue.FromFloat(recipe.ClearCoat));

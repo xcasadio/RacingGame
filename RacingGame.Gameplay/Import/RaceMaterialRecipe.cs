@@ -75,10 +75,16 @@ public sealed record RaceMaterialRecipe
     public Vector3 EmissiveColor { get; init; } = Vector3.Zero;
 
     /// <summary>
-    /// The emissive texture, or <c>null</c> when the material has none (the case of every material but the road tunnel's): the
-    /// cooker then writes no <c>emissive_texture</c> key.
+    /// The emissive texture, or <c>null</c> when the material has none (the case of every material but the road tunnel's and the
+    /// signs'): the cooker then writes no <c>emissive_texture</c> key.
     /// </summary>
     public string? EmissiveTextureFilePath { get; init; }
+
+    /// <summary>
+    /// How much the emissive colour receives the shadow, 0 (the engine default: never shadowed) to 1 (shadowed like the rest of the
+    /// pixel). The cooker writes no <c>emissive_shadow_factor</c> key while it is 0.
+    /// </summary>
+    public float EmissiveShadowFactor { get; init; }
 
     public RenderQueue Queue { get; init; } = RenderQueue.Opaque;
 

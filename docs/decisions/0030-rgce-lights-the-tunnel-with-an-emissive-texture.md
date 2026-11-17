@@ -1,6 +1,6 @@
 # ADR-0030: RacingGameCasaEngine lights the tunnel with the original's material ambient as an emissive texture
 
-- **Status**: Accepted
+- **Status**: Accepted; amended by ADR-0033 (emissive level 0.6 and shadow factor 1 for the tunnel, replacing the author's 0.5)
 - **Date**: 2026-11-17 (the author chose the level of the emissive colour on this date)
 - **Source**: this chantier: `ai-agent/tasks/rgce-pbr-handover-tasks.md`, slice S3 (phase 15), decisions T1 to T3 (taken in AUTO mode), open points O1 and O16 (the author's choice of the level), tasks T15.1, T15.2 and T15.4; the original: `RacingGameOriginal/Core/Tracks/Track.cs:84-89`, `Track.cs:1309-1343`, `Content/Shaders/ShadowMap.fx:36` and `:240`; the engine: `CasaEngine/CasaEngine/Content/Shaders/LitPbr.fx:521-557`
 

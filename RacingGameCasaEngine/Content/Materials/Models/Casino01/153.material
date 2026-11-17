@@ -14,6 +14,7 @@
   "properties": {
     "base_color_texture": "e5c1c7c3-e196-5799-b8a3-3c40cc825e1e",
     "normal_texture": "d6afb8a6-dc12-57dc-a449-74e6f7b0fb58",
+    "emissive_texture": "e5c1c7c3-e196-5799-b8a3-3c40cc825e1e",
     "detail_texture": "00000000-0000-0000-0000-000000000000",
     "detail_tiling": 1.0,
     "base_color": {
@@ -25,9 +26,9 @@
     "metallic": 0.0,
     "roughness": 0.6,
     "emissive_color": {
-      "x": 0.0,
-      "y": 0.0,
-      "z": 0.0
+      "x": 0.1,
+      "y": 0.1,
+      "z": 0.1
     },
     "clear_coat": 0.0,
     "clear_coat_roughness": 0.1,

@@ -58,6 +58,16 @@ public static class RaceMaterialRecipes
     private const byte LegacyGuardRailDiffuse = 182;
     private const byte LegacyCityGroundDiffuse = 200;
 
+    // The base colour of the car glass. The original's glass diffuse colour (13) is no reflectance for a metal: the glass came out
+    // black. 224 on the three channels is a linear reflectance of about 0.75, the original's reflection at normal incidence.
+    // Measured on the rear window of Beginner-start (ADR-0033): the distance to the original falls from 132.9 to 39.5.
+    private const byte LegacyCarGlassBaseColor = 224;
+
+    // The signs' emissive level: the emissive colour is the material ambient of the original times this level, on the emissive
+    // texture (the base texture). The original lights a sign with texture * material ambient; level 1 is that term unchanged
+    // (ADR-0033, chosen among 0.5, 0.75, 1.0 and 1.3 by the rule written before the measurement).
+    private const float SignageEmissiveLevel = 1f;
+
     // The tint of a material times its diffuse colour D, rounded as CreateLegacyLighting of the other machine does:
     // (c * D + 127) / 255 per channel. The tint is white when the material has a texture.
     private static Color WithLegacyDiffuse(Color tint, byte diffuse)
@@ -73,15 +83,22 @@ public static class RaceMaterialRecipes
     public static RaceMaterialRecipe ForScenery(string modelName, StaticModelImportedMaterial importedMaterial)
     {
         LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
+        RacingGamePbrFamily family = RacingGamePbrMaterialMapping.ResolveImportedFamily(importedMaterial);
+
+        // A sign carries the material ambient of the original as an emissive: its own texture times the imported ambient colour
+        // (ADR-0033, on the precedent of the tunnel, ADR-0030). lit-pbr has no ambient per material, and without it the signs
+        // were nearly black on the faces turned away from the sun.
+        bool isSignage = family == RacingGamePbrMaterialMapping.Signage;
 
         return new RaceMaterialRecipe
         {
             Name = $"{modelName}.{importedMaterial.DisplayName}",
             BaseTextureFilePath = importedMaterial.DiffuseTextureFilePath,
             NormalTextureFilePath = importedMaterial.NormalTextureFilePath,
-            Family = RacingGamePbrMaterialMapping.ResolveImportedFamily(importedMaterial),
+            Family = family,
             BaseColor = Opaque(importedMaterial.DiffuseColor),
-            EmissiveColor = presentation.EmissiveColor,
+            EmissiveColor = isSignage ? importedMaterial.AmbientColor * SignageEmissiveLevel : presentation.EmissiveColor,
+            EmissiveTextureFilePath = isSignage ? importedMaterial.DiffuseTextureFilePath : null,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             Queue = presentation.Queue,
             AlphaCutoff = presentation.AlphaCutoff,
@@ -110,7 +127,7 @@ public static class RaceMaterialRecipes
             NormalTextureFilePath = normalTexturePath,
             Family = RacingGamePbrMaterialMapping.ResolveCarFamily(importedMaterial),
             BaseColor = RacingGamePbrMaterialMapping.IsCarGlassMaterial(importedMaterial)
-                ? Opaque(importedMaterial.DiffuseColor)
+                ? new Color(LegacyCarGlassBaseColor, LegacyCarGlassBaseColor, LegacyCarGlassBaseColor, (byte)255)
                 : LegacyCarDefaultDiffuseColor,
             EmissiveColor = presentation.EmissiveColor,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
@@ -246,10 +263,15 @@ public static class RaceMaterialRecipes
     // The tunnel's material ambient A of the original is 182 (Tracks/Track.cs:84-89, "Use mainly ambient color (tunnel uses
     // lightmaps)"). The original renders texture * (A + D * N.L); lit-pbr has no ambient per material, so the term texture * A is an
     // emissive: the emissive colour below times the diffuse texture, added by the engine without the shadow tint (LitPbr.fx:521-557).
-    // The level is the author's choice (2026-11-17, ADR-0030, open point O16 of ai-agent/tasks/rgce-pbr-handover-tasks.md): a neutral
-    // grey of 0.5 on the three channels, between A / 255 (182 / 255 = 0.714, the original's ambient, measured too bright) and A / 255
-    // times the original's shadow tint (0.25, 0.26, 0.27), about 0.18 (measured too dark: the tunnel barely changed).
-    private static readonly Vector3 LegacyTunnelEmissiveFactor = new(0.5f);
+    // The level was the author's choice of 0.5 (2026-11-17, ADR-0030, open point O16 of ai-agent/tasks/rgce-pbr-handover-tasks.md): a
+    // neutral grey on the three channels, between A / 255 (182 / 255 = 0.714, the original's ambient, measured too bright) and
+    // A / 255 times the original's shadow tint (0.25, 0.26, 0.27), about 0.18 (measured too dark: the tunnel barely changed).
+    // ADR-0033 replaces it by 0.6 with the shadow reaching the emissive (LegacyTunnelEmissiveShadowFactor 1: shadowed like the rest
+    // of the pixel), on the author's own criterion of O16 (the median of the top band of the three tunnel views within 1.5 of the
+    // original's 30.382): 29.338 for 28.314, and the mean difference per channel from the original falls from 16.255 to 15.030.
+    private static readonly Vector3 LegacyTunnelEmissiveFactor = new(0.6f);
+
+    private const float LegacyTunnelEmissiveShadowFactor = 1f;
 
     /// <summary>
     /// The road tunnels: RacingGame's roadTunnelMaterial (Track.cs), "mainly ambient color" with ambient (182, 182, 182),
@@ -268,6 +290,7 @@ public static class RaceMaterialRecipes
             BaseColor = new Color(80, 80, 80),
             EmissiveColor = LegacyTunnelEmissiveFactor,
             EmissiveTextureFilePath = diffuseTexturePath,
+            EmissiveShadowFactor = LegacyTunnelEmissiveShadowFactor,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullNone,
         };
