@@ -46,10 +46,19 @@ public static class RaceWorldFactory
     private const float KeyLightIntensity = MathF.PI;
 
     // The ambient colour of the race world is 0.05, the engine's default (WorldEnvironmentSettings.ResetToDefaults), written out
-    // here. lit-pbr multiplies the irradiance of the sky cube by it (LitPbr.fx), so it sets how much of that irradiance lights the
-    // world: the white of the other machine took it from 5 % to 100 % and made the world brighter than the original. The author
-    // chose 0.05 on 2026-11-17, after the measurement of open point O13 (ai-agent/tasks/rgce-pbr-handover-tasks.md, phase 13).
+    // here. In LinearHdr the engine decodes the ambient colour before it multiplies the irradiance of the sky cube in lit-pbr
+    // (CasaEngine ResolvedEnvironmentSettings.cs:106-111), so 0.05 displays as about 0.0014 linear; it is 0.05 only in the legacy
+    // mode. The white of the other machine took the ambient to 100 % of that irradiance and made the world brighter than the
+    // original. The author chose 0.05 on 2026-11-17, after the measurement of open point O13
+    // (ai-agent/tasks/rgce-pbr-handover-tasks.md, phase 13); a Flat ambient of 0.25 to 0.35 was measured again in R3 and not
+    // retained (docs/decisions/0032-*.md).
     private static readonly Vector3 AmbientColor = new(0.05f);
+
+    // Exposure of the linear pipeline with the ACES approximation. 0.9 was measured against the original's 15 reference views
+    // (ai-agent/tasks/rgce-render-gaps-tasks.md, R3; docs/decisions/0032-*.md): at 1.0 the mean luminance was 104.0 for 96.3 and
+    // the mean difference per channel 19.41; at 0.9 they are 98.7 and 17.95, and the lit and away probes that pass go from 16 to
+    // 17 of 34.
+    private const float LinearExposure = 0.9f;
 
     // Shadow map of the race world, tuned on the track audit views (ai-agent/tasks/rgce-hud-shadows-start-tasks.md, T3.1):
     // - the original multiplies the whole image by a shadow colour of (0.25, 0.26, 0.27) (Core/Content/Shaders/ShadowMap.fx:36,
@@ -189,7 +198,7 @@ public static class RaceWorldFactory
     {
         colorPipeline.Mode = ColorPipelineMode.LinearHdr;
         colorPipeline.Tonemapper = TonemapOperator.AcesApprox;
-        colorPipeline.Exposure = 1.0f;
+        colorPipeline.Exposure = LinearExposure;
         colorPipeline.BloomEnabled = false;
         colorPipeline.SsaoEnabled = false;
         colorPipeline.AntiAliasing = AntiAliasingMode.Fxaa;

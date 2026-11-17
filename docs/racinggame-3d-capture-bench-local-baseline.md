@@ -1723,3 +1723,50 @@ Interface captures (`ref-ui/`) against `s4/ref-ui`: 10 of 10 screens at 0.00 (`u
 
 Track audit (`ref-audit/`, 30 captures) against `s3/ref-audit`: the three captures of the tunnels, `audit-<track>-helper-tunnel`, differ by (largest channel) Advanced 5.662, Beginner 20.468, Expert 12.593; the largest of the other 27 captures is 0.043. The new references of this machine are `artifacts/pbr-handover/s3b/ref-ui` and `ref-audit`.
 
+
+## After the race world light balance
+
+Run of 2026-11-17, after slice R3 of `ai-agent/tasks/rgce-render-gaps-tasks.md` (ADR-0032, proposed): the linear pipeline's exposure goes from 1.0 to 0.9 (`RaceWorldFactory.LinearExposure`); the tone mapper (ACES approximation), the ambient colour (`Auto`, 0.05) and the sky reflection intensity (1) are unchanged. The measurement that chose it (four steps, candidates, mean luminance, mean difference per channel, probes, terrain ratios, car box) is in the table of ADR-0032 and in `artifacts/pbr-handover/s20/r3/table.md`. The numbers below are produced by `artifacts/pbr-handover/s20/r3/scripts/gen_bench.py` from the captures under `artifacts/pbr-handover/s20/r3/ref/` and read back from this document by `verify_bench.py`.
+
+### Build and content
+
+Cooker (`ref/cook-verify.txt`, `ref/cook-check.txt`): `--verify` 0 mismatches; `--check`: "0 glTF models, images or cooked files without a cooked asset". `--smoke-frontend` (`ref/smoke.log`): "Smoke validation completed successfully" 2 time(s); lines with `[Warning]` or `[Error]`: 0. `--verify-legacy-import-profile` (`ref/profile-stdout.txt`): "Legacy import profile verification passed."; lines with `[Warning]` or `[Error]` in its log: 0.
+
+### The 15 views
+
+- `linear` (`linear-a`, `linear-b`): the two replays are identical byte for byte on 15 of 15 views, and identical to the candidate of the measurement (`s20/r3/S1-aces-0.9`) on 15 of 15. Against the previous reference (`s20/ref-engine/linear-a`, exposure 1.0): 0 of 15 identical.
+- `legacy` (`legacy-a`, `legacy-b`): the two replays are identical byte for byte on 15 of 15 views, and identical to `s20/ref-engine/legacy-a` on 15 of 15 (the legacy mode has no tone mapping, so the exposure does not reach it).
+
+| Criterion | `legacy` passed | `linear` passed | Judged | `linear` before (exposure 1.0) |
+|---|---|---|---|---|
+| 1. lit and away within +-12 | 6 | 17 | 34 | 16 |
+| 2. shadow/lit ratio within +-0.05 (per view and surface) | 2 | 0 | 4 | 0 |
+| 3. class agreement (shadow shadowed, lit lit) | 27 | 27 | 33 | 27 |
+| 4. away-shadowed within +-12 | 3 | 3 | 3 | 3 |
+
+Mean luminance of the 15 pictures against the original (96.3): `legacy` 82.4, `linear` 98.7 (104.0 before). Mean difference per channel with the original, over the 15 views: `legacy` 21.000, `linear` 17.947 (19.408 before). Criteria 1/2/3/4 of the second replay of each mode: `legacy` 6/2/27/3, `linear` 17/0/27/3.
+
+### Tunnel views (reported only; the tunnel is handled in R4)
+
+The three tunnel views of the original (`s3/ref-tunnel`, `nopost`) replayed in both modes (`ref/tunnel-linear`, `ref/tunnel-legacy`). Luminance is computed here as 0.2126 R + 0.7152 G + 0.0722 B on the 0-255 values; the top band median is the median of that luminance over rows 0 to 251; the difference is the mean absolute difference per channel (mean of R, G, B). The state before is `s20/ref-engine/tunnel-<mode>` (exposure 1.0).
+
+| Mode | View | Luminance, port after (before) [original] | Top band median, port after (before) [original] | Mean difference per channel, after (before) |
+|---|---|---|---|---|
+| `linear` | Beginner | 23.7 (25.3) [18.2] | 21.6 (23.4) [11.1] | 11.63 (12.25) |
+| `linear` | Advanced | 21.2 (22.7) [37.0] | 24.1 (25.8) [39.3] | 21.13 (20.85) |
+| `linear` | Expert | 31.3 (33.5) [34.1] | 38.4 (41.4) [40.8] | 16.37 (15.83) |
+| `legacy` | Beginner | 26.1 (26.1) [18.2] | 24.5 (24.5) [11.1] | 12.66 (12.66) |
+| `legacy` | Advanced | 25.5 (25.5) [37.0] | 25.6 (25.6) [39.3] | 18.29 (18.29) |
+| `legacy` | Expert | 38.4 (38.4) [34.1] | 48.3 (48.3) [40.8] | 11.80 (11.80) |
+
+Over the three views in `linear`: mean luminance 25.4 (original 29.8), mean top band median 28.1 (original 30.4), mean difference per channel 16.37.
+
+Over the three views in `legacy`: mean luminance 30.0 (original 29.8), mean top band median 32.8 (original 30.4), mean difference per channel 14.25.
+
+### Interface and audit
+
+Interface (`ref/ui`, 10 screens) against `s20/ref-engine/ui`: 7 of 10 identical; the screens without a race world (splash, main menu, track selection, car selection, highscores, options, help) are identical byte for byte. Differing: `ui-pause` 1848420 pixels, largest channel difference 15; `ui-race-finished` 1972650 pixels, largest channel difference 45; `ui-race-hud` 2034891 pixels, largest channel difference 67.
+
+Track audit (`ref/audit`, 30 captures at 1920x1080) against `s20/ref-engine/audit`: 0 of 30 identical; all 30 captures show the race world and differ by the exposure: differing pixels 1915192 to 2042166, largest channel difference 24 to 78 (per capture in `bench-numbers.json`).
+
+The new references of this machine are `artifacts/pbr-handover/s20/r3/ref/` (`linear-a`, `legacy-a`, `tunnel-linear`, `tunnel-legacy`, `ui`, `audit`).
