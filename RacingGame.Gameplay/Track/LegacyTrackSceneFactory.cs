@@ -136,7 +136,7 @@ internal static partial class LegacyTrackSceneFactory
 
     internal static RaceGeneratedModel CreateRoadModel(string trackName, IReadOnlyList<RaceTrackRoadPoint> roadPoints, Vector3 origin, Guid materialAssetId)
     {
-        var vertices = new Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture[roadPoints.Count * 5];
+        var vertices = new VertexPositionNormalTextureTangent[roadPoints.Count * 5];
 
         for (int index = 0; index < roadPoints.Count; index++)
         {
@@ -215,7 +215,7 @@ internal static partial class LegacyTrackSceneFactory
             segmentCount += span.EndIndex - span.StartIndex;
         }
 
-        var vertices = new Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture[vertexCount];
+        var vertices = new VertexPositionNormalTextureTangent[vertexCount];
         var indices = new uint[segmentCount * 18];
         int vertexIndex = 0;
         int outputIndex = 0;
@@ -264,25 +264,33 @@ internal static partial class LegacyTrackSceneFactory
         return new RaceGeneratedModel($"{trackName}.Tunnel", tunnelModel, Matrix.Identity, CastShadows: true, OwnsBuffers: true);
     }
 
-    private static Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture CreateTunnelVertex(RaceTrackRoadPoint point, float lateralFactor, float height, Vector2 textureCoordinate, Vector3 origin)
+    private static VertexPositionNormalTextureTangent CreateTunnelVertex(RaceTrackRoadPoint point, float lateralFactor, float height, Vector2 textureCoordinate, Vector3 origin)
     {
         Vector3 legacyPosition = point.Position
             + point.Right * (LegacyRoadWidthScale * point.RoadWidth * lateralFactor)
             + point.Up * height;
         Vector3 runtimePosition = ConvertLegacyPoint(legacyPosition) - origin;
         Vector3 runtimeNormal = -ConvertLegacyDirection(point.Up);
-        return new Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture(runtimePosition, runtimeNormal, textureCoordinate);
+        // Track.cs:515-549 and TrackVertex.cs:203-231: the two lower vertices are LeftTangentVertex and RightTangentVertex (normal
+        // up, tangent right) with normal and tangent negated, the two upper ones TunnelTop...SideTangentVertex (normal -up, tangent
+        // -right): the four vertices of a tunnel point have the normal -up and the tangent -right.
+        Vector3 runtimeTangent = -ConvertLegacyDirection(point.Right);
+        return new VertexPositionNormalTextureTangent(runtimePosition, runtimeNormal, textureCoordinate, new Vector4(runtimeTangent, 1f));
     }
 
-    private static Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture CreateRoadVertex(RaceTrackRoadPoint point, float lateralFactor, float textureV, Vector3 origin)
+    private static VertexPositionNormalTextureTangent CreateRoadVertex(RaceTrackRoadPoint point, float lateralFactor, float textureV, Vector3 origin)
     {
         Vector3 legacyPosition = point.Position + point.Right * (LegacyRoadWidthScale * point.RoadWidth * lateralFactor);
         Vector3 runtimePosition = ConvertLegacyPoint(legacyPosition) - origin;
         Vector3 runtimeNormal = ConvertLegacyDirection(point.Up);
-        return new Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture(
+        // Track.cs, TrackVertex.cs: TangentVertex(position, uv, normal = up, tangent = right). With the tangent, the engine
+        // enables the normal map of the road material.
+        Vector3 runtimeTangent = ConvertLegacyDirection(point.Right);
+        return new VertexPositionNormalTextureTangent(
             runtimePosition,
             runtimeNormal,
-            new Microsoft.Xna.Framework.Vector2(point.TextureU, textureV));
+            new Microsoft.Xna.Framework.Vector2(point.TextureU, textureV),
+            new Vector4(runtimeTangent, 1f));
     }
 
     private static Entity CreateStaticModelEntity(string name, Guid staticModelAssetId, Matrix transform, bool castShadows, bool receiveShadows)

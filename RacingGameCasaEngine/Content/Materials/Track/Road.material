@@ -13,7 +13,7 @@
   "sampler_state": "AnisotropicWrap",
   "properties": {
     "base_color_texture": "438bfe97-634a-50cc-a008-7661c239ab25",
-    "normal_texture": "00000000-0000-0000-0000-000000000000",
+    "normal_texture": "1a7d7bd4-e1ca-580c-8cd5-d1614d32acd6",
     "detail_texture": "00000000-0000-0000-0000-000000000000",
     "detail_tiling": 1.0,
     "base_color": {
@@ -25,9 +25,9 @@
     "metallic": 0.0,
     "roughness": 0.85,
     "emissive_color": {
-      "x": 0.015,
-      "y": 0.015,
-      "z": 0.015
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
     },
     "clear_coat": 0.0,
     "clear_coat_roughness": 0.1,

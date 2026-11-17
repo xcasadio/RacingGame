@@ -1,0 +1,23 @@
+{
+  "id": "1a7d7bd4-e1ca-580c-8cd5-d1614d32acd6",
+  "name": "Texture.RoadNormal",
+  "texture_asset_id": "280caf09-5950-5ff2-a38e-0b36b5dbbee6",
+  "generate_mipmaps": true,
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

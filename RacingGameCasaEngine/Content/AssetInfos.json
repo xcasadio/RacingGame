@@ -3647,6 +3647,12 @@
       "name": "Texture.LandscapeDetail",
       "file_name": "Textures/LandscapeDetail.texture",
       "asset_type": "texture"
+    },
+    {
+      "id": "1a7d7bd4-e1ca-580c-8cd5-d1614d32acd6",
+      "name": "Texture.RoadNormal",
+      "file_name": "Textures/RoadNormal.texture",
+      "asset_type": "texture"
     }
   ]
 }

@@ -19,6 +19,7 @@ public static class RaceMaterialRecipes
     public const string GuardRailNormalTextureName = "LeitplankeNormal.png";
     public const string RoadColumnTextureName = "RoadCement.png";
     public const string RoadColumnNormalTextureName = "RoadCementNormal.png";
+    public const string RoadNormalTextureName = "RoadNormal.png";
     public const string RoadTunnelTextureName = "RoadTunnel.png";
     public const string RoadTunnelNormalTextureName = "RoadTunnelNormal.png";
 
@@ -107,16 +108,20 @@ public static class RaceMaterialRecipes
         };
     }
 
-    /// <summary>The road. <paramref name="diffuseTexturePath"/> is the first of <see cref="RoadTextureCandidates"/> that loads, or null.</summary>
-    public static RaceMaterialRecipe ForRoad(string trackName, string? diffuseTexturePath)
+    /// <summary>
+    /// The road. <paramref name="diffuseTexturePath"/> is the first of <see cref="RoadTextureCandidates"/> that loads, or null;
+    /// <paramref name="normalTexturePath"/> is <see cref="RoadNormalTextureName"/> when it exists, or null (the original draws the
+    /// road with the material ("Road", "RoadNormal"), Track.cs). The road mesh has tangents, so the engine enables the normal map.
+    /// </summary>
+    public static RaceMaterialRecipe ForRoad(string trackName, string? diffuseTexturePath, string? normalTexturePath)
     {
         return new RaceMaterialRecipe
         {
             Name = $"{trackName}.RoadMaterial",
             BaseTextureFilePath = diffuseTexturePath,
+            NormalTextureFilePath = normalTexturePath,
             Family = RacingGamePbrMaterialMapping.Road,
             BaseColor = diffuseTexturePath != null ? Color.White : new Color(60, 62, 66),
-            EmissiveColor = new Vector3(0.015f, 0.015f, 0.015f),
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
         };
@@ -131,7 +136,6 @@ public static class RaceMaterialRecipes
             BaseTextureFilePath = diffuseTexturePath,
             Family = RacingGamePbrMaterialMapping.Terrain,
             BaseColor = diffuseTexturePath != null ? Color.White : new Color(182, 166, 118),
-            EmissiveColor = new Vector3(0.01f, 0.01f, 0.008f),
             SamplerState = RaceMaterialStates.AnisotropicWrap,
         };
     }
@@ -151,7 +155,6 @@ public static class RaceMaterialRecipes
             DetailTiling = TerrainDetailTiling,
             Family = RacingGamePbrMaterialMapping.Terrain,
             BaseColor = diffuseTexturePath != null ? Color.White : new Color(182, 166, 118),
-            EmissiveColor = new Vector3(0.01f, 0.01f, 0.008f),
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
         };
@@ -167,7 +170,6 @@ public static class RaceMaterialRecipes
             NormalTextureFilePath = normalTexturePath,
             Family = RacingGamePbrMaterialMapping.GuardRail,
             BaseColor = diffuseTexturePath != null ? Color.White : new Color(182, 182, 182),
-            EmissiveColor = new Vector3(0.03f, 0.03f, 0.03f),
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
         };
@@ -183,7 +185,6 @@ public static class RaceMaterialRecipes
             NormalTextureFilePath = normalTexturePath,
             Family = RacingGamePbrMaterialMapping.Road,
             BaseColor = diffuseTexturePath != null ? Color.White : new Color(176, 176, 176),
-            EmissiveColor = new Vector3(0.01f, 0.01f, 0.01f),
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
         };

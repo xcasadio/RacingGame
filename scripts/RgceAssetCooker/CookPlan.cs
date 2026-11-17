@@ -160,7 +160,10 @@ internal static class CookPlanner
         string? ground = FirstExisting(RaceMaterialRecipes.GroundTextureCandidates);
         var recipes = new Dictionary<string, RaceMaterialRecipe>
         {
-            ["Road"] = RaceMaterialRecipes.ForRoad("Track", FirstExisting(RaceMaterialRecipes.RoadTextureCandidates)),
+            ["Road"] = RaceMaterialRecipes.ForRoad(
+                "Track",
+                FirstExisting(RaceMaterialRecipes.RoadTextureCandidates),
+                FirstExisting([RaceMaterialRecipes.RoadNormalTextureName])),
             ["Ground"] = RaceMaterialRecipes.ForGround("Track", ground),
             ["Terrain"] = RaceMaterialRecipes.ForTerrain(
                 "Track", ground,
