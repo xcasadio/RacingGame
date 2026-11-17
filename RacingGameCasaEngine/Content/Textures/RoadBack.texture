@@ -1,0 +1,23 @@
+{
+  "id": "484e0876-9c46-5dba-a9e0-1ee738a599e3",
+  "name": "Texture.RoadBack",
+  "texture_asset_id": "d07a9220-465f-50fb-b044-f8099b3492dc",
+  "generate_mipmaps": true,
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

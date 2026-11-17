@@ -19,7 +19,7 @@ The default `--content` is `RacingGameCasaEngine/Content` of the repository that
 |---|---|---|---|
 | One per glTF | `Models/<Name>.staticModel` | `StaticModel.<Name>` | `staticmodel` |
 | One per model material | `Materials/Models/<Name>/<Slot>.material` | `Material.<Name>.<Slot>` | `material` |
-| One per track material (`Road`, `Ground`, `Terrain`, `GuardRail`, `RoadColumn`, `RoadTunnel`) | `Materials/Track/<Role>.material` | `Material.Track.<Role>` | `material` |
+| One per track material (`Road`, `Ground`, `Terrain`, `GuardRail`, `RoadColumn`, `RoadTunnel`, `RoadBack`) | `Materials/Track/<Role>.material` | `Material.Track.<Role>` | `material` |
 | One per image a cooked material uses | `Textures/<Name>.texture` | `Texture.<Name>` | `texture` |
 
 - Files are written with the editor serializers (`EditorAssetWriterService`), so the editor re-saves them unchanged.
@@ -30,7 +30,7 @@ The default `--content` is `RacingGameCasaEngine/Content` of the repository that
   the glTF (`LegacyTrackSceneFactory.ApplyLegacyModelRootCorrection`, removed in T5.5 once the game loaded the cooked models), named
   `<Name>.LegacyRootCorrection`. Each mesh points to its material by `material_asset_id`.
 - **Materials**: definition `lit-pbr` (ADR-0028), with the values of `RaceMaterialRecipes` (`ForScenery`, `ForCar` with car index 0, `ForPlate`,
-  and `ForRoad`, `ForGround`, `ForTerrain`, `ForGuardRail`, `ForRoadColumn`, `ForRoadTunnel` with the first texture candidate that exists):
+  and `ForRoad`, `ForGround`, `ForTerrain`, `ForGuardRail`, `ForRoadColumn`, `ForRoadTunnel`, `ForRoadBack` with the first texture candidate that exists):
   `base_color_texture`, `normal_texture`, `detail_texture` and `detail_tiling` (the terrain's `LandscapeDetail`, tiled 24 times), `base_color`
   (the diffuse colour, alpha 255; 210 on every car part but the glass), `metallic`, `roughness`, `clear_coat` and `clear_coat_roughness` from the PBR
   family of the surface (`RacingGamePbrMaterialMapping`: terrain, road, guard rail, lamp post, masonry, signage, vegetation, matte industrial, building

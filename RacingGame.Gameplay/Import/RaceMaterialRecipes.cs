@@ -20,6 +20,8 @@ public static class RaceMaterialRecipes
     public const string RoadColumnTextureName = "RoadCement.png";
     public const string RoadColumnNormalTextureName = "RoadCementNormal.png";
     public const string RoadNormalTextureName = "RoadNormal.png";
+    public const string RoadBackTextureName = "RoadBack.png";
+    public const string RoadBackNormalTextureName = "RoadBackNormal.png";
     public const string RoadTunnelTextureName = "RoadTunnel.png";
     public const string RoadTunnelNormalTextureName = "RoadTunnelNormal.png";
 
@@ -118,6 +120,24 @@ public static class RaceMaterialRecipes
         return new RaceMaterialRecipe
         {
             Name = $"{trackName}.RoadMaterial",
+            BaseTextureFilePath = diffuseTexturePath,
+            NormalTextureFilePath = normalTexturePath,
+            Family = RacingGamePbrMaterialMapping.Road,
+            BaseColor = diffuseTexturePath != null ? Color.White : new Color(60, 62, 66),
+            RasterizerState = RaceMaterialStates.CullCounterClockwise,
+            SamplerState = RaceMaterialStates.AnisotropicWrap,
+        };
+    }
+
+    /// <summary>
+    /// The underside of the road: the original's roadBackMaterial, ("RoadBack", "RoadBackNormal") (Track.cs), drawn like the road
+    /// (anisotropic sampler, counter-clockwise culling).
+    /// </summary>
+    public static RaceMaterialRecipe ForRoadBack(string trackName, string? diffuseTexturePath, string? normalTexturePath)
+    {
+        return new RaceMaterialRecipe
+        {
+            Name = $"{trackName}.RoadBackMaterial",
             BaseTextureFilePath = diffuseTexturePath,
             NormalTextureFilePath = normalTexturePath,
             Family = RacingGamePbrMaterialMapping.Road,

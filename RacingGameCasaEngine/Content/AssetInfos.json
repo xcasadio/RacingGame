@@ -3653,6 +3653,24 @@
       "name": "Texture.RoadNormal",
       "file_name": "Textures/RoadNormal.texture",
       "asset_type": "texture"
+    },
+    {
+      "id": "1ea60ef1-eda1-5b39-ad41-e9937e9b54ee",
+      "name": "Material.Track.RoadBack",
+      "file_name": "Materials/Track/RoadBack.material",
+      "asset_type": "material"
+    },
+    {
+      "id": "484e0876-9c46-5dba-a9e0-1ee738a599e3",
+      "name": "Texture.RoadBack",
+      "file_name": "Textures/RoadBack.texture",
+      "asset_type": "texture"
+    },
+    {
+      "id": "4fb8d401-e0fd-5126-8b63-82acc3adcc24",
+      "name": "Texture.RoadBackNormal",
+      "file_name": "Textures/RoadBackNormal.texture",
+      "asset_type": "texture"
     }
   ]
 }

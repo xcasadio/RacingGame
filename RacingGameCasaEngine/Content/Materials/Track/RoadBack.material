@@ -1,0 +1,36 @@
+{
+  "id": "1ea60ef1-eda1-5b39-ad41-e9937e9b54ee",
+  "name": "Material.Track.RoadBack",
+  "definition_id": "lit-pbr",
+  "shader_asset_id": "00000000-0000-0000-0000-000000000000",
+  "is_transparent": false,
+  "queue": "Opaque",
+  "cast_shadows": true,
+  "receive_shadows": true,
+  "blend_state": "Opaque",
+  "depth_stencil_state": "Default",
+  "rasterizer_state": "CullCounterClockwise",
+  "sampler_state": "AnisotropicWrap",
+  "properties": {
+    "base_color_texture": "484e0876-9c46-5dba-a9e0-1ee738a599e3",
+    "normal_texture": "4fb8d401-e0fd-5126-8b63-82acc3adcc24",
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "metallic": 0.0,
+    "roughness": 0.85,
+    "emissive_color": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
+  }
+}

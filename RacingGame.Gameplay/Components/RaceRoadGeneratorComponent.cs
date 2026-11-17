@@ -5,7 +5,7 @@ using RacingGame.Gameplay.Track;
 
 namespace RacingGame.Gameplay.Components;
 
-/// <summary>Builds the road mesh of a race track, and its tunnels, from the spline and the road helpers of its .Track layout.</summary>
+/// <summary>Builds the road mesh of a race track, its underside and its tunnels, from the spline and the road helpers of its .Track layout.</summary>
 [DisplayName("Race Road Generator")]
 public sealed class RaceRoadGeneratorComponent : RaceTrackGeneratorComponent
 {
@@ -30,6 +30,9 @@ public sealed class RaceRoadGeneratorComponent : RaceTrackGeneratorComponent
     {
         RaceTrackLayout layout = LegacyTrackSceneFactory.ComputeGeneratorLayout(source, RaceTrackLayoutSettings.Default);
         output.Add(LegacyTrackSceneFactory.CreateRoadGeneratorModel(layout, MaterialAssetId));
+
+        // The underside of the road takes its cooked material (Material.Track.RoadBack) as a constant, like the tunnels below.
+        output.Add(LegacyTrackSceneFactory.CreateRoadBackGeneratorModel(layout, RaceTrackMaterialAssets.RoadBack));
 
         // The tunnels take their cooked material (Material.Track.RoadTunnel) as a constant, not as a serialized property:
         // the saved worlds do not change.

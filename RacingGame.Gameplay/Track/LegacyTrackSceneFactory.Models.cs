@@ -23,6 +23,9 @@ internal static class RaceTrackMaterialAssets
 
     /// <summary>Material.Track.RoadTunnel</summary>
     public static readonly Guid RoadTunnel = new("c89f5ae0-0731-536b-b1d5-d442853b589f");
+
+    /// <summary>Material.Track.RoadBack</summary>
+    public static readonly Guid RoadBack = new("1ea60ef1-eda1-5b39-ad41-e9937e9b54ee");
 }
 
 internal static partial class LegacyTrackSceneFactory

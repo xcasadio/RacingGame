@@ -183,6 +183,91 @@ internal static partial class LegacyTrackSceneFactory
         return new RaceGeneratedModel($"{trackName}.Road", roadModel, Matrix.Identity, CastShadows: true, OwnsBuffers: true);
     }
 
+    // RacingGame's road underside (TrackVertex.RoadThickness, Track.RoadBackHullTextureWidthFactor and RoadBackSideTextureHeight).
+    private const float LegacyRoadThickness = 1.0f;
+    private const float LegacyRoadBackHullTextureWidthFactor = 1.0f;
+    private const float LegacyRoadBackSideTextureHeight = 0.135f;
+
+    /// <summary>
+    /// The underside of the road, built as RacingGame builds it (Track.cs, "We need 4 vertices per cross-section edge of the road
+    /// back hull"). Each road point gives 4 vertices: the left road edge, the left edge lowered by the road thickness times the
+    /// road width, the lowered right edge and the right road edge, with U scaled by 1 and V at 0, 0.135, 0.865 and 1. The upper
+    /// vertices are those of the road mesh (same edge positions, normal up, tangent right), the lower ones have the normal and the
+    /// tangent negated. Each segment has 6 triangles, in the pattern of the tunnel, drawn with the culling of the road. The
+    /// original neither casts nor receives a shadow on it (Track.GenerateShadow: "ignore the road back").
+    /// </summary>
+    internal static RaceGeneratedModel CreateRoadBackModel(string trackName, IReadOnlyList<RaceTrackRoadPoint> roadPoints, Vector3 origin, Guid materialAssetId)
+    {
+        var vertices = new VertexPositionNormalTextureTangent[roadPoints.Count * 4];
+        for (int index = 0; index < roadPoints.Count; index++)
+        {
+            RaceTrackRoadPoint point = roadPoints[index];
+            float textureU = point.TextureU * LegacyRoadBackHullTextureWidthFactor;
+            int vertexIndex = index * 4;
+            vertices[vertexIndex + 0] = CreateRoadBackVertex(point, -0.5f, false, new Vector2(textureU, 0f), origin);
+            vertices[vertexIndex + 1] = CreateRoadBackVertex(point, -0.5f, true, new Vector2(textureU, LegacyRoadBackSideTextureHeight), origin);
+            vertices[vertexIndex + 2] = CreateRoadBackVertex(point, 0.5f, true, new Vector2(textureU, 1f - LegacyRoadBackSideTextureHeight), origin);
+            vertices[vertexIndex + 3] = CreateRoadBackVertex(point, 0.5f, false, new Vector2(textureU, 1f), origin);
+        }
+
+        // Track.cs: 6 polygons per segment, 3 sides of 2; the last point is not duplicated here, so there are Count - 1 segments.
+        var indices = new uint[(roadPoints.Count - 1) * 18];
+        int outputIndex = 0;
+        int segmentStartVertex = 0;
+        for (int segment = 0; segment < roadPoints.Count - 1; segment++)
+        {
+            for (int side = 0; side < 3; side++)
+            {
+                indices[outputIndex + 0] = (uint)(segmentStartVertex + side);
+                indices[outputIndex + 1] = (uint)(segmentStartVertex + 5 + side);
+                indices[outputIndex + 2] = (uint)(segmentStartVertex + 4 + side);
+                indices[outputIndex + 3] = (uint)(segmentStartVertex + 5 + side);
+                indices[outputIndex + 4] = (uint)(segmentStartVertex + side);
+                indices[outputIndex + 5] = (uint)(segmentStartVertex + 1 + side);
+                outputIndex += 6;
+            }
+
+            segmentStartVertex += 4;
+        }
+
+        var roadBackMesh = new StaticModelMesh { Name = $"{trackName}.RoadBack" };
+        roadBackMesh.SetData(vertices, indices);
+        roadBackMesh.MaterialAssetId = materialAssetId;
+
+        var roadBackModel = new StaticModel { Name = $"{trackName}.RoadBack" };
+        roadBackModel.Meshes.Add(roadBackMesh);
+        roadBackModel.RootNode = new StaticModelNode
+        {
+            Name = "RoadBackRoot",
+            MeshIndex = 0,
+        };
+
+        return new RaceGeneratedModel($"{trackName}.RoadBack", roadBackModel, Matrix.Identity, CastShadows: false, OwnsBuffers: true, ReceiveShadows: false);
+    }
+
+    // TrackVertex.cs: LeftTangentVertex and RightTangentVertex (normal up, tangent right) and BottomLeftSideTangentVertex and
+    // BottomRightSideTangentVertex (the edge moved down by up * RoadThickness * roadWidth, normal -up, tangent -right). The top edges
+    // are the edges of the road mesh (CreateRoadVertex), so that the two meshes touch.
+    private static VertexPositionNormalTextureTangent CreateRoadBackVertex(RaceTrackRoadPoint point, float lateralFactor, bool bottom, Vector2 textureCoordinate, Vector3 origin)
+    {
+        Vector3 legacyPosition = point.Position + point.Right * (LegacyRoadWidthScale * point.RoadWidth * lateralFactor);
+        if (bottom)
+        {
+            legacyPosition -= point.Up * (LegacyRoadThickness * point.RoadWidth);
+        }
+
+        Vector3 runtimePosition = ConvertLegacyPoint(legacyPosition) - origin;
+        Vector3 runtimeNormal = ConvertLegacyDirection(point.Up);
+        Vector3 runtimeTangent = ConvertLegacyDirection(point.Right);
+        if (bottom)
+        {
+            runtimeNormal = -runtimeNormal;
+            runtimeTangent = -runtimeTangent;
+        }
+
+        return new VertexPositionNormalTextureTangent(runtimePosition, runtimeNormal, textureCoordinate, new Vector4(runtimeTangent, 1f));
+    }
+
     // RacingGame's road tunnel (TrackVertex.RoadTunnelHeight, Track.RoadTunnelTextureWidthFactor and RoadTunnelSideTextureHeight).
     private const float LegacyRoadTunnelHeight = 7.125f;
     private const float LegacyRoadTunnelTextureWidthFactor = 0.25f;

@@ -66,7 +66,7 @@ internal static class CookPlanner
     // LegacyTrackSceneFactory.LegacyXModelCorrection, applied to every model LoadLegacyModel loads.
     private static readonly Quaternion LegacyXModelCorrection = Quaternion.CreateFromAxisAngle(Vector3.Right, MathHelper.Pi / 2.0f);
 
-    private static readonly string[] TrackRoles = ["Road", "Ground", "Terrain", "GuardRail", "RoadColumn", "RoadTunnel"];
+    private static readonly string[] TrackRoles = ["Road", "Ground", "Terrain", "GuardRail", "RoadColumn", "RoadTunnel", "RoadBack"];
 
     public static CookPlan Build(string contentDirectory)
     {
@@ -181,6 +181,10 @@ internal static class CookPlanner
                 "Track",
                 FirstExisting([RaceMaterialRecipes.RoadTunnelTextureName]),
                 FirstExisting([RaceMaterialRecipes.RoadTunnelNormalTextureName])),
+            ["RoadBack"] = RaceMaterialRecipes.ForRoadBack(
+                "Track",
+                FirstExisting([RaceMaterialRecipes.RoadBackTextureName]),
+                FirstExisting([RaceMaterialRecipes.RoadBackNormalTextureName])),
         };
 
         foreach (string role in TrackRoles)
