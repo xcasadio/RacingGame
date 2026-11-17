@@ -29,6 +29,9 @@ public enum RaceBaseTextureRole
 /// no loaded texture. Textures are named by file path; render states by name, <c>null</c> where the game leaves the
 /// state <c>null</c> (the renderer then applies its default). The builders never set the shadow flags or
 /// <c>IsTransparent</c>, so those keep the material defaults and are not part of the recipe.
+/// <para/>
+/// A recipe also carries the values of the <c>lit-pbr</c> material of the same surface: its PBR family (metallic,
+/// roughness, clear coat), the base colour and, for the terrain, the detail texture.
 /// </summary>
 public sealed record RaceMaterialRecipe
 {
@@ -49,6 +52,29 @@ public sealed record RaceMaterialRecipe
     public bool UseSceneReflectionCube { get; init; }
 
     public Color DiffuseColor { get; init; } = Color.White;
+
+    /// <summary>The PBR family of the surface: <see cref="RacingGamePbrMaterialMapping"/>.</summary>
+    public RacingGamePbrFamily Family { get; init; } = RacingGamePbrMaterialMapping.Default;
+
+    public float Metallic => Family.Metallic;
+
+    public float Roughness => Family.Roughness;
+
+    public float ClearCoat => Family.ClearCoat;
+
+    public float ClearCoatRoughness => Family.ClearCoatRoughness;
+
+    /// <summary>
+    /// The <c>base_color</c> of the PBR material: the diffuse colour with its alpha forced to 255 (a lower alpha would move
+    /// the material to the transparent queue); 210 on every car part but the glass (<c>Model.RenderCar</c> of the original).
+    /// </summary>
+    public Color BaseColor { get; init; } = Color.White;
+
+    /// <summary>The detail texture of the PBR material (the terrain's), or <c>null</c> when it has none.</summary>
+    public string? DetailTextureFilePath { get; init; }
+
+    /// <summary>Number of times the detail texture repeats over the base texture coordinates.</summary>
+    public float DetailTiling { get; init; } = 1f;
 
     public Vector3 AmbientColor { get; init; } = Vector3.Zero;
 

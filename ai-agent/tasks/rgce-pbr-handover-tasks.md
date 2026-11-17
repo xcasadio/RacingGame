@@ -739,7 +739,7 @@ Retour arrière de S1f : relever `git rev-parse HEAD` avant T10.1 et le noter so
 
 Budget de S1f : T10.2, au plus trois tours de recuisson ; deux passes de correction après vérification.
 
-### ⏳ T10.1 — Recettes PBR
+### ✅ T10.1 — Recettes PBR
 
 - Objectif : les recettes calculent aussi, pour chaque matériau cuit, les valeurs `lit-pbr` de l'autre PC. Les membres `lit-diffuse` des recettes et les tables de réglage restent jusqu'à T10.2, qui les retire avec le passage du cuiseur : le commit de T10.1 se construit et ne change aucun fichier cuit.
 - Fichiers : `RacingGame.Gameplay/Import/RaceMaterialRecipe.cs` (membres ajoutés : famille, métal, rugosité, vernis, rugosité du vernis, couleur de base, texture et répétition de détail), `RaceMaterialRecipes.cs`, `RacingGamePbrFamily.cs` et `RacingGamePbrMaterialMapping.cs` (nouveaux, portés de l'autre PC dans `RacingGame.Gameplay/Import`, avec la règle de la voiture de `LegacyCarVisualFactory.ResolveFamily` d'`origin/remaster`). Aussi : `RacingGame.Gameplay/Components/LegacyCarVisualFactory.cs` (un accès interne qui compte, pour une voiture, les emplacements à texture de voiture peints et non peints, sans rien changer) et `RacingGameCasaEngine/Bootstrap/ReferenceViewCaptureValidator.cs` (ligne permanente `[CaptureBench] car paint slots painted <p> unpainted <u>` pour la voiture 0, écrite à côté des lignes `mipmaps`).
@@ -752,6 +752,13 @@ Budget de S1f : T10.2, au plus trois tours de recuisson ; deux passes de correct
   6. terrain : `detail_texture` = `Texture.LandscapeDetail`, `detail_tiling` = 24 (`f309d6b`).
 - Validation : build du jeu et du cuiseur à 0 erreur ; cuiseur `--verify` sur le contenu de S1m sans écart, avec les mêmes notes de rôle de peinture pour les 6 matériaux de la voiture qu'avant T10.1 ; un script liste la famille calculée de chacun des 98 matériaux et le note ; `Material.Car.Standard 19` y est `CarGlass` (métal 1, rugosité 0,05, couleur de base 13, 13, 13, 255). Un rejeu des vues de l'original sur le contenu de S1m donne la ligne `car paint slots` ; ses deux nombres sont la référence d'avant, notés sous cette tâche.
 - Commit : `feat(racing-casa): compute PBR material recipes from the surface families`
+
+> Validation (2026-11-17), jeu relevé à `a3a53dab610f17d483fe5a0e11f57a5a360cf811` avant la tâche (point de retour arrière de S1f).
+> - Builds du jeu (`RacingGameCasaEngine.csproj`, Debug) et du cuiseur à 0 erreur, 0 avertissement. Aucun fichier cuit changé (`git status` : rien sous `RacingGameCasaEngine/Content`).
+> - Cuiseur `--verify` sur le contenu de S1m : 98 matériaux (2940 valeurs), 0 écart ; les 6 notes de rôle de peinture (`Standard 19` File, `lack` CarPainted, `gummi`, `chrome`, `gummi 2`, `chrome 2` CarUnpainted) sont identiques, ligne à ligne, à celles du `--verify` de S1m.
+> - Familles calculées des 98 matériaux (outil jetable hors dépôt, qui rejoue `CookPlanner.Build` et relit les glTF pour l'effet) : Default 29, Masonry 13, Signage 18, LampPost 11, MatteIndustrial 6, Vegetation 4, BuildingGlass 3, Road 3, GuardRail 2, Terrain 2, CarChrome 2, CarTyre 2, CarGlass 1, CarPaint 1, CarouselPlate 1 ; total 98. `Material.Car.Standard 19` : CarGlass, métal 1, rugosité 0,05, couleur de base 13, 13, 13, 255 (reconnu par l'effet `ReflectionSimpleGlass.fx`). Les 29 `Default` sont les matériaux des décors qu'aucune liste de textures de l'autre PC ne nomme : arbres et palmiers (7), train (2), barrages (2), cactus (4), rochers (2), château de sable (1), segment de colonne (11, dont 10 sans texture) ; l'autre PC en relevait aussi 29 (sa revue de T3.1).
+> - Rejeu des vues de l'original (`--capture-reference-views` vers `artifacts/pbr-handover/s1f/before`), sortie 0 : `[CaptureBench] car paint slots painted 1 unpainted 10`, **les deux nombres de référence d'avant S1f**. Mesure de scène identique à celle de S1m (les trois `scene-measure-*.txt` égaux octet pour octet), les cinq lignes `mipmaps` inchangées.
+> - Écart au plan : la famille porte un nom (`Name`, premier membre de `RacingGamePbrFamily`), absent de la version de l'autre PC ; sans lui le verre des immeubles et celui de la voiture, de mêmes valeurs, ne se distingueraient pas dans le décompte par famille.
 
 ### ⏳ T10.2 — Cuisson en `lit-pbr`, peinture de la voiture
 

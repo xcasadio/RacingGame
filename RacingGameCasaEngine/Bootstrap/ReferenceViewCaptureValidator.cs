@@ -355,6 +355,21 @@ internal sealed class ReferenceViewCaptureValidator
 
         LogPaintMipmaps("CarPaint.Painted", paint.Value.Painted);
         LogPaintMipmaps("CarPaint.Unpainted", paint.Value.Unpainted);
+        LogCarPaintSlots();
+    }
+
+    // The car-texture slots of the first car that sample the painted texture and the unpainted one (S1f): the cooked
+    // materials decide which slot is painted, and this count shows that a change of the cooked materials keeps the paint.
+    private static void LogCarPaintSlots()
+    {
+        (int Painted, int Unpainted)? slots = LegacyCarVisualFactory.CountCarTextureSlots(0);
+        if (slots == null)
+        {
+            Logs.WriteWarning("[CaptureBench] car paint slots: no painted model for the first car.");
+            return;
+        }
+
+        Logs.WriteInfo(FormattableString.Invariant($"[CaptureBench] car paint slots painted {slots.Value.Painted} unpainted {slots.Value.Unpainted}"));
     }
 
     // chain ok: level 1 read back from the texture is the box average of the level 0 read back from it.

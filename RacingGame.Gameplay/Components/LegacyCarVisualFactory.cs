@@ -259,6 +259,54 @@ internal static class LegacyCarVisualFactory
         }
     }
 
+    /// <summary>
+    /// For the car <paramref name="carIndex"/> whose model is already built: how many of the material slots the paint wrote
+    /// (the mesh and each of its sub-meshes) sample the painted texture and how many the unpainted one, or null when the car
+    /// has no model or no paint yet. Read-only access for the capture validator, which logs the numbers; it builds nothing
+    /// and changes no state.
+    /// </summary>
+    internal static (int Painted, int Unpainted)? CountCarTextureSlots(int carIndex)
+    {
+        lock (CacheLock)
+        {
+            if (!ConfiguredCarModelCache.TryGetValue(carIndex, out StaticModel? model) || model == null
+                || !CarPaints.TryGetValue(carIndex, out CarPaint? paint) || paint == null)
+            {
+                return null;
+            }
+
+            int painted = 0;
+            int unpainted = 0;
+            void Count(MaterialBase? material)
+            {
+                if (material is not LitDiffuseMaterial source)
+                {
+                    return;
+                }
+
+                if (ReferenceEquals(source.BasColor, paint.Painted))
+                {
+                    painted++;
+                }
+                else if (ReferenceEquals(source.BasColor, paint.Unpainted))
+                {
+                    unpainted++;
+                }
+            }
+
+            foreach (StaticModelMesh mesh in model.Meshes)
+            {
+                Count(mesh.Material);
+                foreach (SubMesh subMesh in mesh.SubMeshes)
+                {
+                    Count(subMesh.Material);
+                }
+            }
+
+            return (painted, unpainted);
+        }
+    }
+
     // The car's paint, built on first use and kept for the game's life; null when the texture cannot be read.
     private static CarPaint? GetCarPaint(int carIndex, AssetContentManager assetContentManager)
     {
