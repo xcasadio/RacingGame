@@ -171,4 +171,6 @@ Puis `remaster` local a été avancé au sommet de `chantier/rgce-pbr-handover` 
 
 Enfin `main` local du moteur a été avancé sur `29d3d2de2` (`chantier/rgce-pbr-on-main-2`), sur demande de l'auteur, sans push : 16 commits d'avance sur `origin/main`, et le pointeur du jeu est dans `main`.
 
-À décider par l'auteur : pousser `main` du moteur puis `remaster` du jeu ; fusionner ou non `chantier/known-defects-gltf-alpha-probe` (O17).
+Dernière étape du 2026-11-17 : `chantier/known-defects-gltf-alpha-probe` fusionnée dans `main` local du moteur (`e8d65a6fa`, 6422 tests, 0 échec), le jeu pointe dessus (`f49e83e`), banc identique à `s3b`, vérifié par deux vérificateurs indépendants (O20). État distant relevé alors : `origin/main` du moteur = `29d3d2de2` (`main` local : avance et retard `6 0`) ; `origin/remaster` du jeu = `42f1d14`.
+
+À décider par l'auteur : pousser ce qui reste local (`main` du moteur, `remaster` du jeu).
