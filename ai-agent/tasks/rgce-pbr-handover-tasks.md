@@ -20,7 +20,7 @@ Tranches :
 | S1a | Alignement sur l'original des sujets faits en double (D11) : poteaux de rail, segments de colonne, lanternes, palmiers, panneaux, ombres portées, avec le décor de remplissage aléatoire, qui partage les mêmes tirages. Prouvé par la mesure de scène de S1c ; nouvelle référence « avant PBR » en fin de tranche | S1c | Faite le 2026-11-16, verdict CONFIRMED après une correction (rail et supports) ; un critère réduit (O9) |
 | S1d | Moteur : le format `.staticModel` stocke les tangentes (branche moteur, ADR, tests, plan moteur) | S1a | Faite le 2026-11-16 (Phase 7), verdict CONFIRMED |
 | S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | Faite le 2026-11-17, verdict CONFIRMED ; les mipmaps passent en S1m |
-| S1m | Textures du monde de course avec mipmaps (`58bb871`) : un réglage par asset pour une texture cuite, avec une évolution du moteur | S1e | À détailler |
+| S1m | Textures du monde de course avec mipmaps (`58bb871`) : un réglage par asset pour une texture cuite, avec une évolution du moteur | S1e | Détaillée (Phase 9) |
 | S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1m | À détailler |
 | S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | À détailler |
 | S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | À détailler |
@@ -649,6 +649,47 @@ Budget de S1e : T8.1, au plus quatre tours « correction puis comparaison à l'o
 >   - P4 : `--verify-textures` classe une paire comme normal map convertie d'après ses pixels, pas d'après son nom ; une texture de couleur convertie par erreur passerait, seule la liste affichée la montre ;
 >   - P4 : le convertisseur écrit les `.gltf` en CRLF sous Windows, le dépôt les garde en LF ; une comparaison d'octets brute avec `git show` montre de fausses différences.
 > - Fichiers laissés par la vérification, ignorés par git, à supprimer à votre convenance : `artifacts/pbr-handover/s1e/verify/mut-content` (253 Mo) et ses voisins `remaster`, `head`, `mut-tex`.
+
+---
+
+## Phase 9 — Mipmaps des textures du monde de course (S1m)
+
+Source à porter : `58bb871` de l'autre PC (textures du monde de course et de la voiture chargées avec mipmaps, `git show 58bb871`). Ici les textures 3D sont des assets `.texture` cuits, chargés par identifiant : le réglage passe par l'asset.
+
+État vérifié (2026-11-17) :
+
+- Le moteur charge une image une fois, sans mipmaps, pour tous ses utilisateurs ; `Texture2DLoader.GenerateMipmaps` n'est réglable qu'en code, pour tout le chargeur (ADR-0101 du moteur).
+- Le cuiseur écrit 107 `.texture`, avec `texture_asset_id` et `sampler_state` (`scripts/RgceAssetCooker/Cooker.cs`) ; ce sont les textures des modèles et de la piste, toutes en 3D. Les images de l'interface ne passent pas par ces assets.
+- La peinture de la voiture crée deux textures en code, sans mipmaps (`RacingGame.Gameplay/Components/LegacyCarVisualFactory.cs`, `CarPaint.Load` et `Paint`).
+
+Retour arrière de S1m : jeu, relever `git rev-parse HEAD` avant T9.2 et annuler les commits de S1m sur `chantier/rgce-pbr-handover` ; moteur, selon son plan. Sur demande de l'auteur seulement.
+
+Budget de S1m : deux tours de recuisson ; deux passes de correction après vérification.
+
+### ⏳ T9.1 — Moteur : réglage de mipmaps par asset `.texture`
+
+- Plan propre dans le dépôt du moteur : `CasaEngine/ai-agent/tasks/texture-asset-mipmaps-tasks.md`, branche moteur `chantier/texture-asset-mipmaps` (partie de `chantier/static-model-tangents`).
+- Validation : celle du plan du moteur, puis un `verifier` frais sur ce plan avant T9.2.
+- Commits : ceux du plan du moteur ; dans le jeu, pointeur du sous-module avancé dans le commit de T9.2.
+
+### ⏳ T9.2 — Textures cuites et peinture de la voiture avec mipmaps
+
+- Fichiers : `scripts/RgceAssetCooker/Cooker.cs` (`generate_mipmaps` vrai sur chaque `.texture` cuit), `Verifier.cs` (le compare), `README.md` ; les 107 `Content/Textures/*.texture` recuits ; `RacingGame.Gameplay/Components/LegacyCarVisualFactory.cs` (les deux textures de peinture créées avec `mipMap: true`, chaîne écrite par `MipmapChain.UploadChain` à la création et après chaque peinture, comme `58bb871`) ; pointeur `CasaEngine` ; ce plan.
+- Validation :
+  - build du jeu et du cuiseur à 0 erreur ; cuiseur `--check` et `--verify` sans écart ; second passage sans écriture ;
+  - les 107 `.texture` ont `generate_mipmaps` à vrai, aucun autre champ changé ;
+  - `--smoke-frontend` et `--verify-legacy-import-profile` en succès ;
+  - mesure de scène inchangée (1147, 1693, 3404 appariés, 0 manquant, 0 en trop, 0 écart d'ombre ; 15 distances inchangées) ;
+  - banc relancé vers `artifacts/pbr-handover/s1m/` (deux rejeux, `nopost`, `full`, sondes, répétabilité, comparaison avec `s1e`), section du doc générée par script ; nouvelles références `--capture-track-audit` et `--capture-ui-screens` ;
+  - une ligne de journal de chargement, ou un contrôle équivalent, montre qu'une texture du décor a plus d'un niveau.
+- Arrêts : `--verify` en écart sans cause trouvée ; un écart de mesure de scène.
+- Commit : `feat(racing-casa): draw the race world textures with their mipmaps`
+
+### ⏳ T9.3 — Vérification indépendante de S1m
+
+- Objectif : un `verifier` frais confirme ou réfute : les textures cuites et la peinture de la voiture ont leur chaîne ; pas de régression ; les chiffres du doc sont ceux des sorties.
+- Étapes et verdicts : comme T5.4.
+- Commit : `docs(ai-agent): record the verification of the mipmap slice`
 
 ---
 
