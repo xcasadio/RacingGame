@@ -1248,7 +1248,7 @@ Décision de la tranche (mode AUTO, à confirmer avec l'ADR) : la lumière du ca
 
 Retour arrière : annuler les commits de la phase. Sorties sous `artifacts/pbr-handover/s4/`.
 
-### ⏳ T16.1 — Lumière du carrousel à π
+### ✅ T16.1 — Lumière du carrousel à π
 
 - Fichiers : `RacingGameCasaEngine/UI/CarSelectionCarousel.cs` (constante d'intensité π avec son commentaire ; couleur d'ambiant écrite explicitement à 0,05 avec le renvoi à la Phase 13) ; `docs/decisions/` (ADR-0031, `Proposed`, skill `adr` : couleur d'ambiant 0,05 dans le monde de course et le carrousel, lumière du carrousel à π, qui amende l'ADR-0018 ; ligne d'état de l'ADR-0018 et index) ; `docs/racinggame-3d-capture-bench-local-baseline.md` (section « After the carousel light », générée par script) ; ce plan.
 - Validation :
@@ -1259,6 +1259,16 @@ Retour arrière : annuler les commits de la phase. Sorties sous `artifacts/pbr-h
   - rejeux des 15 vues en `linear` et `legacy` à 0,00 de `s3` (le monde de course n'est pas touché), mesure de scène identique ; nouvelle référence d'interface `s4/ref-ui`.
 - Arrêts : luminance de la boîte au-dessus de 77 (61,7 × 1,25) ; plus de 2 % de pixels saturés dans la boîte ; un autre écran change.
 - Commit : `fix(racing-casa): light the car selection carousel at the PBR scale`
+
+> Validation (2026-11-17), jeu sur `3efef54` plus le changement de cette tâche, moteur `8a3933b36`, aucune recuisson. Sorties sous `artifacts/pbr-handover/s4/`.
+> - Changement : `CarSelectionCarousel.cs` seul (CRLF gardées) : constante `LightIntensity` = `MathF.PI` avec son commentaire (raison de l'ADR-0018 et de S1g) remplaçant `Intensity = 1f` ; constante `AmbientColor` = `new(0.05f)` écrite explicitement dans l'environnement du monde du carrousel, avec le renvoi à la Phase 13. Une seule valeur essayée. ADR-0031 (`Proposed`, skill `adr`) : ambiant 0,05 du monde de course et du carrousel, lumière du carrousel à π, amende l'ADR-0018 ; ligne d'état de l'ADR-0018 (« Accepted; amended by ADR-0028, ADR-0031 », seule modification de ce fichier) et index mis à jour.
+> - Build à 0 erreur, 0 avertissement ; `--smoke-frontend` : sortie 0, « Smoke validation completed successfully », aucun `[Warning]` ni `[Error]`.
+> - `--capture-ui-screens` vers `s4/ui` (journal sans avertissement ni erreur). **Contre `s3/ref-ui`, neuf écrans sur dix à 0,00 ; `car-selection` seul change (2,04 / 1,46 / 1,14).** Les sept écrans hors course sont à 0,00 ; `race-hud`, `pause` et `race-finished` aussi (le monde de course n'est pas touché).
+> - Boîte centrale de `car-selection` (x 640 à 1279, y 360 à 719, 1920x1080) : **luminance 55,3** maintenant, 61,7 avant le PBR, 42,6 dans `s3/ref-ui` : plus proche de 61,7 (6,4 d'écart pour 19,1), sous le seuil d'arrêt de 77. Pixels à 255 sur les trois canaux dans la boîte : 0,245 % maintenant (0,579 % avant le PBR, 0,104 % dans `s3`), sous les 2 % d'arrêt ; à 250 au moins : 0,249 % (0,625 % ; 0,105 %). Écart moyen par canal de l'écran entier avec `s1m/ui` : **3,69** maintenant (3,64 / 3,65 / 3,78) pour 4,43 dans `s3/ref-ui` (4,86 / 4,21 / 4,23) : plus petit. Pixels saturés de l'écran entier : 0,754 % (0,893 % avant le PBR, 0,681 % dans `s3`).
+> - Regard, avant le PBR, `s3` et maintenant côte à côte (`s4/sheet-car-selection.png`, recadrage de la boîte `s4/sheet-car-selection-box.png`) : la voiture centrale et les deux autres sont plus claires et plus nettes qu'en `s3`, la carrosserie grise et les bandes orange lisibles, sans aplat blanc (le gris clair de la carrosserie reste en dessous du blanc : 0,245 % de pixels saturés dans la boîte) ; la teinte est celle d'avant le PBR sans l'être exactement (le pare-brise et les feux restent noirs, reflets de ciel de l'avant le PBR absents : O14 ; les plateaux restent bleutés, famille `CarouselPlate`). Les autres couleurs de voiture et chacune des trois voitures au premier plan ne sont pas capturées par le mode d'automatisation : non contrôlées, sans autre contrôle.
+> - Rejeux des 15 vues vers `s4/legacy-a`, `-b`, `linear-a`, `-b` (sortie 0, 15 lignes `pipeline` attendues chacun, aucun `[Warning]` ni `[Error]`) : 0,00 de moyenne par canal contre `s3/legacy-a` et `s3/linear-a` sur les 15 vues, 13 fichiers égaux sur 15 par empreinte ; mesure de scène : les douze `scene-measure-*.txt` égaux octet pour octet à ceux de `s3` ; sondes inchangées (`legacy` 6 sur 34, 2 sur 4, 27 sur 33, 3 sur 3 ; `linear` 16 sur 34, 0 sur 4, 27 sur 33, 3 sur 3) ; audit des pistes (30 captures) à 0,000 contre `s3/ref-audit`. Nouvelle référence d'interface : `s4/ref-ui` (copie de `s4/ui`).
+> - Section « After the carousel light » du doc générée par script (`gen_section_s4.py`, hors dépôt) ; relecture par un second script indépendant (`check_doc_s4.py`, hors dépôt, qui recalcule la boîte et les écarts sur les images) : 83 valeurs comparées au doc, 0 différence.
+> - Écart au plan : aucun.
 
 ### ⏳ T16.2 — Vérification indépendante de S4
 
@@ -1272,7 +1282,7 @@ Retour arrière : annuler les commits de la phase. Sorties sous `artifacts/pbr-h
 À trancher pendant l'exécution, ou à remonter en ⚠️ Blocked si la réponse manque.
 
 - O1 (S3) : tunnel presque noir, relever sa couleur de base ou lui donner une lumière ? Choix de l'auteur. **Traité en S3 (Phase 15, ADR-0030 `Proposed`) : émissive texturée portant l'ambiant du matériau ; voir O16.**
-- O2 (S4) : voiture centrale du carrousel, quelle intensité viser ? Choix de l'auteur.
+- O2 (S4) : voiture centrale du carrousel, quelle intensité viser ? Choix de l'auteur. **Traité en S4 (Phase 16, ADR-0031 `Proposed`) : lumière à π, cible l'écran d'avant le PBR ; à confirmer par l'auteur.**
 - O3 : 8 tests GPU du moteur échouent sur ce PC, sur `origin/main` comme sur la branche fusionnée (références prises sur l'autre PC). À traiter dans le moteur, hors de ce plan sauf demande.
 - O4 (S1b) : au-delà des matériaux, les deux PC ont fait en double plusieurs sujets du monde de course, relevés le 2026-11-16 par les commits des deux côtés depuis `d8ac303` :
 

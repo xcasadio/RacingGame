@@ -64,6 +64,16 @@ internal sealed class CarSelectionCarousel : IDisposable
     // light: (-8500, 7250, 15000) normalised, here (x, z, -y). A LightComponent shines along its Forward, away from it.
     private static readonly Vector3 LightDirection = -Vector3.Normalize(new Vector3(-8500f, 15000f, -7250f));
 
+    // pi: a lit-pbr surface lit head-on is pi times darker than a lit-diffuse one at the same intensity (CasaEngine
+    // docs/engine/pbr-rendering.md, Units), so the light of a PBR scene keeps the level the original had at intensity 1; the race
+    // world's key light is lit the same way (RaceWorldFactory, KeyLightIntensity). The carousel's cars and plates are lit-pbr
+    // since the PBR materials (plan ai-agent/tasks/rgce-pbr-handover-tasks.md, phase 16, ADR-0031).
+    private const float LightIntensity = MathF.PI;
+
+    // The ambient colour of the carousel is 0.05, the engine's default (WorldEnvironmentSettings.ResetToDefaults), written out as
+    // the race world's is (RaceWorldFactory.AmbientColor, phase 13): lit-pbr multiplies the irradiance of the sky cube by it.
+    private static readonly Vector3 AmbientColor = new(0.05f);
+
     private readonly RacingGameCasaEngineGame _game;
     private readonly World _world;
     private readonly Entity _cameraEntity;
@@ -96,6 +106,7 @@ internal sealed class CarSelectionCarousel : IDisposable
         _world = new World { Name = WorldName };
         _world.LoadContent(game);
         _world.EnvironmentSettings.SpecularEnvironmentCubemap = game.GetOrCreateRaceSkyReflectionCube();
+        _world.EnvironmentSettings.AmbientColor = AmbientColor;
         _world.EnvironmentSettings.Shadows.Resolution = ShadowMapResolution;
         _world.EnvironmentSettings.Shadows.MaxDistance = ShadowMaxDistance;
         _world.EnvironmentSettings.Shadows.DepthBias = ShadowDepthBias;
@@ -108,7 +119,7 @@ internal sealed class CarSelectionCarousel : IDisposable
             LocalOrientation = RaceWorldFactory.CreateOrientationFromForward(LightDirection),
             Color = Color.White,
             SpecularColor = Color.White,
-            Intensity = 1f,
+            Intensity = LightIntensity,
         };
         _world.AddEntity(new Entity { Name = "Carousel.Light", RootComponent = _light });
 

@@ -1482,3 +1482,87 @@ UI captures (`ref-ui/`, default colour pipeline, `linear`) against the previous 
 
 Track audit (`ref-audit/`, 30 captures, default colour pipeline, `linear`) against `artifacts/pbr-handover/s2/ref-audit`: largest channel difference 4.302 (`audit-Beginner-helper-tunnel`), smallest 0.000 (`audit-Advanced-helper-laterns`). The three `audit-<track>-helper-tunnel` captures have, over the whole picture, a mean share of 7.1 % of pixels of luminance under 10 (previous run: 19.7 %). The reference of the port on this PC is now `artifacts/pbr-handover/s3/`: `legacy-a`, `linear-a`, `ref-ui` and `ref-audit`.
 
+
+## After the carousel light
+
+Eleventh run, on 2026-11-17, after slice S4 of the plan (phase 16, ADR-0031): the light of the car selection carousel goes from intensity 1 to pi, the scale of a PBR scene (the race world's key light has it since slice S1g), and its ambient colour is written out at 0.05 like the race world's. Only the car selection screen is rendered by that world. The run before it is the previous section, `artifacts/pbr-handover/s3/` (`legacy-a`, `linear-a`, `ref-ui`). The previous runs above stay as their record.
+
+Outputs under `artifacts/pbr-handover/s4/`. The interface captures before PBR are `artifacts/pbr-handover/s1m/ui` (the last interface capture of the previous materials, 1920x1080, `lit-diffuse`). The tables of this section are generated from the output files and from the source by a script.
+
+### Change
+
+Read from `RacingGameCasaEngine/UI/CarSelectionCarousel.cs` at the commit of this run:
+
+| Setting | Value |
+|---|---|
+| Carousel light intensity (`LightIntensity`) | MathF.PI (was 1f) |
+| Carousel ambient colour (`AmbientColor`) | new(0.05f) (the engine's default, now written out) |
+| Race world ambient colour (`RaceWorldFactory.AmbientColor`) | new(0.05f) |
+| Colour pipeline of the carousel | legacy chain (unchanged) |
+
+Source files of the game, of `RacingGame.Gameplay` and of the scripts that differ from the commit this run starts from (`git diff --name-only HEAD`, taken when this section was generated): 1: `CarSelectionCarousel.cs`.
+
+### Run
+
+- `--smoke-frontend` (`smoke-run.log`): "Smoke validation completed successfully" 2 time(s); lines with `[Warning]` or `[Error]`: 0.
+- `ui-run.log` (`--capture-ui-screens`): lines with `[Warning]` or `[Error]`: 0.
+- `ui-audit-run.log` (`--capture-track-audit`): lines with `[Warning]` or `[Error]`: 0.
+- `legacy` replays of the 15 views (`legacy-a`, `legacy-b`): lines `[CaptureBench] view ... pipeline legacy fxaaPasses 0`: 15 and 15 of 15; warnings or errors: 0 and 0.
+- `linear` replays of the 15 views (`linear-a`, `linear-b`): lines `[CaptureBench] view ... pipeline linear fxaaPasses 1`: 15 and 15 of 15; warnings or errors: 0 and 0.
+
+### Car selection screen
+
+`ui-car-selection.png`, 1920x1080. Box: x 640 to 1279, y 360 to 719 (the central car, the two plates behind it and the front plate). Luminance is `0.299 R + 0.587 G + 0.114 B` over the box; the whole-screen difference is the mean absolute difference per channel against the capture before PBR (`s1m/ui`); saturated is the share of pixels whose three channels are 255.
+
+| State | Box luminance | Box saturated | Box 250 or more | Whole screen R, G, B difference with `s1m/ui` | Mean | Whole screen saturated |
+|---|---|---|---|---|---|---|
+| before PBR (`s1m/ui`) | 61.7 | 0.579 % | 0.625 % | 0.00, 0.00, 0.00 | 0.00 | 0.893 % |
+| `s3/ref-ui` (previous run) | 42.6 | 0.104 % | 0.105 % | 4.86, 4.21, 4.23 | 4.43 | 0.681 % |
+| `s4/ui` (this run) | 55.3 | 0.245 % | 0.249 % | 3.64, 3.65, 3.78 | 3.69 | 0.754 % |
+
+The side-by-side sheets of the three states are `artifacts/pbr-handover/s4/sheet-car-selection.png` (whole screen) and `sheet-car-selection-box.png` (the box). The automation mode captures one car colour with one car in front; the other colours and each of the three cars in front are not captured.
+
+Interface captures of this run against `s3/ref-ui` (`ui-compare-s3/report.txt`) and against the screens before PBR (`ui-compare-s1m/report.txt`), mean difference per channel:
+
+| State | R, G, B against `s3/ref-ui` | R, G, B against `s1m/ui` |
+|---|---|---|
+| splash | 0.00, 0.00, 0.00 | 0.00, 0.00, 0.00 |
+| main-menu | 0.00, 0.00, 0.00 | 0.00, 0.00, 0.00 |
+| highscores | 0.00, 0.00, 0.00 | 0.00, 0.00, 0.00 |
+| options | 0.00, 0.00, 0.00 | 0.00, 0.00, 0.00 |
+| help | 0.00, 0.00, 0.00 | 0.00, 0.00, 0.00 |
+| car-selection | 2.04, 1.46, 1.14 | 3.64, 3.65, 3.78 |
+| track-selection | 0.00, 0.00, 0.00 | 0.00, 0.00, 0.00 |
+| race-hud | 0.00, 0.00, 0.00 | 25.84, 26.66, 26.72 |
+| pause | 0.00, 0.00, 0.00 | 7.89, 8.05, 8.03 |
+| race-finished | 0.00, 0.00, 0.00 | 23.00, 23.12, 21.83 |
+
+9 of the 10 screens are at 0.00 against `s3/ref-ui`: `splash`, `main-menu`, `highscores`, `options`, `help`, `track-selection`, `race-hud`, `pause`, `race-finished`. The new reference of the interface is `artifacts/pbr-handover/s4/ref-ui` (a copy of `ui`).
+
+### Race world views, scene and probes
+
+The carousel is a world of its own; the race world is not touched. Replays of the 15 views against the previous run's (`s3/<mode>-a`):
+
+| Run | Largest mean difference per channel of the 15 views (R, G, B) | Files identical by hash |
+|---|---|---|
+| `legacy-a` | 0.00, 0.00, 0.00 | 13 of 15 |
+| `legacy-b` | 0.00, 0.00, 0.00 | 13 of 15 |
+| `linear-a` | 0.00, 0.00, 0.00 | 13 of 15 |
+| `linear-b` | 0.00, 0.00, 0.00 | 13 of 15 |
+
+12 of the 12 `scene-measure-*.txt` files (3 tracks, 2 modes, 2 runs) are identical, byte for byte, to those of the previous run.
+
+| Criterion | `legacy` passed | `linear` passed | Judged | previous `legacy` | previous `linear` |
+|---|---|---|---|---|---|
+| 1. lit and away within +-12 | 6 | 16 | 34 | 6 | 16 |
+| 2. shadow/lit ratio within +-0.05 (per view and surface) | 2 | 0 | 4 | 2 | 0 |
+| 3. class agreement (shadow shadowed, lit lit) | 27 | 27 | 33 | 27 | 27 |
+| 4. away-shadowed within +-12 | 3 | 3 | 3 | 3 | 3 |
+
+Repeatability, `legacy` (`legacy-a` against `legacy-b`): 13 identical files of 15.
+Repeatability, `linear` (`linear-a` against `linear-b`): 13 identical files of 15.
+
+Track audit (`ui-audit/`, 30 captures) against `artifacts/pbr-handover/s3/ref-audit`: largest channel difference 0.000.
+
+The reference of the port on this PC stays `artifacts/pbr-handover/s3/` for the race world (`legacy-a`, `linear-a`, `ref-audit`) and becomes `artifacts/pbr-handover/s4/ref-ui` for the interface.
+

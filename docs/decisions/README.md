@@ -31,7 +31,7 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0015 | The original game exports the 3D reference views; the port replays them | Accepted | 2026-11-14 |
 | ADR-0016 | The legacy normal maps are converted to the standard channel layout | Accepted | 2026-11-14 |
 | ADR-0017 | The legacy sky cube is converted to the axes of the converted world | Accepted | 2026-11-14 |
-| ADR-0018 | The race world renders in linear HDR with PBR materials | Accepted; amended by ADR-0028 | 2026-11-16 |
+| ADR-0018 | The race world renders in linear HDR with PBR materials | Accepted; amended by ADR-0028, ADR-0031 | 2026-11-16 |
 | ADR-0019 | RacingGameCasaEngine reads the legacy track helpers and CombiModel items | Accepted; amended by ADR-0027, ADR-0029, ADR-0030 | 2026-10-08 |
 | ADR-0020 | RacingGameCasaEngine names every screen element and every component | Accepted | 2026-10-09 |
 | ADR-0021 | RacingGameCasaEngine's automation modes ignore the player input | Accepted; completed by ADR-0022 | 2026-10-15 |
@@ -44,3 +44,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0028 | RacingGameCasaEngine cooks the race world materials as PBR, from the surface families of their recipes | Accepted | 2026-11-17 |
 | ADR-0029 | RacingGameCasaEngine builds the road underside and the city ground plane of the original | Proposed | 2026-11-17 |
 | ADR-0030 | RacingGameCasaEngine lights the tunnel with the original's material ambient as an emissive texture | Proposed | 2026-11-17 |
+| ADR-0031 | RacingGameCasaEngine lights the car selection carousel at the PBR scale and sets the ambient colour of both worlds to 0.05 | Proposed | 2026-11-17 |
