@@ -23,7 +23,7 @@ Tranches :
 | S1m | Textures du monde de course avec mipmaps (`58bb871`) : un réglage par asset pour une texture cuite, avec une évolution du moteur | S1e | Faite le 2026-11-17, verdict CONFIRMED |
 | S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1m | Faite le 2026-11-17, verdict CONFIRMED après la correction du moteur (GGX côté dos) |
 | S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | Faite le 2026-11-17, verdict CONFIRMED ; luminosité en question (O13) |
-| S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | À détailler |
+| S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | Détaillée (Phase 12) |
 | S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1c, S1g, S1h | À détailler après S1 |
 | S3 | Tunnel presque noir | S2 | À détailler ; choix de l'auteur attendu (O1) |
 | S4 | Voiture centrale du carrousel trop blanche | S2 | À détailler ; choix de l'auteur attendu (O2) |
@@ -929,6 +929,74 @@ Règles communes : un seul lancement du jeu à la fois, jamais pendant un build 
 > - A1 (P3) : la luminance moyenne monte à 140,5 (`legacy`) et 133,5 (`linear`) pour 96,3 dans l'original ; rapport route sur terrain 0,806 pour 0,348. Valeurs voulues par le plan (couleur d'ambiant blanche, comme l'autre PC), mais la phrase de T11.2 « les réglages d'ambiant valent aujourd'hui leurs défauts du moteur » était fausse pour la couleur : le défaut est 0,05 (`WorldEnvironmentSettings.cs:94`) et `LitPbr.fx` multiplie l'irradiance du ciel par elle ; l'ambiant passe de 5 % à 100 % de l'irradiance. Erreur de l'étude du plan, pas de l'exécution. Question à l'auteur : O13.
 > - A2 (P4) : valeur attendue du ciel notée en T11.1 à 0,05 niveau près de celle du vérificateur. A3 (P4) : `legacy` sature (6062 et 6500 pixels à 255), attendu sans tonemapping. Sans suite.
 > - S1g close.
+
+---
+
+## Phase 12 — Dessous de la route et sol de la ville (S1h)
+
+Sujets faits sur l'autre PC seulement (`0ac894d`, puis `d0db72f` pour leurs matériaux PBR) : portés dans l'architecture d'ici, en générateurs et en matériaux cuits. Les tunnels de `0ac894d` sont faits ici depuis l'ADR-0019, alignés en S1a et munis de tangentes en S1g : hors de cette tranche.
+
+État vérifié (2026-11-17, jeu `4cf6899`) :
+
+- Original, dessous de la route (`RacingGameOriginal/Core/Tracks/Track.cs:408` et suivantes, `TrackVertex.cs`) : 4 sommets par point de route (`LeftTangentVertex`, `BottomLeftSideTangentVertex`, `BottomRightSideTangentVertex`, `RightTangentVertex`), le bas à `RoadThickness × roadWidth` sous le bord, V à 0, 0,135, 0,865 et 1, U multiplié par `RoadBackHullTextureWidthFactor` (1), 6 triangles par segment comme le tunnel ; matériau `roadBackMaterial` = `("RoadBack", "RoadBackNormal")` ; `Track.GenerateShadow` et `Track.UseShadow` l'ignorent (ni projeté ni reçu). Les constantes exactes sont relues dans l'original par l'exécutant avant usage.
+- Original, sol de la ville (`Landscape.cs:900-933`, `PlaneRenderer.cs`) : un seul plan, créé dans le constructeur du `Landscape` (`new Landscape(Level.Beginner)`, `RacingGameManager.cs:402`) au premier objet de `landscapeObjects` dont le nom de modèle contient `hotel` ou `building` (`IsBigBuilding`, `Landscape.cs:71-77`) ; gardé pour les trois pistes livrées (le terrain livré ne change pas). Quatre sommets en bande de triangles, `(±right ±dir) × size + up × 0,1`, `right` = (1, 0, 0), `dir` = (0, 1, 0), `up` = (0, 0, 1), `size` = `min(x, y)` de la position de l'immeuble, UV `±size / 20`, normale `up`, tangente `right`, translation à la position de l'immeuble ; matériau `cityMat` = ambiant 32, diffus 200, spéculaire 128, `("CityGround", "CityGroundNormal")`, technique `DiffuseSpecular20`. Il n'est pas un receveur d'ombre dans l'original ; l'autre PC le fait recevoir parce que le masque d'ombre en espace écran de l'original assombrit ce qui est dessiné à cet endroit (son plan S2b C1).
+- Autre PC (`origin/remaster`, `LegacyTrackSceneFactory.RoadStructures.cs`) : même géométrie ; dessous de route avec le vecteur droite brut, ni projeté ni reçu ; sol de ville projeté non, reçu oui ; ancre cherchée une fois dans les objets du fichier de Beginner.
+- Ici : `RaceRoadGeneratorComponent` produit la route et les tunnels (matériau des tunnels en constante, non sérialisé : les mondes sauvegardés ne changent pas) ; `RaceTerrainGeneratorComponent` produit le terrain ; aucun dessous de route ni sol de ville. Textures présentes : `RoadBack.png`, `RoadBackNormal.png`, `CityGround.png`, `CityGroundNormal.png` (`RacingGameCasaEngine/Content/Textures`).
+- `Material.Track.Ground` est cuit mais utilisé par aucune scène (remarque de S1f) ; sa recette `ForGround` prend la première de `GroundTextureCandidates` = `Landscape.png`, `CityGround.png`, donc la texture du terrain, et pas de normal map.
+- Le maillage de la route d'ici prend le vecteur droite normalisé (O11, choix de l'auteur en attente) ; l'original et l'autre PC prennent le vecteur brut pour le dessous.
+- La mesure de scène (`scene.json` de l'original) ne compte que les objets placés : ni le dessous de route ni le sol de ville n'y figurent.
+- ADR-0019 (« Consequences ») affirme : « Against the original, nothing is missing ». Faux tant que ces deux pièces manquent ; une ADR ne se réécrit pas.
+
+Décisions de la tranche (prises ici en mode AUTO, à confirmer par l'auteur avec l'ADR) :
+
+- H1 : le dessous de la route suit le maillage de la route d'ici (même vecteur droite), pour que les deux maillages se touchent ; si l'auteur tranche O11 pour le vecteur brut, les deux changent ensemble.
+- H2 : le dessous de la route est un troisième modèle de `RaceRoadGeneratorComponent`, matériau `Material.Track.RoadBack` en constante (comme les tunnels) ; le sol de la ville est un second modèle de `RaceTerrainGeneratorComponent`, matériau `Material.Track.Ground` en constante, sa recette corrigée pour `CityGround` (famille `Terrain` gardée, règle de T10.1).
+- H3 : l'ancre du sol de la ville est une constante en coordonnées de l'original, écrite avec sa dérivation en commentaire, et contrôlée par l'exécutant de deux façons indépendantes (voir T12.2). Un générateur de piste ne lit pas le fichier d'une autre piste.
+- H4 : le sol de la ville reçoit les ombres, comme sur l'autre PC.
+
+Retour arrière de S1h : relever `git rev-parse HEAD` avant T12.1 et le noter sous T12.1 ; annuler les commits de S1h sur `chantier/rgce-pbr-handover` seulement. Sur demande de l'auteur seulement.
+
+Budget : au plus deux tours de recuisson par tâche ; deux passes de correction après vérification.
+
+Règles communes : celles de S1g. Sorties sous `artifacts/pbr-handover/s1h/`. Référence d'avant : `s1g/` (référence du port après S1g, mode par défaut `linear`), plus un rejeu `legacy` et `linear` sur `HEAD` vers `s1h/base` avant T12.1, avec sondes.
+
+### ⏳ T12.1 — Dessous de la route
+
+- Objectif : chaque piste a le dessous de route de l'original.
+- Fichiers : `RacingGame.Gameplay/Track/LegacyTrackSceneFactory.cs` (`CreateRoadBackModel`, `VertexPositionNormalTextureTangent` : bords hauts normale `up`, tangente `right` ; bas normale `-up`, tangente `-right`, comme l'original ; positions des bords hauts égales à celles des bords du maillage de route ; `CastShadows` et `ReceiveShadows` faux), `LegacyTrackSceneFactory.Generators.cs`, `RacingGame.Gameplay/Components/RaceRoadGeneratorComponent.cs` (troisième modèle, matériau en constante), `LegacyTrackSceneFactory.Models.cs` (`RaceTrackMaterialAssets.RoadBack`), `RacingGame.Gameplay/Import/RaceMaterialRecipes.cs` (`ForRoadBack` : `RoadBack.png`, `RoadBackNormal.png`, famille `Road`, culling et échantillonneur de la route, pas d'émissive), `scripts/RgceAssetCooker/CookPlan.cs` (rôle `RoadBack`), contenu recuit (`Materials/Track/RoadBack.material`, `.texture` de `RoadBack` et `RoadBackNormal` si le cuiseur les crée, `AssetInfos.json`).
+- Validation :
+  - builds du jeu et du cuiseur à 0 erreur ; cuiseur `--verify` et `--check` sans écart, second passage sans écriture ; `git status` du contenu : seulement les fichiers listés ci-dessus ;
+  - contrôle par script sur les trois pistes : 4 sommets par point de route, 18 indices par segment ; chaque sommet haut du dessous égal, à 1e-5 près, au sommet de bord correspondant du maillage de route ; chaque sommet bas égal, à 1e-5 près, à ce bord moins `up × RoadThickness (1,0) × roadWidth`, converti et moins l'origine (`TrackVertex.cs:49`, `:171-197`) ; UV de chaque sommet égaux à `(TextureU × 1, V)` avec V = 0, 0,135, 0,865 et 1 pour les sommets 0 à 3 (`Track.cs:33`, `:48`, `:412-437`) ; les 18 indices de chaque segment dans l'ordre du motif de `Track.cs:464-486` (pas de 4), pour garder l'enroulement sous `CullCounterClockwise` ; normales et tangentes unitaires, orthogonales, égales aux vecteurs attendus ; pour chaque contrôle et chaque piste (Beginner, Advanced, Expert), succès ou échec et écart maximal notés ;
+  - mesure de scène inchangée (octet pour octet contre `s1h/base`) ; sondes : critère 3 au moins celui de `s1h/base` ;
+  - une vue où le dessous est visible (choisie parmi les vues et l'audit, nommée dans la note) regardée en recadrage contre l'original et contre `s1h/base`.
+- Arrêts : un écart du cuiseur sans cause ; un dessous qui ne touche pas la route ; changement de la mesure de scène.
+- Commit : `feat(racing-casa): build the road underside of the original`
+
+### ⏳ T12.2 — Sol de la ville
+
+- Objectif : les trois pistes ont le plan de ville de l'original.
+- Fichiers : `RacingGame.Gameplay/Track/LegacyTrackSceneFactory.Terrain.cs` ou un fichier voisin (`CreateCityGroundModel` : constante d'ancre en coordonnées de l'original et sa dérivation en commentaire, géométrie de `PlaneRenderer`, conversion par la conversion de points du port moins l'origine de la piste ; `CastShadows` faux, `ReceiveShadows` vrai), `RacingGame.Gameplay/Components/RaceTerrainGeneratorComponent.cs` (second modèle, matériau `Material.Track.Ground` en constante), `LegacyTrackSceneFactory.Models.cs` (`RaceTrackMaterialAssets.Ground` si absent), `RaceMaterialRecipes.cs` (`ForGround` : `CityGround.png` et `CityGroundNormal.png`, culling de la route ; `GroundTextureCandidates` ne sert plus au sol de ville ; le terrain garde ses textures), `scripts/RgceAssetCooker/CookPlan.cs`, contenu recuit (`Ground.material`, `.texture` de `CityGround` et `CityGroundNormal` si créées, `AssetInfos.json`).
+- Validation :
+  - builds, cuiseur comme en T12.1 ; `Terrain.material` inchangé octet pour octet ;
+  - ancre : (a) calculée par un outil jetable à partir du placement d'ici pour Beginner (premier objet `hotel` ou `building` dans l'ordre d'ajout de l'original, que l'exécutant vérifie dans le code de l'original : ordre des objets du fichier de piste et des objets générés dans `landscapeObjects` au moment de `CreateCityPlane`) ; (b) recalculée dans l'original, par lecture de son code et du fichier de piste de Beginner, ou par une ligne de journal ajoutée temporairement à la copie de l'original et retirée ensuite (rien de committé dans `RacingGameOriginal`) ; les deux à 1e-3 près, égales à la constante ; valeur, taille et méthode notées ;
+  - contrôle par script : 4 sommets, 6 indices, positions et UV égaux à la formule de `PlaneRenderer` pour chaque piste ;
+  - mesure de scène inchangée ; sondes : critère 3 au moins celui de T12.1 ; les sondes `city-shadow-1` à `-3` de `Beginner-sector-20` notées avant et après ;
+  - `Beginner-sector-20` et une vue d'Advanced ou d'Expert où la ville est visible, regardées contre l'original : le plan est à sa place et à sa taille (pas de plan flottant ni de scintillement avec le terrain).
+- Arrêts : les deux calculs de l'ancre en désaccord ; scintillement entre le plan et le terrain que le plan de l'original n'a pas ; changement de la mesure de scène.
+- Commit : `feat(racing-casa): build the city ground plane of the original`
+
+### ⏳ T12.3 — ADR, banc et références
+
+- Objectif : la décision écrite et la référence du port après S1h.
+- Étapes : ADR-0029 (skill `adr`, `Proposed`) : H1 à H4, qui amende l'ADR-0019 (sa conséquence « nothing is missing » était fausse) ; ligne d'état de l'ADR-0019 et index mis à jour. Banc complet vers `artifacts/pbr-handover/s1h/` comme en T11.4 (deux modes, comparaisons avec `s1h/base` et `s1g`), nouvelles références d'audit et d'interface ; section « After the road underside and the city ground » du doc de banc générée par script.
+- Validation : chiffres du doc relus par script contre les sorties ; interface : écrans hors course à 0,00 contre `s1h/base` (captures d'interface prises avec `s1h/base`).
+- Commit : `docs(racing-casa): record the road underside and the city ground`
+
+### ⏳ T12.4 — Vérification indépendante de S1h
+
+- Objectif : un `verifier` frais confirme ou réfute : géométrie et matériaux des deux pièces conformes à l'original (H1 noté) ; ancre juste par ses propres calculs ; contenu changé limité à ce qui est listé ; mesure de scène et critère 3 sans régression ; ADR et doc justes.
+- Étapes et verdicts : comme T5.4.
+- Commit : `docs(ai-agent): record the verification of the road underside and the city ground`
 
 ---
 
