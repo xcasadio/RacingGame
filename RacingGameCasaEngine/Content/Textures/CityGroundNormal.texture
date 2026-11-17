@@ -1,0 +1,23 @@
+{
+  "id": "96617661-8bca-526c-ac44-c1d533392b4f",
+  "name": "Texture.CityGroundNormal",
+  "texture_asset_id": "a06d898b-53bb-53e4-b547-5f719f671fae",
+  "generate_mipmaps": true,
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

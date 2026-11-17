@@ -3671,6 +3671,18 @@
       "name": "Texture.RoadBackNormal",
       "file_name": "Textures/RoadBackNormal.texture",
       "asset_type": "texture"
+    },
+    {
+      "id": "757fcf8f-42c3-558f-8506-59fa03418b2f",
+      "name": "Texture.CityGround",
+      "file_name": "Textures/CityGround.texture",
+      "asset_type": "texture"
+    },
+    {
+      "id": "96617661-8bca-526c-ac44-c1d533392b4f",
+      "name": "Texture.CityGroundNormal",
+      "file_name": "Textures/CityGroundNormal.texture",
+      "asset_type": "texture"
     }
   ]
 }

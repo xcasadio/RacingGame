@@ -5,7 +5,7 @@ using RacingGame.Gameplay.Track;
 
 namespace RacingGame.Gameplay.Components;
 
-/// <summary>Builds the landscape mesh of a race track from its height map, centered like the rest of the track.</summary>
+/// <summary>Builds the landscape mesh of a race track from its height map, centered like the rest of the track, and the city ground plane of the original.</summary>
 [DisplayName("Race Terrain Generator")]
 public sealed class RaceTerrainGeneratorComponent : RaceTrackGeneratorComponent
 {
@@ -29,5 +29,9 @@ public sealed class RaceTerrainGeneratorComponent : RaceTrackGeneratorComponent
     private protected override void Generate(RaceTrackSource source, AssetContentManager assetContentManager, List<RaceGeneratedModel> output)
     {
         output.Add(LegacyTrackSceneFactory.CreateTerrainModel(source, MaterialAssetId));
+
+        // The city ground plane takes its cooked material (Material.Track.Ground) as a constant, not as a serialized property:
+        // the saved worlds do not change.
+        output.Add(LegacyTrackSceneFactory.CreateCityGroundGeneratorModel(source));
     }
 }

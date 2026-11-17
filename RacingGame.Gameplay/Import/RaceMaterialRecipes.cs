@@ -20,6 +20,8 @@ public static class RaceMaterialRecipes
     public const string RoadColumnTextureName = "RoadCement.png";
     public const string RoadColumnNormalTextureName = "RoadCementNormal.png";
     public const string RoadNormalTextureName = "RoadNormal.png";
+    public const string CityGroundTextureName = "CityGround.png";
+    public const string CityGroundNormalTextureName = "CityGroundNormal.png";
     public const string RoadBackTextureName = "RoadBack.png";
     public const string RoadBackNormalTextureName = "RoadBackNormal.png";
     public const string RoadTunnelTextureName = "RoadTunnel.png";
@@ -147,16 +149,22 @@ public static class RaceMaterialRecipes
         };
     }
 
-    /// <summary>The flat ground. <paramref name="diffuseTexturePath"/> is the first of <see cref="GroundTextureCandidates"/> that loads, or null.</summary>
-    public static RaceMaterialRecipe ForGround(string trackName, string? diffuseTexturePath)
+    /// <summary>
+    /// The city ground plane: the original's cityMat, ("CityGround", "CityGroundNormal") (Landscape.cs), drawn like the road
+    /// (counter-clockwise culling). The paths are <see cref="CityGroundTextureName"/> and <see cref="CityGroundNormalTextureName"/>
+    /// when they exist, or null.
+    /// </summary>
+    public static RaceMaterialRecipe ForGround(string trackName, string? diffuseTexturePath, string? normalTexturePath)
     {
         return new RaceMaterialRecipe
         {
             Name = $"{trackName}.GroundMaterial",
             BaseTextureFilePath = diffuseTexturePath,
+            NormalTextureFilePath = normalTexturePath,
             Family = RacingGamePbrMaterialMapping.Terrain,
             BaseColor = diffuseTexturePath != null ? Color.White : new Color(182, 166, 118),
             SamplerState = RaceMaterialStates.AnisotropicWrap,
+            RasterizerState = RaceMaterialStates.CullCounterClockwise,
         };
     }
 

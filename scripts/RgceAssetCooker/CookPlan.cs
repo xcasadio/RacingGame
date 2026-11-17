@@ -164,7 +164,10 @@ internal static class CookPlanner
                 "Track",
                 FirstExisting(RaceMaterialRecipes.RoadTextureCandidates),
                 FirstExisting([RaceMaterialRecipes.RoadNormalTextureName])),
-            ["Ground"] = RaceMaterialRecipes.ForGround("Track", ground),
+            ["Ground"] = RaceMaterialRecipes.ForGround(
+                "Track",
+                FirstExisting([RaceMaterialRecipes.CityGroundTextureName]),
+                FirstExisting([RaceMaterialRecipes.CityGroundNormalTextureName])),
             ["Terrain"] = RaceMaterialRecipes.ForTerrain(
                 "Track", ground,
                 FirstExisting(RaceMaterialRecipes.TerrainNormalTextureCandidates),

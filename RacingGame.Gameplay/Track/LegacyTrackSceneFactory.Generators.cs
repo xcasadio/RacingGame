@@ -105,6 +105,12 @@ internal static partial class LegacyTrackSceneFactory
         return LegacyTerrainMeshBuilder.CreateModel(source.TrackName, origin, source.HeightmapPath, materialAssetId);
     }
 
+    internal static RaceGeneratedModel CreateCityGroundGeneratorModel(RaceTrackSource source)
+    {
+        Vector3 origin = RaceTrackLayout.ComputeOrigin(source.Track.TrackPoints);
+        return CreateCityGroundModel(source.TrackName, origin, RaceTrackMaterialAssets.Ground);
+    }
+
     internal static IReadOnlyList<RaceGeneratedModel> CreateGuardRailModels(RaceTrackLayout layout, bool leftSide, Guid materialAssetId)
     {
         return LegacyTrackGuardRailBuilder.CreateRailModels(layout.TrackName, layout, leftSide, materialAssetId);

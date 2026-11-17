@@ -12,6 +12,9 @@ internal static class RaceTrackMaterialAssets
     /// <summary>Material.Track.Road</summary>
     public static readonly Guid Road = new("9115353e-e656-50e3-a5c1-586824eec3fa");
 
+    /// <summary>Material.Track.Ground</summary>
+    public static readonly Guid Ground = new("ddc2dad7-10b7-5267-9ad0-d3306cd169ad");
+
     /// <summary>Material.Track.Terrain</summary>
     public static readonly Guid Terrain = new("fc904080-b053-51e1-82e2-33858bfe1140");
 

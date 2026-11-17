@@ -12,8 +12,8 @@
   "rasterizer_state": "CullCounterClockwise",
   "sampler_state": "AnisotropicWrap",
   "properties": {
-    "base_color_texture": "ee748e62-6069-552c-a7cb-2656da413b49",
-    "normal_texture": "00000000-0000-0000-0000-000000000000",
+    "base_color_texture": "757fcf8f-42c3-558f-8506-59fa03418b2f",
+    "normal_texture": "96617661-8bca-526c-ac44-c1d533392b4f",
     "detail_texture": "00000000-0000-0000-0000-000000000000",
     "detail_tiling": 1.0,
     "base_color": {
