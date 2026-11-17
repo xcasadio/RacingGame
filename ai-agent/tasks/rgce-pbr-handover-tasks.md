@@ -22,7 +22,7 @@ Tranches :
 | S1e | Assets : convertisseur porté (tangentes dans les glTF, normal maps au format standard, cube du ciel réorienté), contenu régénéré, cuiseur avec tangentes, recuisson | S1d | Faite le 2026-11-17, verdict CONFIRMED ; les mipmaps passent en S1m |
 | S1m | Textures du monde de course avec mipmaps (`58bb871`) : un réglage par asset pour une texture cuite, avec une évolution du moteur | S1e | Faite le 2026-11-17, verdict CONFIRMED |
 | S1f | Matériaux PBR cuits (D6) : recettes par famille, cuiseur en `lit-pbr`, peinture de la voiture et plateau du carrousel, texture de détail du terrain, vérificateurs, suppression des tables de réglage et du relèvement d'ambiant du profil d'import ; ADR du jeu mis à jour (0018 de là-bas et 0026 d'ici réunis par un ADR qui les amende) | S1m | Faite le 2026-11-17, verdict CONFIRMED après la correction du moteur (GGX côté dos) |
-| S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | À détailler |
+| S1g | Monde de course : `LinearHdr`, lumière clé, ombres, ciel en phase de scène, mode `Legacy` pour le banc, tangentes de la route, des tunnels et des maillages générés | S1f | Détaillée (Phase 11) |
 | S1h | Géométrie qui n'existe que sur l'autre PC, en générateurs : dessous de la route, sol de la ville (le décor de remplissage aléatoire est passé en S1a) ; ADR-0019 corrigé (il affirme qu'il ne manque rien face à l'original) | S1f | À détailler |
 | S2 | Vérification indépendante du portage PBR (S1c à S1h), banc de capture contre l'original, nouvelle référence sur ce PC | S1c, S1g, S1h | À détailler après S1 |
 | S3 | Tunnel presque noir | S2 | À détailler ; choix de l'auteur attendu (O1) |
@@ -808,6 +808,82 @@ Budget de S1f : T10.2, au plus trois tours de recuisson ; deux passes de correct
 > - Disposition, remarque A1 (P3) du vérificateur : la validation écrite du plan moteur visait le nombre de pixels blancs de l'image entière au niveau d'avant le PBR (50 et 246) ; elle n'est pas tenue (791 et 760). Cette cible était mal choisie, puisque le PBR sous la lumière d'avant S1g ajoute des reflets sur les rails et les lampadaires sans rapport avec F1 ; la preuve retenue est la zone de la traînée et l'identité avec le cas sans normal map. Décision prise en mode AUTO, à confirmer par l'auteur.
 > - A2 (P4) : ces reflets des rails et des lampadaires relèvent du réglage de la lumière de S1g, qui les mesurera.
 > - S1f close.
+
+---
+
+## Phase 11 — Monde de course (S1g)
+
+Décision déjà prise : ADR-0018 (le monde de course est rendu en lumière linéaire HDR avec des matériaux PBR, acceptée le 2026-11-16 sur l'autre PC, présente ici depuis S1b). Cette tranche l'applique au monde construit ici ; pas de nouvelle ADR. Sources à porter, lisibles par `git show` : `09e4a9f` (pipeline couleur, mode `legacy` du banc, ciel en phase de scène), `037f5a5` (lumière clé π, ambiant par le cube du ciel), `d66c210` (lumière unique de l'original ; sa partie « ambiant par matériau » est sans objet en `lit-pbr`), `d40b020` (ombres douces et teintées ; sa partie « qui projette, qui reçoit » est déjà faite ici en S1a), `a18b364` (tangentes et normal map de la route).
+
+État vérifié (2026-11-17, jeu `4f72249`, moteur `8a3933b36`) :
+
+- `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs` : trois lumières directionnelles (`LegacyDirectionalLights` : clé 0,92 vers (-0,5265 ; -0,5736 ; -0,6275), remplissage 0,71, arrière 0,36), ombres `Resolution` 4096, `MaxDistance` 150, `DepthBias` 0,001, `NormalBias` 0,1, sans couleur d'ombre, sans filtre, sans fondu, sans `DepthRange` ; aucun réglage d'ambiant (le défaut du moteur est `AmbientSource.Auto`, `WorldEnvironmentSettings.cs:56`) ; aucun réglage de `ColorPipeline`.
+- Autre PC (`origin/remaster`, même fichier) : une seule lumière blanche vers `normalize(-8500, -15000, -7250)`, intensité π, `SpecularColor` (235, 235, 235) ; `AmbientSource.Auto`, `AmbientColor` blanc, `AmbientIntensity` 1, `SpecularIntensity` 1 ; ombres 4096, `MaxDistance` 100, `FadeDistance` 15, `DepthRange` 150, `FilterRadius` 3, `Mode` `MultiplyLitColor`, `ShadowColor` (0,25 ; 0,26 ; 0,27), `DepthBias` 0,001, `NormalBias` 0,1 ; `LinearHdr`, `AcesApprox`, exposition 1, bloom et SSAO coupés, FXAA, sauf avec `--color-pipeline legacy`.
+- Le moteur a déjà tout ce qu'il faut : `IScenePhaseViewPipeline`, `ShadowSettings.ShadowColor`, `FilterRadius`, `FadeDistance`, `DepthRange`, `ShadowMode.MultiplyLitColor`, `WorldEnvironmentSettings.SpecularIntensity`, `RenderStats.FxaaPasses`, `frame.Environment.LinearColorActive` ; `LegacySkyCube.fx` déclare `ColorPipelineIsLinear` et décode sa couleur (`DecodeColor4`). Aucun changement du moteur n'est prévu.
+- `RacingGameCasaEngine/Bootstrap/LegacySkyCubeViewPipeline.cs` n'implémente que `IViewRenderPipeline` et ne lie pas `ColorPipelineIsLinear`. `RacingGameCasaEngineGame.cs:303-307` donne déjà le cube du ciel au monde de course comme `SpecularEnvironmentCubemap`.
+- `RacingGame.Gameplay/Track/LegacyTrackSceneFactory.cs` : la route (`CreateRoadModel`, `CreateRoadVertex`) et les tunnels (`CreateTunnelModel`, `CreateTunnelVertex`) sont en `VertexPositionNormalTexture`, sans tangente ; le moteur n'active la normal map que si le maillage a des tangentes (`RenderFeatureResolver.cs:177-183`), donc la normal map cuite de `Material.Track.RoadTunnel` est ignorée aujourd'hui. Rails, colonnes et terrain ont déjà leurs tangentes.
+- Original (`RacingGameOriginal/Core/Tracks/TrackVertex.cs`, `Track.cs`) : la route est en `TangentVertex(position, uv, up, right)` avec le matériau `("Road", "RoadNormal")` ; le tunnel prend `LeftTangentVertex` et `RightTangentVertex` (normale et tangente retournées, `Track.cs:547-550`) et `TunnelTop…SideTangentVertex` (normale `-up`, tangente `-right`) : les quatre sommets d'un point de tunnel ont la normale `-up` et la tangente `-right`.
+- `RaceMaterialRecipes.ForRoad` ne prend pas de normal map (`Material.Track.Road`, `normal_texture` nul) ; `RoadNormal.png` est dans `RacingGameCasaEngine/Content/Textures`.
+- Cinq recettes des matériaux de piste générés (`ForRoad`, `ForGround`, `ForTerrain`, `ForGuardRail`, `ForRoadColumn`, `RaceMaterialRecipes.cs:119`, `134`, `154`, `170`, `186`) gardent une émissive de 0,008 à 0,03 ; `ForRoadTunnel` n'en a pas (`RoadTunnel.material`, émissive nulle) ajoutée par le portage ; l'original n'en a pas (`Track.cs`, `Material(...)` sans émissive), et l'autre PC l'a retirée (`d66c210`, puis ses matériaux PBR de piste sans émissive). Les matériaux importés gardent l'émissive de leur présentation, comme là-bas.
+- Le carrousel de sélection a son propre monde et ses lumières (`UI/CarSelectionCarousel.cs`) ; l'autre PC l'a passé à l'ambiant par le cube du ciel et à une lumière multipliée par π avec la voiture (sa T3.1). Hors de cette tranche : S4 (voiture trop blanche du carrousel).
+- Référence du banc avant S1g : aucune capture complète n'existe sur le moteur `8a3933b36` (`s1f/cand-a` et `cand-b` sont d'avant la correction de GGX) ; T11.1 en prend une.
+
+Retour arrière de S1g : relever `git rev-parse HEAD` avant T11.1 et le noter sous T11.1 ; annuler les commits de S1g sur `chantier/rgce-pbr-handover` seulement. Sur demande de l'auteur seulement.
+
+Budget de S1g : T11.3, au plus deux tours de recuisson ; deux passes de correction après vérification.
+
+Règles communes : un seul lancement du jeu à la fois, jamais pendant un build ; rebuild du jeu avant tout lancement qui suit une recuisson ; sorties sous `artifacts/pbr-handover/s1g/` ; aucun contournement d'un défaut du moteur dans le jeu (arrêt et question).
+
+### ⏳ T11.1 — Pipeline couleur linéaire, mode `legacy` du banc, ciel en phase de scène
+
+- Objectif : le monde de course est rendu en `LinearHdr` par défaut ; `--color-pipeline legacy` garde exactement le rendu d'aujourd'hui pour le banc. Lumière, ombres et matériaux ne changent pas dans cette tâche.
+- Avant tout changement, sur `HEAD` (moteur `8a3933b36`), références d'avant S1g : rejeu des vues de l'original vers `artifacts/pbr-handover/s1g/base` ; captures d'interface vers `s1g/base-ui` et d'audit vers `s1g/base-audit`, par les mêmes commandes qu'en T10.2. Sondes contre l'original sur `s1g/base` (`--probes scripts/TrackCaptureCompare/probes.json --no-terrain-detail-correction`) : critères 1 à 4 notés sous T11.1 ; ce sont les valeurs de référence de T11.2 et T11.5 (les 21 sur 33 de S1f sont d'avant la correction de GGX).
+- Fichiers : `RacingGameCasaEngine/Bootstrap/RaceLaunchOptions.cs` (`UseLinearColorPipeline`, vrai par défaut), `Program.cs` (`--color-pipeline legacy|linear`, valeur inconnue refusée avec un message), `RacingGameCasaEngineGame.cs` (propriété interne lue par la fabrique), `Worlds/RaceWorldFactory.cs` (`ConfigureLinearColorPipeline` : `LinearHdr`, `AcesApprox`, exposition 1, bloom et SSAO coupés, FXAA ; `MarkDirty`), `Bootstrap/LegacySkyCubeViewPipeline.cs` (implémente `IScenePhaseViewPipeline` : `SupportsScenePhase`, `RenderScene` qui dessine le ciel puis la scène du pipeline enveloppé ; lie `ColorPipelineIsLinear` depuis `frame.Environment.LinearColorActive`), `Bootstrap/ReferenceViewCaptureValidator.cs` seulement si sa ligne existante `[CaptureBench] view <piste>-<vue> pipeline <legacy|linear> fxaaPasses <n>` (`:313-325`, portée en S1c) a besoin de la propriété du jeu. `scripts/TrackCaptureCompare/README.md` documente déjà l'option (`:23-28`) : relu, corrigé seulement s'il diffère du code.
+- Validation :
+  - build du jeu à 0 erreur ; `--smoke-frontend` en succès ;
+  - deux rejeux `legacy` (`s1g/t1-legacy-a`, `-b`) : 15 lignes `pipeline legacy fxaaPasses 0` chacun ; comparaison avec `s1g/base` à 0,00 de moyenne par canal sur les 15 vues ; mesure de scène égale octet pour octet à celle de `base` ;
+  - deux rejeux `linear` (`s1g/t1-linear-a`, `-b`) : 15 lignes `pipeline linear fxaaPasses 1` chacun ; répétabilité `a` contre `b` à 0,00 de moyenne ; aucun `[Warning]`, `[Error]` ni exception au journal (en particulier aucun avertissement du moteur sur un pipeline de vue sans `IScenePhaseViewPipeline`) ;
+  - ciel décodé : sur `Beginner-overview`, carré 9x9 centré en (640, 30), la valeur `linear` mesurée est à 4 niveaux au plus, par canal, de `encode(ACES(decode(L)))` où `L` est la valeur `legacy` au même endroit (calcul par script, formule ACES approchée et encodage sRGB du moteur lus dans ses shaders et cités) ;
+  - luminance moyenne des 15 vues notée dans les deux modes.
+- Arrêts : `legacy` différent de `base` ; un avertissement de phase de scène ; ciel hors tolérance.
+- Commit : `feat(racing-casa): render the race world in linear HDR and keep a legacy mode for the bench`
+
+### ⏳ T11.2 — Lumière de l'original, ambiant par le ciel, ombres douces et teintées
+
+- Objectif : une seule lumière, celle de l'original, à l'échelle du PBR ; les réglages d'ambiant valent aujourd'hui leurs défauts du moteur ; ils sont écrits explicitement pour que le monde ne dépende pas de ces défauts ; l'ambiant diffus et les reflets viennent du cube du ciel ; les ombres ont la couleur, la douceur et la portée de l'autre PC. Dans les deux modes du pipeline couleur.
+- Fichiers : `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs` seulement (les trois lumières remplacées par la lumière clé `Light.Key` : direction `normalize(-8500, -15000, -7250)`, blanche, intensité π, `SpecularColor` (235, 235, 235), ombres si l'option `Shadows` est active ; `AmbientSource.Auto`, `AmbientColor` blanc, `AmbientIntensity` 1, `SpecularIntensity` 1 ; ombres : `MaxDistance` 100, `FadeDistance` 15, `DepthRange` 150, `FilterRadius` 3, `Mode` `MultiplyLitColor`, `ShadowColor` (0,25 ; 0,26 ; 0,27), `DepthBias` et `NormalBias` inchangés, `Resolution` 4096) ; les commentaires de constantes repris de l'autre PC, avec leurs sources dans l'original (`LensFlare.cs`, `ShadowMap.fx`, `ShadowMapShader.cs`) vérifiées par `rg` dans `RacingGameOriginal` avant d'être citées.
+- Validation :
+  - build ; `--smoke-frontend` ;
+  - rejeux `legacy` et `linear` (`s1g/t2-legacy`, `s1g/t2-linear`, deux chacun pour la répétabilité) ; mesure de scène inchangée ;
+  - sondes contre l'original (`--probes scripts/TrackCaptureCompare/probes.json --no-terrain-detail-correction`) dans les deux modes : critère 3 (classe ombre ou lumière) au moins égal à celui de `s1g/base` noté en T11.1 ; en `legacy`, rapport ombre sur lumière du terrain des deux vues du critère 2 à 0,03 au plus de l'original (0,284 et 0,267) ; tous les critères notés, sans autre cible (couleurs non comparables à l'original en dehors de ce rapport, comme sur l'autre PC) ;
+  - luminance moyenne des 15 vues et rapport « route éclairée / terrain éclairé » (`Beginner-start`, `road-lit-1` / `terrain-lit-1`) notés dans les deux modes, avec ceux de `base` et de l'original ;
+  - pixels blancs saturés (les trois canaux à 255) de `Beginner-start` et `Expert-start` comptés et notés (remarque A2 de S1f).
+- Arrêts : critère 3 sous celui de `s1g/base` ; rapport du terrain hors tolérance sans cause trouvée ; changement de la mesure de scène.
+- Commit : `feat(racing-casa): light the race world as the original with image-based ambient and soft tinted shadows`
+
+### ⏳ T11.3 — Tangentes de la route et des tunnels, normal map de la route, émissive retirée
+
+- Objectif : la route et les tunnels ont des tangentes, comme dans l'original, ce qui active leurs normal maps ; la route reçoit `RoadNormal` ; les matériaux de piste générés perdent l'émissive que l'original n'a pas.
+- Fichiers : `RacingGame.Gameplay/Track/LegacyTrackSceneFactory.cs` (route : `VertexPositionNormalTextureTangent`, tangente = vecteur droite du point converti par la conversion de direction du port, normalisé comme la normale l'est aujourd'hui, `w` = +1 ; tunnel : même format, tangente = l'opposé de ce vecteur, `w` = +1, normale inchangée ; positions, UV, indices inchangés) ; `RacingGame.Gameplay/Import/RaceMaterialRecipes.cs` (`ForRoad` prend une normal map, nom en constante comme les autres ; émissive retirée de `ForRoad`, `ForGround`, `ForTerrain`, `ForGuardRail`, `ForRoadColumn`) ; `scripts/RgceAssetCooker/CookPlan.cs` (passe `RoadNormal.png` à `ForRoad`) ; les `.material` de piste recuits, la `.texture` de `RoadNormal` si le cuiseur la crée, `Content/AssetInfos.json` ; tout appel de ces fabriques que le build désigne.
+- Validation :
+  - builds du jeu et du cuiseur à 0 erreur ; cuiseur `--check` et `--verify` sans écart, second passage sans écriture ; `rg -n "EmissiveColor" RacingGame.Gameplay/Import/RaceMaterialRecipes.cs` ne désigne plus aucune recette de piste ; après recuisson, `git status` ne montre que `Materials/Track/Road.material` (émissive et normal map), `Ground.material`, `Terrain.material`, `GuardRail.material`, `RoadColumn.material`, la `.texture` de `RoadNormal` et `AssetInfos.json` ; `RoadTunnel.material` est inchangé octet pour octet ;
+  - test ou contrôle par script, sur les trois pistes (Beginner, Advanced, Expert) : nombre de sommets de route et de tunnel noté par piste, au moins un sommet de tunnel au total (Expert en a : capture `audit-Expert-helper-tunnel`) ; pour chaque sommet de route et de tunnel, la tangente est unitaire, orthogonale à la normale à 1e-4 près, et égale au vecteur attendu ; positions, UV et indices égaux à ceux d'avant (même script avant et après) ;
+  - rejeux `legacy` et `linear` : mesure de scène inchangée ; sondes, luminance, rapport route sur terrain et pixels blancs notés comme en T11.2 ; une vue de route (`Beginner-start`) et la capture d'audit `audit-Expert-helper-tunnel` regardées en recadrage, contre celles de `s1g/base` et `s1g/base-audit`, le relief de la normal map visible et sans traînée.
+- Arrêts : un écart du cuiseur sans cause ; une traînée ou un aplat saturé nouveau sur la route ou le tunnel ; besoin de toucher le moteur.
+- Commit : `feat(racing-casa): give the road and tunnels their tangents and the road its normal map`
+
+### ⏳ T11.4 — Banc complet et références
+
+- Objectif : la référence du port après S1g, dans les deux modes.
+- Étapes : banc complet vers `artifacts/pbr-handover/s1g/` comme en T10.2 (deux rejeux par mode, `nopost`, `full`, sondes, répétabilité, comparaison avec `base` et avec `s1f/cand-a`), nouvelles références d'audit et d'interface ; section « After the race world lighting » de `docs/racinggame-3d-capture-bench-local-baseline.md` générée par script, qui dit quel mode chaque chiffre mesure ; `scripts/TrackCaptureCompare/README.md` si le mode change une commande.
+- Validation : les chiffres de la section sont ceux des sorties (relus par script) ; interface, contre `s1g/base-ui` : `splash`, `main-menu`, `highscores`, `options`, `help`, `car-selection` et `track-selection` à 0,00 (le carrousel n'est pas touché par S1g) ; `race-hud`, `pause` et `race-finished` notés (le monde de course change dessous) ; audit comparé à `s1g/base-audit` et noté.
+- Commit : `docs(racing-casa): record the capture bench after the race world lighting`
+
+### ⏳ T11.5 — Vérification indépendante de S1g
+
+- Objectif : un `verifier` frais confirme ou réfute : `legacy` reproduit `base` ; `linear` est actif, répétable, avec le ciel décodé ; la lumière, l'ambiant et les ombres sont ceux de l'autre PC ; les tangentes de la route et du tunnel sont justes et activent les normal maps ; l'émissive des matériaux de piste générés a disparu et rien d'autre n'a changé dans le contenu ; la mesure de scène et le critère 3 des sondes ne régressent pas par rapport à `s1g/base` ; les chiffres du doc sont ceux des sorties.
+- Étapes et verdicts : comme T5.4.
+- Commit : `docs(ai-agent): record the verification of the race world lighting`
 
 ---
 
