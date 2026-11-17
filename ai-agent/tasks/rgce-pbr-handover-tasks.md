@@ -789,11 +789,19 @@ Budget de S1f : T10.2, au plus trois tours de recuisson ; deux passes de correct
 > - Écarts au plan : le membre `DiffuseColor` des recettes est retiré avec les membres `lit-diffuse` (il double `BaseColor`) ; le vérificateur du cuiseur range en écart un fichier cuit auquel manque une valeur de sa définition, au lieu de s'arrêter sur une exception ; `RaceSkySystem.ShouldUseSceneReflectionCube` (propre aux recettes) est retiré. Plateau du carrousel : `CarSelectionCarousel.cs` n'a pas changé (il charge le modèle cuit) ; ses lumières et son éclairage sont de S1g.
 > - ADR-0028 (`docs/decisions/`) enregistre la décision et marque amendés ADR-0018 et ADR-0026 (lignes d'état et index).
 
-### ⏳ T10.3 — Vérification indépendante de S1f
+### ⚠️ T10.3 — Vérification indépendante de S1f
 
 - Objectif : un `verifier` frais confirme ou réfute : chaque matériau cuit porte les valeurs de sa famille selon les règles de T10.1 ; la peinture de la voiture et le plateau du carrousel sont justes ; les tables de réglage ont disparu ; pas de régression ; les chiffres du doc sont ceux des sorties.
 - Étapes et verdicts : comme T5.4.
 - Commit : `docs(ai-agent): record the verification of the PBR materials`
+
+> Bloquée le 2026-11-17.
+> - `verifier` frais : **REFUTED**. Affirmations 1, 2, 3 et 5 confirmées par ses propres lancements : les 98 matériaux suivent les règles de l'autre PC (script indépendant du cuiseur, 0 erreur ; les 29 `Default` le sont aussi là-bas), cuiseur et contenu cohérents, placement, mipmaps et peinture inchangés, chiffres du doc justes.
+> - F1 (P2, introduit par S1f) : traînées blanches saturées sur les crêtes raides du terrain (`Beginner-start` 3145 pixels blancs contre 50 avant, `Expert-start` 2080 contre 246, aussi dans `Beginner-sector-80`). Isolées par essais sur une copie du build : elles disparaissent sans la normal map du terrain, restent avec une couleur de base noire (c'est du spéculaire), ne dépendent pas de la texture de détail. Ce n'est pas l'effet de la lumière d'avant S1g.
+> - Cause, lue dans le moteur : `PbrDistributionGgx` (`Pbr.fxh`) prend `1 - NoH^2` du produit vectoriel de N et H depuis `6ead47308` ; ce n'est juste que si N fait face à H. Côté dos, le dénominateur tend vers 0 et la distribution explose.
+> - Correction tentée dans le moteur, plan `CasaEngine/ai-agent/tasks/pbr-ggx-back-facing-tasks.md`, branche `chantier/pbr-ggx-back-facing` : bloquée au budget, 6 tests GPU de `lit-pbr` passent au noir avec les deux formes essayées, alors que le calcul reste juste dans le cas mesuré ; hypothèse d'une limite d'instructions de la chaîne OpenGL, non vérifiée. Aucun code du moteur n'est committé ; le pointeur du jeu reste sur `2b64b0591`.
+> - Remarques P4 du vérificateur, notées : `Material.Track.Ground` n'est utilisé par aucune scène ; l'ADR-0028 et un commentaire citent un dessous de route qui n'existe pas encore ici ; `Material.Track.Road` n'a pas de normal map, comme avant.
+> - Effet sur le programme : S1f reste ouverte tant que F1 n'est pas corrigé ; S1g, S1h et les tranches suivantes en dépendent et attendent. Question à l'auteur, notée en O12.
 
 ---
 
@@ -825,3 +833,4 @@ Budget de S1f : T10.2, au plus trois tours de recuisson ; deux passes de correct
 - O9 (S1a) : un support de rail en pente penche par rapport à celui de l'original, jusqu'à 1,08°, 6,81° et 11,91° sur les trois pistes, parce qu'une entité ne peut pas porter le cisaillement de la matrice de l'original. Lanternes, banderoles, panneaux et objets de départ portent le même cisaillement. Approximation acceptée en mode AUTO (position et échelle exactes). Question : faut-il la version exacte, par une hiérarchie de pivots par objet côté jeu, ou par une transformation matricielle côté moteur ?
 - O10 (S1a) : `scripts/TrackPlacementExporter` réimplémente l'ancien placement et ses tailles de modèle ; il ne décrit plus ce que le jeu place. À supprimer ou à réaligner : choix de l'auteur.
 - O11 (S1a) : le maillage de la route garde le vecteur droite normalisé, alors que l'original, et maintenant le rail et ses supports, utilisent le vecteur brut. Là où ce vecteur est plus court que 1, le rail se tient à l'intérieur du bord du maillage de route : 0,008 m au plus sur Beginner, 0,298 m sur Advanced (6 points de rail sur 1087 au-dessus de 5 cm), 0,627 m sur Expert (12 sur 2234). Aligner aussi le maillage de la route toucherait la géométrie roulable : choix de l'auteur.
+- O12 (S1f, bloquant) : traînées blanches du terrain en `lit-pbr`, causées par le dénominateur de GGX du moteur quand la normale tourne le dos au demi-vecteur (régression de `6ead47308`). La correction directe fait passer 6 tests GPU de `lit-pbr` au noir sur ce PC (détail dans le plan moteur `pbr-ggx-back-facing-tasks.md`). Question : reprendre la correction avec la piste notée dans ce plan (une passe de plus, d'abord vérifier l'hypothèse de la limite d'instructions), ou accepter le défaut pour l'instant et poursuivre S1g et la suite ?
