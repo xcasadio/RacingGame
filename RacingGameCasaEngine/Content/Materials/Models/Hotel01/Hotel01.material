@@ -1,7 +1,7 @@
 {
   "id": "e7bf20e0-f2f8-52b8-8fd6-321326e1357c",
   "name": "Material.Hotel01.Hotel01",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "db9ed5d2-b56b-5b1e-ac54-86ca676aa01c",
     "normal_texture": "7166e1ab-0631-5fc3-84e0-3f707ebdcf12",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 142,
       "g": 142,
       "b": 142,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.360784,
-      "y": 0.360784,
-      "z": 0.360784
-    },
+    "metallic": 0.0,
+    "roughness": 0.9,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 0.025882319,
-      "y": 0.025882319,
-      "z": 0.025882319
-    },
-    "specular_power": 12.0,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }

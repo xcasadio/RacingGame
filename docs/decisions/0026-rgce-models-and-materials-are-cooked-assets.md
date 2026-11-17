@@ -1,6 +1,6 @@
 # ADR-0026: RacingGameCasaEngine's models, materials and textures are cooked assets
 
-- **Status**: Accepted
+- **Status**: Accepted; amended by ADR-0028
 - **Date**: 2026-10-08
 - **Source**: this chantier: `ai-agent/tasks/rgce-editor-project-tasks.md`, decisions D2 and D3 (author answers, 2026-10-08), proposal P8 (validated with the plan), slice S5 and tasks T5.1 to T5.6; CasaEngine commit `359a0a98b`
 

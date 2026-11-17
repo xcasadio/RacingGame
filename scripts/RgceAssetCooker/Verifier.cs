@@ -15,8 +15,9 @@ namespace RgceAssetCooker;
 /// file the way the engine does (StaticModel.Load, MaterialAsset.Load, Texture.Load from the JSON on disk) and compares:
 /// - models: vertices, indices and nodes against the glTF read (the legacy root added where it applies), mesh and
 ///   material ids against the cooked materials;
-/// - materials: every value against the recipe, under the effective-state rule (a state the game leaves null is the
-///   state the renderer applies), plus the render state the engine resolves for the asset (MaterialRenderStateResolver);
+/// - materials: every <c>lit-pbr</c> value against the recipe (family, base colour, detail texture, emissive), under the
+///   effective-state rule (a state the game leaves null is the state the renderer applies), plus the render state the
+///   engine resolves for the asset (MaterialRenderStateResolver);
 /// - textures: ids, image reference and sampler;
 /// - the catalogue: no duplicate id or name, every entry's file exists, every cooked asset catalogued.
 /// </summary>
@@ -61,7 +62,15 @@ internal sealed class Verifier
 
         foreach (CookedMaterial material in expected.AllMaterials)
         {
-            VerifyMaterial(material);
+            try
+            {
+                VerifyMaterial(material);
+            }
+            catch (InvalidDataException ex)
+            {
+                // A cooked file that lacks a value of its definition (cooked with another definition, for instance).
+                Mismatch(ex.Message);
+            }
         }
 
         foreach (CookedTexture texture in expected.Textures)
@@ -240,9 +249,9 @@ internal sealed class Verifier
 
     // ---- car paint rule -------------------------------------------------------------------------------------------
 
-    // The game paints from the cooked slot name and the cooked reflection (LegacyCarVisualFactory.IsPaintSlot). For every
-    // mesh of the cooked car, it must give the role RaceMaterialRecipes.ForCar gave the glTF material: car-textured or not,
-    // painted or not.
+    // The game paints a car-textured slot when its cooked material has a clear coat (LegacyCarVisualFactory.IsPaintSlot, on
+    // the clear_coat value read from the cooked file). For every mesh of the cooked car, it must give the role
+    // RaceMaterialRecipes.ForCar gave the glTF material: car-textured or not, painted or not.
     private void VerifyCarPaintRule(CookPlan expected)
     {
         CookedModel? car = expected.Models.FirstOrDefault(model => model.Name == $"StaticModel.{CookPlanner.CarModelName}");
@@ -264,8 +273,7 @@ internal sealed class Verifier
             CookedMaterial material = car.Materials[mesh.MaterialIndex];
             RaceBaseTextureRole oldRole = material.Recipe.BaseTextureRole;
             bool carTextured = material.BaseTextureId == carTextureId;
-            bool reflects = material.UseSceneReflectionCube || material.ReflectionTextureId != Guid.Empty;
-            bool painted = carTextured && LegacyCarVisualFactory.IsPaintSlot(mesh.SlotName, reflects);
+            bool painted = carTextured && LegacyCarVisualFactory.IsPaintSlot(new LitPbrMaterial { ClearCoat = ReadClearCoat(material) });
             RaceBaseTextureRole newRole = !carTextured
                 ? RaceBaseTextureRole.File
                 : painted ? RaceBaseTextureRole.CarPainted : RaceBaseTextureRole.CarUnpainted;
@@ -281,6 +289,20 @@ internal sealed class Verifier
         }
 
         _notes.Add($"car paint rule: {checkedMaterials.Count} of {car.Materials.Count} glTF materials compared, over {car.Model.Meshes.Count} meshes");
+    }
+
+    // The clear_coat value of the cooked file of a material, 0 when the file or the value is missing (VerifyMaterial reports it).
+    private float ReadClearCoat(CookedMaterial cooked)
+    {
+        string path = Path.Combine(_contentDirectory, cooked.FileName);
+        if (!File.Exists(path))
+        {
+            return 0f;
+        }
+
+        var actual = new MaterialAsset();
+        actual.Load(JObject.Parse(File.ReadAllText(path)));
+        return actual.TryGetPropertyValue("clear_coat", out MaterialValue? value) && value.TryGetFloat(out float clearCoat) ? clearCoat : 0f;
     }
 
     // ---- materials -------------------------------------------------------------------------------------------
@@ -310,7 +332,7 @@ internal sealed class Verifier
 
         Check("id", actual.Id, cooked.Id);
         Check("name", actual.Name, cooked.Name);
-        Check("definition", actual.DefinitionId, "lit-diffuse");
+        Check("definition", actual.DefinitionId, "lit-pbr");
         Check("parent", actual.ParentMaterialAssetId, Guid.Empty);
         Check("shader", actual.ShaderAssetId, Guid.Empty);
         Check("is_transparent", actual.IsTransparent, false);
@@ -325,17 +347,15 @@ internal sealed class Verifier
 
         Check("base_color_texture", TextureId("base_color_texture"), cooked.BaseTextureId);
         Check("normal_texture", TextureId("normal_texture"), cooked.NormalTextureId);
-        Check("reflection_texture", TextureId("reflection_texture"), cooked.ReflectionTextureId);
-        Check("diffuse_color", Value("diffuse_color", (MaterialValue v) => v.TryGetColor(out Color c) ? c : default), recipe.DiffuseColor);
-        Check("ambient_color", Vector("ambient_color"), recipe.AmbientColor);
+        Check("detail_texture", TextureId("detail_texture"), cooked.DetailTextureId);
+        Check("detail_tiling", Float("detail_tiling"), recipe.DetailTiling);
+        Check("base_color", Value("base_color", (MaterialValue v) => v.TryGetColor(out Color c) ? c : default), recipe.BaseColor);
+        Check("metallic", Float("metallic"), recipe.Metallic);
+        Check("roughness", Float("roughness"), recipe.Roughness);
         Check("emissive_color", Vector("emissive_color"), recipe.EmissiveColor);
-        Check("specular_color", Vector("specular_color"), recipe.SpecularColor);
-        Check("specular_power", Float("specular_power"), recipe.SpecularPower);
+        Check("clear_coat", Float("clear_coat"), recipe.ClearCoat);
+        Check("clear_coat_roughness", Float("clear_coat_roughness"), recipe.ClearCoatRoughness);
         Check("alpha_cutoff", Float("alpha_cutoff"), recipe.AlphaCutoff);
-        Check("use_scene_reflection_cube", Value("use_scene_reflection_cube", (MaterialValue v) => v.TryGetBoolean(out bool b) && b), cooked.UseSceneReflectionCube);
-        Check("reflection_add_amount", Float("reflection_add_amount"), recipe.ReflectionAddAmount);
-        Check("reflection_multiply_base", Float("reflection_multiply_base"), recipe.ReflectionMultiplyBase);
-        Check("reflection_multiply_factor", Float("reflection_multiply_factor"), recipe.ReflectionMultiplyFactor);
 
         // What the engine resolves for the asset (the compiler's ApplyCommonSettings): not transparent, the recipe's queue.
         var values = actual.PropertyValues.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);

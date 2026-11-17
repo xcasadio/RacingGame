@@ -1,7 +1,7 @@
 {
   "id": "86f602b5-ecc1-5ab9-bd54-b90a0435f692",
   "name": "Material.Ruin.PDX07 - Default",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "41777c0d-005f-5a83-82a9-aa9e2fcb1e93",
     "normal_texture": "6b4b6fe8-b7ad-525d-aa5f-d04bf4a02cf2",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 234,
       "g": 234,
       "b": 234,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.203922,
-      "y": 0.203922,
-      "z": 0.203922
-    },
+    "metallic": 0.0,
+    "roughness": 0.9,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 0.06682356,
-      "y": 0.06682356,
-      "z": 0.06682356
-    },
-    "specular_power": 8.0,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }

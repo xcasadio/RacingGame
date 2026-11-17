@@ -1,7 +1,7 @@
 {
   "id": "4d4e9e50-a34b-5c1f-bae3-ab50cf5563b3",
   "name": "Material.Hotel01.plants",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "AlphaTest",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "8822c24b-834d-55b9-bfbc-81c31b0e29f5",
     "normal_texture": "0b445133-d346-5ba9-b4a5-5605c05403a0",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 110,
       "g": 110,
       "b": 110,
       "a": 255
     },
-    "alpha_cutoff": 0.35,
-    "ambient_color": {
-      "x": 0.545098,
-      "y": 0.545098,
-      "z": 0.545098
-    },
+    "metallic": 0.0,
+    "roughness": 0.95,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 0.079372555,
-      "y": 0.079372555,
-      "z": 0.079372555
-    },
-    "specular_power": 8.0,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.35
   }
 }

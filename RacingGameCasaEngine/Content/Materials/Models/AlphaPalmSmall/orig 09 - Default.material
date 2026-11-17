@@ -1,7 +1,7 @@
 {
   "id": "357dede4-36a4-5705-99ba-dc9f76542691",
   "name": "Material.AlphaPalmSmall.orig 09 - Default",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "AlphaTest",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "36a32797-5ea9-5696-a027-1d5593b2994d",
     "normal_texture": "e038e3f3-1eea-580f-9d5a-29eaf5ae5ad5",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 255,
       "g": 255,
       "b": 255,
       "a": 255
     },
-    "alpha_cutoff": 0.35,
-    "ambient_color": {
-      "x": 0.235294,
-      "y": 0.235294,
-      "z": 0.235294
-    },
+    "metallic": 0.0,
+    "roughness": 0.8,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 1.0,
-      "y": 1.0,
-      "z": 1.0
-    },
-    "specular_power": 16.0,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.35
   }
 }

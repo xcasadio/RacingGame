@@ -1,7 +1,7 @@
 {
   "id": "1df060f1-f5c9-5f52-97fa-743f639b70f5",
   "name": "Material.Casino01.39",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "00000000-0000-0000-0000-000000000000",
     "normal_texture": "00000000-0000-0000-0000-000000000000",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 64,
       "g": 64,
       "b": 64,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.15,
-      "y": 0.15,
-      "z": 0.15
-    },
+    "metallic": 1.0,
+    "roughness": 0.05,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 1.0,
-      "y": 1.0,
-      "z": 1.0
-    },
-    "specular_power": 14.0,
-    "use_scene_reflection_cube": true,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }

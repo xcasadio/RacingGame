@@ -1,7 +1,7 @@
 {
   "id": "fc904080-b053-51e1-82e2-33858bfe1140",
   "name": "Material.Track.Terrain",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "ee748e62-6069-552c-a7cb-2656da413b49",
     "normal_texture": "186967ba-4271-55f9-8d80-0c89d28ff7c4",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "afabb175-1413-5bd8-b522-afcecd9c9a9e",
+    "detail_tiling": 24.0,
+    "base_color": {
       "r": 255,
       "g": 255,
       "b": 255,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.0,
-      "y": 0.0,
-      "z": 0.0
-    },
+    "metallic": 0.0,
+    "roughness": 1.0,
     "emissive_color": {
       "x": 0.01,
       "y": 0.01,
       "z": 0.008
     },
-    "specular_color": {
-      "x": 0.05,
-      "y": 0.05,
-      "z": 0.05
-    },
-    "specular_power": 6.0,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }

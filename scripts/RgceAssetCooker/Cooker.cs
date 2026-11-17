@@ -116,7 +116,7 @@ internal sealed class Cooker
     private static MaterialAsset CreateMaterialAsset(CookedMaterial material)
     {
         var recipe = material.Recipe;
-        var asset = new MaterialAsset("lit-diffuse");
+        var asset = new MaterialAsset("lit-pbr");
         CookPlanner.SetIdentity(asset, material.Name);
         asset.Queue = recipe.Queue;
         asset.BlendStateName = material.BlendState;
@@ -126,17 +126,15 @@ internal sealed class Cooker
 
         asset.SetPropertyValue("base_color_texture", MaterialValue.FromTextureId(material.BaseTextureId));
         asset.SetPropertyValue("normal_texture", MaterialValue.FromTextureId(material.NormalTextureId));
-        asset.SetPropertyValue("reflection_texture", MaterialValue.FromTextureId(material.ReflectionTextureId));
-        asset.SetPropertyValue("diffuse_color", MaterialValue.FromColor(recipe.DiffuseColor));
-        asset.SetPropertyValue("alpha_cutoff", MaterialValue.FromFloat(recipe.AlphaCutoff));
-        asset.SetPropertyValue("ambient_color", MaterialValue.FromVector3(recipe.AmbientColor));
+        asset.SetPropertyValue("detail_texture", MaterialValue.FromTextureId(material.DetailTextureId));
+        asset.SetPropertyValue("detail_tiling", MaterialValue.FromFloat(recipe.DetailTiling));
+        asset.SetPropertyValue("base_color", MaterialValue.FromColor(recipe.BaseColor));
+        asset.SetPropertyValue("metallic", MaterialValue.FromFloat(recipe.Metallic));
+        asset.SetPropertyValue("roughness", MaterialValue.FromFloat(recipe.Roughness));
         asset.SetPropertyValue("emissive_color", MaterialValue.FromVector3(recipe.EmissiveColor));
-        asset.SetPropertyValue("specular_color", MaterialValue.FromVector3(recipe.SpecularColor));
-        asset.SetPropertyValue("specular_power", MaterialValue.FromFloat(recipe.SpecularPower));
-        asset.SetPropertyValue("use_scene_reflection_cube", MaterialValue.FromBoolean(material.UseSceneReflectionCube));
-        asset.SetPropertyValue("reflection_add_amount", MaterialValue.FromFloat(recipe.ReflectionAddAmount));
-        asset.SetPropertyValue("reflection_multiply_base", MaterialValue.FromFloat(recipe.ReflectionMultiplyBase));
-        asset.SetPropertyValue("reflection_multiply_factor", MaterialValue.FromFloat(recipe.ReflectionMultiplyFactor));
+        asset.SetPropertyValue("clear_coat", MaterialValue.FromFloat(recipe.ClearCoat));
+        asset.SetPropertyValue("clear_coat_roughness", MaterialValue.FromFloat(recipe.ClearCoatRoughness));
+        asset.SetPropertyValue("alpha_cutoff", MaterialValue.FromFloat(recipe.AlphaCutoff));
         return asset;
     }
 

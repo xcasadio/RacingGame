@@ -20,13 +20,6 @@ internal static class RaceSkySystem
         ReflectionCubeSize = 64,
     };
 
-    internal static bool ShouldUseSceneReflectionCube(string? reflectionTexturePath)
-    {
-        return string.IsNullOrWhiteSpace(reflectionTexturePath)
-            || Path.GetFileName(reflectionTexturePath)
-                .Equals(LegacySharedSkyCubeFileName, StringComparison.OrdinalIgnoreCase);
-    }
-
     internal static string ResolveLegacySharedSkyCubePath(string contentRootDirectory)
     {
         string rootDirectory = string.IsNullOrWhiteSpace(contentRootDirectory)

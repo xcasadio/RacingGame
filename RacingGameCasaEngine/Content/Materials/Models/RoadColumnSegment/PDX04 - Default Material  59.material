@@ -1,7 +1,7 @@
 {
   "id": "f66669e5-9d76-5276-b596-3b9f1a02426e",
   "name": "Material.RoadColumnSegment.PDX04 - Default Material  59",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "00000000-0000-0000-0000-000000000000",
     "normal_texture": "00000000-0000-0000-0000-000000000000",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 210,
       "g": 210,
       "b": 210,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.15686275,
-      "y": 0.15686275,
-      "z": 0.15686275
-    },
+    "metallic": 0.0,
+    "roughness": 0.8,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 0.0,
-      "y": 0.0,
-      "z": 0.0
-    },
-    "specular_power": 3.2,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }

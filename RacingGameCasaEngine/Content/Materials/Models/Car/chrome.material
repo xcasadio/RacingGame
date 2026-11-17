@@ -1,7 +1,7 @@
 {
   "id": "c3cf7d70-a181-5d01-ad2e-fd02118a0a77",
   "name": "Material.Car.chrome",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "41fa73a2-729a-54f1-ae75-b61b4d4a26da",
     "normal_texture": "7b5dbfb3-2dde-5f50-8e2f-22e0eb2a4170",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
-      "r": 255,
-      "g": 255,
-      "b": 255,
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
+      "r": 210,
+      "g": 210,
+      "b": 210,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.713726,
-      "y": 0.713726,
-      "z": 0.713726
-    },
+    "metallic": 1.0,
+    "roughness": 0.1,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 1.0,
-      "y": 1.0,
-      "z": 1.0
-    },
-    "specular_power": 16.0,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }

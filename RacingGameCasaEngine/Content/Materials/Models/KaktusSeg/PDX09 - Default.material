@@ -1,7 +1,7 @@
 {
   "id": "760d6ebc-aad0-5a57-98ba-d1c5aaef32bd",
   "name": "Material.KaktusSeg.PDX09 - Default",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "fcbd498e-66ee-5887-81bc-98b1bd70e93a",
     "normal_texture": "52b96ab5-a11c-5f0a-8cf9-6a8d17e560ff",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 194,
       "g": 194,
       "b": 194,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.372549,
-      "y": 0.372549,
-      "z": 0.372549
-    },
+    "metallic": 0.0,
+    "roughness": 0.8,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 0.486275,
-      "y": 0.486275,
-      "z": 0.486275
-    },
-    "specular_power": 16.0,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }

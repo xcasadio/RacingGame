@@ -29,12 +29,18 @@ The default `--content` is `RacingGameCasaEngine/Content` of the repository that
   Every model except `Car` and `CarSelectionPlate` gets the root node rotated by pi/2 about X that the game used to add when it loaded
   the glTF (`LegacyTrackSceneFactory.ApplyLegacyModelRootCorrection`, removed in T5.5 once the game loaded the cooked models), named
   `<Name>.LegacyRootCorrection`. Each mesh points to its material by `material_asset_id`.
-- **Materials**: definition `lit-diffuse`, with the values of `RaceMaterialRecipes` (`ForScenery`, `ForCar` with car index 0, `ForPlate`,
-  and `ForRoad`, `ForGround`, `ForTerrain`, `ForGuardRail`, `ForRoadColumn`, `ForRoadTunnel` with the first texture candidate that exists). A render state the
+- **Materials**: definition `lit-pbr` (ADR-0028), with the values of `RaceMaterialRecipes` (`ForScenery`, `ForCar` with car index 0, `ForPlate`,
+  and `ForRoad`, `ForGround`, `ForTerrain`, `ForGuardRail`, `ForRoadColumn`, `ForRoadTunnel` with the first texture candidate that exists):
+  `base_color_texture`, `normal_texture`, `detail_texture` and `detail_tiling` (the terrain's `LandscapeDetail`, tiled 24 times), `base_color`
+  (the diffuse colour, alpha 255; 210 on every car part but the glass), `metallic`, `roughness`, `clear_coat` and `clear_coat_roughness` from the PBR
+  family of the surface (`RacingGamePbrMaterialMapping`: terrain, road, guard rail, lamp post, masonry, signage, vegetation, matte industrial, building
+  glass, car paint, chrome, glass and tyre, carousel plate, default), `emissive_color` and `alpha_cutoff`. The ambient, specular and reflection settings of the
+  former `lit-diffuse` materials are not cooked. A render state the
   game leaves `null` is written as the state the renderer applies: blend `Opaque`, depth `Default`, rasterizer `CullCounterClockwise`,
   sampler `AnisotropicClamp`. The slots of the car that sample the car texture (painted or not) use `Texture.RacerCar`; the game replaces it
-  at run time (T5.6). `<Slot>` is the display name of the glTF material, with a numeric suffix if two materials of a model share it.
-- **Textures**: the sampler is the one of the recipes (`AnisotropicWrap`). `generate_mipmaps` is true on every `.texture`: the engine then draws the texture with a full mipmap chain, built at load time from the image (ADR-0124 of CasaEngine); the png of the image entry is not changed.
+  at run time (T5.6), and paints the slots whose cooked material has a clear coat (the car paint family is the only one with one).
+  `<Slot>` is the display name of the glTF material, with a numeric suffix if two materials of a model share it.
+- **Textures**: one per image a cooked material names as base, normal or detail texture (`Texture.LandscapeDetail` for the terrain's detail). The sampler is the one of the recipes (`AnisotropicWrap`). `generate_mipmaps` is true on every `.texture`: the engine then draws the texture with a full mipmap chain, built at load time from the image (ADR-0124 of CasaEngine); the png of the image entry is not changed.
 
 No fallback material is cooked: no glTF has a mesh without a material (the fallback recipes were removed in T5.6).
 
@@ -56,4 +62,4 @@ same set of entries.
 - `--verify`: re-reads every cooked file with the engine loaders (`StaticModel.Load`, `MaterialAsset.Load`, `Texture.Load`) and compares it with
   a fresh read of the glTF files and the recipes: vertices, tangents (the number of entries and every value), indices, nodes, material ids, every material value under the effective-state rule,
   the render state the engine resolves for the asset, textures (image, sampler and `generate_mipmaps`), the catalogue (no duplicate id or name, every entry's file exists), and the car
-  paint rule the game applies at run time against the paint role of each `Car.gltf` material in the recipes. Exit code 1 on any mismatch. It does not compile the materials (that needs a graphics device); the editor catalogue walk opens them.
+  paint rule the game applies at run time (a car-textured slot is painted when its cooked material has a clear coat) against the paint role of each `Car.gltf` material in the recipes. Exit code 1 on any mismatch. It does not compile the materials (that needs a graphics device); the editor catalogue walk opens them.

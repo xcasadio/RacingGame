@@ -1,7 +1,7 @@
 {
   "id": "12889d4a-90ad-5b9a-90be-7533d06b81b3",
   "name": "Material.Hotel02.casino",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "258db0c7-f76b-5c71-aa44-ed705eb55957",
     "normal_texture": "64d193ca-0111-5335-a38c-0dc4ceb35252",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 221,
       "g": 221,
       "b": 221,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.1,
-      "y": 0.1,
-      "z": 0.1
-    },
+    "metallic": 0.0,
+    "roughness": 0.6,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 0.050823543,
-      "y": 0.050823543,
-      "z": 0.050823543
-    },
-    "specular_power": 2.0,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }

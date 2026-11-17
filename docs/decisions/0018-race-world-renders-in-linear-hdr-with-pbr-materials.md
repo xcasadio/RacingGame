@@ -1,6 +1,6 @@
 # ADR-0018: The race world renders in linear HDR with PBR materials
 
-- **Status**: Accepted
+- **Status**: Accepted; amended by ADR-0028
 - **Date**: 2026-11-16
 - **Source**: this chantier: `ai-agent/tasks/rgce-pbr-race-world-tasks.md` (D1 to D8, P1 to P9, approved by the author on 2026-11-16), following `docs/racinggame-pbr-preparation.md` and CasaEngine ADR-0117 (detail texture of `lit-pbr`)
 

@@ -19,8 +19,7 @@ internal sealed class CookedMaterial
     public required RaceMaterialRecipe Recipe { get; init; }
     public required Guid BaseTextureId { get; init; }
     public required Guid NormalTextureId { get; init; }
-    public required Guid ReflectionTextureId { get; init; }
-    public required bool UseSceneReflectionCube { get; init; }
+    public required Guid DetailTextureId { get; init; }
 
     // The states the renderer applies when the game leaves one null (RenderStateCache.cs:51-54, and the defaults of MaterialAsset).
     public string BlendState => Recipe.BlendState ?? MaterialAsset.DefaultBlendStateName;
@@ -54,7 +53,7 @@ internal sealed class CookPlan
 /// <summary>
 /// Builds, in memory, every asset the cooker writes: reads the glTF models as the game does (LegacyGltfModelReader
 /// with the RacingGame import profile), computes each material from the recipes of RaceMaterialRecipes, and wraps the
-/// images they name. Nothing is written here.
+/// images they name (base, normal and detail textures). Nothing is written here.
 /// </summary>
 internal static class CookPlanner
 {
@@ -194,10 +193,6 @@ internal static class CookPlanner
             ? recipe.BaseTextureFilePath
             : Path.Combine(texturesDirectory, CarTextureStem + ".png");
 
-        Guid reflectionId = recipe.ReflectionCubeFilePath != null
-            ? textures.TryResolveCube(recipe.ReflectionCubeFilePath)
-            : Guid.Empty;
-
         return new CookedMaterial
         {
             Name = name,
@@ -206,8 +201,7 @@ internal static class CookPlanner
             Recipe = recipe,
             BaseTextureId = textures.Resolve(baseTexturePath, samplerName),
             NormalTextureId = textures.Resolve(recipe.NormalTextureFilePath, samplerName),
-            ReflectionTextureId = reflectionId,
-            UseSceneReflectionCube = recipe.ResolveUseSceneReflectionCube(reflectionId != Guid.Empty),
+            DetailTextureId = textures.Resolve(recipe.DetailTextureFilePath, samplerName),
         };
     }
 
@@ -284,20 +278,6 @@ internal static class CookPlanner
                 stem, name, Uuid5.ForAsset(name), $"Textures/{stem}.texture", $"Textures/{actualFileName}", Uuid5.ForAsset($"Image.{stem}"), samplerName);
             _byStem[stem] = texture;
             return texture.Id;
-        }
-
-        /// <summary>The catalogue id of a reflection cube (Texture.&lt;stem&gt;, dds), or empty when the file is not in the project.</summary>
-        public Guid TryResolveCube(string cubePath)
-        {
-            string fileName = Path.GetFileName(cubePath);
-            if (!_actualFileNames.TryGetValue(fileName, out string? actual)
-                || !actual.EndsWith(".dds", StringComparison.OrdinalIgnoreCase)
-                || !Path.GetFullPath(Path.GetDirectoryName(cubePath)!).Equals(_texturesDirectory, StringComparison.OrdinalIgnoreCase))
-            {
-                return Guid.Empty;
-            }
-
-            return Uuid5.ForAsset($"Texture.{Path.GetFileNameWithoutExtension(actual)}");
         }
 
         private string ActualFileName(string imagePath)

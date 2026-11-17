@@ -14,12 +14,9 @@ internal sealed class RacingGameLegacyMaterialImportProfile : ILegacyMaterialImp
             hints |= LegacyMaterialImportHint.AlphaCutout;
         }
 
-        if (UsesLegacyBrightAmbient(context.SourceAssetName))
-        {
-            hints |= LegacyMaterialImportHint.BrightAmbient;
-        }
-
-        if (RacingGameLegacyMaterialTuning.ShouldEnableReflection(context.SourceAssetName, context.ImportedMaterial))
+        // The glass of the buildings and of the car: their legacy effect reflects the scene.
+        string effectFileName = Path.GetFileName(context.ImportedMaterial.EffectFilePath ?? string.Empty);
+        if (effectFileName.Equals("ReflectionSimpleGlass.fx", StringComparison.OrdinalIgnoreCase))
         {
             hints |= LegacyMaterialImportHint.Reflection;
         }
@@ -51,9 +48,4 @@ internal sealed class RacingGameLegacyMaterialImportProfile : ILegacyMaterialImp
             || textureName.Contains("Ast", StringComparison.OrdinalIgnoreCase)
             || textureName.Contains("plants", StringComparison.OrdinalIgnoreCase);
     }
-
-    private static bool UsesLegacyBrightAmbient(string sourceAssetName)
-        => sourceAssetName.StartsWith("Sign", StringComparison.OrdinalIgnoreCase)
-            || sourceAssetName.StartsWith("Banner", StringComparison.OrdinalIgnoreCase)
-            || sourceAssetName.StartsWith("Windmill", StringComparison.OrdinalIgnoreCase);
 }

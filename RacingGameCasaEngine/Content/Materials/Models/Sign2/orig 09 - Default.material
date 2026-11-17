@@ -1,7 +1,7 @@
 {
   "id": "8fc782d1-9ef8-5ee1-b47f-6011cd27465a",
   "name": "Material.Sign2.orig 09 - Default",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "04116e05-6045-528f-a90d-f42d6d698966",
     "normal_texture": "575ba5db-0534-5416-86db-612712ca4bec",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 213,
       "g": 213,
       "b": 213,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.5019608,
-      "y": 0.5019608,
-      "z": 0.5019608
-    },
+    "metallic": 0.0,
+    "roughness": 0.6,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 0.14752944,
-      "y": 0.14752944,
-      "z": 0.14752944
-    },
-    "specular_power": 7.2,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }

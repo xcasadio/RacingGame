@@ -1,7 +1,7 @@
 {
   "id": "c89f5ae0-0731-536b-b1d5-d442853b589f",
   "name": "Material.Track.RoadTunnel",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "238a3cad-0522-5461-814e-7ffeb8e0ebe7",
     "normal_texture": "4b5d6d2a-e5c2-5683-a670-8392b2924c2d",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 80,
       "g": 80,
       "b": 80,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.7137255,
-      "y": 0.7137255,
-      "z": 0.7137255
-    },
+    "metallic": 0.0,
+    "roughness": 0.85,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 0.2509804,
-      "y": 0.2509804,
-      "z": 0.2509804
-    },
-    "specular_power": 24.0,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }

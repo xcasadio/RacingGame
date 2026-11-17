@@ -354,3 +354,138 @@ UI captures (`ui/`) against the previous reference `artifacts/pbr-handover/s1e/u
 
 Track audit (`audit/`, 30 captures) against `artifacts/pbr-handover/s1e/audit`: largest channel difference 1.589 (`audit-Expert-sector-80`), smallest 0.005 (`audit-Beginner-terrain-overview`).
 
+## After the PBR materials
+
+Fifth run, on 2026-11-17, after slice S1f of the plan: the 98 cooked materials of the race world are `lit-pbr` (metallic, roughness and clear coat by surface family, ported from the other machine's `RacingGamePbrMaterialMapping`), the terrain material has its detail texture, and the car paint copies a cooked `LitPbrMaterial`. The run before it is the previous section, `artifacts/pbr-handover/s1m/`. The colour pipeline (`legacy`), the light and the shadows are unchanged: this run is an intermediate state, measured and not tuned, to be set by the next slice. The previous runs above stay as their record.
+
+Outputs under `artifacts/pbr-handover/s1f/`; the original's export is the same one, `artifacts/pbr-handover/s1c/ref`. The tables of this section are generated from the output files and from the cooked `.material` files by a script.
+
+### Cooked materials
+
+Definitions of the 98 cooked `.material` files: `lit-pbr` 98. Files without a planned material: 0.
+
+Materials by family (family from the cook plan, values read back from the cooked files):
+
+| Family | Materials | Metallic | Roughness | Clear coat | Clear coat roughness |
+|---|---|---|---|---|---|
+| Default | 29 | 0 | 0.8 | 0 | 0.1 |
+| Signage | 18 | 0 | 0.6 | 0 | 0.1 |
+| Masonry | 13 | 0 | 0.9 | 0 | 0.1 |
+| LampPost | 11 | 1 | 0.5 | 0 | 0.1 |
+| MatteIndustrial | 6 | 0 | 0.7 | 0 | 0.1 |
+| Vegetation | 4 | 0 | 0.95 | 0 | 0.1 |
+| BuildingGlass | 3 | 1 | 0.05 | 0 | 0.1 |
+| Road | 3 | 0 | 0.85 | 0 | 0.1 |
+| CarChrome | 2 | 1 | 0.1 | 0 | 0.1 |
+| CarTyre | 2 | 0 | 0.9 | 0 | 0.1 |
+| GuardRail | 2 | 1 | 0.45 | 0 | 0.1 |
+| Terrain | 2 | 0 | 1 | 0 | 0.1 |
+| CarGlass | 1 | 1 | 0.05 | 0 | 0.1 |
+| CarPaint | 1 | 0 | 0.5 | 1 | 0.05 |
+| CarouselPlate | 1 | 1 | 0.3 | 0 | 0.1 |
+| Total | 98 | | | | |
+
+`Material.Car.Standard 19`: family CarGlass, metallic 1, roughness 0.05, base colour 13, 13, 13, 255. `Material.Track.Terrain`: detail texture tiled 24 times (`detail_texture` afabb175-1413-5bd8-b522-afcecd9c9a9e).
+
+### Car paint slots
+
+The line `[CaptureBench] car paint slots` of the first car, once the first race world is ready: the number of material slots (mesh and sub-meshes) that sample the painted texture and the unpainted one. Before: the replay of S1f's first task, on the cooked `lit-diffuse` content of the previous run (`before/run.log`).
+
+| Run | Painted | Unpainted |
+|---|---|---|
+| Before (`before/run.log`) | 1 | 10 |
+| `cand-a/run.log` | 1 | 10 |
+| `cand-b/run.log` | 1 | 10 |
+
+### Mipmap chains
+
+The lines `[CaptureBench] mipmaps` of `cand-a/run.log`, written once the first race world is ready (`Levels` is the level count read from the texture, `Expected` the full chain of its size, `Chain` compares level 1 read back with the box average of level 0 read back):
+
+| Texture | Levels | Expected | Chain |
+|---|---|---|---|
+| Texture.Road | 11 | 11 | - |
+| Texture.Landscape | 12 | 12 | - |
+| Texture.Building | 10 | 10 | - |
+| CarPaint.Painted | 12 | 12 | ok |
+| CarPaint.Unpainted | 12 | 12 | ok |
+
+`cand-b/run.log` has the same lines; the lines of the previous run (`artifacts/pbr-handover/s1m/cand-a/run.log`) are the same.
+
+### Scene against the original
+
+`cand-a/run.log`, scene measure of each track:
+
+| Track | Objects original / port | Matched | Missing | Extra | Shadow cast / receive mismatches |
+|---|---|---|---|---|---|
+| Beginner | 1147 / 1147 | 1147 | 0 | 0 | 0 / 0 |
+| Advanced | 1693 / 1693 | 1693 | 0 | 0 | 0 / 0 |
+| Expert | 3404 / 3404 | 3404 | 0 | 0 | 0 / 0 |
+
+The three `scene-measure-*.txt` files are identical to those of the previous run, byte for byte; the 15 `alignment` lines of the log are the same as the previous run's.
+
+The log has 15 `[CaptureBench] view` lines, 15 of them `pipeline legacy fxaaPasses 0`.
+
+### Pictures against the original
+
+`compare-nopost/report.md`, `compare-full/report.md`; the `nopost` edges of the previous run come from `artifacts/pbr-handover/s1m/compare-nopost/report.md`. The last column is the mean difference with the previous run's picture of the same view (`compare-vs-s1m/report.md`), the size of this slice's change on screen.
+
+| View | R, G, B `nopost` | Edges `nopost` | Edges `nopost` before | R, G, B `full` | Edges `full` | Change from the previous run, R, G, B |
+|---|---|---|---|---|---|---|
+| Beginner-start | 41.17, 36.23, 29.20 | 41.7 % | 60.7 % | 63.11, 49.63, 39.53 | 66.4 % | 39.02, 35.59, 28.88 |
+| Beginner-sector-20 | 51.13, 51.19, 51.08 | 15.5 % | 33.8 % | 68.64, 63.65, 63.15 | 30.5 % | 25.22, 23.93, 19.63 |
+| Beginner-sector-50 | 60.76, 57.25, 48.36 | 24.1 % | 48.1 % | 88.98, 77.01, 64.05 | 48.2 % | 52.60, 50.93, 42.97 |
+| Beginner-sector-80 | 65.87, 60.31, 46.40 | 34.3 % | 56.3 % | 91.98, 78.10, 58.61 | 57.3 % | 57.32, 53.50, 41.91 |
+| Beginner-overview | 32.76, 29.64, 25.05 | 32.6 % | 86.3 % | 57.37, 46.90, 39.25 | 58.6 % | 26.25, 23.10, 17.76 |
+| Advanced-start | 66.72, 59.19, 47.34 | 22.7 % | 40.6 % | 95.93, 79.28, 62.34 | 50.3 % | 51.62, 47.61, 38.51 |
+| Advanced-sector-20 | 63.13, 54.91, 45.29 | 22.2 % | 41.5 % | 90.28, 72.50, 59.53 | 46.4 % | 38.53, 34.08, 27.30 |
+| Advanced-sector-50 | 62.69, 56.02, 48.15 | 23.5 % | 52.7 % | 91.27, 74.57, 62.88 | 51.5 % | 54.20, 49.59, 41.92 |
+| Advanced-sector-80 | 54.45, 49.33, 41.25 | 36.5 % | 46.9 % | 80.83, 66.63, 54.73 | 65.5 % | 56.44, 52.09, 43.46 |
+| Advanced-overview | 35.62, 30.20, 23.01 | 22.6 % | 90.9 % | 62.17, 48.96, 37.68 | 55.7 % | 32.49, 26.92, 18.54 |
+| Expert-start | 41.48, 37.89, 31.46 | 39.6 % | 57.9 % | 62.51, 51.14, 42.59 | 63.8 % | 36.32, 34.11, 28.27 |
+| Expert-sector-20 | 55.55, 48.22, 36.85 | 27.0 % | 39.5 % | 83.34, 65.98, 48.92 | 48.9 % | 50.55, 45.96, 34.99 |
+| Expert-sector-50 | 57.37, 52.70, 44.16 | 37.4 % | 53.3 % | 83.39, 71.05, 58.76 | 65.7 % | 49.57, 46.03, 38.26 |
+| Expert-sector-80 | 44.03, 38.44, 30.75 | 26.6 % | 42.1 % | 66.28, 51.28, 39.77 | 61.2 % | 31.48, 27.98, 22.29 |
+| Expert-overview | 33.92, 30.82, 26.29 | 44.2 % | 96.4 % | 58.82, 48.93, 41.55 | 65.0 % | 28.13, 24.53, 18.61 |
+
+Change from the previous run, mean of the three channels: largest 50.91 (`Beginner-sector-80`), smallest 22.37 (`Beginner-overview`).
+
+Change of the `nopost` edges matched since the previous run, in points: highest -10.4 (`Advanced-sector-80`), lowest -68.3 (`Advanced-overview`); 15 of 15 views are lower, 0 higher.
+
+Mean luminance of the 15 pictures: original 96.3, port 56.0, port in the previous run 93.6 (`compare-nopost/report.md`, `artifacts/pbr-handover/s1m/compare-nopost/report.md`).
+
+### Light and shadow probes
+
+`compare-probes/probes.md`; the column before comes from `artifacts/pbr-handover/s1m/compare-probes/probes.md`.
+
+| Criterion | Passed | Failed | Judged | Passed before |
+|---|---|---|---|---|
+| 1. lit and away within +-12 | 10 | 24 | 34 | 11 |
+| 2. shadow/lit ratio within +-0.05 (per view and surface) | 0 | 4 | 4 | 0 |
+| 3. class agreement (shadow shadowed, lit lit) | 21 | 12 | 33 | 21 |
+| 4. away-shadowed within +-12 | 0 | 3 | 3 | 0 |
+
+Shadow over lit luminance ratio, original then port: terrain 0.284 then 1.038; city 0.276 then 1.037; road 0.228 then 0.804; terrain 0.267 then 1.015.
+
+### Repeatability
+
+Two runs (`cand-a`, `cand-b`, `compare-repeat/report.md`): 13 identical files of 15. Different by their hash: `Expert-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-start.png` (mean difference 0.00, 0.00, 0.00).
+
+### Other references of this machine
+
+UI captures (`ui/`) against the previous reference `artifacts/pbr-handover/s1m/ui` (`ui-compare/report.txt`):
+
+| State | R | G | B |
+|---|---|---|---|
+| splash | 0.00 | 0.00 | 0.00 |
+| main-menu | 0.00 | 0.00 | 0.00 |
+| highscores | 0.00 | 0.00 | 0.00 |
+| options | 0.00 | 0.00 | 0.00 |
+| help | 0.00 | 0.00 | 0.00 |
+| car-selection | 4.86 | 4.21 | 4.23 |
+| track-selection | 0.00 | 0.00 | 0.00 |
+| race-hud | 30.02 | 28.72 | 26.38 |
+| pause | 8.96 | 8.50 | 7.71 |
+| race-finished | 23.31 | 22.47 | 20.38 |
+
+Track audit (`audit/`, 30 captures) against `artifacts/pbr-handover/s1m/audit`: largest channel difference 56.691 (`audit-Advanced-sector-50`), smallest 14.910 (`audit-Expert-helper-tunnel`).
+

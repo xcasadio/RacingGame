@@ -1,7 +1,7 @@
 {
   "id": "78cdb936-f2f9-5f3c-8af2-46eee1937163",
   "name": "Material.SignCurveRight.orig 09 - Default",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "740a8ce7-6054-54c7-80d2-f851c260b3dd",
     "normal_texture": "8b07131c-f334-5c97-b1fd-b7056b34e2b4",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 213,
       "g": 213,
       "b": 213,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.5019608,
-      "y": 0.5019608,
-      "z": 0.5019608
-    },
+    "metallic": 0.0,
+    "roughness": 0.6,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 0.18,
-      "y": 0.18,
-      "z": 0.18
-    },
-    "specular_power": 12.0,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }

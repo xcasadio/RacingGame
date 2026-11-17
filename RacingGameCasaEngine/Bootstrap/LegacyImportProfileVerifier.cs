@@ -1,5 +1,6 @@
 using CasaEngine.Core.Log;
 using CasaEngine.Framework.Assets.Loaders;
+using CasaEngine.Framework.Materials.Runtime;
 using RacingGame.Gameplay.Import;
 
 namespace RacingGameCasaEngine.Bootstrap;
@@ -52,17 +53,13 @@ internal static class LegacyImportProfileVerifier
         var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
         StaticModelImportedMaterial buildingMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "Building");
-        RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Building", buildingMaterial);
 
-        if (buildingMaterial.UsesReflection || tuning.EnableReflection)
+        if (buildingMaterial.UsesReflection)
         {
-            failures.Add("Building.gltf facade should stay non-reflective after material retuning.");
+            failures.Add("Building.gltf facade should stay non-reflective.");
         }
 
-        if (tuning.ApplySpecularColor(buildingMaterial.SpecularColor).X > 0.15f)
-        {
-            failures.Add("Building.gltf facade should have a muted specular response after material retuning.");
-        }
+        ExpectFamily(failures, "Building.gltf facade", buildingMaterial, RacingGamePbrMaterialMapping.Masonry);
     }
 
     private static void VerifySign(string projectContentPath, List<string> failures)
@@ -73,22 +70,18 @@ internal static class LegacyImportProfileVerifier
 
         StaticModelImportedMaterial neutralMaterial = FindMaterialByDiffuseTexture(neutralResult.Materials, "Schild");
         StaticModelImportedMaterial profileMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "Schild");
-        RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Sign", profileMaterial);
 
         if (neutralMaterial.BrightAmbientHint)
         {
             failures.Add("Sign.gltf should stay neutral without the RacingGame profile.");
         }
 
-        if (!profileMaterial.BrightAmbientHint || profileMaterial.UsesReflection || profileMaterial.SurfaceIntent != LegacyMaterialSurfaceIntent.OpaqueLit)
+        if (profileMaterial.BrightAmbientHint || profileMaterial.UsesReflection || profileMaterial.SurfaceIntent != LegacyMaterialSurfaceIntent.OpaqueLit)
         {
-            failures.Add("Sign.gltf should become bright-ambient without reflecting the scene with the RacingGame profile.");
+            failures.Add("Sign.gltf should keep its own ambient and not reflect the scene with the RacingGame profile.");
         }
 
-        if (tuning.EnableReflection || tuning.ApplySpecularColor(profileMaterial.SpecularColor).X > 0.2f)
-        {
-            failures.Add("Sign.gltf should keep a toned-down matte response after material retuning.");
-        }
+        ExpectFamily(failures, "Sign.gltf", profileMaterial, RacingGamePbrMaterialMapping.Signage);
     }
 
     private static void VerifyStartLight(string projectContentPath, List<string> failures)
@@ -98,18 +91,14 @@ internal static class LegacyImportProfileVerifier
 
         StaticModelImportedMaterial signalPole = FindMaterialByDiffuseTexture(profileResult.Materials, "TLight");
         StaticModelImportedMaterial signalLens = FindMaterialByDiffuseTexture(profileResult.Materials, "Light");
-        RacingGameLegacyMaterialRuntimeTuning poleTuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("StartLight", signalPole);
-        RacingGameLegacyMaterialRuntimeTuning lensTuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("StartLight", signalLens);
 
-        if (signalPole.UsesReflection || signalLens.UsesReflection || poleTuning.EnableReflection || lensTuning.EnableReflection)
+        if (signalPole.UsesReflection || signalLens.UsesReflection)
         {
-            failures.Add("StartLight.gltf should not reflect the scene after material retuning.");
+            failures.Add("StartLight.gltf should not reflect the scene.");
         }
 
-        if (lensTuning.ApplySpecularColor(signalLens.SpecularColor).X > 0.2f)
-        {
-            failures.Add("StartLight.gltf light lenses should have a reduced specular response after material retuning.");
-        }
+        ExpectFamily(failures, "StartLight.gltf pole", signalPole, RacingGamePbrMaterialMapping.LampPost);
+        ExpectFamily(failures, "StartLight.gltf light lenses", signalLens, RacingGamePbrMaterialMapping.LampPost);
     }
 
     private static void VerifyAlphaPalm(string projectContentPath, List<string> failures)
@@ -132,6 +121,15 @@ internal static class LegacyImportProfileVerifier
         {
             failures.Add("AlphaPalm.gltf should enable alpha-cutout without reintroducing scene reflection with the RacingGame profile.");
         }
+
+        ExpectFamily(failures, "AlphaPalm.gltf leaves", profileMaterial, RacingGamePbrMaterialMapping.Vegetation);
+
+        // The cut-out is what shapes the shadow of the palms (leaf-shaped shadows): the cooked material keeps it.
+        LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(profileMaterial);
+        if (presentation.Queue != RenderQueue.AlphaTest)
+        {
+            failures.Add("AlphaPalm.gltf leaves should be drawn in the alpha-test queue so that the shadow follows the leaves.");
+        }
     }
 
     private static void VerifyBanner(string projectContentPath, List<string> failures)
@@ -141,15 +139,17 @@ internal static class LegacyImportProfileVerifier
 
         StaticModelImportedMaterial bannerMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "banner");
 
-        if (!profileResult.Materials.Any(static material => material.BrightAmbientHint))
+        if (profileResult.Materials.Any(static material => material.BrightAmbientHint))
         {
-            failures.Add("Banner.gltf should produce at least one bright-ambient material with the RacingGame profile.");
+            failures.Add("Banner.gltf should keep the ambient of its own materials with the RacingGame profile (the original never applies its 128 override).");
         }
 
         if (bannerMaterial.UsesReflection)
         {
-            failures.Add("Banner.gltf should stay non-reflective after material retuning.");
+            failures.Add("Banner.gltf should stay non-reflective.");
         }
+
+        ExpectFamily(failures, "Banner.gltf", bannerMaterial, RacingGamePbrMaterialMapping.Signage);
     }
 
     private static void VerifyHotelGlass(string projectContentPath, List<string> failures)
@@ -158,11 +158,22 @@ internal static class LegacyImportProfileVerifier
         var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
         StaticModelImportedMaterial glassMaterial = FindMaterialByDisplayName(profileResult.Materials, "fenster");
-        RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Hotel02", glassMaterial);
 
-        if (!glassMaterial.UsesReflection || !tuning.EnableReflection)
+        if (!glassMaterial.UsesReflection)
         {
-            failures.Add("Hotel02.gltf glass should remain reflective after material retuning.");
+            failures.Add("Hotel02.gltf glass should keep the reflection hint of its legacy glass effect.");
+        }
+
+        // The glass of the buildings is an opaque smooth metal, a mirror of the sky.
+        RacingGamePbrFamily glassFamily = ExpectFamily(failures, "Hotel02.gltf glass", glassMaterial, RacingGamePbrMaterialMapping.BuildingGlass);
+        if (glassFamily.Metallic < 1f || glassFamily.Roughness > 0.1f)
+        {
+            failures.Add("Hotel02.gltf glass should be a smooth metal (metallic 1, roughness at most 0.1).");
+        }
+
+        if (LegacyImportedMaterialPresentationResolver.Resolve(glassMaterial).Queue != RenderQueue.Opaque)
+        {
+            failures.Add("Hotel02.gltf glass should stay opaque.");
         }
     }
 
@@ -175,24 +186,38 @@ internal static class LegacyImportProfileVerifier
         StaticModelImportedMaterial chromeMaterial = FindMaterialByDisplayName(profileResult.Materials, "chrome");
         StaticModelImportedMaterial paintMaterial = FindMaterialByDisplayName(profileResult.Materials, "lack");
         StaticModelImportedMaterial tireMaterial = FindMaterialByDisplayName(profileResult.Materials, "gummi");
-        RacingGameLegacyMaterialRuntimeTuning glassTuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Car", glassMaterial);
-        RacingGameLegacyMaterialRuntimeTuning paintTuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Car", paintMaterial);
-        RacingGameLegacyMaterialRuntimeTuning chromeTuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Car", chromeMaterial);
-        RacingGameLegacyMaterialRuntimeTuning tireTuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning("Car", tireMaterial);
 
-        if (!glassMaterial.UsesReflection || !glassTuning.EnableReflection)
+        if (!glassMaterial.UsesReflection)
         {
-            failures.Add("Car.gltf glass should remain reflective after material retuning.");
+            failures.Add("Car.gltf glass should keep the reflection hint of its legacy glass effect.");
         }
 
-        if (paintTuning.EnableReflection || chromeTuning.EnableReflection)
+        if (tireMaterial.UsesReflection)
         {
-            failures.Add("Car.gltf paint and chrome should stay non-reflective at runtime after material retuning.");
+            failures.Add("Car.gltf tires should stay non-reflective.");
         }
 
-        if (tireMaterial.UsesReflection || tireTuning.EnableReflection)
+        // The car's families (RacingGamePbrMaterialMapping.ResolveCarFamily). The glass is the one only its effect names:
+        // in the cooked car it is called "Standard 19".
+        if (RacingGamePbrMaterialMapping.ResolveCarFamily(glassMaterial) != RacingGamePbrMaterialMapping.CarGlass)
         {
-            failures.Add("Car.gltf tires should stay non-reflective after material retuning.");
+            failures.Add("Car.gltf glass should map to the car glass family (opaque smooth metal).");
+        }
+
+        RacingGamePbrFamily paintFamily = RacingGamePbrMaterialMapping.ResolveCarFamily(paintMaterial);
+        if (paintFamily != RacingGamePbrMaterialMapping.CarPaint || paintFamily.Metallic != 0f || paintFamily.ClearCoat < 1f)
+        {
+            failures.Add("Car.gltf paint should be a dielectric under a clear coat.");
+        }
+
+        if (RacingGamePbrMaterialMapping.ResolveCarFamily(chromeMaterial) != RacingGamePbrMaterialMapping.CarChrome)
+        {
+            failures.Add("Car.gltf chrome should map to the car chrome family (smooth metal).");
+        }
+
+        if (RacingGamePbrMaterialMapping.ResolveCarFamily(tireMaterial) != RacingGamePbrMaterialMapping.CarTyre)
+        {
+            failures.Add("Car.gltf tires should map to the car tyre family (rough dielectric).");
         }
     }
 
@@ -201,15 +226,33 @@ internal static class LegacyImportProfileVerifier
         string filePath = Path.Combine(projectContentPath, "Models", "Windmill.gltf");
         var profileResult = LegacyGltfModelReader.ReadWithMetadata(filePath, RacingGameImportProfiles.LegacyMaterialProfile);
 
-        if (!profileResult.Materials.Any(static material => material.BrightAmbientHint))
+        if (profileResult.Materials.Any(static material => material.BrightAmbientHint))
         {
-            failures.Add("Windmill.gltf should produce at least one bright-ambient material with the RacingGame profile.");
+            failures.Add("Windmill.gltf should keep the ambient of its own materials with the RacingGame profile (the original never applies its 128 override).");
         }
 
         if (profileResult.Materials.Any(static material => material.UsesReflection))
         {
-            failures.Add("Windmill.gltf should keep the bright-ambient exception without reflecting the scene.");
+            failures.Add("Windmill.gltf should not reflect the scene with the RacingGame profile.");
         }
+
+        StaticModelImportedMaterial windmillMaterial = FindMaterialByDiffuseTexture(profileResult.Materials, "Windmill");
+        ExpectFamily(failures, "Windmill.gltf", windmillMaterial, RacingGamePbrMaterialMapping.MatteIndustrial);
+    }
+
+    private static RacingGamePbrFamily ExpectFamily(
+        List<string> failures,
+        string description,
+        StaticModelImportedMaterial importedMaterial,
+        RacingGamePbrFamily expected)
+    {
+        RacingGamePbrFamily actual = RacingGamePbrMaterialMapping.ResolveImportedFamily(importedMaterial);
+        if (actual != expected)
+        {
+            failures.Add($"{description} should map to the PBR family {expected.Name} but maps to {actual.Name}.");
+        }
+
+        return actual;
     }
 
     // Legacy texture names without extension: the project holds the .tga textures as .png files of the same name.

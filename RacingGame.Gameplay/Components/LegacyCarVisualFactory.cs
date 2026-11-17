@@ -24,10 +24,11 @@ namespace RacingGame.Gameplay.Components;
 /// <para/>
 /// The paint is a run-time state of each car index, never written to a shared asset: in the private copy, each slot whose
 /// cooked material has <c>Texture.RacerCar</c> for base texture gets, on the mesh and on each of its sub-meshes, a copy
-/// of the compiled material with a new id (so it is not in the compiled-material cache, and the renderer draws its own
-/// texture) whose base texture is the car's painted texture (the paint slot, <see cref="IsPaintSlot"/>) or its unpainted
-/// one (the other slots). The texture's alpha, the paint mask, is kept: RacingGame's shader also scaled the specular by
-/// it, as CasaEngine's does. Every other value (tuning, reflection blend, normal map) comes from the cooked material.
+/// of the compiled <see cref="LitPbrMaterial"/> with a new id (so it is not in the compiled-material cache, and the
+/// renderer draws its own texture) whose base texture is the car's painted texture (the paint slots, see
+/// <see cref="IsPaintSlot"/>) or its unpainted one (the other slots). The texture's alpha, the paint mask, stays in the
+/// texture; the PBR materials are opaque and ignore it. Every other value (family, base colour, normal map) comes from the
+/// cooked material.
 /// </summary>
 internal static class LegacyCarVisualFactory
 {
@@ -136,42 +137,11 @@ internal static class LegacyCarVisualFactory
     }
 
     /// <summary>
-    /// Whether the car-texture slot named <paramref name="slotName"/> (<c>"Car [lack]"</c>: the mesh, then the material in
-    /// brackets) takes the painted texture: RacingGame's paint rule, on the material's name (<c>IsPaintMaterial</c> of the
-    /// legacy import, now on the slot name). A chrome, rubber or glass material is never painted, a "lack" or "paint"
-    /// material always; any other one is when the cooked material reflects (<paramref name="reflects"/>).
+    /// Whether a car-texture slot takes the painted texture: when its cooked material carries a clear coat. The paint is
+    /// the only family with one (<see cref="RacingGamePbrMaterialMapping.CarPaint"/>); the chromes, tyres and windows are
+    /// never painted.
     /// </summary>
-    internal static bool IsPaintSlot(string slotName, bool reflects)
-    {
-        string materialName = slotName;
-        int open = slotName.LastIndexOf('[');
-        if (open >= 0 && slotName.EndsWith(']'))
-        {
-            materialName = slotName.Substring(open + 1, slotName.Length - open - 2);
-        }
-
-        if (materialName.Contains("chrome", StringComparison.OrdinalIgnoreCase)
-            || materialName.Contains("gummi", StringComparison.OrdinalIgnoreCase)
-            || materialName.Contains("glass", StringComparison.OrdinalIgnoreCase)
-            || materialName.Contains("fenster", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        if (materialName.Contains("lack", StringComparison.OrdinalIgnoreCase)
-            || materialName.Contains("paint", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        return reflects;
-    }
-
-    /// <summary>Whether the cooked material reflects the scene or a cube, for <see cref="IsPaintSlot"/>.</summary>
-    internal static bool Reflects(LitDiffuseMaterial material)
-    {
-        return material.UseSceneReflectionCube || material.ReflectionCube != null || material.ReflectionCubeAssetId != Guid.Empty;
-    }
+    internal static bool IsPaintSlot(LitPbrMaterial material) => material.ClearCoat > 0f;
 
     // Replaces, in the private copy of the cooked model, the material of every car-texture slot (mesh and sub-meshes)
     // by a copy that samples the car's painted or unpainted texture. Without a paint (texture unreadable) the cooked
@@ -186,34 +156,33 @@ internal static class LegacyCarVisualFactory
 
         foreach (StaticModelMesh mesh in model.Meshes)
         {
-            mesh.Material = CreateCarTextureCopy(mesh.Material, mesh.SlotName, carTextureInfo.Id, paint) ?? mesh.Material;
+            mesh.Material = CreateCarTextureCopy(mesh.Material, carTextureInfo.Id, paint) ?? mesh.Material;
             foreach (SubMesh subMesh in mesh.SubMeshes)
             {
-                string slotName = string.IsNullOrEmpty(subMesh.SlotName) ? mesh.SlotName : subMesh.SlotName;
-                subMesh.Material = CreateCarTextureCopy(subMesh.Material, slotName, carTextureInfo.Id, paint) ?? subMesh.Material;
+                subMesh.Material = CreateCarTextureCopy(subMesh.Material, carTextureInfo.Id, paint) ?? subMesh.Material;
             }
         }
     }
 
     // The copy of a compiled car-texture material with the car's texture, or null when the material has another base texture.
-    private static LitDiffuseMaterial? CreateCarTextureCopy(MaterialBase? material, string slotName, Guid carTextureAssetId, CarPaint paint)
+    private static LitPbrMaterial? CreateCarTextureCopy(MaterialBase? material, Guid carTextureAssetId, CarPaint paint)
     {
-        if (material is not LitDiffuseMaterial source || source.BasColorAssetId != carTextureAssetId)
+        if (material is not LitPbrMaterial source || source.BaseColorTextureAssetId != carTextureAssetId)
         {
             return null;
         }
 
-        return CopyWithBaseTexture(source, IsPaintSlot(slotName, Reflects(source)) ? paint.Painted : paint.Unpainted);
+        return CopyWithBaseTexture(source, IsPaintSlot(source) ? paint.Painted : paint.Unpainted);
     }
 
     /// <summary>
-    /// A copy of a compiled <see cref="LitDiffuseMaterial"/> with every value of the cooked material, a new id and
+    /// A copy of a compiled <see cref="LitPbrMaterial"/> with every value of the cooked material, a new id and
     /// <paramref name="baseColor"/> for base texture. The new id keeps it out of the compiled-material cache, so the
     /// renderer draws this texture and resolves the render features on the mesh, as for a material built in code.
     /// </summary>
-    internal static LitDiffuseMaterial CopyWithBaseTexture(LitDiffuseMaterial source, Texture2D baseColor)
+    internal static LitPbrMaterial CopyWithBaseTexture(LitPbrMaterial source, Texture2D baseColor)
     {
-        return new LitDiffuseMaterial
+        return new LitPbrMaterial
         {
             Id = Guid.NewGuid(),
             Name = source.Name,
@@ -227,23 +196,26 @@ internal static class LegacyCarVisualFactory
             DepthStencilState = source.DepthStencilState,
             RasterizerState = source.RasterizerState,
             SamplerState = source.SamplerState,
-            BasColor = baseColor,
-            NormalMap = source.NormalMap,
-            NormalMapAssetId = source.NormalMapAssetId,
-            ReflectionCube = source.ReflectionCube,
-            ReflectionCubeAssetId = source.ReflectionCubeAssetId,
-            UseSceneReflectionCube = source.UseSceneReflectionCube,
-            DiffuseColor = source.DiffuseColor,
-            AmbientColor = source.AmbientColor,
+            BaseColorTexture = baseColor,
+            NormalTexture = source.NormalTexture,
+            NormalTextureAssetId = source.NormalTextureAssetId,
+            MetallicRoughnessTexture = source.MetallicRoughnessTexture,
+            MetallicRoughnessTextureAssetId = source.MetallicRoughnessTextureAssetId,
+            OcclusionTexture = source.OcclusionTexture,
+            OcclusionTextureAssetId = source.OcclusionTextureAssetId,
+            EmissiveTexture = source.EmissiveTexture,
+            EmissiveTextureAssetId = source.EmissiveTextureAssetId,
+            DetailTexture = source.DetailTexture,
+            DetailTextureAssetId = source.DetailTextureAssetId,
+            DetailTiling = source.DetailTiling,
+            BaseColor = source.BaseColor,
+            Metallic = source.Metallic,
+            Roughness = source.Roughness,
             EmissiveColor = source.EmissiveColor,
-            SpecularColor = source.SpecularColor,
-            SpecularPower = source.SpecularPower,
-            TintColor = source.TintColor,
-            TintStrength = source.TintStrength,
-            TintMaskFromBaseAlpha = source.TintMaskFromBaseAlpha,
-            ReflectionAddAmount = source.ReflectionAddAmount,
-            ReflectionMultiplyBase = source.ReflectionMultiplyBase,
-            ReflectionMultiplyFactor = source.ReflectionMultiplyFactor,
+            OcclusionStrength = source.OcclusionStrength,
+            NormalScale = source.NormalScale,
+            ClearCoat = source.ClearCoat,
+            ClearCoatRoughness = source.ClearCoatRoughness,
         };
     }
 
@@ -279,16 +251,16 @@ internal static class LegacyCarVisualFactory
             int unpainted = 0;
             void Count(MaterialBase? material)
             {
-                if (material is not LitDiffuseMaterial source)
+                if (material is not LitPbrMaterial source)
                 {
                     return;
                 }
 
-                if (ReferenceEquals(source.BasColor, paint.Painted))
+                if (ReferenceEquals(source.BaseColorTexture, paint.Painted))
                 {
                     painted++;
                 }
-                else if (ReferenceEquals(source.BasColor, paint.Unpainted))
+                else if (ReferenceEquals(source.BaseColorTexture, paint.Unpainted))
                 {
                     unpainted++;
                 }

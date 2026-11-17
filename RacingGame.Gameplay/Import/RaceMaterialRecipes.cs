@@ -1,22 +1,19 @@
 using CasaEngine.Framework.Assets.Loaders;
 using CasaEngine.Framework.Materials.Runtime;
 using Microsoft.Xna.Framework;
-using RacingGame.Gameplay.Race;
 
 namespace RacingGame.Gameplay.Import;
 
 /// <summary>
 /// The pure functions that compute a <see cref="RaceMaterialRecipe"/> for each path that builds a game material: the
 /// scenery, posts, segments and start lights, the car, the car selection plates, and the track
-/// materials written in code. The logic moved here from the builders, unchanged; the asset cooker writes each recipe
-/// as a cooked material, which the game loads from the catalogue.
+/// materials written in code. The asset cooker writes each recipe as a cooked <c>lit-pbr</c> material, which the game
+/// loads from the catalogue; the PBR family of each surface comes from <see cref="RacingGamePbrMaterialMapping"/>.
 /// </summary>
 public static class RaceMaterialRecipes
 {
     public const string LegacyCarModelName = "Car";
     public const string CarNormalTextureName = "RacerCarNormal";
-    // RacingGame's plate (NormalMapping.fx, ReflectionSpecular) added a Fresnel-weighted sky reflection to its texture.
-    public const float PlateReflectionAmount = 0.35f;
 
     public const string GuardRailTextureName = "Leitplanke.png";
     public const string GuardRailNormalTextureName = "LeitplankeNormal.png";
@@ -42,33 +39,19 @@ public static class RaceMaterialRecipes
     // (Model.RenderCar: Material.DefaultDiffuseColor).
     private static readonly Color LegacyCarDefaultDiffuseColor = new(210, 210, 210, 255);
 
-    private const float LegacyCarReflectionMultiplyBase = 0.85f;
-    private const float LegacyCarReflectionMultiplyFactor = 0.75f;
-
     /// <summary>A scenery, post, segment or start light material of the model <paramref name="modelName"/>.</summary>
     public static RaceMaterialRecipe ForScenery(string modelName, StaticModelImportedMaterial importedMaterial)
     {
-        RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning(modelName, importedMaterial);
-        (bool useSceneReflectionCube, string? reflectionCubeFilePath) = ResolveReflection(tuning, importedMaterial);
-
         LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
-        Vector3 specularColor = tuning.ApplySpecularColor(importedMaterial.SpecularColor);
-        float specularPower = Math.Clamp(tuning.ApplySpecularPower(importedMaterial.SpecularPower), 2f, 48f);
 
         return new RaceMaterialRecipe
         {
             Name = $"{modelName}.{importedMaterial.DisplayName}",
             BaseTextureFilePath = importedMaterial.DiffuseTextureFilePath,
             NormalTextureFilePath = importedMaterial.NormalTextureFilePath,
-            ReflectionCubeFilePath = reflectionCubeFilePath,
-            UseSceneReflectionCube = useSceneReflectionCube,
-            DiffuseColor = importedMaterial.DiffuseColor,
             Family = RacingGamePbrMaterialMapping.ResolveImportedFamily(importedMaterial),
             BaseColor = Opaque(importedMaterial.DiffuseColor),
-            AmbientColor = presentation.AmbientColor,
             EmissiveColor = presentation.EmissiveColor,
-            SpecularColor = specularColor,
-            SpecularPower = specularPower,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             Queue = presentation.Queue,
             AlphaCutoff = presentation.AlphaCutoff,
@@ -82,17 +65,12 @@ public static class RaceMaterialRecipes
     /// </summary>
     public static RaceMaterialRecipe ForCar(StaticModelImportedMaterial importedMaterial, int carIndex, string texturesDirectory)
     {
-        RacingGameLegacyMaterialRuntimeTuning tuning = RacingGameLegacyMaterialTuning.EvaluateRuntimeTuning(LegacyCarModelName, importedMaterial);
         string? normalTexturePath = ResolveCarNormalTexturePath(importedMaterial, texturesDirectory);
         RaceBaseTextureRole baseTextureRole = UsesCarDiffuseTexture(importedMaterial.DiffuseTextureFilePath)
             ? IsPaintMaterial(importedMaterial) ? RaceBaseTextureRole.CarPainted : RaceBaseTextureRole.CarUnpainted
             : RaceBaseTextureRole.File;
-        (bool useSceneReflectionCube, string? reflectionCubeFilePath) = ResolveReflection(tuning, importedMaterial);
 
         LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
-        Vector3 specularColor = tuning.ApplySpecularColor(importedMaterial.SpecularColor);
-        float specularPower = Math.Clamp(tuning.ApplySpecularPower(importedMaterial.SpecularPower), 2f, 48f);
-        bool useLegacyCarReflectionBlend = UsesLegacyCarReflectionBlend(importedMaterial);
 
         return new RaceMaterialRecipe
         {
@@ -100,20 +78,11 @@ public static class RaceMaterialRecipes
             BaseTextureFilePath = importedMaterial.DiffuseTextureFilePath,
             BaseTextureRole = baseTextureRole,
             NormalTextureFilePath = normalTexturePath,
-            ReflectionCubeFilePath = reflectionCubeFilePath,
-            UseSceneReflectionCube = useSceneReflectionCube,
-            DiffuseColor = importedMaterial.DiffuseColor,
             Family = RacingGamePbrMaterialMapping.ResolveCarFamily(importedMaterial),
             BaseColor = RacingGamePbrMaterialMapping.IsCarGlassMaterial(importedMaterial)
                 ? Opaque(importedMaterial.DiffuseColor)
                 : LegacyCarDefaultDiffuseColor,
-            AmbientColor = presentation.AmbientColor,
             EmissiveColor = presentation.EmissiveColor,
-            SpecularColor = specularColor,
-            SpecularPower = specularPower,
-            ReflectionAddAmount = useLegacyCarReflectionBlend ? 0f : 1f,
-            ReflectionMultiplyBase = useLegacyCarReflectionBlend ? LegacyCarReflectionMultiplyBase : 1f,
-            ReflectionMultiplyFactor = useLegacyCarReflectionBlend ? LegacyCarReflectionMultiplyFactor : 0f,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             Queue = presentation.Queue,
             AlphaCutoff = presentation.AlphaCutoff,
@@ -121,7 +90,7 @@ public static class RaceMaterialRecipes
         };
     }
 
-    /// <summary>A material of the car selection plate model <paramref name="plateModelName"/>: no per-name tuning.</summary>
+    /// <summary>A material of the car selection plate model <paramref name="plateModelName"/>.</summary>
     public static RaceMaterialRecipe ForPlate(string plateModelName, StaticModelImportedMaterial importedMaterial)
     {
         LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
@@ -130,17 +99,11 @@ public static class RaceMaterialRecipes
             Name = $"{plateModelName}.{importedMaterial.DisplayName}",
             BaseTextureFilePath = importedMaterial.DiffuseTextureFilePath,
             NormalTextureFilePath = importedMaterial.NormalTextureFilePath,
-            DiffuseColor = importedMaterial.DiffuseColor,
             Family = RacingGamePbrMaterialMapping.CarouselPlate,
             BaseColor = Opaque(importedMaterial.DiffuseColor),
-            AmbientColor = presentation.AmbientColor,
             EmissiveColor = presentation.EmissiveColor,
-            SpecularColor = importedMaterial.SpecularColor,
-            SpecularPower = Math.Clamp(importedMaterial.SpecularPower, 2f, 48f),
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             Queue = presentation.Queue,
-            UseSceneReflectionCube = importedMaterial.UsesReflection,
-            ReflectionAddAmount = PlateReflectionAmount,
         };
     }
 
@@ -151,12 +114,9 @@ public static class RaceMaterialRecipes
         {
             Name = $"{trackName}.RoadMaterial",
             BaseTextureFilePath = diffuseTexturePath,
-            DiffuseColor = diffuseTexturePath != null ? Color.White : new Color(60, 62, 66),
             Family = RacingGamePbrMaterialMapping.Road,
             BaseColor = diffuseTexturePath != null ? Color.White : new Color(60, 62, 66),
             EmissiveColor = new Vector3(0.015f, 0.015f, 0.015f),
-            SpecularColor = new Vector3(0.14f),
-            SpecularPower = 18f,
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
         };
@@ -169,12 +129,9 @@ public static class RaceMaterialRecipes
         {
             Name = $"{trackName}.GroundMaterial",
             BaseTextureFilePath = diffuseTexturePath,
-            DiffuseColor = diffuseTexturePath != null ? Color.White : new Color(182, 166, 118),
             Family = RacingGamePbrMaterialMapping.Terrain,
             BaseColor = diffuseTexturePath != null ? Color.White : new Color(182, 166, 118),
             EmissiveColor = new Vector3(0.01f, 0.01f, 0.008f),
-            SpecularColor = new Vector3(0.05f),
-            SpecularPower = 6f,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
         };
     }
@@ -192,12 +149,9 @@ public static class RaceMaterialRecipes
             NormalTextureFilePath = normalTexturePath,
             DetailTextureFilePath = detailTexturePath,
             DetailTiling = TerrainDetailTiling,
-            DiffuseColor = diffuseTexturePath != null ? Color.White : new Color(182, 166, 118),
             Family = RacingGamePbrMaterialMapping.Terrain,
             BaseColor = diffuseTexturePath != null ? Color.White : new Color(182, 166, 118),
             EmissiveColor = new Vector3(0.01f, 0.01f, 0.008f),
-            SpecularColor = new Vector3(0.05f),
-            SpecularPower = 6f,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
         };
@@ -211,12 +165,9 @@ public static class RaceMaterialRecipes
             Name = $"{trackName}.GuardRailMaterial.{sideName}",
             BaseTextureFilePath = diffuseTexturePath,
             NormalTextureFilePath = normalTexturePath,
-            DiffuseColor = diffuseTexturePath != null ? Color.White : new Color(182, 182, 182),
             Family = RacingGamePbrMaterialMapping.GuardRail,
             BaseColor = diffuseTexturePath != null ? Color.White : new Color(182, 182, 182),
             EmissiveColor = new Vector3(0.03f, 0.03f, 0.03f),
-            SpecularColor = new Vector3(0.88f, 0.88f, 0.88f),
-            SpecularPower = 16f,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
         };
@@ -230,12 +181,9 @@ public static class RaceMaterialRecipes
             Name = $"{trackName}.ColumnMaterial",
             BaseTextureFilePath = diffuseTexturePath,
             NormalTextureFilePath = normalTexturePath,
-            DiffuseColor = diffuseTexturePath != null ? Color.White : new Color(176, 176, 176),
             Family = RacingGamePbrMaterialMapping.Road,
             BaseColor = diffuseTexturePath != null ? Color.White : new Color(176, 176, 176),
             EmissiveColor = new Vector3(0.01f, 0.01f, 0.01f),
-            SpecularColor = new Vector3(0.18f),
-            SpecularPower = 8f,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
         };
@@ -253,12 +201,8 @@ public static class RaceMaterialRecipes
             Name = $"{trackName}.RoadTunnelMaterial",
             BaseTextureFilePath = diffuseTexturePath,
             NormalTextureFilePath = normalTexturePath,
-            DiffuseColor = new Color(80, 80, 80),
             Family = RacingGamePbrMaterialMapping.Road,
             BaseColor = new Color(80, 80, 80),
-            AmbientColor = new Color(182, 182, 182).ToVector3(),
-            SpecularColor = new Color(64, 64, 64).ToVector3(),
-            SpecularPower = 24f,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullNone,
         };
@@ -283,19 +227,6 @@ public static class RaceMaterialRecipes
         return false;
     }
 
-    // The scene cube when the material reflects without naming a cube of its own; a named cube is loaded from its file.
-    private static (bool UseSceneReflectionCube, string? ReflectionCubeFilePath) ResolveReflection(
-        RacingGameLegacyMaterialRuntimeTuning tuning,
-        StaticModelImportedMaterial importedMaterial)
-    {
-        bool useSceneReflectionCube = tuning.EnableReflection
-            && RaceSkySystem.ShouldUseSceneReflectionCube(importedMaterial.ReflectionTextureFilePath);
-        string? reflectionCubeFilePath = tuning.EnableReflection && !useSceneReflectionCube
-            ? importedMaterial.ReflectionTextureFilePath
-            : null;
-        return (useSceneReflectionCube, reflectionCubeFilePath);
-    }
-
     // The diffuse colour as a base colour: its alpha forced to 255.
     private static Color Opaque(Color color) => new(color.R, color.G, color.B, (byte)255);
 
@@ -317,25 +248,6 @@ public static class RaceMaterialRecipes
         }
 
         return importedMaterial.UsesReflection && UsesCarDiffuseTexture(importedMaterial.DiffuseTextureFilePath);
-    }
-
-    private static bool UsesLegacyCarReflectionBlend(StaticModelImportedMaterial importedMaterial)
-    {
-        if (!importedMaterial.UsesReflection)
-        {
-            return false;
-        }
-
-        string effectFileName = Path.GetFileName(importedMaterial.EffectFilePath ?? string.Empty);
-        if (!effectFileName.Equals("NormalMapping.fx", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        string displayName = importedMaterial.DisplayName;
-        return !displayName.Contains("glass", StringComparison.OrdinalIgnoreCase)
-            && !displayName.Contains("fenster", StringComparison.OrdinalIgnoreCase)
-            && !displayName.Contains("gummi", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string? ResolveCarNormalTexturePath(StaticModelImportedMaterial importedMaterial, string texturesDirectory)

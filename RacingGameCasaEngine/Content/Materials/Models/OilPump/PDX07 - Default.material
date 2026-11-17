@@ -1,7 +1,7 @@
 {
   "id": "675f5c97-fee5-54f8-b943-7c0504c91687",
   "name": "Material.OilPump.PDX07 - Default",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "fb9ac3bb-5364-51ce-98a4-3e0abbfe2296",
     "normal_texture": "fc78fa46-097d-594f-ba3d-36d2dcf14d1a",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 255,
       "g": 255,
       "b": 255,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.1,
-      "y": 0.1,
-      "z": 0.1
-    },
+    "metallic": 0.0,
+    "roughness": 0.7,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 0.22,
-      "y": 0.22,
-      "z": 0.22
-    },
-    "specular_power": 9.6,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }

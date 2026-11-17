@@ -1,7 +1,7 @@
 {
   "id": "d1956e86-92d7-51bf-8318-1904988154d8",
   "name": "Material.Banner2.orig 09 - Default",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "4facb327-019c-5213-8f5e-3625d506ad8a",
     "normal_texture": "8d22cec5-468d-5fd3-9eb4-ee02605ae5ee",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 196,
       "g": 196,
       "b": 196,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.5019608,
-      "y": 0.5019608,
-      "z": 0.5019608
-    },
+    "metallic": 0.0,
+    "roughness": 0.6,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 0.08047062,
-      "y": 0.08047062,
-      "z": 0.08047062
-    },
-    "specular_power": 7.2,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }

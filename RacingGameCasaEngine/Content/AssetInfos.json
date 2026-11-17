@@ -3641,6 +3641,12 @@
       "name": "Texture.RoadTunnelNormal",
       "file_name": "Textures/RoadTunnelNormal.texture",
       "asset_type": "texture"
+    },
+    {
+      "id": "afabb175-1413-5bd8-b522-afcecd9c9a9e",
+      "name": "Texture.LandscapeDetail",
+      "file_name": "Textures/LandscapeDetail.texture",
+      "asset_type": "texture"
     }
   ]
 }

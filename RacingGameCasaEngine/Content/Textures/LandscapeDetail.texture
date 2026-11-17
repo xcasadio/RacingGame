@@ -1,0 +1,23 @@
+{
+  "id": "afabb175-1413-5bd8-b522-afcecd9c9a9e",
+  "name": "Texture.LandscapeDetail",
+  "texture_asset_id": "8c80eb6e-b406-5522-bdaa-8eb8c2c9f52d",
+  "generate_mipmaps": true,
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

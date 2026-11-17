@@ -1,7 +1,7 @@
 {
   "id": "1445270e-5e15-5573-a6b7-3da42a1c6b9a",
   "name": "Material.StartLight2.orig 09 - Default",
-  "definition_id": "lit-diffuse",
+  "definition_id": "lit-pbr",
   "shader_asset_id": "00000000-0000-0000-0000-000000000000",
   "is_transparent": false,
   "queue": "Opaque",
@@ -14,33 +14,23 @@
   "properties": {
     "base_color_texture": "e10be4bc-3e16-5d15-9202-c749438905d9",
     "normal_texture": "8ba22f5e-ea00-5423-8cfc-ef9d6277a615",
-    "reflection_texture": "00000000-0000-0000-0000-000000000000",
-    "diffuse_color": {
+    "detail_texture": "00000000-0000-0000-0000-000000000000",
+    "detail_tiling": 1.0,
+    "base_color": {
       "r": 167,
       "g": 167,
       "b": 167,
       "a": 255
     },
-    "alpha_cutoff": 0.5,
-    "ambient_color": {
-      "x": 0.313726,
-      "y": 0.313726,
-      "z": 0.313726
-    },
+    "metallic": 1.0,
+    "roughness": 0.5,
     "emissive_color": {
       "x": 0.0,
       "y": 0.0,
       "z": 0.0
     },
-    "specular_color": {
-      "x": 0.12,
-      "y": 0.12,
-      "z": 0.12
-    },
-    "specular_power": 7.2,
-    "use_scene_reflection_cube": false,
-    "reflection_add_amount": 1.0,
-    "reflection_multiply_base": 1.0,
-    "reflection_multiply_factor": 0.0
+    "clear_coat": 0.0,
+    "clear_coat_roughness": 0.1,
+    "alpha_cutoff": 0.5
   }
 }
