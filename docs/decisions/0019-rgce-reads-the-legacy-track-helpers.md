@@ -1,6 +1,6 @@
 # ADR-0019: RacingGameCasaEngine reads the legacy track helpers and CombiModel items
 
-- **Status**: Accepted; amended by ADR-0027, ADR-0029
+- **Status**: Accepted; amended by ADR-0027, ADR-0029, ADR-0030
 - **Date**: 2026-10-08
 - **Source**: this chantier: `ai-agent/tasks/rgce-track-helpers-tasks.md`, decisions D1 to D3 (author answers, 2026-10-08), proposals P1 to P8 (validated with the plan), tasks T0.1 to T3.1; `ai-agent/tasks/rgce-editor-project-tasks.md`, decision D9 and open point O7
 

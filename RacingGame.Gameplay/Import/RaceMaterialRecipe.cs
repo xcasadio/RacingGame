@@ -68,7 +68,17 @@ public sealed record RaceMaterialRecipe
     /// </summary>
     public Color BaseColor { get; init; } = Color.White;
 
+    /// <summary>
+    /// The emissive colour, a display colour that the engine multiplies by <see cref="EmissiveTextureFilePath"/> when it is set
+    /// (LitPbr.fx: <c>emissive = EmissiveColor * EmissiveTexture</c>).
+    /// </summary>
     public Vector3 EmissiveColor { get; init; } = Vector3.Zero;
+
+    /// <summary>
+    /// The emissive texture, or <c>null</c> when the material has none (the case of every material but the road tunnel's): the
+    /// cooker then writes no <c>emissive_texture</c> key.
+    /// </summary>
+    public string? EmissiveTextureFilePath { get; init; }
 
     public RenderQueue Queue { get; init; } = RenderQueue.Opaque;
 

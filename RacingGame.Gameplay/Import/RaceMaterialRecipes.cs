@@ -243,10 +243,22 @@ public static class RaceMaterialRecipes
         };
     }
 
+    // The tunnel's material ambient A of the original is 182 (Tracks/Track.cs:84-89, "Use mainly ambient color (tunnel uses
+    // lightmaps)"). The original renders texture * (A + D * N.L); lit-pbr has no ambient per material, so the term texture * A is an
+    // emissive: the emissive colour below times the diffuse texture, added by the engine without the shadow tint (LitPbr.fx:521-557).
+    // The original's ambient does take the shadow tint, since its shadow mask multiplies the whole image by (0.25, 0.26, 0.27)
+    // (Core/Content/Shaders/ShadowMap.fx:36 and :240), and the tunnel is a shadow receiver (Track.UseShadow): the emissive colour is
+    // A / 255 times that tint. Measured against the original on the tunnel views, this beat A / 255 alone (ADR-0030, plan
+    // ai-agent/tasks/rgce-pbr-handover-tasks.md, phase 15).
+    private const byte LegacyTunnelAmbient = 182;
+    private static readonly Vector3 LegacyShadowTint = new(0.25f, 0.26f, 0.27f);
+    private static readonly Vector3 LegacyTunnelEmissiveFactor = new Vector3(LegacyTunnelAmbient / 255f) * LegacyShadowTint;
+
     /// <summary>
     /// The road tunnels: RacingGame's roadTunnelMaterial (Track.cs), "mainly ambient color" with ambient (182, 182, 182),
     /// diffuse (80, 80, 80) and specular (64, 64, 64), and the default specular power of its Material class (24). The
-    /// original draws the tunnels with culling off, to show their inside and outside.
+    /// original draws the tunnels with culling off, to show their inside and outside. The ambient is the emissive colour
+    /// <see cref="LegacyTunnelEmissiveFactor"/> times the emissive texture <paramref name="diffuseTexturePath"/>.
     /// </summary>
     public static RaceMaterialRecipe ForRoadTunnel(string trackName, string? diffuseTexturePath, string? normalTexturePath)
     {
@@ -257,6 +269,8 @@ public static class RaceMaterialRecipes
             NormalTextureFilePath = normalTexturePath,
             Family = RacingGamePbrMaterialMapping.Road,
             BaseColor = new Color(80, 80, 80),
+            EmissiveColor = LegacyTunnelEmissiveFactor,
+            EmissiveTextureFilePath = diffuseTexturePath,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             RasterizerState = RaceMaterialStates.CullNone,
         };

@@ -132,6 +132,12 @@ internal sealed class Cooker
         asset.SetPropertyValue("metallic", MaterialValue.FromFloat(recipe.Metallic));
         asset.SetPropertyValue("roughness", MaterialValue.FromFloat(recipe.Roughness));
         asset.SetPropertyValue("emissive_color", MaterialValue.FromVector3(recipe.EmissiveColor));
+        if (material.EmissiveTextureId != Guid.Empty)
+        {
+            // Only the road tunnel has an emissive texture: the other materials keep their files as they are, without the key.
+            asset.SetPropertyValue("emissive_texture", MaterialValue.FromTextureId(material.EmissiveTextureId));
+        }
+
         asset.SetPropertyValue("clear_coat", MaterialValue.FromFloat(recipe.ClearCoat));
         asset.SetPropertyValue("clear_coat_roughness", MaterialValue.FromFloat(recipe.ClearCoatRoughness));
         asset.SetPropertyValue("alpha_cutoff", MaterialValue.FromFloat(recipe.AlphaCutoff));

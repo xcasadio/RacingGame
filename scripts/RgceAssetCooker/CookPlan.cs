@@ -21,6 +21,9 @@ internal sealed class CookedMaterial
     public required Guid NormalTextureId { get; init; }
     public required Guid DetailTextureId { get; init; }
 
+    /// <summary>The emissive texture of the material, or empty when its recipe names none (the key is then not cooked).</summary>
+    public required Guid EmissiveTextureId { get; init; }
+
     // The states the renderer applies when the game leaves one null (RenderStateCache.cs:51-54, and the defaults of MaterialAsset).
     public string BlendState => Recipe.BlendState ?? MaterialAsset.DefaultBlendStateName;
     public string DepthStencilState => Recipe.DepthStencilState ?? MaterialAsset.DefaultDepthStencilStateName;
@@ -212,6 +215,7 @@ internal static class CookPlanner
             BaseTextureId = textures.Resolve(baseTexturePath, samplerName),
             NormalTextureId = textures.Resolve(recipe.NormalTextureFilePath, samplerName),
             DetailTextureId = textures.Resolve(recipe.DetailTextureFilePath, samplerName),
+            EmissiveTextureId = textures.Resolve(recipe.EmissiveTextureFilePath, samplerName),
         };
     }
 

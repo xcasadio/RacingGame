@@ -1267,3 +1267,218 @@ UI captures (`ref-ui/`, default colour pipeline, `linear`) against the previous 
 
 Track audit (`ref-audit/`, 30 captures, default colour pipeline, `linear`) against `artifacts/pbr-handover/s13/ref-audit`: largest channel difference 18.559 (`audit-Expert-helper-laterns`), smallest 1.198 (`audit-Expert-helper-tunnel`). **The reference of the port on this PC is `artifacts/pbr-handover/s2/`**: `legacy-a`, `linear-a`, `ref-ui` and `ref-audit`.
 
+
+## After the tunnel emissive
+
+Tenth run, on 2026-11-17, after slice S3 of the plan (phase 15, ADR-0030): the road tunnel of the race world gets an emissive texture carrying the original's material ambient, so that its inside is no longer almost black. The run before it is the previous section, `artifacts/pbr-handover/s2/` (`legacy-a`, `linear-a`). The previous runs above stay as their record.
+
+Outputs under `artifacts/pbr-handover/s3/`; the original's export of the 15 views is the same one, `artifacts/pbr-handover/s1c/ref`, and the original's views inside the tunnels are `artifacts/pbr-handover/s3/ref-tunnel`. The tables of this section are generated from the output files, from the cooked `.material` file and from the source by a script. **Every figure below that depends on the colour pipeline is for one mode, stated in its table: `legacy` is the engine's legacy colour chain (no tonemapping, no anti-aliasing), and `linear` is the default of the game, linear HDR with the ACES approximation, exposure 1, FXAA, bloom and SSAO off.**
+
+### Reference views inside the tunnels
+
+The original's `--capture-track-audit` has the opt-in `--tunnel-views` (`RacingGameOriginal/Core/GameScreens/TrackAuditCaptureScreen.cs`, `BuildTunnelViews`): one view per track, in the longest `Tunnel` range of the road helpers; the camera is at the road point a quarter of the way into the range, 2 m above it along the up vector of the point; it looks at the first road point further along the range that is at least 15 m from the camera point, 1.5 m above it; the car is placed at the camera point and not drawn. Command: `RacingGame.exe --capture-track-audit --seed 1 --size 1280x720 --out artifacts/pbr-handover/s3/ref-tunnel --tunnel-views`.
+
+| Track | Tunnel range (road points) | Camera at road point | Target at road point | Camera position (original's axes) | Target |
+|---|---|---|---|---|---|
+| Beginner | 767 to 867 | 792 | 799 | (2131.48, 509.35, 68.91) | (2147.11, 514.76, 70.70) |
+| Advanced | 562 to 757 | 610 | 617 | (497.94, 920.41, 45.28) | (510.84, 909.67, 47.58) |
+| Expert | 3690 to 3839 | 3727 | 3733 | (1704.73, 456.69, 75.79) | (1715.27, 445.99, 69.72) |
+
+Without the option, a run of the original into `s3/ref-check` gives 30 images of which 30 are identical by their hash to those of `s1c/ref` (largest mean difference per channel 0.00); `scene.json` identical byte for byte: yes; `views.json` identical byte for byte: yes.
+
+### Measure of the two candidates
+
+Rule T3 of the plan: two values for the emissive colour, measured on the three tunnel views against the original (`nopost`), the one with the smaller mean difference per channel over the three views in `linear` is kept; no other value was tried. Procedure: the whole build folder of the game (`RacingGameCasaEngine/bin/Debug/net9.0-windows`) was copied outside the repository, once per candidate; the candidate was cooked in the copy by `RgceAssetCooker --content <copy>/Content` (a cooker built from the recipe with that value); the executable of the copy replayed `s3/ref-tunnel/views.json` (`--capture-reference-views ... --color-pipeline <mode>`). Nothing was cooked in `RacingGameCasaEngine/Content` or in its build folder for a measure. The mean luminance of the original's three views is 29.7.
+
+`legacy`, per view: mean luminance of the port, mean difference per channel with the original (R, G, B, mean of the three), share of pixels of luminance under 10 (original, port), share of pixels with the three channels at 255 (port):
+
+| View | State | Luminance (original) | R, G, B difference | Mean | Dark share (original) | At 255 |
+|---|---|---|---|---|---|---|
+| Beginner | before (`base-tunnel-legacy`) | 9.4 (18.2) | 9.85, 9.52, 9.50 | 9.62 | 55.3 % (28.8 %) | 0.00 % |
+| Beginner | (a) 182/255 (`cand-a-tunnel-legacy`) | 33.1 (18.2) | 18.88, 19.05, 18.89 | 18.94 | 7.0 % (28.8 %) | 0.00 % |
+| Beginner | (b) 182/255 x (0.25, 0.26, 0.27) (`cand-b-tunnel-legacy`) | 15.5 (18.2) | 6.48, 6.10, 6.02 | 6.20 | 17.0 % (28.8 %) | 0.00 % |
+| Advanced | before (`base-tunnel-legacy`) | 10.9 (36.8) | 27.00, 26.78, 25.02 | 26.27 | 54.1 % (10.3 %) | 0.00 % |
+| Advanced | (a) 182/255 (`cand-a-tunnel-legacy`) | 31.6 (36.8) | 20.29, 20.38, 19.87 | 20.18 | 0.8 % (10.3 %) | 0.00 % |
+| Advanced | (b) 182/255 x (0.25, 0.26, 0.27) (`cand-b-tunnel-legacy`) | 16.2 (36.8) | 22.18, 21.83, 20.16 | 21.39 | 17.8 % (10.3 %) | 0.00 % |
+| Expert | before (`base-tunnel-legacy`) | 13.8 (34.0) | 20.61, 20.57, 20.29 | 20.49 | 56.2 % (11.0 %) | 0.00 % |
+| Expert | (a) 182/255 (`cand-a-tunnel-legacy`) | 48.7 (34.0) | 16.69, 16.34, 15.78 | 16.27 | 0.1 % (11.0 %) | 0.00 % |
+| Expert | (b) 182/255 x (0.25, 0.26, 0.27) (`cand-b-tunnel-legacy`) | 22.8 (34.0) | 13.71, 13.54, 13.24 | 13.50 | 5.4 % (11.0 %) | 0.00 % |
+
+`linear`, per view: mean luminance of the port, mean difference per channel with the original (R, G, B, mean of the three), share of pixels of luminance under 10 (original, port), share of pixels with the three channels at 255 (port):
+
+| View | State | Luminance (original) | R, G, B difference | Mean | Dark share (original) | At 255 |
+|---|---|---|---|---|---|---|
+| Beginner | before (`base-tunnel-linear`) | 16.1 (18.2) | 9.25, 9.18, 9.42 | 9.28 | 23.8 % (28.8 %) | 0.00 % |
+| Beginner | (a) 182/255 (`cand-a-tunnel-linear`) | 32.2 (18.2) | 17.87, 18.89, 19.17 | 18.64 | 12.0 % (28.8 %) | 0.00 % |
+| Beginner | (b) 182/255 x (0.25, 0.26, 0.27) (`cand-b-tunnel-linear`) | 17.5 (18.2) | 8.36, 8.35, 8.63 | 8.45 | 19.9 % (28.8 %) | 0.00 % |
+| Advanced | before (`base-tunnel-linear`) | 16.1 (36.8) | 23.59, 24.28, 23.57 | 23.81 | 21.1 % (10.3 %) | 0.00 % |
+| Advanced | (a) 182/255 (`cand-a-tunnel-linear`) | 27.8 (36.8) | 21.32, 22.67, 22.76 | 22.25 | 3.1 % (10.3 %) | 0.00 % |
+| Advanced | (b) 182/255 x (0.25, 0.26, 0.27) (`cand-b-tunnel-linear`) | 17.0 (36.8) | 22.73, 23.45, 22.79 | 22.99 | 19.6 % (10.3 %) | 0.00 % |
+| Expert | before (`base-tunnel-linear`) | 16.0 (34.0) | 19.89, 20.34, 20.59 | 20.28 | 14.6 % (11.0 %) | 0.00 % |
+| Expert | (a) 182/255 (`cand-a-tunnel-linear`) | 45.0 (34.0) | 20.51, 20.94, 20.89 | 20.78 | 1.9 % (11.0 %) | 0.00 % |
+| Expert | (b) 182/255 x (0.25, 0.26, 0.27) (`cand-b-tunnel-linear`) | 18.8 (34.0) | 17.38, 17.77, 18.04 | 17.73 | 9.3 % (11.0 %) | 0.00 % |
+
+Over the three views:
+
+| Mode | State | Mean luminance | Mean difference per channel | Mean dark share |
+|---|---|---|---|---|
+| `legacy` | before (`base-tunnel-legacy`) | 11.4 | 18.79 | 55.2 % |
+| `legacy` | (a) 182/255 (`cand-a-tunnel-legacy`) | 37.8 | 18.46 | 2.6 % |
+| `legacy` | (b) 182/255 x (0.25, 0.26, 0.27) (`cand-b-tunnel-legacy`) | 18.2 | 13.70 | 13.4 % |
+| `linear` | before (`base-tunnel-linear`) | 16.1 | 17.79 | 19.8 % |
+| `linear` | (a) 182/255 (`cand-a-tunnel-linear`) | 35.0 | 20.56 | 5.7 % |
+| `linear` | (b) 182/255 x (0.25, 0.26, 0.27) (`cand-b-tunnel-linear`) | 17.8 | 16.39 | 16.3 % |
+
+In `linear`, the mean difference is 17.79 before, 20.56 for (a) and 16.39 for (b): candidate (b) is kept, 4.17 below the other and 1.40 below the state before. The recipe's factor: `new Vector3(LegacyTunnelAmbient / 255f) * LegacyShadowTint`. After the cooking in the repository, the replays from the build folder itself (`final-tunnel-<mode>`) give a mean difference of 16.39 in `linear` and 13.70 in `legacy`, and are identical to the candidate's replays (largest mean difference per channel 0.00).
+
+### Cooked material
+
+`RacingGameCasaEngine/Content/Materials/Track/RoadTunnel.material`, read back:
+
+| Property | Value |
+|---|---|
+| base_color | 80, 80, 80 |
+| emissive_color | 0.1784314, 0.1855686, 0.1927059 |
+| emissive_texture | Texture.RoadTunnel |
+| base_color_texture | Texture.RoadTunnel |
+| rasterizer_state | CullNone |
+
+Cooked `.material` files that carry the key `emissive_texture`: 1 of 99.
+
+Cooker (`t2-cook-*.txt`, recipe already changed): `--verify` before the cooking in the repository 2 mismatches (all on `Materials/Track/RoadTunnel.material`); cooking 1 file written, 267 unchanged, catalogue 614 -> 614 entries; `--verify` after 0 mismatches; `--check`: "0 glTF models, images or cooked files without a cooked asset"; second pass 0 files written. Content files that differ from the commit this run starts from (`git diff --name-only HEAD`, taken when this section was generated): 1: `RoadTunnel.material`.
+
+`--verify-legacy-import-profile` (`t2-profile-stdout.txt`): "Legacy import profile verification passed.". `--smoke-frontend` (`t2-smoke-run.log`): "Smoke validation completed successfully" 2 time(s); lines with `[Warning]` or `[Error]`: 0.
+
+`RoadTunnel.material` of the build folder is identical, byte for byte, to the repository's (the build copies the content `PreserveNewest`; checked before the bench and again when this section was generated): yes.
+
+### Run
+
+- Game `RacingGameCasaEngine.exe --capture-reference-views artifacts/pbr-handover/s1c/ref/views.json --reference-capture-out <folder> --color-pipeline <mode>`, Debug build, engine `8a3933b36`. Folders: `legacy-a`, `legacy-b`, `linear-a`, `linear-b` (two runs per mode), each with its `run.log`.
+- `legacy`: lines `[CaptureBench] view ... pipeline legacy fxaaPasses 0` in `legacy-a/run.log` and `legacy-b/run.log`: 15 and 15 of 15; lines with a warning, an error or an exception: 0 and 0.
+- `linear`: lines `[CaptureBench] view ... pipeline linear fxaaPasses 1` in `linear-a/run.log` and `linear-b/run.log`: 15 and 15 of 15; lines with a warning, an error or an exception: 0 and 0.
+- Tunnel replays: `base-tunnel-linear`: 3 pipeline lines, 0 warnings or errors; `base-tunnel-legacy`: 3 pipeline lines, 0 warnings or errors; `cand-a-tunnel-linear`: 3 pipeline lines, 0 warnings or errors; `cand-a-tunnel-legacy`: 3 pipeline lines, 0 warnings or errors; `cand-b-tunnel-linear`: 3 pipeline lines, 0 warnings or errors; `cand-b-tunnel-legacy`: 3 pipeline lines, 0 warnings or errors; `final-tunnel-linear`: 3 pipeline lines, 0 warnings or errors; `final-tunnel-legacy`: 3 pipeline lines, 0 warnings or errors.
+
+### Scene against the original
+
+`legacy-a/run.log`, scene measure of each track (the `linear` runs give the same lines):
+
+| Track | Objects original / port | Matched | Missing | Extra | Shadow cast / receive mismatches |
+|---|---|---|---|---|---|
+| Beginner | 1147 / 1147 | 1147 | 0 | 0 | 0 / 0 |
+| Advanced | 1693 / 1693 | 1693 | 0 | 0 | 0 / 0 |
+| Expert | 3404 / 3404 | 3404 | 0 | 0 | 0 / 0 |
+
+12 of the 12 `scene-measure-*.txt` files (3 tracks, 2 modes, 2 runs) are identical, byte for byte, to those of the previous run (`s2/<mode>-a`).
+
+### Pictures against the original
+
+`compare-<mode>-nopost/report.md`, `compare-<mode>-full/report.md` (mean difference per channel R, G, B, and share of the original's edges found within 2 pixels in the port; `nopost` is the original without its post screen shaders). "Before" is the previous run, `artifacts/pbr-handover/s2/compare-<mode>-nopost/report.md`. The 15 views are those of `s1c/ref`; the tunnel views are measured above.
+
+`legacy`, mean difference per channel against the original, `nopost` and `full`:
+
+| View | R, G, B `nopost` | Before | Edges | Edges before | R, G, B `full` | Before |
+|---|---|---|---|---|---|---|
+| Beginner-start | 20.96, 18.60, 15.15 | 20.96, 18.60, 15.15 | 95.0 % | 95.0 % | 40.05, 30.86, 24.19 | 40.05, 30.86, 24.19 |
+| Beginner-sector-20 | 31.56, 32.08, 30.81 | 31.56, 32.08, 30.81 | 74.0 % | 74.0 % | 47.89, 43.15, 41.29 | 47.89, 43.15, 41.29 |
+| Beginner-sector-50 | 28.56, 24.73, 20.14 | 28.60, 24.78, 20.18 | 75.8 % | 75.3 % | 58.72, 47.21, 38.10 | 58.77, 47.26, 38.15 |
+| Beginner-sector-80 | 25.88, 23.71, 18.64 | 25.88, 23.71, 18.64 | 97.6 % | 97.6 % | 53.49, 44.64, 34.32 | 53.49, 44.64, 34.32 |
+| Beginner-overview | 17.83, 15.64, 12.55 | 17.84, 15.65, 12.56 | 90.0 % | 90.0 % | 43.28, 34.19, 28.22 | 43.29, 34.20, 28.23 |
+| Advanced-start | 24.65, 21.13, 16.43 | 24.65, 21.13, 16.43 | 89.6 % | 89.6 % | 55.00, 43.30, 33.83 | 55.00, 43.30, 33.83 |
+| Advanced-sector-20 | 33.63, 28.31, 23.15 | 33.72, 28.40, 23.25 | 78.4 % | 78.1 % | 62.82, 48.53, 40.01 | 62.91, 48.62, 40.10 |
+| Advanced-sector-50 | 29.63, 24.55, 20.20 | 29.64, 24.56, 20.21 | 80.4 % | 80.4 % | 59.96, 44.76, 36.07 | 59.96, 44.76, 36.08 |
+| Advanced-sector-80 | 21.82, 18.03, 13.51 | 21.82, 18.03, 13.51 | 93.9 % | 93.9 % | 50.13, 37.64, 28.88 | 50.13, 37.64, 28.88 |
+| Advanced-overview | 21.74, 18.22, 13.70 | 21.74, 18.22, 13.70 | 90.1 % | 90.1 % | 49.09, 38.12, 29.38 | 49.09, 38.12, 29.38 |
+| Expert-start | 18.91, 16.60, 13.21 | 18.92, 16.60, 13.21 | 95.8 % | 95.8 % | 40.83, 30.49, 24.02 | 40.83, 30.49, 24.02 |
+| Expert-sector-20 | 27.21, 23.65, 17.83 | 27.21, 23.65, 17.83 | 90.0 % | 90.0 % | 51.52, 40.25, 29.93 | 51.52, 40.25, 29.93 |
+| Expert-sector-50 | 24.94, 21.95, 17.71 | 24.94, 21.95, 17.71 | 84.4 % | 84.4 % | 52.94, 43.14, 35.11 | 52.94, 43.14, 35.11 |
+| Expert-sector-80 | 20.37, 17.05, 13.20 | 20.38, 17.06, 13.21 | 79.1 % | 78.9 % | 43.42, 31.78, 24.08 | 43.44, 31.79, 24.09 |
+| Expert-overview | 18.14, 16.08, 13.22 | 18.14, 16.08, 13.22 | 96.0 % | 96.0 % | 44.59, 36.23, 30.51 | 44.59, 36.24, 30.52 |
+
+`legacy`, mean over the 15 views of the `nopost` difference: 24.39, 21.36, 17.30 (before 24.40, 21.37, 17.31).
+
+`linear`, mean difference per channel against the original, `nopost` and `full`:
+
+| View | R, G, B `nopost` | Before | Edges | Edges before | R, G, B `full` | Before |
+|---|---|---|---|---|---|---|
+| Beginner-start | 20.41, 19.75, 18.77 | 20.41, 19.75, 18.77 | 97.6 % | 97.6 % | 31.93, 27.67, 25.02 | 31.93, 27.67, 25.02 |
+| Beginner-sector-20 | 39.08, 40.85, 40.10 | 39.08, 40.85, 40.10 | 66.3 % | 66.3 % | 45.15, 43.70, 42.60 | 45.15, 43.70, 42.60 |
+| Beginner-sector-50 | 22.12, 21.24, 21.73 | 22.12, 21.24, 21.74 | 80.0 % | 79.9 % | 42.49, 34.63, 31.33 | 42.50, 34.63, 31.33 |
+| Beginner-sector-80 | 18.57, 18.79, 18.29 | 18.57, 18.79, 18.29 | 98.6 % | 98.6 % | 41.34, 36.75, 30.74 | 41.34, 36.75, 30.74 |
+| Beginner-overview | 19.24, 17.20, 16.17 | 19.25, 17.20, 16.17 | 97.3 % | 97.3 % | 28.54, 24.76, 23.87 | 28.54, 24.76, 23.87 |
+| Advanced-start | 14.62, 14.68, 14.87 | 14.62, 14.68, 14.87 | 94.3 % | 94.3 % | 37.77, 29.94, 24.50 | 37.77, 29.94, 24.50 |
+| Advanced-sector-20 | 23.89, 22.65, 21.89 | 23.91, 22.67, 21.90 | 83.8 % | 83.8 % | 45.90, 36.48, 33.03 | 45.92, 36.49, 33.04 |
+| Advanced-sector-50 | 15.98, 15.09, 15.69 | 15.98, 15.09, 15.69 | 85.7 % | 85.7 % | 42.51, 32.86, 29.78 | 42.51, 32.86, 29.78 |
+| Advanced-sector-80 | 15.46, 16.13, 16.88 | 15.46, 16.13, 16.88 | 97.4 % | 97.4 % | 34.48, 26.36, 22.79 | 34.48, 26.36, 22.79 |
+| Advanced-overview | 18.55, 15.33, 13.17 | 18.55, 15.33, 13.17 | 98.5 % | 98.5 % | 32.57, 26.60, 22.76 | 32.57, 26.60, 22.76 |
+| Expert-start | 15.60, 14.72, 13.81 | 15.60, 14.72, 13.81 | 97.5 % | 97.5 % | 29.16, 22.68, 20.59 | 29.16, 22.68, 20.59 |
+| Expert-sector-20 | 17.91, 19.83, 19.59 | 17.91, 19.83, 19.59 | 97.1 % | 97.1 % | 36.66, 32.54, 28.08 | 36.66, 32.54, 28.08 |
+| Expert-sector-50 | 19.15, 20.23, 20.31 | 19.15, 20.23, 20.31 | 90.1 % | 90.1 % | 37.49, 31.60, 27.28 | 37.49, 31.60, 27.28 |
+| Expert-sector-80 | 16.21, 16.93, 18.17 | 16.21, 16.93, 18.17 | 93.8 % | 93.8 % | 28.39, 24.24, 23.22 | 28.39, 24.24, 23.23 |
+| Expert-overview | 20.06, 17.76, 16.15 | 20.06, 17.76, 16.15 | 98.0 % | 98.0 % | 30.39, 26.70, 25.01 | 30.39, 26.70, 25.01 |
+
+`linear`, mean over the 15 views of the `nopost` difference: 19.79, 19.41, 19.04 (before 19.79, 19.41, 19.04).
+
+Change from the picture of the same view of the previous run, mean of the three channels (`compare-<mode>-vs-s2/report.md`):
+
+| View | `legacy` | `linear` |
+|---|---|---|
+| Beginner-start | 0.00 | 0.00 |
+| Beginner-sector-20 | 0.00 | 0.00 |
+| Beginner-sector-50 | 0.05 | 0.01 |
+| Beginner-sector-80 | 0.00 | 0.00 |
+| Beginner-overview | 0.01 | 0.00 |
+| Advanced-start | 0.00 | 0.00 |
+| Advanced-sector-20 | 0.09 | 0.02 |
+| Advanced-sector-50 | 0.01 | 0.00 |
+| Advanced-sector-80 | 0.00 | 0.00 |
+| Advanced-overview | 0.00 | 0.00 |
+| Expert-start | 0.00 | 0.00 |
+| Expert-sector-20 | 0.00 | 0.00 |
+| Expert-sector-50 | 0.00 | 0.00 |
+| Expert-sector-80 | 0.01 | 0.00 |
+| Expert-overview | 0.01 | 0.00 |
+
+`legacy`: 8 of the 15 views differ from the previous run's by their hash; pixels that differ, and their bounding box (x0, y0, x1, y1): `Advanced-sector-20` 6185 (0, 324, 285, 414); `Beginner-sector-50` 3487 (305, 172, 496, 219); `Expert-sector-80` 783 (592, 189, 687, 234); `Beginner-overview` 619 (816, 334, 879, 359); `Advanced-sector-50` 490 (223, 32, 267, 53); `Expert-overview` 461 (1040, 395, 1085, 425); `Expert-start` 38 (801, 196, 826, 201); `Advanced-overview` 2 (136, 493, 287, 619). The two largest, `Advanced-sector-20` and `Beginner-sector-50`, were looked at against the original (`artifacts/pbr-handover/s3/crops/Advanced-sector-20-linear.png` and `Beginner-sector-50-linear.png`: original `nopost`, previous run, this run): they show the outside of a tunnel, which takes the same material and now shows its texture.
+
+`linear`: 8 of the 15 views differ from the previous run's by their hash; pixels that differ, and their bounding box (x0, y0, x1, y1): `Advanced-sector-20` 6130 (0, 323, 285, 415); `Beginner-sector-50` 3452 (305, 171, 497, 219); `Expert-sector-80` 789 (591, 189, 687, 235); `Beginner-overview` 682 (816, 333, 880, 359); `Advanced-sector-50` 523 (223, 31, 267, 53); `Expert-overview` 515 (767, 362, 1085, 425); `Expert-start` 64 (637, 195, 826, 371); `Advanced-overview` 1 (136, 619, 136, 619). The two largest, `Advanced-sector-20` and `Beginner-sector-50`, were looked at against the original (`artifacts/pbr-handover/s3/crops/Advanced-sector-20-linear.png` and `Beginner-sector-50-linear.png`: original `nopost`, previous run, this run): they show the outside of a tunnel, which takes the same material and now shows its texture.
+
+Mean luminance of the 15 pictures: original 96.3; port in `legacy` 82.3 (before 82.3); port in `linear` 104.0 (before 104.0).
+
+### Light and shadow probes
+
+`compare-<mode>-probes/probes.md`; the previous columns are `s2/compare-<mode>-probes/probes.md`. The criterion 3 of the previous run, 27 of 33, is the figure this run must not lower.
+
+| Criterion | `legacy` passed | `linear` passed | Judged | previous `legacy` passed | previous `linear` passed |
+|---|---|---|---|---|---|
+| 1. lit and away within +-12 | 6 | 16 | 34 | 6 | 16 |
+| 2. shadow/lit ratio within +-0.05 (per view and surface) | 2 | 0 | 4 | 2 | 0 |
+| 3. class agreement (shadow shadowed, lit lit) | 27 | 27 | 33 | 27 | 27 |
+| 4. away-shadowed within +-12 | 3 | 3 | 3 | 3 | 3 |
+
+Shadow over lit luminance ratio, in the order of the report (terrain, city, road, terrain): original 0.284, 0.276, 0.228, 0.267; port in `legacy` 0.271, 1.883, 0.726, 0.266 (before 0.271, 1.883, 0.726, 0.266); port in `linear` 0.154, 3.143, 0.847, 0.138 (before 0.154, 3.143, 0.847, 0.138).
+
+### Repeatability
+
+`legacy`: two runs (`legacy-a`, `legacy-b`, `compare-legacy-repeat/report.md`): 13 identical files of 15. Different by their hash: `Advanced-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-start.png` (mean difference 0.00, 0.00, 0.00).
+
+`linear`: two runs (`linear-a`, `linear-b`, `compare-linear-repeat/report.md`): 13 identical files of 15. Different by their hash: `Advanced-overview.png` (mean difference 0.00, 0.00, 0.00), `Expert-overview.png` (mean difference 0.00, 0.00, 0.00).
+
+### Other references of this machine
+
+UI captures (`ref-ui/`, default colour pipeline, `linear`) against the previous run's `artifacts/pbr-handover/s2/ref-ui` (`ui-compare/report.txt`).
+
+| State | R | G | B |
+|---|---|---|---|
+| splash | 0.00 | 0.00 | 0.00 |
+| main-menu | 0.00 | 0.00 | 0.00 |
+| highscores | 0.00 | 0.00 | 0.00 |
+| options | 0.00 | 0.00 | 0.00 |
+| help | 0.00 | 0.00 | 0.00 |
+| car-selection | 0.00 | 0.00 | 0.00 |
+| track-selection | 0.00 | 0.00 | 0.00 |
+| race-hud | 0.00 | 0.00 | 0.00 |
+| pause | 0.00 | 0.00 | 0.00 |
+| race-finished | 0.00 | 0.00 | 0.00 |
+
+Track audit (`ref-audit/`, 30 captures, default colour pipeline, `linear`) against `artifacts/pbr-handover/s2/ref-audit`: largest channel difference 4.302 (`audit-Beginner-helper-tunnel`), smallest 0.000 (`audit-Advanced-helper-laterns`). The three `audit-<track>-helper-tunnel` captures have, over the whole picture, a mean share of 7.1 % of pixels of luminance under 10 (previous run: 19.7 %). The reference of the port on this PC is now `artifacts/pbr-handover/s3/`: `legacy-a`, `linear-a`, `ref-ui` and `ref-audit`.
+

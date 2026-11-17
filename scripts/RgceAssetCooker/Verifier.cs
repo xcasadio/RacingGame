@@ -353,6 +353,8 @@ internal sealed class Verifier
         Check("metallic", Float("metallic"), recipe.Metallic);
         Check("roughness", Float("roughness"), recipe.Roughness);
         Check("emissive_color", Vector("emissive_color"), recipe.EmissiveColor);
+        // The key is only cooked for a recipe that names an emissive texture: an absent key reads as the null id.
+        Check("emissive_texture", actual.TryGetPropertyValue("emissive_texture", out MaterialValue? emissiveTexture) && emissiveTexture.TryGetTextureId(out Guid emissiveTextureId) ? emissiveTextureId : Guid.Empty, cooked.EmissiveTextureId);
         Check("clear_coat", Float("clear_coat"), recipe.ClearCoat);
         Check("clear_coat_roughness", Float("clear_coat_roughness"), recipe.ClearCoatRoughness);
         Check("alpha_cutoff", Float("alpha_cutoff"), recipe.AlphaCutoff);
