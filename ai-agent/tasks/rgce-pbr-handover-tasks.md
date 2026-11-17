@@ -1035,6 +1035,32 @@ Règles communes : celles de S1g. Sorties sous `artifacts/pbr-handover/s1h/`. R�
 
 ---
 
+## Phase 13 — Couleur d'ambiant du monde de course (O13)
+
+Décision de l'auteur (2026-11-17, après la mesure notée en O13) : la couleur d'ambiant du monde de course passe de blanc à 0,05, le défaut du moteur. Le reste de O13 (16 points de luminance en trop, rapports d'ombre en `linear`, pavés de la ville, couleur de base du sol de ville) reste ouvert.
+
+Retour arrière : annuler les commits de cette phase. Référence d'avant : `artifacts/pbr-handover/s1h/` ; mesure attendue : `artifacts/pbr-handover/o13/amb005-linear` et `amb005-legacy`.
+
+### ⏳ T13.1 — Ambiant à 0,05, banc et références
+
+- Fichiers : `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs` (`AmbientColor` = `new Vector3(0.05f)`, en constante nommée ; le commentaire dit que c'est le défaut du moteur, qu'il multiplie l'irradiance du ciel dans `lit-pbr`, et renvoie à cette phase ; le commentaire actuel, qui dit que ces valeurs sont celles que le monde doit avoir, est corrigé) ; `docs/racinggame-3d-capture-bench-local-baseline.md` (section « After the ambient colour change », générée par script, mode de chaque chiffre indiqué) ; ce plan.
+- Étapes : changement ; build ; banc complet vers `artifacts/pbr-handover/s13/` comme en T12.3 (deux rejeux par mode, `nopost`, `full`, sondes, répétabilité, comparaison avec `s1h`), nouvelles références d'audit et d'interface.
+- Validation :
+  - build à 0 erreur ; `--smoke-frontend` en succès ; journaux sans avertissement ni erreur ;
+  - les rejeux `linear` et `legacy` sont à 0,00 de moyenne par canal de `o13/amb005-linear` et `o13/amb005-legacy` sur les 15 vues ;
+  - mesure de scène égale octet pour octet à celle de `s1h` ; critère 3 des sondes au moins 27 sur 33 dans les deux modes ;
+  - interface : les sept écrans hors course à 0,00 contre `s1h/ref-ui` ; `race-hud`, `pause`, `race-finished` notés ;
+  - aucun fichier de contenu changé ; chiffres du doc relus par script contre les sorties.
+- Arrêts : un rejeu différent de la mesure `o13` ; critère 3 sous 27.
+- Commit : `fix(racing-casa): use the engine's default ambient colour in the race world`
+
+### ⏳ T13.2 — Vérification indépendante
+
+- Objectif : un `verifier` frais confirme ou réfute les validations de T13.1 par ses propres lancements, et que rien d'autre n'a changé.
+- Commit : `docs(ai-agent): record the verification of the ambient colour change`
+
+---
+
 ## Points ouverts
 
 À trancher pendant l'exécution, ou à remonter en ⚠️ Blocked si la réponse manque.
