@@ -235,7 +235,7 @@ namespace RacingGame.GameScreens
             RacingGameManager.Player.HoldCountdown = true;
             BaseGame.LightDirection = LensFlare.DefaultLightPos;
 
-            views = BuildViews();
+            views = CaptureOptions.TunnelViewsOnly ? BuildTunnelViews() : BuildViews();
             exportedViews = new List<object>();
             foreach (CaptureView view in views)
             {
@@ -320,6 +320,57 @@ namespace RacingGame.GameScreens
             });
 
             return result;
+        }
+
+        /// <summary>
+        /// --tunnel-views: one view inside the longest tunnel of the track, for the light of the tunnel (the usual views never
+        /// enter one). The longest range of type Tunnel of the road helpers (the first one when two are as long); the camera sits at
+        /// the road point a quarter of the way into that range, 2 m above it along the up vector of the point; it looks at the first
+        /// road point further along the range that is at least 15 m away from the camera point, 1.5 m above it along its up vector.
+        /// The car is placed at the camera point and not drawn, as in the other views that do not show it. A track without a tunnel
+        /// fails the capture.
+        /// </summary>
+        private static List<CaptureView> BuildTunnelViews()
+        {
+            const float CameraHeight = 2.0f;
+            const float TargetHeight = 1.5f;
+            const float MinTargetDistance = 15.0f;
+
+            Tracks.Track track = RacingGameManager.Landscape.Track;
+            List<Tracks.TrackVertex> points = track.Points;
+            Tracks.TrackLine.RoadHelperPosition longest = null;
+            foreach (Tracks.TrackLine.RoadHelperPosition helper in track.HelperPositions)
+                if (helper.type == Tracks.TrackData.RoadHelper.HelperType.Tunnel &&
+                    (longest == null || helper.endNum - helper.startNum > longest.endNum - longest.startNum))
+                    longest = helper;
+            if (longest == null)
+                throw new InvalidOperationException("The track has no tunnel for --tunnel-views.");
+
+            int cameraIndex = longest.startNum + (longest.endNum - longest.startNum) / 4;
+            int targetIndex = cameraIndex + 1;
+            while (targetIndex < longest.endNum &&
+                Vector3.Distance(points[cameraIndex].pos, points[targetIndex].pos) < MinTargetDistance)
+                targetIndex++;
+            if (Vector3.Distance(points[cameraIndex].pos, points[targetIndex].pos) < MinTargetDistance)
+                throw new InvalidOperationException("The longest tunnel is too short for --tunnel-views.");
+
+            Tracks.TrackVertex camera = points[cameraIndex];
+            Tracks.TrackVertex target = points[targetIndex];
+            Console.WriteLine("Track audit capture: tunnel " + longest.startNum + "-" + longest.endNum +
+                ", camera at road point " + cameraIndex + ", target at road point " + targetIndex);
+            return new List<CaptureView>
+            {
+                new CaptureView
+                {
+                    Name = "tunnel",
+                    Position = camera.pos + Vector3.Normalize(camera.up) * CameraHeight,
+                    Target = target.pos + Vector3.Normalize(target.up) * TargetHeight,
+                    CarPosition = camera.pos,
+                    CarDirection = Vector3.Normalize(camera.dir),
+                    CarUp = Vector3.Normalize(camera.up),
+                    CarVisible = false,
+                },
+            };
         }
 
         /// <summary>

@@ -14,6 +14,15 @@ namespace RacingGame.Helpers
     {
         public const string CaptureArgument = "--capture-track-audit";
 
+        /// <summary>
+        /// Option of the capture: export only the view inside the longest tunnel of each track (one per track), instead of the
+        /// usual five. Without it the capture is unchanged.
+        /// </summary>
+        public const string TunnelViewsArgument = "--tunnel-views";
+
+        /// <summary>True with --tunnel-views: only the tunnel view of each track is exported.</summary>
+        public static bool TunnelViewsOnly { get; private set; }
+
         /// <summary>True when the game runs the track audit capture instead of its menus.</summary>
         public static bool Enabled { get; private set; }
 
@@ -47,7 +56,11 @@ namespace RacingGame.Helpers
             for (int i = 0; i < args.Length; i++)
             {
                 string arg = args[i];
-                if (string.Equals(arg, "--seed", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(arg, TunnelViewsArgument, StringComparison.OrdinalIgnoreCase))
+                {
+                    TunnelViewsOnly = true;
+                }
+                else if (string.Equals(arg, "--seed", StringComparison.OrdinalIgnoreCase))
                 {
                     Seed = int.Parse(RequireValue(args, ref i, arg), CultureInfo.InvariantCulture);
                 }

@@ -99,6 +99,17 @@ namespace RacingGame.Tracks
         }
 
         /// <summary>
+        /// Tunnel, palm and latern ranges of the generated road, read by the capture export.
+        /// </summary>
+        internal IList<RoadHelperPosition> HelperPositions
+        {
+            get
+            {
+                return helperPositions;
+            }
+        }
+
+        /// <summary>
         /// Road helper position
         /// </summary>
         public class RoadHelperPosition

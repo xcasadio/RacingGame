@@ -12,6 +12,8 @@ Compares the 3D reference captures of the original RacingGame with the CasaEngin
 
    It writes `views.json`, `scene.json` (the generated track points and every placed object of each track) and, for each of the 3 tracks, 5 views (`start`, `sector-20`, `sector-50`, `sector-80`, `overview`) in two variants: `<Track>-<view>-full.png` (as the game looks) and `<Track>-<view>-nopost.png` (post screen shaders off). The default size is 1280x720 (`--size WxH` changes it; it must fit on the desktop).
 
+   `--tunnel-views` exports only one view per track, `<Track>-tunnel`, taken inside the longest tunnel (the longest `Tunnel` range of the road helpers; the camera is at the road point a quarter of the way into the range, 2 m above it along the point's up vector, looking at the first road point at least 15 m further along the range, 1.5 m above it; the car is placed at the camera point and not drawn), in the same two variants, with `views.json` and `scene.json` as above. It is for the light of the tunnels, which none of the five usual views shows; without the option nothing changes (the 30 files, `views.json` and `scene.json` are identical to those of an earlier run).
+
 2. Port (replays the cameras of `views.json`, same size and projection):
 
    ```
