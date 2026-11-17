@@ -43,5 +43,5 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0027 | RacingGameCasaEngine places the track objects as the original does | Proposed | 2026-11-16 |
 | ADR-0028 | RacingGameCasaEngine cooks the race world materials as PBR, from the surface families of their recipes | Accepted | 2026-11-17 |
 | ADR-0029 | RacingGameCasaEngine builds the road underside and the city ground plane of the original | Proposed | 2026-11-17 |
-| ADR-0030 | RacingGameCasaEngine lights the tunnel with the original's material ambient as an emissive texture | Proposed | 2026-11-17 |
+| ADR-0030 | RacingGameCasaEngine lights the tunnel with the original's material ambient as an emissive texture | Accepted | 2026-11-17 |
 | ADR-0031 | RacingGameCasaEngine lights the car selection carousel at the PBR scale and sets the ambient colour of both worlds to 0.05 | Proposed | 2026-11-17 |

@@ -246,13 +246,10 @@ public static class RaceMaterialRecipes
     // The tunnel's material ambient A of the original is 182 (Tracks/Track.cs:84-89, "Use mainly ambient color (tunnel uses
     // lightmaps)"). The original renders texture * (A + D * N.L); lit-pbr has no ambient per material, so the term texture * A is an
     // emissive: the emissive colour below times the diffuse texture, added by the engine without the shadow tint (LitPbr.fx:521-557).
-    // The original's ambient does take the shadow tint, since its shadow mask multiplies the whole image by (0.25, 0.26, 0.27)
-    // (Core/Content/Shaders/ShadowMap.fx:36 and :240), and the tunnel is a shadow receiver (Track.UseShadow): the emissive colour is
-    // A / 255 times that tint. Measured against the original on the tunnel views, this beat A / 255 alone (ADR-0030, plan
-    // ai-agent/tasks/rgce-pbr-handover-tasks.md, phase 15).
-    private const byte LegacyTunnelAmbient = 182;
-    private static readonly Vector3 LegacyShadowTint = new(0.25f, 0.26f, 0.27f);
-    private static readonly Vector3 LegacyTunnelEmissiveFactor = new Vector3(LegacyTunnelAmbient / 255f) * LegacyShadowTint;
+    // The level is the author's choice (2026-11-17, ADR-0030, open point O16 of ai-agent/tasks/rgce-pbr-handover-tasks.md): a neutral
+    // grey of 0.5 on the three channels, between A / 255 (182 / 255 = 0.714, the original's ambient, measured too bright) and A / 255
+    // times the original's shadow tint (0.25, 0.26, 0.27), about 0.18 (measured too dark: the tunnel barely changed).
+    private static readonly Vector3 LegacyTunnelEmissiveFactor = new(0.5f);
 
     /// <summary>
     /// The road tunnels: RacingGame's roadTunnelMaterial (Track.cs), "mainly ambient color" with ambient (182, 182, 182),

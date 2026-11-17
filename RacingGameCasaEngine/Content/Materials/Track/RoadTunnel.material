@@ -26,9 +26,9 @@
     "metallic": 0.0,
     "roughness": 0.85,
     "emissive_color": {
-      "x": 0.17843138,
-      "y": 0.18556863,
-      "z": 0.1927059
+      "x": 0.5,
+      "y": 0.5,
+      "z": 0.5
     },
     "clear_coat": 0.0,
     "clear_coat_roughness": 0.1,

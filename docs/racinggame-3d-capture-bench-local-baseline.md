@@ -1652,3 +1652,74 @@ The interface captures of the corrected build (`fixui/`, `--capture-ui-screens`)
 
 The other figures of the bench do not change. The repeatability figures of the earlier sections (12 to 14 identical files of 15) were this noise: at most 22 pixels in a view of 921,600, mean differences of 0.00.
 
+
+## After the tunnel emissive level
+
+Twelfth run, on 2026-11-17, after task T15.4 of the plan (ADR-0030, accepted): the author chose the level of the tunnel's emissive colour, a neutral grey of 0.5 on the three channels, in place of 182/255 times the original's shadow tint (about 0.18, candidate (b) of the previous section). The intermediate values 0.4, 0.5 and 0.6 had been measured on copies of the build folder (`artifacts/pbr-handover/o16/`); this run writes 0.5 in the recipe, cooks it once in the repository and measures the result. The run before it is `artifacts/pbr-handover/s3/` for the 15 views (the reference of the port), `s3/final-tunnel-<mode>` for the tunnel views (candidate (b)), `s4/ref-ui` for the interface. Outputs under `artifacts/pbr-handover/s3b/`. Since slice S5 two replays of one build are byte-identical, while the captures of `s3` carry the old noise on three views; the views that change are therefore taken against `s5/fix-<mode>-1`, a replay of the build just before this change, and `s3` is compared by mean difference.
+
+### Change
+
+`RaceMaterialRecipes.LegacyTunnelEmissiveFactor` = `new(0.5f)` (it was `new Vector3(LegacyTunnelAmbient / 255f) * LegacyShadowTint`; the two constants it used are removed, nothing else read them).
+
+`RoadTunnel.material`, read back: `emissive_color` 0.5, 0.5, 0.5; `base_color` 80, 80, 80; `emissive_texture` and the other values unchanged.
+
+Cooker (`cook-*.txt`, recipe already changed): `--verify` before the cooking 1 mismatch (`Materials/Track/RoadTunnel.material`, `emissive_color`); cooking 1 file written, 267 unchanged, catalogue 614 -> 614 entries; `--verify` after 0 mismatches; `--check`: "0 glTF models, images or cooked files without a cooked asset"; second pass 0 files written. Content files that differ from the commit this run starts from (`git diff --name-only HEAD`, taken when this section was generated): 1: `RoadTunnel.material`.
+
+`RoadTunnel.material` of the build folder is identical, byte for byte, to the repository's (checked before any replay and again when this section was generated): yes. `--verify-legacy-import-profile`: "Legacy import profile verification passed.". `--smoke-frontend`: "Smoke validation completed successfully" 2 time(s); lines with `[Warning]` or `[Error]`: 0.
+
+### Tunnel views
+
+The three views inside the tunnels of the original (`s3/ref-tunnel`, `nopost`), replayed by the game from its build folder (`tunnel-<mode>`); before is candidate (b) of the previous section (`s3/final-tunnel-<mode>`). Mean luminance of the port (of the original), mean difference per channel with the original (R, G, B, and their mean), share of pixels of luminance under 10 (of the original), share of pixels with the three channels at 255.
+
+| Mode | View | State | Luminance (original) | R, G, B difference | Mean | Dark share (original) | At 255 |
+|---|---|---|---|---|---|---|---|
+| `legacy` | Beginner | before (b) | 15.5 (18.2) | 6.48, 6.10, 6.02 | 6.20 | 17.0 % (28.8 %) | 0.002 % |
+| `legacy` | Beginner | 0.5 | 26.0 (18.2) | 12.76, 12.67, 12.55 | 12.66 | 7.2 % (28.8 %) | 0.002 % |
+| `legacy` | Advanced | before (b) | 16.2 (36.8) | 22.18, 21.83, 20.16 | 21.39 | 17.8 % (10.3 %) | 0.002 % |
+| `legacy` | Advanced | 0.5 | 25.4 (36.8) | 18.49, 18.59, 17.79 | 18.29 | 1.0 % (10.3 %) | 0.002 % |
+| `legacy` | Expert | before (b) | 22.8 (34.0) | 13.71, 13.54, 13.24 | 13.50 | 5.4 % (11.0 %) | 0.000 % |
+| `legacy` | Expert | 0.5 | 38.2 (34.0) | 12.07, 11.82, 11.52 | 11.80 | 0.1 % (11.0 %) | 0.000 % |
+| `linear` | Beginner | before (b) | 17.5 (18.2) | 8.36, 8.35, 8.63 | 8.45 | 19.9 % (28.8 %) | 0.000 % |
+| `linear` | Beginner | 0.5 | 25.2 (18.2) | 11.84, 12.30, 12.60 | 12.25 | 12.7 % (28.8 %) | 0.000 % |
+| `linear` | Advanced | before (b) | 17.0 (36.8) | 22.73, 23.45, 22.79 | 22.99 | 19.6 % (10.3 %) | 0.000 % |
+| `linear` | Advanced | 0.5 | 22.5 (36.8) | 20.15, 21.28, 21.12 | 20.85 | 6.4 % (10.3 %) | 0.000 % |
+| `linear` | Expert | before (b) | 18.8 (34.0) | 17.38, 17.77, 18.04 | 17.73 | 9.3 % (11.0 %) | 0.000 % |
+| `linear` | Expert | 0.5 | 33.3 (34.0) | 15.52, 15.91, 16.07 | 15.83 | 2.5 % (11.0 %) | 0.000 % |
+
+Over the three views:
+
+| Mode | State | Mean luminance | Mean difference per channel | Mean dark share |
+|---|---|---|---|---|
+| `legacy` | before (b) | 18.2 | 13.70 | 13.4 % |
+| `legacy` | 0.5 | 29.9 | 14.25 | 2.8 % |
+| `linear` | before (b) | 17.8 | 16.39 | 16.3 % |
+| `linear` | 0.5 | 27.0 | 16.31 | 7.2 % |
+
+In `linear`, the three views replayed from the build folder are identical byte for byte to those of the measure on a copy of the build folder (`o16/f0.5`): 3 of 3 (largest mean difference per channel 0.00). The sheet of the original, the previous state and this one is `artifacts/pbr-handover/s3b/sheet-tunnel.png`. No pixel of a view is at 255 in `linear`; in `legacy` the share is 0.002 % at most.
+
+### The 15 views, scene and probes
+
+- `legacy` (`legacy-a`, `legacy-b`): pipeline lines 15 and 15 of 15; warnings or errors 0 and 0; the two replays are identical byte for byte on 15 of 15 views.
+- `linear` (`linear-a`, `linear-b`): pipeline lines 15 and 15 of 15; warnings or errors 0 and 0; the two replays are identical byte for byte on 15 of 15 views.
+
+12 of the 12 `scene-measure-*.txt` files (3 tracks, 2 modes, 2 runs) are identical, byte for byte, to those of `s3`.
+
+| Criterion | `legacy` passed | `linear` passed | Judged | `s3` `legacy` | `s3` `linear` |
+|---|---|---|---|---|---|
+| 1. lit and away within +-12 | 6 | 16 | 34 | 6 | 16 |
+| 2. shadow/lit ratio within +-0.05 (per view and surface) | 2 | 0 | 4 | 2 | 0 |
+| 3. class agreement (shadow shadowed, lit lit) | 27 | 27 | 33 | 27 | 27 |
+| 4. away-shadowed within +-12 | 3 | 3 | 3 | 3 | 3 |
+
+`legacy`: 7 of the 15 views differ from `s5/fix-legacy-1` (the replay of the build just before this change); pixels that differ and their box (x0, y0, x1, y1): `Advanced-sector-20` 6185 (0, 324, 285, 414); `Beginner-sector-50` 3487 (305, 172, 496, 219); `Expert-sector-80` 783 (592, 189, 687, 234); `Beginner-overview` 619 (816, 334, 879, 359); `Advanced-sector-50` 490 (223, 32, 267, 53); `Expert-overview` 461 (1040, 395, 1085, 425); `Expert-start` 38 (801, 196, 826, 201). Against `s3`, largest mean difference per channel of the 15 views: 0.16. The two largest, `Advanced-sector-20` and `Beginner-sector-50`, were looked at against the original (`artifacts/pbr-handover/s3b/crops/Advanced-sector-20-linear.png` and `Beginner-sector-50-linear.png`: original `nopost`, before, this run): the outside faces of tunnels, which show more of the tunnel texture.
+
+`linear`: 7 of the 15 views differ from `s5/fix-linear-1` (the replay of the build just before this change); pixels that differ and their box (x0, y0, x1, y1): `Advanced-sector-20` 6720 (0, 323, 286, 415); `Beginner-sector-50` 3974 (305, 171, 498, 219); `Expert-sector-80` 949 (591, 188, 688, 235); `Beginner-overview` 782 (815, 333, 880, 363); `Expert-overview` 613 (1039, 394, 1086, 426); `Advanced-sector-50` 592 (222, 31, 270, 54); `Expert-start` 84 (800, 195, 827, 202). Against `s3`, largest mean difference per channel of the 15 views: 0.12. The two largest, `Advanced-sector-20` and `Beginner-sector-50`, were looked at against the original (`artifacts/pbr-handover/s3b/crops/Advanced-sector-20-linear.png` and `Beginner-sector-50-linear.png`: original `nopost`, before, this run): the outside faces of tunnels, which show more of the tunnel texture.
+
+Mean luminance of the 15 pictures against the original (96.3): `legacy` 82.4, `linear` 104.0.
+
+### Other references of this machine
+
+Interface captures (`ref-ui/`) against `s4/ref-ui`: 10 of 10 screens at 0.00 (`ui-compare/report.txt`).
+
+Track audit (`ref-audit/`, 30 captures) against `s3/ref-audit`: the three captures of the tunnels, `audit-<track>-helper-tunnel`, differ by (largest channel) Advanced 5.662, Beginner 20.468, Expert 12.593; the largest of the other 27 captures is 0.043. The new references of this machine are `artifacts/pbr-handover/s3b/ref-ui` and `ref-audit`.
+
