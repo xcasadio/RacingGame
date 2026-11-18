@@ -86,6 +86,19 @@ public sealed record RaceMaterialRecipe
     /// </summary>
     public float EmissiveShadowFactor { get; init; }
 
+    /// <summary>
+    /// The occlusion texture (its red channel), or <c>null</c> when the material has none (every material but the road's): the cooker
+    /// then writes neither the <c>occlusion_texture</c> nor the <c>occlusion_strength</c> key. The engine's <c>lit-pbr</c> occlusion,
+    /// 1 + <see cref="OcclusionStrength"/> x (red - 1), scales the image-based light only, never the direct light.
+    /// </summary>
+    public string? OcclusionTextureFilePath { get; init; }
+
+    /// <summary>
+    /// How much the occlusion texture applies, 0 (none) to 1 (the full red channel). Only cooked, as <c>occlusion_strength</c>, with
+    /// an <see cref="OcclusionTextureFilePath"/>.
+    /// </summary>
+    public float OcclusionStrength { get; init; } = 1f;
+
     public RenderQueue Queue { get; init; } = RenderQueue.Opaque;
 
     public float AlphaCutoff { get; init; } = 0.5f;

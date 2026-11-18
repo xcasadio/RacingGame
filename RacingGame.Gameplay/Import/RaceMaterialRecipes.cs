@@ -20,6 +20,9 @@ public static class RaceMaterialRecipes
     public const string RoadColumnTextureName = "RoadCement.png";
     public const string RoadColumnNormalTextureName = "RoadCementNormal.png";
     public const string RoadNormalTextureName = "RoadNormal.png";
+
+    // A 4x4 opaque black image: the occlusion texture of the road, see ForRoad.
+    public const string RoadOcclusionTextureName = "NoEnvironmentLight.png";
     public const string CityGroundTextureName = "CityGround.png";
     public const string CityGroundNormalTextureName = "CityGroundNormal.png";
     public const string RoadBackTextureName = "RoadBack.png";
@@ -154,19 +157,28 @@ public static class RaceMaterialRecipes
         };
     }
 
+    // The top of the road takes the RoadSurface family (roughness 0.30) and no environment light (ADR-0034). The original's road has a
+    // sharp sun highlight and no sky reflection; the engine's lit-pbr occlusion scales the image-based light only, so a black occlusion
+    // texture at full strength removes the sky from the road while the sun highlight stays. The values were chosen by measurement.
+    private const float RoadOcclusionStrength = 1f;
+
     /// <summary>
     /// The road. <paramref name="diffuseTexturePath"/> is the first of <see cref="RoadTextureCandidates"/> that loads, or null;
     /// <paramref name="normalTexturePath"/> is <see cref="RoadNormalTextureName"/> when it exists, or null (the original draws the
     /// road with the material ("Road", "RoadNormal"), Track.cs). The road mesh has tangents, so the engine enables the normal map.
+    /// <paramref name="occlusionTexturePath"/> is <see cref="RoadOcclusionTextureName"/> when it exists, or null (the road then keeps
+    /// the environment light).
     /// </summary>
-    public static RaceMaterialRecipe ForRoad(string trackName, string? diffuseTexturePath, string? normalTexturePath)
+    public static RaceMaterialRecipe ForRoad(string trackName, string? diffuseTexturePath, string? normalTexturePath, string? occlusionTexturePath)
     {
         return new RaceMaterialRecipe
         {
             Name = $"{trackName}.RoadMaterial",
             BaseTextureFilePath = diffuseTexturePath,
             NormalTextureFilePath = normalTexturePath,
-            Family = RacingGamePbrMaterialMapping.Road,
+            OcclusionTextureFilePath = occlusionTexturePath,
+            OcclusionStrength = RoadOcclusionStrength,
+            Family = RacingGamePbrMaterialMapping.RoadSurface,
             BaseColor = WithLegacyDiffuse(diffuseTexturePath != null ? Color.White : new Color(60, 62, 66), LegacyDefaultDiffuse),
             RasterizerState = RaceMaterialStates.CullCounterClockwise,
             SamplerState = RaceMaterialStates.AnisotropicWrap,

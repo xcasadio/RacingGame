@@ -24,6 +24,9 @@ internal sealed class CookedMaterial
     /// <summary>The emissive texture of the material, or empty when its recipe names none (the key is then not cooked).</summary>
     public required Guid EmissiveTextureId { get; init; }
 
+    /// <summary>The occlusion texture of the material, or empty when its recipe names none (neither occlusion key is then cooked).</summary>
+    public required Guid OcclusionTextureId { get; init; }
+
     // The states the renderer applies when the game leaves one null (RenderStateCache.cs:51-54, and the defaults of MaterialAsset).
     public string BlendState => Recipe.BlendState ?? MaterialAsset.DefaultBlendStateName;
     public string DepthStencilState => Recipe.DepthStencilState ?? MaterialAsset.DefaultDepthStencilStateName;
@@ -56,7 +59,7 @@ internal sealed class CookPlan
 /// <summary>
 /// Builds, in memory, every asset the cooker writes: reads the glTF models as the game does (LegacyGltfModelReader
 /// with the RacingGame import profile), computes each material from the recipes of RaceMaterialRecipes, and wraps the
-/// images they name (base, normal and detail textures). Nothing is written here.
+/// images they name (base, normal, detail, emissive and occlusion textures). Nothing is written here.
 /// </summary>
 internal static class CookPlanner
 {
@@ -166,7 +169,8 @@ internal static class CookPlanner
             ["Road"] = RaceMaterialRecipes.ForRoad(
                 "Track",
                 FirstExisting(RaceMaterialRecipes.RoadTextureCandidates),
-                FirstExisting([RaceMaterialRecipes.RoadNormalTextureName])),
+                FirstExisting([RaceMaterialRecipes.RoadNormalTextureName]),
+                FirstExisting([RaceMaterialRecipes.RoadOcclusionTextureName])),
             ["Ground"] = RaceMaterialRecipes.ForGround(
                 "Track",
                 FirstExisting([RaceMaterialRecipes.CityGroundTextureName]),
@@ -216,6 +220,7 @@ internal static class CookPlanner
             NormalTextureId = textures.Resolve(recipe.NormalTextureFilePath, samplerName),
             DetailTextureId = textures.Resolve(recipe.DetailTextureFilePath, samplerName),
             EmissiveTextureId = textures.Resolve(recipe.EmissiveTextureFilePath, samplerName),
+            OcclusionTextureId = textures.Resolve(recipe.OcclusionTextureFilePath, samplerName),
         };
     }
 

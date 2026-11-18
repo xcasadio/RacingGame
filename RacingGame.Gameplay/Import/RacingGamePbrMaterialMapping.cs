@@ -12,8 +12,11 @@ public static class RacingGamePbrMaterialMapping
     /// <summary>Terrain and flat ground: dielectric, fully rough.</summary>
     public static readonly RacingGamePbrFamily Terrain = new(nameof(Terrain), 0f, 1f);
 
-    /// <summary>Road, road underside, tunnel, columns: rough dielectric.</summary>
+    /// <summary>Road underside, tunnel, columns: rough dielectric.</summary>
     public static readonly RacingGamePbrFamily Road = new(nameof(Road), 0f, 0.85f);
+
+    /// <summary>Top of the road only: dielectric with the sharp sun highlight of the original's road (ADR-0034).</summary>
+    public static readonly RacingGamePbrFamily RoadSurface = new(nameof(RoadSurface), 0f, 0.30f);
 
     /// <summary>Guard rails (built in code, and the imported Leitplanke texture): metal.</summary>
     public static readonly RacingGamePbrFamily GuardRail = new(nameof(GuardRail), 1f, 0.45f);

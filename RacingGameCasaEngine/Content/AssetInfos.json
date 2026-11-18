@@ -3683,6 +3683,18 @@
       "name": "Texture.CityGroundNormal",
       "file_name": "Textures/CityGroundNormal.texture",
       "asset_type": "texture"
+    },
+    {
+      "id": "a670610c-5584-5530-a072-e09bafee957e",
+      "name": "Image.NoEnvironmentLight",
+      "file_name": "Textures/NoEnvironmentLight.png",
+      "asset_type": "png"
+    },
+    {
+      "id": "89f1f02b-e8bc-5127-a8c8-0c9721ea9709",
+      "name": "Texture.NoEnvironmentLight",
+      "file_name": "Textures/NoEnvironmentLight.texture",
+      "asset_type": "texture"
     }
   ]
 }

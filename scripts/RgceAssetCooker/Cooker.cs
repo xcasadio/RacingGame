@@ -144,6 +144,13 @@ internal sealed class Cooker
             asset.SetPropertyValue("emissive_shadow_factor", MaterialValue.FromFloat(recipe.EmissiveShadowFactor));
         }
 
+        if (material.OcclusionTextureId != Guid.Empty)
+        {
+            // Only the road has an occlusion texture (it scales the image-based light only): the other materials keep their files as they are, without either key.
+            asset.SetPropertyValue("occlusion_texture", MaterialValue.FromTextureId(material.OcclusionTextureId));
+            asset.SetPropertyValue("occlusion_strength", MaterialValue.FromFloat(recipe.OcclusionStrength));
+        }
+
         asset.SetPropertyValue("clear_coat", MaterialValue.FromFloat(recipe.ClearCoat));
         asset.SetPropertyValue("clear_coat_roughness", MaterialValue.FromFloat(recipe.ClearCoatRoughness));
         asset.SetPropertyValue("alpha_cutoff", MaterialValue.FromFloat(recipe.AlphaCutoff));

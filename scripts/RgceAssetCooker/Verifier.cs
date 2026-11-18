@@ -357,6 +357,9 @@ internal sealed class Verifier
         Check("emissive_texture", actual.TryGetPropertyValue("emissive_texture", out MaterialValue? emissiveTexture) && emissiveTexture.TryGetTextureId(out Guid emissiveTextureId) ? emissiveTextureId : Guid.Empty, cooked.EmissiveTextureId);
         // The key is only cooked for a recipe that asks for a non-default value: an absent key reads as the engine default, 0.
         Check("emissive_shadow_factor", actual.TryGetPropertyValue("emissive_shadow_factor", out MaterialValue? emissiveShadowFactor) && emissiveShadowFactor.TryGetFloat(out float emissiveShadowFactorValue) ? emissiveShadowFactorValue : 0f, recipe.EmissiveShadowFactor);
+        // Both keys are only cooked for a recipe that names an occlusion texture: an absent texture key reads as the null id, and an absent strength as null.
+        Check("occlusion_texture", actual.TryGetPropertyValue("occlusion_texture", out MaterialValue? occlusionTexture) && occlusionTexture.TryGetTextureId(out Guid occlusionTextureId) ? occlusionTextureId : Guid.Empty, cooked.OcclusionTextureId);
+        Check<float?>("occlusion_strength", actual.TryGetPropertyValue("occlusion_strength", out MaterialValue? occlusionStrength) && occlusionStrength.TryGetFloat(out float occlusionStrengthValue) ? occlusionStrengthValue : null, cooked.OcclusionTextureId != Guid.Empty ? recipe.OcclusionStrength : null);
         Check("clear_coat", Float("clear_coat"), recipe.ClearCoat);
         Check("clear_coat_roughness", Float("clear_coat_roughness"), recipe.ClearCoatRoughness);
         Check("alpha_cutoff", Float("alpha_cutoff"), recipe.AlphaCutoff);

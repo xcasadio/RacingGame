@@ -1,0 +1,23 @@
+{
+  "id": "89f1f02b-e8bc-5127-a8c8-0c9721ea9709",
+  "name": "Texture.NoEnvironmentLight",
+  "texture_asset_id": "a670610c-5584-5530-a072-e09bafee957e",
+  "generate_mipmaps": true,
+  "sampler_state": {
+    "texture_filter": "Anisotropic",
+    "address_u": "Wrap",
+    "address_v": "Wrap",
+    "address_w": "Wrap",
+    "border_color": {
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "max_anisotropy": 4,
+    "max_mip_level": 0,
+    "mip_map_level_of_detail_bias": 0.0,
+    "comparison_function": "Never",
+    "filter_mode": "Default"
+  }
+}

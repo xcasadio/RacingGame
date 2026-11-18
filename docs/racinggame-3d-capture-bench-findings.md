@@ -271,3 +271,31 @@ Left for the author to judge by eye, with the values that stay starting points (
 - The image-based lighting is derived from the 512 pixel sky cube without mipmaps (O1): not judged on a race. In the car selection carousel, which stays in `Legacy` (no tonemapping), the white car is very light.
 
 The original's dark opaque glass (A5) is replaced: the glass of the buildings is a mirror of the sky (the black casino wall, plan point O2, was not inspected). The original's glint on the road (M4) has no PBR counterpart here: the road is a rough dielectric (0 / 0.85).
+
+## Update after the road material (2026-11-18)
+
+Decisions: see ADR-0034. Plan `ai-agent/tasks/rgce-road-tunnel-shadow-tasks.md`, slices S1 and S2; outputs under `artifacts/pbr-handover/s22/`.
+
+- **Engine fix taken first (S1).** The engine now offsets the shadow lookup along the vertex normal instead of the normal-mapped one (CasaEngine `cdfc21b0e`). On the 15 views at most 0.220 % of the pixels change by more than 8 levels (shadow edges); E stays 17.762 in `linear` (17.759 before). On the right wall of the Expert tunnel the ragged, speckled shadow edge is gone: the speckle measure of `artifacts/pbr-handover/s22/scripts/speckle.py` falls from 0.863 % to 0.352 % (0.363 % in the original).
+- **Road material (S2).** The top of the road is the family `RoadSurface` (metallic 0, roughness 0.30) and receives no environment light (`occlusion_texture` black, `occlusion_strength` 1). The statement of the PBR switch section above, that the original's glint on the road has no PBR counterpart, no longer holds: the sun highlight of the road is back.
+
+Measured in `linear` with `artifacts/pbr-handover/s22/scripts/measure_s2.py` (Lr: median luminance of the 223 lit road points; G: mean luminance of the highlight box of `Beginner-sector-50`; E: mean difference per channel with the original over the 15 views; Tb / Ta / Te: road box of the three tunnel views; Sat: share of pixels with a channel at 255):
+
+| Roughness / occlusion strength | Lr | G | E | Tb / Ta / Te | Sat % | Eligible |
+|---|---|---|---|---|---|---|
+| original | 84.0 | 209.9 | - | 11.7 / 21.8 / 31.1 | - | - |
+| start state (0.85, none) | 101.8 | 110.5 | 17.762 | 8.8 / 12.5 / 15.4 | 0.000 | - |
+| 0.30 / 0.5 | 101.5 | 190.6 | 16.466 | 8.6 / 12.7 / 16.1 | 0.000 | no (Lr) |
+| 0.30 / 0.75 | 93.9 | 190.0 | 16.050 | 7.9 / 12.1 / 15.8 | 0.000 | no (Lr) |
+| 0.30 / 1 | 83.8 | 189.3 | 15.732 | 7.0 / 11.6 / 15.4 | 0.000 | yes |
+| 0.35 / 0.5 | 100.7 | 187.2 | 16.537 | 8.5 / 12.9 / 16.5 | 0.000 | no (Lr) |
+| 0.35 / 0.75 | 92.6 | 186.5 | 16.128 | 7.8 / 12.4 / 16.1 | 0.000 | no (Lr) |
+| 0.35 / 1 | 84.3 | 185.8 | 15.791 | 7.0 / 11.9 / 15.8 | 0.000 | yes |
+| 0.40 / 0.5 | 99.3 | 178.7 | 16.714 | 8.4 / 13.1 / 16.7 | 0.000 | no (Lr) |
+| 0.40 / 0.75 | 92.4 | 178.0 | 16.326 | 7.8 / 12.7 / 16.4 | 0.000 | no (Lr) |
+| 0.40 / 1 | 85.3 | 177.2 | 15.987 | 7.1 / 12.2 / 16.1 | 0.000 | yes |
+| 0.45 / 0.5 | 97.7 | 167.6 | 16.927 | 8.4 / 13.3 / 16.9 | 0.000 | no (Lr) |
+| 0.45 / 0.75 | 92.7 | 166.7 | 16.570 | 7.8 / 12.9 / 16.6 | 0.000 | no (Lr) |
+| 0.45 / 1 | 86.4 | 165.7 | 16.243 | 7.2 / 12.5 / 16.3 | 0.000 | yes |
+
+Applied state: E 17.762 -> 15.732 in `linear`, 20.572 -> 20.249 in `legacy`; probes 20 of 34, 0 of 4, 27 of 33, 3 of 3 in `linear` (17 of 34 before) and 4 of 34, 2 of 4, 27 of 33, 3 of 3 in `legacy`. Remaining gaps on the road: the highlight is below the original's (189.3 for 209.9), the road in the tunnels is darker than the original's, and the original's darkening of the road near the car (73 of 423 points) is not imitated.
