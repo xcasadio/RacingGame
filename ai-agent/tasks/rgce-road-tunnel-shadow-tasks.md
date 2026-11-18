@@ -53,7 +53,7 @@ Faits de l'analyse (détail et chiffres : O9 de `rgce-render-gaps-tasks.md` ; so
 
 ## Tâches
 
-### ⏳ S1 — Jeu sur le moteur corrigé, références refaites
+### ✅ S1 — Jeu sur le moteur corrigé, références refaites
 
 - Prérequis : plan du moteur `shadow-normal-offset-tasks.md` terminé, T2 **CONFIRMED**. Si ce plan-là est bloqué, S1 passe en ⚠️ et S2 part de l'état actuel (référence `s20/r4/ref`).
 - Changement : le pointeur du sous-module `CasaEngine` avance sur la tête de `chantier/shadow-normal-offset` ; aucun autre fichier du jeu, aucun contenu.
@@ -70,6 +70,17 @@ Faits de l'analyse (détail et chiffres : O9 de `rgce-render-gaps-tasks.md` ; so
 - Arrêts, sans commit : état du moteur non conforme (tête, commit de T1 absent, arbre du sous-module modifié, shader compilé inchangé) ; rejeux différents entre eux ; une vue bornée au-delà de 3 % ; un changement ailleurs que sur un bord d'ombre ; critère 3 sous 27 ; un des six écrans sans monde 3D qui change ; étalonnage de `speckle.py` non reproduit, ou script modifié (empreinte différente) ; `Expert-tunnel` identique à la référence ou moucheture au-dessus de 0,60 % (la correction n'agit pas).
 - Retour arrière : `git revert` du commit (le pointeur revient à `4e867fec3`).
 - Commit : `chore(racing-casa): take the engine fix of the shadow normal offset`
+
+> Validation (2026-11-18), sorties dans `artifacts/pbr-handover/s22/s1/`, scripts dans `s22/scripts/` (`runref.sh`, `s1_check.py`, `speckle.py`, `runcopy.sh`).
+> - Prérequis : plan du moteur terminé, T2 **CONFIRMED** (6445 tests, 0 échec).
+> - État du moteur construit : `HEAD` de `CasaEngine` = tête de `chantier/shadow-normal-offset` = `8ddcb31b0` ; elle contient `cdfc21b0e` (`fix(rendering): offset the shadow lookup along the geometric normal`) ; `git -C CasaEngine status --short` vide. `Content/Shaders/LitPbr.xnb` du dossier de build : SHA-256 `5451c75c2b3fcac9…`, pour `6937826ed32ae476…` dans la copie d'avant la correction. Le pointeur committé est `8ddcb31b0`.
+> - Build à 0 erreur ; cuiseur `--verify` 0 écart, `--check` 0 manquant ; `--smoke-frontend` et `--verify-legacy-import-profile` en succès ; aucun `[Warning]` ni `[Error]` dans les journaux des rejeux.
+> - Rejeux deux fois, identiques entre eux : 15 vues et 3 vues de tunnel en `linear` et en `legacy`, 10 écrans d'interface, 30 captures d'audit. Références : `s22/s1/ref/`.
+> - Les six écrans sans monde 3D sont identiques octet pour octet à `s20/r4/ref/ui`.
+> - Vues 3D bornées (15 vues, 30 captures d'audit, 4 écrans à monde 3D) : part des pixels changés de plus de 8 niveaux au plus 0,582 % (`audit-Beginner-helper-palms`), pour une borne de 3 % ; 15 vues : au plus 0,220 % (`Beginner-sector-20`) ; `ui-car-selection` 0,021 %. Les trois vues les plus changées (`audit-Beginner-helper-palms` 0,582 %, `audit-Beginner-sector-20` 0,416 %, `audit-Expert-sector-20` 0,329 %) regardées avec leur masque (`s22/s1/masks/`) : les pixels changés suivent les bords des ombres des palmiers, des panneaux et des glissières sur les pavés, la route et le sable ; rien ailleurs.
+> - E : `linear` 17,762 (17,759 avant ; borne 17,809) ; `legacy` 20,572 (20,570). Sondes : `linear` 17/34, 0/4, 27/33, 3/3 ; `legacy` 5/34, 2/4, 27/33, 3/3 ; inchangées.
+> - Preuve que la correction agit : `speckle.py` (empreinte `6dbe28b573083f62`, inchangée) redonne ses quatre valeurs d'étalonnage (0,863 ; 0,348 ; 2,923 ; 0,363) ; `Expert-tunnel` en `linear` diffère de la référence (2,758 % des pixels changés de plus de 8 niveaux) et sa moucheture est de **0,352 %** (seuil 0,60 % ; 0,863 % avant ; 0,363 % dans l'original). Recadrage regardé (`s22/judge/check-expert-wall.png`) : le bord déchiqueté et les mouchetures de la paroi droite et de la plaque de lampe ont disparu ; le bord de l'ombre est net, avec la pénombre en paliers du filtre, comme dans l'essai à `NormalBias` 0.
+> - Tunnel, mesure de R4 (`tunnelmeas.py`, médiane de la bande haute, fenêtre [28,882 ; 31,882], écart des trois vues), sur le moteur corrigé : **B, en place : 29,479, écart 14,998** (avant la correction : 29,338 et 15,030) ; C (facteur 0,5, niveau 0,6, copie du build) : 31,860, écart 15,663 ; A (facteur 0, niveau 0,5, copie du build) : 28,311, hors fenêtre, écart 16,248. B reste dans la fenêtre et garde le plus petit écart. La copie du build redonne B octet pour octet. Planches pour l'auteur (D6) : `s22/judge/1-tunnel-avant-apres.jpg`, `2-1-tunnel-ABC-Expert.jpg`, `2-2-tunnel-ABC-Beginner.jpg`, `2-3-tunnel-ABC-Advanced.jpg`.
 
 ### ⏳ S2 — Matériau de la route (ADR-0034)
 
