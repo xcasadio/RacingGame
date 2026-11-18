@@ -210,3 +210,17 @@ Plans : `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md` (G1 à G6) et, dans l
 - Référence du port : `artifacts/pbr-handover/s24/g5/ref/` (15 vues et tunnel dans les deux modes, interface, audit). Scripts de mesure figés : `s23/scripts/measure_tint.py`, `measure_leaves.py`, `measure_windows.py`, `measure_glass.py`, `s22/scripts/speckle.py`.
 - Trouvé en chemin, moteur (O3 de son plan) : sous OpenGL de bureau la carte d'ombre est lue en bilinéaire et aucun code ne règle son échantillonneur.
 - Laissés à l'auteur : O2 à O4 du plan du jeu, O2 à O4 du plan du moteur, les ADR-0035 à 0039 et 0127, l'avance de `main` et de `remaster`, le push (moteur d'abord).
+
+### Suite du 2026-11-18 : vitres gardées, corrections, petit palmier
+
+Les lignes ci-dessus décrivent l'état à la fin de G6 ; ce qui suit les met à jour.
+
+- Vitres de la voiture (G5, ADR-0039) : **gardées par l'auteur** (« On garde les vitres et continue »), effets de bord connus (caches de phares cuivrés dans le carrousel et à l'écran de course, vitre latérale saumon). O2 du plan est clos ; la recommandation d'annuler `9c14a17` ne tient plus.
+- Inexactitudes relevées par la vérification, corrigées : jeu `dc14949` (ADR-0036, ADR-0037, commentaire de `RaceMaterialRecipes.cs`) ; moteur `a0e1726fe` (commentaire d'un test sur `GlVertexShift`). Aucune image ne change (25 captures rejouées identiques).
+- Moteur : branche `chantier/shadow-filter-taps` à `a0e1726fe`, 4 commits après `main` (`8ddcb31b0`) ; le jeu pointe dessus.
+- Ambiant du monde de course, essai mesuré puis non poursuivi (O4 du plan) : levier faible sur les collines sombres (14 à 15 -> 21 au mieux pour 32 à 35 dans l'original) et coût sur le mur du casino et sur le critère 1 des sondes. Piste : lire ce que fait le shader de terrain de l'original (`LandscapeNormalMapping.fx`) sur ces faces.
+- G7, feuille du petit palmier (`dfba582`, ADR-0040 `Proposed`, amende l'ADR-0037) : gris 220 au lieu de 170 pour `PalmLeave2.tga` seul, par une règle figée (`s25/scripts/measure_smallpalm.py`) ; écart à l'original sur ses pixels 26,80 -> 22,63. Vérification indépendante **CONFIRMED** ; un constat P3 reporté (O5 du plan : une phrase de l'ADR-0040 à reformuler).
+- Mesure contre l'original, 15 vues : écart moyen par canal 15,039 en `linear`, 19,793 en `legacy` ; sondes inchangées (`linear` 20 sur 34, 2 sur 4, 27 sur 33, 3 sur 3).
+- Référence du port : `artifacts/pbr-handover/s25/g7/ref/` (remplace `s24/g5/ref/`).
+- État des branches : jeu `chantier/rgce-pbr-handover`, 10 commits de travail et le commit de clôture après `remaster` (`5a243b3`) ; rien n'est poussé, `main` et `remaster` ne sont pas avancés sur ce travail.
+- Laissés à l'auteur : O4 et O5 du plan du jeu, O2 à O4 du plan du moteur, les ADR-0035 à 0040 et 0127, l'avance de `main` et de `remaster`, le push (moteur d'abord).
