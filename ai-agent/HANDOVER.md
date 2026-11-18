@@ -186,3 +186,14 @@ Plan : `ai-agent/tasks/rgce-render-gaps-tasks.md` (R1 à R6, chaque tranche relu
 - Mesure contre l'original, 15 vues en `linear` : luminance 99,05 pour 96,29 (104,0 avant) ; écart moyen par canal 17,76 (19,41 avant) ; critère 3 des sondes 27 sur 33.
 - Référence du port : `artifacts/pbr-handover/s20/r4/ref/` (15 vues, tunnel, interface, audit) ; `s20/r5/ref/ui` est identique.
 - Laissés à l'auteur : O4 à O8 du plan (défauts de l'ombre sur l'émissive du tunnel et replis mesurés, teinte des vitres, carrousel, ombres du terrain, écarts les plus visibles restants) ; ADR 0032 et 0033 du jeu, 0125 et 0126 du moteur à valider ; avance de `main` du moteur et de `remaster`, push.
+
+## 12. Route et ombre du tunnel (2026-11-18)
+
+Plans : `ai-agent/tasks/rgce-road-tunnel-shadow-tasks.md` (S1 à S3) et, dans le moteur, `CasaEngine/ai-agent/tasks/shadow-normal-offset-tasks.md` (T0 à T2). Analyse d'origine : O9 de `rgce-render-gaps-tasks.md`. Chaque tranche relue avant exécution, vérifications finales **CONFIRMED**. Rien n'est poussé ; `main` du moteur, `master` et `remaster` du jeu n'ont pas été avancés.
+
+- Moteur, branche `chantier/shadow-normal-offset` (`8ddcb31b0`, 3 commits sur `chantier/draw-order-emissive-shadow` `4e867fec3`, elle-même 4 commits sur `main` `8a73c5329`) : le décalage `NormalBias` de la lecture de l'ombre suit la normale de sommet et plus la normale perturbée par la normal map (`LitPbr.fx`, `LitForward.fx`) ; 6445 tests, 0 échec. Le jeu pointe dessus (`11096fa`).
+- Jeu : le bord déchiqueté et moucheté de l'ombre sur les parois de tunnel a disparu (moucheture de la paroi d'`Expert-tunnel` 0,863 % -> 0,352 %, 0,363 % dans l'original) ; le dessus de la route est la famille `RoadSurface` (rugosité 0,30) sans lumière d'environnement (texture d'occlusion noire `NoEnvironmentLight`), ADR-0034 `Proposed` (`4132d0f`).
+- Mesure contre l'original, 15 vues en `linear` : écart moyen par canal 15,73 (17,76 avant) ; route éclairée 83,8 pour 84,0 dans l'original (101,8 avant) ; boîte du reflet de `Beginner-sector-50` 189,3 pour 209,9 (110,5 avant) ; sondes 20 sur 34, 0 sur 4, 27 sur 33, 3 sur 3.
+- Émissive du tunnel sur le moteur corrigé (mesure de R4) : B, en place, médiane 29,479 dans la fenêtre, écart 14,998 ; C 31,860 et 15,663 ; A 28,311 hors fenêtre et 16,248. Planches `artifacts/pbr-handover/s22/judge/2-*-tunnel-ABC-*.jpg`.
+- Référence du port : `artifacts/pbr-handover/s22/s2/ref/` (15 vues et tunnel dans les deux modes, interface, audit). Scripts de mesure figés : `s22/scripts/speckle.py`, `measure_s2.py`.
+- Laissés à l'auteur : O2 à O6 du plan (réglage B ou C du tunnel, deux phrases de l'ADR-0034 et l'ADR-0018, pénombre en paliers du filtre d'ombre, reflet encore sous l'original, validation de l'ADR-0034, avance de `main` et de `remaster`, push, moteur d'abord).
