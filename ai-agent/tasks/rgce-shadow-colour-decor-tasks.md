@@ -146,7 +146,7 @@ Arrêts communs, sans commit, l'état précédent étant gardé : script de mesu
 > - Documents : ADR-0037 `Proposed`, ligne d'état sur l'ADR-0028 ; section « Update after the palm foliage » du doc de banc ; table écrite et relue par `s24/scripts/gen_docs_g3.py`.
 > - Regardé sur `s24/judge/3-feuillage-avant-apres.jpg` : les feuilles sont plus sombres et moins vives sur les trois vues, proches de l'original sur `Expert-sector-20` et `Expert-start` ; le grand palmier de `Beginner-sector-20` reste plus clair et nettement plus large que dans l'original, où ses palmes sont fines et sombres (surface de feuilles 2,64 fois celle de l'original) : écart ouvert.
 
-### ⏳ G4 — Vitres des immeubles (ADR-0038)
+### ✅ G4 — Vitres des immeubles (ADR-0038)
 
 - Prérequis : G3 clos. Base : la référence en place.
 - Mesure (D1), en `linear`, sur une copie fraîche du dossier de build. Script : `s23/scripts/measure_windows.py`. Matériaux et clés : `hotel01` = `Models/Hotel01/39.material`, `hotel02` = `Models/Hotel02/fenster.material`, `casino01` = `Models/Casino01/39.material`. Captures sous `s24/g4/`, 15 vues chacune :
@@ -160,6 +160,20 @@ Arrêts communs, sans commit, l'état précédent étant gardé : script de mesu
 - Validation : validation commune, les 15 vues étant comparées à `s24/g4/combined/`, et le contrôle « candidat toujours retenu » se faisant ainsi : `s24/g4/applied/` est construit comme `s24/g4/gate/`, les rejeux d'après application remplaçant le dossier de l'état retenu de chaque matériau qui en a un ; commande `measure_windows.py --root s24/g4/applied hotel01 hotel02 casino01` ; réussi si, pour chaque clé, la ligne `choice for <clé>:` nomme le même état que dans la mesure (« none » compris), la valeur de `M` imprimée n'entrant pas dans la comparaison, et si la ligne de chaque état retenu porte toujours `eligible` ; en plus, `git status` du contenu limité aux matériaux retenus ; les autres matériaux cuits identiques octet pour octet ; la sonde `building-away-1` (mur du casino, noir dans l'original) notée avant et après.
 - Arrêts : arrêts communs ; état combiné non conforme.
 - Commit : `fix(racing-casa): light the window glass of the buildings as the original`
+
+> Validation (2026-11-18), sorties dans `artifacts/pbr-handover/s24/g4/` (`measure_windows.txt`, `gate/`, `applied/`, `combined/`, `cook-verify-before.txt`, `slice_check.txt`, `ref/`), script des candidats `s24/scripts/wincand.py`.
+> - Mesure : `measure_windows.py` inchangé (empreinte `04c7620d9f017b9a` contrôlée avant et après). Base capturée sur une copie fraîche du build, identique octet pour octet à `s24/g3/ref`. Trois marqueurs et neuf candidats capturés. Masques : `hotel01` 10 848 pixels, `hotel02` 11 064, `casino01` 8 187. Base : `E` 15,199, sondes 20 / 27 / 3 (critères 1, 3, 4).
+> - Règle, par matériau (`M` de départ, puis états) : `hotel01` 79,97 ; sans ombre reçue 74,64 (**retenu**) ; gris 224 : 90,33 et 85,93, non éligibles (`E` monte). `hotel02` 146,27 ; sans ombre 87,65 ; gris 224 : 132,31 ; sans ombre et gris 224 : 47,35 (**retenu**). `casino01` 133,17 ; sans ombre 133,09 ; gris 224 : 46,08 (**retenu**, à moins de 1,0 du plus petit et plus proche de l'état de départ) ; sans ombre et gris 224 : 45,87.
+> - État combiné (`combined/`, contrôle `gate/`) : `E` 15,047, sondes inchangées, les trois états retenus `eligible`, mêmes choix.
+> - Application : `RaceMaterialRecipe.ReceiveShadows` (vrai par défaut) ; `RaceMaterialRecipes.ForScenery` désigne `Hotel01` / `39` (sans ombre reçue), `Hotel02` / `fenster` (sans ombre reçue, base 224) et `Casino01` / `39` (base 224) ; le cuiseur écrit `receive_shadows` depuis la recette, le vérificateur le contrôle contre la recette ; README du cuiseur.
+> - Cuiseur : `--verify` avant recuisson, 4 écarts, tous sur les trois matériaux visés ; après recuisson 0 écart, `--check` 0, générateur `--check` 0 ; `git status` du contenu : les trois matériaux et rien d'autre (99 fichiers `.material`, 96 inchangés).
+> - Build à 0 erreur ; `--smoke-frontend` et `--verify-legacy-import-profile` en succès ; aucun `[Warning]` ni `[Error]`.
+> - Rejeux deux fois, identiques entre eux ; références `s24/g4/ref/`. Les 15 vues en `linear` sont identiques octet pour octet à `combined/`.
+> - Candidats toujours retenus : `measure_windows.py --root s24/g4/applied hotel01 hotel02 casino01` nomme les trois mêmes états, tous `eligible`, `E` 15,047.
+> - `E` : `linear` 15,199 -> 15,047 ; `legacy` 19,959 -> 19,806. Sondes inchangées : `linear` 20/34, 2/4, 27/33, 3/3 ; `legacy` 4/34, 0/4, 27/33, 3/3. Sonde `building-away-1` (mur du casino, 14 / 13 / 12 dans l'original) : 26 / 24 / 23 avant et après.
+> - Interface et audit : les six écrans sans monde 3D et `ui-car-selection` identiques à `s24/g3/ref` ; `ui-pause` 0,142 %, `ui-race-hud` 0,204 %, `ui-race-finished` 0,079 % ; 6 des 30 captures d'audit changent (jusqu'à 5,9 %, `audit-Beginner-sector-20`), 24 sont identiques ; vue la plus changée : `Beginner-sector-20`, 1,4 %.
+> - Documents : ADR-0038 `Proposed`, lignes d'état sur les ADR-0028 et 0033 ; section du doc de banc ; tables écrites et relues par `s24/scripts/gen_docs_g4.py` à partir de la sortie du script figé.
+> - Regardé sur `s24/judge/4-vitres-immeubles-avant-apres.jpg` et, de près, sur `s23/look/casino-a80.png` : les bandes de fenêtres de la tour de `Beginner-sector-20` sont allumées, bleu très clair pour blanc dans l'original ; les bandes de la tour du casino d'`Advanced-sector-80` passent de (59 ; 75 ; 80) à (163 ; 183 ; 189) pour (208 ; 225 ; 226) dans l'original. Sur la planche réduite la tour du casino paraît à tort plus sombre : le recadrage agrandi et la mesure disent l'inverse.
 
 ### ⏳ G5 — Vitres de la voiture (ADR-0039)
 

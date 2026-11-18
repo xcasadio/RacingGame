@@ -119,6 +119,7 @@ internal sealed class Cooker
         var asset = new MaterialAsset("lit-pbr");
         CookPlanner.SetIdentity(asset, material.Name);
         asset.Queue = recipe.Queue;
+        asset.ReceiveShadows = recipe.ReceiveShadows;
         asset.BlendStateName = material.BlendState;
         asset.DepthStencilStateName = material.DepthStencilState;
         asset.RasterizerStateName = material.RasterizerState;

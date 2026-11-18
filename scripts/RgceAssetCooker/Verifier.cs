@@ -338,7 +338,7 @@ internal sealed class Verifier
         Check("is_transparent", actual.IsTransparent, false);
         Check("queue", actual.Queue, recipe.Queue);
         Check("cast_shadows", actual.CastShadows, true);
-        Check("receive_shadows", actual.ReceiveShadows, true);
+        Check("receive_shadows", actual.ReceiveShadows, recipe.ReceiveShadows);
         // The effective-state rule: a state the game leaves null is the state the renderer applies.
         Check("blend_state", actual.BlendStateName, recipe.BlendState ?? "Opaque");
         Check("depth_stencil_state", actual.DepthStencilStateName, recipe.DepthStencilState ?? "Default");

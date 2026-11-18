@@ -99,6 +99,13 @@ public sealed record RaceMaterialRecipe
     /// </summary>
     public float OcclusionStrength { get; init; } = 1f;
 
+    /// <summary>
+    /// Whether the material receives the shadow of the world, true unless a recipe says otherwise. Cooked as
+    /// <c>receive_shadows</c>. In the race world's shadow mode a surface that does not receive the shadow keeps its reflection of the
+    /// environment on the faces turned away from the sun.
+    /// </summary>
+    public bool ReceiveShadows { get; init; } = true;
+
     public RenderQueue Queue { get; init; } = RenderQueue.Opaque;
 
     public float AlphaCutoff { get; init; } = 0.5f;

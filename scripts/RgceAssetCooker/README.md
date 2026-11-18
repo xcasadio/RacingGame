@@ -39,7 +39,7 @@ The default `--content` is `RacingGameCasaEngine/Content` of the repository that
   game leaves `null` is written as the state the renderer applies: blend `Opaque`, depth `Default`, rasterizer `CullCounterClockwise`,
   sampler `AnisotropicClamp`. The slots of the car that sample the car texture (painted or not) use `Texture.RacerCar`; the game replaces it
   at run time (T5.6), and paints the slots whose cooked material has a clear coat (the car paint family is the only one with one).
-  `<Slot>` is the display name of the glTF material, with a numeric suffix if two materials of a model share it.
+  `<Slot>` is the display name of the glTF material, with a numeric suffix if two materials of a model share it. `receive_shadows` of the file comes from the recipe: true unless the recipe says otherwise (today the window glass of Hotel01 and Hotel02, ADR-0038).
 - **Textures**: one per image a cooked material names as base, normal, detail, emissive or occlusion texture (`Texture.LandscapeDetail` for the terrain's detail, `Texture.NoEnvironmentLight` for the road's occlusion). The sampler is the one of the recipes (`AnisotropicWrap`). `generate_mipmaps` is true on every `.texture`: the engine then draws the texture with a full mipmap chain, built at load time from the image (ADR-0124 of CasaEngine); the png of the image entry is not changed.
 
 No fallback material is cooked: no glTF has a mesh without a material (the fallback recipes were removed in T5.6).

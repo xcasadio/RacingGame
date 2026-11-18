@@ -6,7 +6,7 @@
   "is_transparent": false,
   "queue": "Opaque",
   "cast_shadows": true,
-  "receive_shadows": true,
+  "receive_shadows": false,
   "blend_state": "Opaque",
   "depth_stencil_state": "Default",
   "rasterizer_state": "CullCounterClockwise",
@@ -17,9 +17,9 @@
     "detail_texture": "00000000-0000-0000-0000-000000000000",
     "detail_tiling": 1.0,
     "base_color": {
-      "r": 94,
-      "g": 162,
-      "b": 231,
+      "r": 224,
+      "g": 224,
+      "b": 224,
       "a": 255
     },
     "metallic": 1.0,

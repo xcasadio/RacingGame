@@ -75,6 +75,16 @@ public static class RaceMaterialRecipes
     // NormalMapping.fx) instead of the imported white and the cutoff of the import presentation (ADR-0037). With those the leaves
     // were brighter than the original's and covered more pixels. The cause of the difference in brightness is not established:
     // the level is a calibration against the original's captures, chosen by the rule written before the measurement.
+    // The window glass of the buildings (ADR-0038), designated by model and material. The original draws it as the reflection of
+    // the sky, not tinted by the glass colour, plus a small ambient: its windows are light on the faces turned away from the sun.
+    // Here the glass is a mirror (BuildingGlass) whose base colour tints the reflection, and a face turned away from the sun is in
+    // its own shadow. Each value was chosen per material by the rule written before the measurement: the reflectance grey 224 of
+    // the car glass (ADR-0033) where it beat the imported colour, and no received shadow where that beat the shadowed glass.
+    private const byte WindowGlassBaseLevel = 224;
+
+    private static bool IsWindowGlass(string modelName, string materialName, string windowModel, string windowMaterial)
+        => modelName.Equals(windowModel, StringComparison.OrdinalIgnoreCase) && materialName.Equals(windowMaterial, StringComparison.OrdinalIgnoreCase);
+
     private static readonly string[] PalmLeafTextures = ["PalmLeave.tga", "PalmLeave2.tga"];
     private const byte PalmLeafBaseLevel = 170;
     private const float PalmLeafAlphaCutoff = 0.5f;
@@ -100,6 +110,10 @@ public static class RaceMaterialRecipes
         // (ADR-0033, on the precedent of the tunnel, ADR-0030). lit-pbr has no ambient per material, and without it the signs
         // were nearly black on the faces turned away from the sun.
         bool isSignage = family == RacingGamePbrMaterialMapping.Signage;
+        bool isHotel01Glass = IsWindowGlass(modelName, importedMaterial.DisplayName, "Hotel01", "39");
+        bool isHotel02Glass = IsWindowGlass(modelName, importedMaterial.DisplayName, "Hotel02", "fenster");
+        bool isCasino01Glass = IsWindowGlass(modelName, importedMaterial.DisplayName, "Casino01", "39");
+        bool hasNeutralGlassBase = isHotel02Glass || isCasino01Glass;
         bool isPalmLeaf = importedMaterial.DiffuseTextureFilePath != null
             && PalmLeafTextures.Any(texture => RacingGamePbrMaterialMapping.IsSameTexture(texture, importedMaterial.DiffuseTextureFilePath));
 
@@ -109,7 +123,10 @@ public static class RaceMaterialRecipes
             BaseTextureFilePath = importedMaterial.DiffuseTextureFilePath,
             NormalTextureFilePath = importedMaterial.NormalTextureFilePath,
             Family = family,
-            BaseColor = isPalmLeaf ? new Color(PalmLeafBaseLevel, PalmLeafBaseLevel, PalmLeafBaseLevel, (byte)255) : Opaque(importedMaterial.DiffuseColor),
+            BaseColor = isPalmLeaf ? new Color(PalmLeafBaseLevel, PalmLeafBaseLevel, PalmLeafBaseLevel, (byte)255)
+                : hasNeutralGlassBase ? new Color(WindowGlassBaseLevel, WindowGlassBaseLevel, WindowGlassBaseLevel, (byte)255)
+                : Opaque(importedMaterial.DiffuseColor),
+            ReceiveShadows = !(isHotel01Glass || isHotel02Glass),
             EmissiveColor = isSignage ? importedMaterial.AmbientColor * SignageEmissiveLevel : presentation.EmissiveColor,
             EmissiveTextureFilePath = isSignage ? importedMaterial.DiffuseTextureFilePath : null,
             SamplerState = RaceMaterialStates.AnisotropicWrap,

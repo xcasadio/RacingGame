@@ -1,6 +1,6 @@
 # ADR-0028: RacingGameCasaEngine cooks the race world materials as PBR, from the surface families of their recipes
 
-- **Status**: Accepted; amended by ADR-0034 (the top of the road leaves the `Road` family: `RoadSurface`, roughness 0.30, no environment light), ADR-0037 (the palm leaves: base grey 170, alpha cutoff 0.5)
+- **Status**: Accepted; amended by ADR-0034 (the top of the road leaves the `Road` family: `RoadSurface`, roughness 0.30, no environment light), ADR-0037 (the palm leaves: base grey 170, alpha cutoff 0.5), ADR-0038 (window glass of Hotel02 and Casino01: base grey 224)
 - **Date**: 2026-11-17
 - **Source**: this chantier: `ai-agent/tasks/rgce-pbr-handover-tasks.md`, decision D6 (author answer, 2026-11-16: keep the cooked assets and the PBR, the cooker and its recipes produce `lit-pbr` materials), slice S1f, tasks T10.1 and T10.2; the other machine's commits `d0db72f`, `09f1c54`, `d35a25a`, `f309d6b`, `fb7daa2`, `b5391fe` and `46f2013` (`origin/remaster`)
 

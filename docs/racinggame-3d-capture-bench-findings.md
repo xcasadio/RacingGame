@@ -349,3 +349,26 @@ The four leaf materials of the palms take a base grey of 170 and the original's 
 | 130 | 0.5 | 15.43 | 21.2 / 13.1 / 15.9 / 11.6 | 1.81 / 0.98 / 0.98 / 0.57 | 15.207 | yes |
 
 Applied state: D 26.99 -> 13.88; E 15.312 -> 15.199 in `linear`, 20.009 -> 19.959 in `legacy`; probes unchanged. The cause of the leaves' excess brightness is not established: the base level is a calibration.
+
+## Update after the window glass of the buildings (2026-11-18)
+
+Decisions: see ADR-0038. Plan `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md`, slice G4; outputs under `artifacts/pbr-handover/s24/g4/`.
+
+Measured in `linear` with `artifacts/pbr-handover/s23/scripts/measure_windows.py`, each material alone (M: mean difference per channel with the original over the pixels of the material in the 15 views; E: mean difference per channel over the 15 views, 15.199 at the start):
+
+| Material | Mask pixels | Receives the shadow | Base colour | M | E | Eligible | Retained |
+|---|---|---|---|---|---|---|---|
+| Hotel01 / 39 | 10848 | yes | 255 / 255 / 255 | 79.97 | 15.199 | yes |  |
+| Hotel01 / 39 | 10848 | no | 255 / 255 / 255 | 74.64 | 15.195 | yes | **yes** |
+| Hotel01 / 39 | 10848 | yes | 224 grey | 90.33 | 15.209 | no (E) |  |
+| Hotel01 / 39 | 10848 | no | 224 grey | 85.93 | 15.206 | no (E) |  |
+| Hotel02 / fenster | 11064 | yes | 94 / 162 / 231 | 146.27 | 15.199 | yes |  |
+| Hotel02 / fenster | 11064 | no | 94 / 162 / 231 | 87.65 | 15.150 | yes |  |
+| Hotel02 / fenster | 11064 | yes | 224 grey | 132.31 | 15.187 | yes |  |
+| Hotel02 / fenster | 11064 | no | 224 grey | 47.35 | 15.116 | yes | **yes** |
+| Casino01 / 39 | 8187 | yes | 64 / 64 / 64 | 133.17 | 15.199 | yes |  |
+| Casino01 / 39 | 8187 | no | 64 / 64 / 64 | 133.09 | 15.199 | yes |  |
+| Casino01 / 39 | 8187 | yes | 224 grey | 46.08 | 15.135 | yes | **yes** |
+| Casino01 / 39 | 8187 | no | 224 grey | 45.87 | 15.135 | yes |  |
+
+Applied together: E 15.199 -> 15.047 in `linear`, 19.959 -> 19.806 in `legacy`; probes unchanged. The statement of the PBR switch section above, that the original's dark opaque glass is replaced by a mirror of the sky and that the black casino wall was not inspected, is completed here: measured over all its pixels, the casino glass is closer to the original with a 224 grey base.
