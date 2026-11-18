@@ -98,7 +98,7 @@ Un écart à l'un de ces points est un **arrêt** : la tranche passe en ⚠️, 
 
 ## Tâches
 
-### 🧪 M0 — Le décor du jeu prend la graine du banc (D13, P21)
+### ✅ M0 — Le décor du jeu prend la graine du banc (D13, P21)
 
 - **Prérequis** : aucun.
 - **Résultat** : le jeu, l'audit, l'interface et l'export de scène montrent le décor de la graine 1, celui des vues du banc. Seule tranche qui change une image.
@@ -117,7 +117,7 @@ Un écart à l'un de ces points est un **arrêt** : la tranche passe en ⚠️, 
 - **Retour arrière** : `git revert` du commit.
 - **Commit** : `feat(racing-casa): draw the scenery of the game with the seed of the reference capture`
 
-> Validation (2026-11-18), sorties dans `artifacts/worlds-as-assets/m0/` (`ref/`, `m0_check.txt`, `seed2/`, `judge-decor.png`) ; contrôle par `artifacts/worlds-as-assets/scripts/m0_check.py` : `RESULT: PASS`. Statut 🧪 : appliqué et contrôlé ; la vérification indépendante suit.
+> Validation (2026-11-18), sorties dans `artifacts/worlds-as-assets/m0/` (`ref/`, `m0_check.txt`, `seed2/`, `judge-decor.png`) ; contrôle par `artifacts/worlds-as-assets/scripts/m0_check.py` : `RESULT: PASS`. Appliqué, contrôlé, puis confirmé par la vérification indépendante (note à la fin).
 > - Code : `RaceTrackLayout.ScenerySeed` = 1 ; `CreateTrackSeed` et `SceneryRandomSeed` supprimés (`rg` hors `bin`, `obj`, `artifacts`, `docs/decisions`, `ai-agent` : plus rien) ; le validateur compare la graine du `views.json` à la constante. Build à 0 erreur ; `check_gameplay_type_names.py` à 0.
 > - Rejeux, chacun deux fois, identiques entre eux octet pour octet ; aucun `[Warning]` ni `[Error]` ; `--smoke-frontend` et `--verify-legacy-import-profile` en succès.
 > - Inchangé contre `s25/g7/ref` : les 15 vues et les 3 vues de tunnel en `linear` et en `legacy` (36 images) ; les mesures de scène ; les 7 écrans d'interface hors course.
@@ -126,17 +126,27 @@ Un écart à l'un de ces points est un **arrêt** : la tranche passe en ⚠️, 
 > - Graine 2 : `--capture-reference-views` sort avec le code 1, sans image, message « views.json was exported with the scenery seed 2, the game draws its scenery with the seed 1. ».
 > - Planche `judge-decor.png` (avant / après, `start-full` et `sector-50` des trois pistes), regardée : des palmiers et des objets à d'autres places, rien d'anormal ; laissée à l'auteur (O3).
 > - Documents : ADR-0041 `Proposed`, ligne d'état sur l'ADR-0027, section du doc de banc.
+>
+> Vérification indépendante (2026-11-18, `verifier` frais sur `33c093c`, sorties dans `artifacts/worlds-as-assets/m0/verif/`) : **CONFIRMED** sur les sept affirmations.
+> - Code : 8 fichiers ; une seule constante, deux appelants de `RaceTrackLayout.Compute` (le second avec `includeScenery: false`, qui ne lit pas la graine) ; aucun argument `--seed` lu par le jeu.
+> - Build à 0 erreur ; deux rejeux indépendants : 15 vues `linear` identiques à `s25/g7/ref` et à `m0/ref`, 30 captures d'audit identiques à `m0/ref/audit-a`.
+> - L'empreinte de placements couvre le nom du modèle et la matrice de chaque objet placé, décor compris : des empreintes égales sont le même décor.
+> - Recomptés : 36 vues inchangées ; 7 écrans d'interface inchangés, 3 changés ; 23 captures d'audit changées, 7 inchangées.
+> - Un `views.json` sans propriété `seed` passe le contrôle et dessine la graine 1 (déduit du code, non lancé).
+> - Images à pleine résolution : seul le placement du décor change ; rien de manquant ni de flottant.
+> - Constats, tous deux reportés : P3, un commentaire périmé hors des fichiers de la tranche (`RacingGame.Gameplay/Race/RaceBootstrapAssets.cs:22-23`, « The track name seeds the scenery »), à corriger dans M4 qui touche ce code ; P4, la ligne de journal des placements est à `LegacyTrackSceneFactory.cs:27` depuis ce commit, non `:35`.
+> - Incident de la vérification, sans effet sur le dépôt : en lançant Python depuis le scratchpad de la session, le vérificateur a exécuté un ancien script `copy.py` qui a recopié `artifacts/pbr-handover/s24/verify/runs/copy/{g2..g5}` (sorties d'une vérification passée, ignorées par git). Le script a été renommé pour qu'il ne masque plus le module standard.
 
 ### ⏳ M1 — Références de départ et script de parité
 
 - **Prérequis** : M0 confirmé.
 - **Résultat** : la référence de toutes les tranches suivantes, et le script qui rend le verdict de parité.
 - **Fichiers** : ce plan (aucun code du dépôt). Sous `artifacts/worlds-as-assets/` :
-  - `scripts/parity.py`, écrit et figé avant usage (empreinte notée ici), avec son contrôle : sur une copie de la référence où un octet d'un PNG de `views-legacy-a` est changé, il sort en échec ; sur la référence comparée à elle-même, en succès ;
+  - `scripts/parity.py`, écrit et figé avant usage (empreinte SHA-256 notée dans la note de validation), avec son contrôle : sur une copie de la référence où un octet d'un PNG de `views-legacy-a` est changé, il sort en échec ; sur la référence comparée à elle-même, en succès ;
   - `m1/ref/` : les rejeux du point 2 de la parité ; les quatre genres de vues identiques à `s25/g7/ref` (par empreintes) ; `ui` et `audit` identiques aux rejeux de M0 ;
-  - deux exports `--export-track-runtime-scene` comparés entre eux (0 sans pair ; sinon la comparaison ne peut pas servir et la tranche s'arrête) ; les deux audits de voitures lancés deux fois, identiques entre eux ;
+  - deux exports `--export-track-runtime-scene` (`m1/export-a`, `-b`) comparés entre eux par `scripts/compare_race_scene_exports.py` (0 sans pair ; sinon la comparaison ne peut pas servir et la tranche s'arrête) ; les deux audits de voitures (`--capture-car-profile-audit --car-profile-audit-file`, `--capture-car-top-speed-audit --car-top-speed-audit-file`) lancés deux fois, rapports identiques entre eux octet pour octet (si un rapport porte une date ou une durée, la note dit quelles lignes sont écartées de la comparaison, et la parité des tranches suivantes écarte les mêmes) ;
   - par piste, le nombre d'entités de générateurs et de décor que rend `LegacyTrackSceneFactory.Create`, lu dans l'export ;
-  - les 15 vues en `linear` **avec l'option des ombres désactivée**, deux fois identiques entre elles, par le moyen que la relecture de la tranche établit (le fichier `front-end-options.json` sauvegardé puis restauré, empreinte contrôlée, si les modes d'automatisation le lisent) ; sinon la note le dit et M6 remplace ce contrôle par une lecture des valeurs du monde chargé.
+  - les 15 vues en `linear` **avec l'option des ombres désactivée**, deux fois identiques entre elles, ainsi : le jeu lit `front-end-options.json` du dossier de l'utilisateur dans tous les modes (`FrontEndOptionsPersistence.Load`, `RacingGameCasaEngine/Persistence/FrontEndOptionsPersistence.cs:12-22`, clé `EnableShadows` ; aucun mode d'automatisation ne la remplace) ; le script `artifacts/worlds-as-assets/scripts/m1_runs.sh` copie ce fichier sous `m1/options-backup/`, y met `EnableShadows` à `false` le temps de deux lancements, le restaure (aussi en cas d'arrêt, par `trap`) et contrôle que son empreinte SHA-1 est celle d'avant. Les 15 vues sans ombres doivent différer de celles avec ombres (sinon l'option n'a pas agi et la tranche s'arrête).
 - **Arrêts** : deux rejeux qui diffèrent entre eux ; un export non répétable.
 - **Retour arrière** : sans objet (aucun code).
 - **Commit** : `docs(ai-agent): record the starting references of the worlds as assets`
