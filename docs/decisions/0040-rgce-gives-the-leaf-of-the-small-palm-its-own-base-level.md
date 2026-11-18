@@ -31,5 +31,5 @@ The rule retains grey 220 with the cutoff 0.5: 220 with either cutoff is within 
 ## Consequences
 
 - On the applied state (15 views byte-identical to the captures of the retained candidate): M 26.80 -> 22.63; the mean colour of the leaf 62.8 / 76.4 / 55.2 -> 76.0 / 94.4 / 60.7 for 83.8 / 98.3 / 57.7 in the original; E 15.046 -> 15.039; the probes are unchanged.
-- The state before ADR-0037 (grey 255, cutoff 0.35) has a mean colour closer to the original's green than 220 but a larger M: the rule measures the difference pixel by pixel, not the mean.
+- The state before ADR-0037 (grey 255, cutoff 0.35) is closer to the original in the hue and the saturation of the mean colour (hue 90.5 against 92.8 degrees for 81.4 in the original; saturation 0.394 against 0.357 for 0.413); grey 220 is closer in mean colour (mean difference per channel 4.92 against 5.42) and has the smaller M.
 - Amends ADR-0037 for this one material: its status line points here. ADR-0037 is not rewritten.
