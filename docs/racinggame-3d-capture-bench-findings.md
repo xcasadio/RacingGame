@@ -326,3 +326,26 @@ The shadow colour of the race world is (0.38, 0.3952, 0.4104) instead of the ori
 | 0.46 | 0.383 | 0.326 | 0.158 | 15.212 | 31.647 | 15.246 | 20 / 0 / 27 / 3 | yes |
 
 Applied state: E 15.734 -> 15.312 in `linear`, 20.245 -> 20.009 in `legacy`; probes 20 of 34, 2 of 4, 27 of 33, 3 of 3 in `linear` (criterion 2 was 0 of 4) and 4 of 34, 0 of 4, 27 of 33, 3 of 3 in `legacy` (criterion 2 was 2 of 4: there the colour is not decoded). The road of the tunnels is at 11.5 / 20.2 / 27.9 for 11.7 / 21.8 / 31.1 in the original.
+
+## Update after the palm foliage (2026-11-18)
+
+Decisions: see ADR-0037. Plan `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md`, slice G3; outputs under `artifacts/pbr-handover/s24/g3/`.
+
+The four leaf materials of the palms take a base grey of 170 and the original's alpha cutoff of 0.5. Measured in `linear` with `artifacts/pbr-handover/s23/scripts/measure_leaves.py` on the green-dominant pixels of four boxes (D: mean colour difference of the leaves with the original; area: leaf pixels of the candidate over the original's; E: mean difference per channel over the 15 views):
+
+| Base grey | Alpha cutoff | D | d per box | Leaf area per box | E | Eligible |
+|---|---|---|---|---|---|---|
+| 255 | 0.35 | 26.99 | 41.9 / 27.3 / 18.4 / 20.3 | 3.17 / 1.62 / 1.26 / 1.23 | 15.312 | yes |
+| 255 | 0.5 | 28.57 | 41.8 / 28.3 / 20.3 / 23.9 | 3.10 / 1.58 / 1.20 / 1.11 | 15.287 | yes |
+| 220 | 0.35 | 19.83 | 35.2 / 20.4 / 9.5 / 14.3 | 3.04 / 1.56 / 1.24 / 1.13 | 15.260 | yes |
+| 220 | 0.5 | 21.24 | 34.9 / 21.1 / 11.1 / 17.8 | 3.00 / 1.52 / 1.19 / 1.03 | 15.232 | yes |
+| 190 | 0.35 | 14.96 | 29.8 / 14.9 / 5.9 / 9.3 | 2.84 / 1.45 / 1.21 / 0.98 | 15.236 | yes |
+| 190 | 0.5 | 15.46 | 29.5 / 15.3 / 4.9 / 12.2 | 2.84 / 1.43 / 1.16 / 0.91 | 15.205 | yes |
+| 170 | 0.35 | 14.19 | 26.6 / 11.8 / 9.7 / 8.6 | 2.62 / 1.33 / 1.17 / 0.86 | 15.232 | yes |
+| 170 | 0.5 | 13.88 | 26.2 / 11.7 / 8.9 / 8.7 | 2.64 / 1.34 / 1.13 / 0.83 | 15.199 | yes |
+| 150 | 0.35 | 14.79 | 23.8 / 12.4 / 13.2 / 9.7 | 2.27 / 1.17 / 1.10 / 0.73 | 15.235 | yes |
+| 150 | 0.5 | 14.39 | 23.4 / 12.4 / 12.6 / 9.2 | 2.32 / 1.19 / 1.08 / 0.70 | 15.201 | yes |
+| 130 | 0.35 | 15.77 | 21.4 / 13.1 / 16.3 / 12.2 | 1.76 / 0.96 / 0.99 / 0.57 | 15.243 | yes |
+| 130 | 0.5 | 15.43 | 21.2 / 13.1 / 15.9 / 11.6 | 1.81 / 0.98 / 0.98 / 0.57 | 15.207 | yes |
+
+Applied state: D 26.99 -> 13.88; E 15.312 -> 15.199 in `linear`, 20.009 -> 19.959 in `legacy`; probes unchanged. The cause of the leaves' excess brightness is not established: the base level is a calibration.

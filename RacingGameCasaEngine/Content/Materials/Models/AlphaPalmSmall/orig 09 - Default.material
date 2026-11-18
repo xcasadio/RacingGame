@@ -17,9 +17,9 @@
     "detail_texture": "00000000-0000-0000-0000-000000000000",
     "detail_tiling": 1.0,
     "base_color": {
-      "r": 255,
-      "g": 255,
-      "b": 255,
+      "r": 170,
+      "g": 170,
+      "b": 170,
       "a": 255
     },
     "metallic": 0.0,
@@ -31,6 +31,6 @@
     },
     "clear_coat": 0.0,
     "clear_coat_roughness": 0.1,
-    "alpha_cutoff": 0.35
+    "alpha_cutoff": 0.5
   }
 }

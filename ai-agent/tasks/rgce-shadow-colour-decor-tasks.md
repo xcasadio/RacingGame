@@ -119,11 +119,11 @@ Arrêts communs, sans commit, l'état précédent étant gardé : script de mesu
 > - Candidat toujours retenu : `measure_tint.py --root s24/g2/applied base t0.38` : rapports 0,284 et 0,246, `S` 0,021, `E` 15,312, médiane 30,885, écart des tunnels 12,844, `choice: t0.38` ; `s24/g2/measure_tint.json` non réécrit.
 > - Sondes : `linear` 20/34, 2/4, 27/33, 3/3 (critère 2 : 0/4 avant) ; `legacy` 4/34, 0/4, 27/33, 3/3 (critère 2 : 2/4 avant ; dans ce mode la couleur n'est pas décodée, 0,38 y est plus clair que l'ombre de l'original). `E` : `linear` 15,734 -> 15,312 ; `legacy` 20,245 -> 20,009.
 > - Tunnel, mesure de R4 : médiane des parois 30,053 -> 30,885 (fenêtre tenue), écart 15,155 -> 12,844 ; route des tunnels 7,0 / 11,6 / 15,4 -> 11,5 / 20,2 / 27,9 (original 11,7 / 21,8 / 31,1).
-> - Interface et audit : les six écrans sans monde 3D et `ui-car-selection` identiques à `s24/g1/ref` ; `ui-pause` 0,009 %, `ui-race-hud` 1,064 %, `ui-race-finished` 1,406 % ; 16 des 30 captures d'audit changent (jusqu'à 39,8 %, `audit-Beginner-sector-20`), 14 sont identiques ; vue la plus changée : `Beginner-sector-20`, 24,6 %.
+> - Interface et audit : les six écrans sans monde 3D et `ui-car-selection` identiques à `s24/g1/ref` ; `ui-pause` 0,009 %, `ui-race-hud` 1,064 %, `ui-race-finished` 1,406 % ; 20 des 30 captures d'audit changent (jusqu'à 39,8 %, `audit-Beginner-sector-20`), 10 sont identiques ; vue la plus changée : `Beginner-sector-20`, 24,6 %.
 > - Documents : ADR-0036 `Proposed` ; aucune ADR ne fixait la couleur d'ombre (`rg "0\.26" docs` ne trouve que des sections historiques du doc de référence locale, laissées telles quelles) ; section « Update after the shadow colour » du doc de banc ; table écrite et relue par `s24/scripts/gen_docs_g2.py`.
 > - Regardé sur `s24/judge/2-couleur-ombre-avant-apres.jpg` : les ombres du terrain et des pavés sont moins noires, plus proches de l'original ; la route et les parois des tunnels sont plus claires, proches de l'original sur `Advanced-tunnel` et `Expert-tunnel` ; la face de colline à gauche de `Beginner-start` reste nettement plus sombre que dans l'original (elle est tournée à l'opposé du soleil : c'est l'ambiant, pas l'ombre).
 
-### ⏳ G3 — Feuillage des palmiers (ADR-0037)
+### ✅ G3 — Feuillage des palmiers (ADR-0037)
 
 - Prérequis : G2 clos. Base : la référence en place.
 - Mesure (D1), en `linear`, sur une copie fraîche du dossier de build. Script : `s23/scripts/measure_leaves.py`. Matériaux visés : les quatre matériaux de feuilles de « État vérifié », et eux seuls (`AlphaPalm`, `AlphaPalm2`, `AlphaPalm3` : `orig 09 - Defaulta.material` ; `AlphaPalmSmall` : `orig 09 - Default.material`) ; chaque candidat modifie les quatre ; les troncs et `Hotel01/plants.material` ne sont pas touchés. Captures sous `s24/g3/` : `base/` et `b<gris>-c<seuil>/`. Candidats : gris de la couleur de base 255, 220, 190, 170, 150, 130, croisé avec le seuil alpha 0,35 et 0,5, soit 11 candidats hors de la base (255 ; 0,35). Lancement : `python artifacts/pbr-handover/s23/scripts/measure_leaves.py base b255-c0.5 b220-c0.35 …`.
@@ -132,6 +132,19 @@ Arrêts communs, sans commit, l'état précédent étant gardé : script de mesu
 - Validation : validation commune ; en plus, `git status` du contenu limité aux quatre matériaux visés ; les 95 autres matériaux cuits identiques octet pour octet (99 fichiers `.material` moins les quatre, compte contrôlé sur la liste des fichiers).
 - Arrêts : arrêts communs ; un matériau recuit hors des quatre visés, ou un des quatre non recuit.
 - Commit : `fix(racing-casa): bring the palm foliage toward the original`
+
+> Validation (2026-11-18), sorties dans `artifacts/pbr-handover/s24/g3/` (`measure_leaves.txt`, `measure_leaves.json`, `cook-verify-before.txt`, `slice_check.txt`, `applied/`, `ref/`), script des candidats `s24/scripts/leafcand.py`.
+> - Mesure : `measure_leaves.py` inchangé (empreinte `35ebecfb2d96756d` contrôlée avant et après). Base capturée sur une copie fraîche du build, identique octet pour octet à `s24/g2/ref` (15 vues). Onze candidats capturés, chacun modifiant les quatre matériaux de feuilles et eux seuls.
+> - Règle : les onze candidats et la base sont éligibles. Plus petit écart `D` : 13,88 (gris 170, seuil 0,5) ; à moins de 1,0 : 170 / 0,35 (14,19), 150 / 0,5 (14,39), 150 / 0,35 (14,79). **Retenu : gris 170, seuil 0,5** (seuil de l'original d'abord, puis le gris le plus haut). Base : `D` 26,99, `E` 15,312.
+> - Application : `RaceMaterialRecipes.ForScenery`, constantes `PalmLeafBaseLevel` 170 et `PalmLeafAlphaCutoff` 0,5 pour les matériaux dont la texture de base est `PalmLeave.tga` ou `PalmLeave2.tga` ; famille et rugosité inchangées ; cuiseur et vérificateur non touchés.
+> - Cuiseur : `--verify` avant recuisson, 8 écarts, tous sur les quatre matériaux visés (`base_color` et `alpha_cutoff` de chacun) ; après recuisson 0 écart, `--check` 0, générateur `--check` 0 ; `git status` du contenu : les quatre matériaux visés et rien d'autre (99 fichiers `.material`, 95 inchangés).
+> - Build à 0 erreur ; `--smoke-frontend` et `--verify-legacy-import-profile` en succès ; aucun `[Warning]` ni `[Error]`.
+> - Rejeux deux fois, identiques entre eux ; références `s24/g3/ref/`. Les 15 vues en `linear` sont identiques octet pour octet aux captures de `b170-c0.5`.
+> - Candidat toujours retenu : `measure_leaves.py --root s24/g3/applied base b170-c0.5` : `D` 13,88, `E` 15,199, `choice: b170-c0.5` ; `s24/g3/measure_leaves.json` non réécrit.
+> - `E` : `linear` 15,312 -> 15,199 ; `legacy` 20,009 -> 19,959. Sondes inchangées : `linear` 20/34, 2/4, 27/33, 3/3 ; `legacy` 4/34, 0/4, 27/33, 3/3.
+> - Interface et audit : les six écrans sans monde 3D et `ui-car-selection` identiques à `s24/g2/ref` ; `ui-pause` 0,080 %, `ui-race-finished` 0,196 %, `ui-race-hud` 0,393 % ; 22 des 30 captures d'audit changent (jusqu'à 25,9 %, `audit-Expert-helper-palms`), 8 sont identiques ; vue la plus changée : `Expert-sector-20`, 5,2 %.
+> - Documents : ADR-0037 `Proposed`, ligne d'état sur l'ADR-0028 ; section « Update after the palm foliage » du doc de banc ; table écrite et relue par `s24/scripts/gen_docs_g3.py`.
+> - Regardé sur `s24/judge/3-feuillage-avant-apres.jpg` : les feuilles sont plus sombres et moins vives sur les trois vues, proches de l'original sur `Expert-sector-20` et `Expert-start` ; le grand palmier de `Beginner-sector-20` reste plus clair et nettement plus large que dans l'original, où ses palmes sont fines et sombres (surface de feuilles 2,64 fois celle de l'original) : écart ouvert.
 
 ### ⏳ G4 — Vitres des immeubles (ADR-0038)
 

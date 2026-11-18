@@ -71,6 +71,14 @@ public static class RaceMaterialRecipes
     // (ADR-0033, chosen among 0.5, 0.75, 1.0 and 1.3 by the rule written before the measurement).
     private const float SignageEmissiveLevel = 1f;
 
+    // The leaves of the palms, designated by their base texture: a grey base level and the alpha test of the original (0.5,
+    // NormalMapping.fx) instead of the imported white and the cutoff of the import presentation (ADR-0037). With those the leaves
+    // were brighter than the original's and covered more pixels. The cause of the difference in brightness is not established:
+    // the level is a calibration against the original's captures, chosen by the rule written before the measurement.
+    private static readonly string[] PalmLeafTextures = ["PalmLeave.tga", "PalmLeave2.tga"];
+    private const byte PalmLeafBaseLevel = 170;
+    private const float PalmLeafAlphaCutoff = 0.5f;
+
     // The tint of a material times its diffuse colour D, rounded as CreateLegacyLighting of the other machine does:
     // (c * D + 127) / 255 per channel. The tint is white when the material has a texture.
     private static Color WithLegacyDiffuse(Color tint, byte diffuse)
@@ -92,6 +100,8 @@ public static class RaceMaterialRecipes
         // (ADR-0033, on the precedent of the tunnel, ADR-0030). lit-pbr has no ambient per material, and without it the signs
         // were nearly black on the faces turned away from the sun.
         bool isSignage = family == RacingGamePbrMaterialMapping.Signage;
+        bool isPalmLeaf = importedMaterial.DiffuseTextureFilePath != null
+            && PalmLeafTextures.Any(texture => RacingGamePbrMaterialMapping.IsSameTexture(texture, importedMaterial.DiffuseTextureFilePath));
 
         return new RaceMaterialRecipe
         {
@@ -99,12 +109,12 @@ public static class RaceMaterialRecipes
             BaseTextureFilePath = importedMaterial.DiffuseTextureFilePath,
             NormalTextureFilePath = importedMaterial.NormalTextureFilePath,
             Family = family,
-            BaseColor = Opaque(importedMaterial.DiffuseColor),
+            BaseColor = isPalmLeaf ? new Color(PalmLeafBaseLevel, PalmLeafBaseLevel, PalmLeafBaseLevel, (byte)255) : Opaque(importedMaterial.DiffuseColor),
             EmissiveColor = isSignage ? importedMaterial.AmbientColor * SignageEmissiveLevel : presentation.EmissiveColor,
             EmissiveTextureFilePath = isSignage ? importedMaterial.DiffuseTextureFilePath : null,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             Queue = presentation.Queue,
-            AlphaCutoff = presentation.AlphaCutoff,
+            AlphaCutoff = isPalmLeaf ? PalmLeafAlphaCutoff : presentation.AlphaCutoff,
             RasterizerState = presentation.DisableBackfaceCulling ? RaceMaterialStates.CullNone : null,
         };
     }
