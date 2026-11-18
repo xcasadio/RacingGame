@@ -3695,6 +3695,42 @@
       "name": "Texture.NoEnvironmentLight",
       "file_name": "Textures/NoEnvironmentLight.texture",
       "asset_type": "texture"
+    },
+    {
+      "id": "db1e9897-17f4-5e3a-b90c-85583d2903f9",
+      "name": "World.CarSelection",
+      "file_name": "Worlds/CarSelection.world",
+      "asset_type": "world"
+    },
+    {
+      "id": "4f72f55c-937f-59bc-8323-d3e44d6b1744",
+      "name": "World.FrontEnd",
+      "file_name": "Worlds/FrontEnd.world",
+      "asset_type": "world"
+    },
+    {
+      "id": "804b654e-2070-5ac3-bd3c-2e6f70a42fa5",
+      "name": "World.Race.TrackAdvanced",
+      "file_name": "Worlds/Race/TrackAdvanced.world",
+      "asset_type": "world"
+    },
+    {
+      "id": "1112d61a-9759-5e37-9142-282517d8aad9",
+      "name": "World.Race.TrackBeginner",
+      "file_name": "Worlds/Race/TrackBeginner.world",
+      "asset_type": "world"
+    },
+    {
+      "id": "7d7b9c7f-236c-57f1-8b1e-af192a3bfd80",
+      "name": "World.Race.TrackExpert",
+      "file_name": "Worlds/Race/TrackExpert.world",
+      "asset_type": "world"
+    },
+    {
+      "id": "d259a4b8-a340-569c-a63a-6992ee76d408",
+      "name": "Entity.PlayerCar",
+      "file_name": "Entities/PlayerCar.entity",
+      "asset_type": "entity"
     }
   ]
 }

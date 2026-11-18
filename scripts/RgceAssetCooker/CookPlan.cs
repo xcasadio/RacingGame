@@ -246,8 +246,14 @@ internal static class CookPlanner
     /// <summary>Gives an asset the deterministic id and name of its catalogue entry (the engine types expose no setter for the id).</summary>
     public static void SetIdentity(ObjectBase asset, string name)
     {
-        typeof(ObjectBase).GetProperty(nameof(ObjectBase.Id))!.GetSetMethod(nonPublic: true)!.Invoke(asset, [Uuid5.ForAsset(name)]);
+        SetId(asset, Uuid5.ForAsset(name));
         asset.Name = name;
+    }
+
+    /// <summary>Gives an object a deterministic id and leaves its name alone (the worlds' entities and components keep the names the game gives them).</summary>
+    public static void SetId(ObjectBase target, Guid id)
+    {
+        typeof(ObjectBase).GetProperty(nameof(ObjectBase.Id))!.GetSetMethod(nonPublic: true)!.Invoke(target, [id]);
     }
 
     /// <summary>The images of Content/Textures that cooked materials name, and the texture asset of each.</summary>

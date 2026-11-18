@@ -13,7 +13,11 @@ Owned entries (plan ai-agent/tasks/rgce-editor-project-tasks.md, T3.3 and T3.4):
 - ModelSource.<stem> for every Content/Models/*.gltf (its .bin buffer is a sidecar of the .gltf, not catalogued);
 - World.<path> for every Content/Worlds/**/*.world that no entry names yet (T4.6): the path is relative to Worlds, without
   the extension, with "/" replaced by "." (Worlds/Test/TrackBeginnerGenerators.world is World.Test.TrackBeginnerGenerators).
-  The "id" written in the .world must be the id of its entry: the script reports a world whose id differs.
+  The "id" written in the .world must be the id of its entry: the script reports a world whose id differs;
+- Entity.<path> for every Content/Entities/**/*.entity that no entry names yet (plan ai-agent/tasks/rgce-worlds-as-assets-tasks.md, M5):
+  the path is relative to Entities, without the extension, with "/" replaced by "." (Entities/PlayerCar.entity is
+  Entity.PlayerCar). Its asset type is the one the engine infers from the extension (AssetInfo.InferAssetType), and the "id"
+  written in the .entity must be the id of its entry, as for a world.
 
 The entries of scripts/RgceAssetCooker (asset types staticmodel, material and texture: StaticModel.*, Material.*, and the
 Texture.* .texture assets) are not owned by this script: it leaves them untouched and in place, and --check only
@@ -77,6 +81,11 @@ def asset_id(name):
     return str(uuid.uuid5(NAMESPACE, name))
 
 
+def infer_asset_type(file_name):
+    """The asset type the engine infers from a file name (CasaEngine AssetInfo.InferAssetType): the extension, lower case."""
+    return pathlib.PurePosixPath(file_name).suffix.lstrip(".").lower()
+
+
 def write_bytes_if_changed(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     if not path.exists() or path.read_bytes() != data:
@@ -135,6 +144,11 @@ def file_entries(already_catalogued, owned_names):
     for path in sorted((CONTENT / "Worlds").rglob("*.world"), key=lambda p: p.as_posix().lower()):
         relative = path.relative_to(CONTENT / "Worlds").with_suffix("").as_posix()
         add("World." + relative.replace("/", "."), path.relative_to(CONTENT).as_posix(), "world")
+    if (CONTENT / "Entities").is_dir():
+        for path in sorted((CONTENT / "Entities").rglob("*.entity"), key=lambda p: p.as_posix().lower()):
+            relative = path.relative_to(CONTENT / "Entities").with_suffix("").as_posix()
+            file_name = path.relative_to(CONTENT).as_posix()
+            add("Entity." + relative.replace("/", "."), file_name, infer_asset_type(file_name))
     return owned
 
 
@@ -170,7 +184,7 @@ def main():
     # A file is owned when its entry is ours from a previous run, or when no entry names it yet.
     # Texture.<stem> is ours only while it is an image entry (png before the rename, dds): once the cooker has written the
     # .texture asset of that name, the entry is the cooker's.
-    previously_owned = {entry["name"] for entry in entries if entry.get("name", "").startswith(("Image.", "Data.", "ModelSource.", "World."))
+    previously_owned = {entry["name"] for entry in entries if entry.get("name", "").startswith(("Image.", "Data.", "ModelSource.", "World.", "Entity."))
                         or (entry.get("name", "").startswith("Texture.") and entry.get("asset_type") in ("png", "dds"))}
     already_catalogued = catalogued_files(entry for entry in entries if entry.get("name") not in previously_owned)
     owned += file_entries(already_catalogued, owned_names)
@@ -194,10 +208,10 @@ def main():
         raise SystemExit("duplicate catalogue id or name")
 
     for entry in owned:
-        if entry["asset_type"] == "world":
-            world_id = json.loads((CONTENT / entry["file_name"]).read_bytes().decode("utf-8-sig")).get("id")
-            if world_id != entry["id"]:
-                raise SystemExit(f"{entry['file_name']} has id {world_id}, its catalogue entry {entry['name']} has id {entry['id']}")
+        if entry["asset_type"] in ("world", "entity"):
+            file_id = json.loads((CONTENT / entry["file_name"]).read_bytes().decode("utf-8-sig")).get("id")
+            if file_id != entry["id"]:
+                raise SystemExit(f"{entry['file_name']} has id {file_id}, its catalogue entry {entry['name']} has id {entry['id']}")
 
     write_json(CATALOG, catalog)
     print(f"{len(SOUNDS)} sounds, {len(owned)} owned catalogue entries, {len(entries)} entries in the catalogue")

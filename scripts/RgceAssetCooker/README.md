@@ -8,7 +8,7 @@ Like the other tools of `scripts/`, it is not part of `RacingGame.slnx`. Build a
 
 ```
 dotnet build scripts/RgceAssetCooker/RgceAssetCooker.csproj
-scripts/RgceAssetCooker/bin/Debug/net9.0-windows/RgceAssetCooker.exe [--content <Content folder>] [--check | --verify]
+scripts/RgceAssetCooker/bin/Debug/net9.0-windows/RgceAssetCooker.exe [--content <Content folder>] [--check | --verify] [--worlds]
 ```
 
 The default `--content` is `RacingGameCasaEngine/Content` of the repository that holds the executable. No graphics device is needed.
@@ -54,6 +54,42 @@ Run `python scripts/generate_rgce_content_assets.py` first on a catalogue that s
 `Image.<Name>` in place. The cooker then takes the `Texture.<Name>` name for the `.texture` assets. In the other order the result is the
 same set of entries.
 
+## Worlds and the player car (`--worlds`)
+
+`--worlds` writes the game's worlds and its car as CasaEngine assets, built by the game's own constructors
+(`RacingGame.Gameplay/Race/RaceWorldTemplates.cs`, `Entities/RaceCarEntityFactory.cs`), through the engine's public writers
+(`EditorWorldWriter.SaveWorld(World, IReadOnlyList<Entity>)`, `EditorEntityWriter.SaveEntity`; CasaEngine ADR-0128). The game does not load
+these files yet (plan `ai-agent/tasks/rgce-worlds-as-assets-tasks.md`, M5).
+
+| Asset | File | Catalogue name | Type | Entities |
+|---|---|---|---|---|
+| Front end | `Worlds/FrontEnd.world` | `World.FrontEnd` | `world` | 2 (camera, player start) |
+| Races | `Worlds/Race/Track<Beginner\|Advanced\|Expert>.world` | `World.Race.Track<Track>` | `world` | 661, 916, 1757 (5 generators, the scenery, camera, `RaceRoot`, `Light.Key`, 3 checkpoints, player start) |
+| Car selection | `Worlds/CarSelection.world` | `World.CarSelection` | `world` | 4 (`Carousel.Light`, three plates) |
+| Player car | `Entities/PlayerCar.entity` | `Entity.PlayerCar` | `entity` | the entity of `RaceCarEntityFactory.Create()`, renamed `Entity.PlayerCar` |
+
+- The entities are built with `EngineEnvironment.ProjectPath` set to the Content folder (the track scene reads the catalogue, that path and the
+  track files), then written into a scratch folder; only the files whose bytes change are copied, so a second run writes nothing. No entity is
+  initialized or added to a world. A race world has the shadows enabled, a key light that casts them, the ambient and the `linear` colour
+  pipeline of `RaceWorldTemplates.ApplyRaceEnvironment`; the races and the carousel carry the id of `Texture.SkyCubeMap` as their
+  `specular_cubemap_asset_id`.
+- **Ids** are deterministic, set by the same reflection as `CookPlanner.SetIdentity` without renaming (`CookPlanner.SetId`): the world and the car are
+  `uuid5` of their catalogue name (`World.FrontEnd`, `Entity.PlayerCar`; the generator checks that a file's id is its entry's); an entity of a
+  world is `uuid5("<entry>/<entity name>")`; a component is `uuid5("<entry>/<entity name>/<component path>")`, the path being the names of the
+  components from the root of the entity down, joined by `/` (the name alone for a component outside the root's tree). Among siblings, a name that occurs
+  more than once becomes `Name#rank` (rank counted from 0 among the siblings of that name). For the car the prefix `<entry>/<entity name>` is
+  `Entity.PlayerCar`. The tool fails if two entities of a world share a name, if two component paths of an entity are equal, if two ids of a world collide, or if an
+  entity has child entities (the writer does not save them).
+- The catalogue is not written by the tool: run `python scripts/generate_rgce_content_assets.py` after `--worlds` (it catalogues `Worlds/**/*.world`
+  as `World.<path>` and `Entities/**/*.entity` as `Entity.<path>`, with the asset type the engine infers from the extension, and checks that each file's `id` is its entry's).
+- A camera component is written in its state before initialization: `view_distance` and `viewport` are zeros. The editor initializes the camera when it opens the
+  world and saves the size of its window, 1, 1000 and 999; the game never reads those values from the file.
+- `--worlds --verify` re-reads the six files with public engine APIs only (`World.Load` on the file, `Entity.Load` on each inline entity node and on the car file) and
+  compares them with the constructors run again: the world's id and name, its keys, its environment key by key (against what `WorldEnvironmentSettings.Save` writes for the expected environment),
+  the sky cube id (empty for the front end), the number of entities, each entity in order (name, id, policies, the tree of components with type, name and id, local transforms to 1e-6,
+  the model id and shadow flags of the static models, the light, the camera, the player start, and every `[SerializedProperty]`: checkpoint half extents, track and height map ids, generator
+  sides, car anchor ids), and the catalogue entry of each file (id, file, type). Exit code 1 on any mismatch, each one listed. Run it after the generator.
+
 ## Options
 
 - no option: cook, then verify.
@@ -63,3 +99,5 @@ same set of entries.
   a fresh read of the glTF files and the recipes: vertices, tangents (the number of entries and every value), indices, nodes, material ids, every material value under the effective-state rule,
   the render state the engine resolves for the asset, textures (image, sampler and `generate_mipmaps`), the catalogue (no duplicate id or name, every entry's file exists), and the car
   paint rule the game applies at run time (a car-textured slot is painted when its cooked material has a clear coat) against the paint role of each `Car.gltf` material in the recipes. Exit code 1 on any mismatch. It does not compile the materials (that needs a graphics device); the editor catalogue walk opens them.
+- `--worlds`: write the five worlds and `Entities/PlayerCar.entity` (see above). It touches neither the models, materials and textures nor the catalogue. Not combinable with `--check`.
+- `--worlds --verify`: re-read those six files and compare them with the constructors. Writes nothing; exit code 1 on any mismatch.

@@ -1,0 +1,217 @@
+{
+  "id": "d259a4b8-a340-569c-a63a-6992ee76d408",
+  "name": "Entity.PlayerCar",
+  "policy_source": "Explicit",
+  "mobility": "Movable",
+  "tick_policy": "EveryFrame",
+  "spatial_policy": "DynamicIndex",
+  "render_dynamic_policy": "Static",
+  "root_component": {
+    "id": "991e5e7d-94a4-56c5-86dc-889f32246a18",
+    "name": "PhysicsRoot",
+    "type": "RacingCarAnchorComponent",
+    "local_transform": {
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "scale": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    },
+    "children_component": [
+      {
+        "id": "2346c2d4-b86d-5d2a-862e-48dd75bd2d42",
+        "name": "VisualPivot",
+        "type": "RacingCarAnchorComponent",
+        "local_transform": {
+          "position": {
+            "x": 0.0,
+            "y": 0.45,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        },
+        "children_component": [
+          {
+            "id": "c307d3cf-124d-5626-bf85-ca6398049b15",
+            "name": "Body",
+            "type": "RacingCarAnchorComponent",
+            "local_transform": {
+              "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            "children_component": [
+              {
+                "id": "597a82d7-335f-531b-b67b-2bfa738978be",
+                "name": "BodyVisual",
+                "type": "StaticModelComponent",
+                "local_transform": {
+                  "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  },
+                  "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0,
+                    "w": 1.0
+                  }
+                },
+                "children_component": [],
+                "static_model_asset_id": "00000000-0000-0000-0000-000000000000",
+                "cast_shadows": true,
+                "receive_shadows": true
+              }
+            ],
+            "anchor_id": "Body"
+          },
+          {
+            "id": "13789c6c-5165-513d-90d0-f27eea832d52",
+            "name": "ChaseCamera",
+            "type": "RacingCarAnchorComponent",
+            "local_transform": {
+              "position": {
+                "x": 0.0,
+                "y": 0.45,
+                "z": 0.35
+              },
+              "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            "children_component": [],
+            "anchor_id": "ChaseCamera"
+          },
+          {
+            "id": "86f3ef44-6b8f-56ea-a897-30bc43e6e045",
+            "name": "CockpitCamera",
+            "type": "RacingCarAnchorComponent",
+            "local_transform": {
+              "position": {
+                "x": 0.0,
+                "y": 0.32,
+                "z": 0.85
+              },
+              "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            "children_component": [],
+            "anchor_id": "CockpitCamera"
+          },
+          {
+            "id": "f91e8059-7ddb-51e3-b681-fd55d38df0d1",
+            "name": "AudioEmitter",
+            "type": "RacingCarAnchorComponent",
+            "local_transform": {
+              "position": {
+                "x": 0.0,
+                "y": 0.15,
+                "z": -0.95
+              },
+              "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            "children_component": [],
+            "anchor_id": "AudioEmitter"
+          }
+        ],
+        "anchor_id": "VisualPivot"
+      }
+    ],
+    "anchor_id": "PhysicsRoot"
+  },
+  "components": [
+    {
+      "id": "af3e644c-5b07-5e25-ad65-366be7b970d9",
+      "name": "VehicleDynamicsComponent",
+      "type": "VehicleDynamicsComponent"
+    },
+    {
+      "id": "5a082ae1-1aea-5ee0-81bf-b5a56faa6b69",
+      "name": "LegacyCarVisualComponent",
+      "type": "LegacyCarVisualComponent"
+    },
+    {
+      "id": "66e625a3-447a-5b5a-9691-ac3d660c456b",
+      "name": "VehicleWheelVisualComponent",
+      "type": "VehicleWheelVisualComponent"
+    },
+    {
+      "id": "993eeb0a-ddff-5172-9889-a31e060a9167",
+      "name": "DebugCarVisualComponent",
+      "type": "DebugCarVisualComponent"
+    },
+    {
+      "id": "1829369a-0891-5331-b05a-9d1246ed4680",
+      "name": "RaceCarStateComponent",
+      "type": "RaceCarStateComponent"
+    }
+  ],
+  "script_class_name": null
+}

@@ -7,7 +7,7 @@ internal static class Program
     private const string Usage = """
         RgceAssetCooker: cooks the glTF models of RacingGameCasaEngine into catalogued assets.
 
-        Usage: RgceAssetCooker [--content <Content folder>] [--check | --verify]
+        Usage: RgceAssetCooker [--content <Content folder>] [--check | --verify] [--worlds]
 
           (no option)  Writes Content/Models/<Name>.staticModel, Content/Materials/**/*.material and
                        Content/Textures/<Name>.texture, updates their entries in Content/AssetInfos.json,
@@ -16,6 +16,13 @@ internal static class Program
                        (or a cooked file outside the plan). Writes nothing. Exits 1 if there is any.
           --verify     Re-reads every cooked file with the engine loaders and compares it with the glTF read
                        and the material recipes. Writes nothing. Exits 1 on any mismatch.
+          --worlds     Writes the five worlds (Content/Worlds/FrontEnd.world, Worlds/Race/Track<Beginner|Advanced|Expert>.world,
+                       Worlds/CarSelection.world) and Content/Entities/PlayerCar.entity, built by the game's own constructors,
+                       with deterministic ids. A second run changes no byte. The catalogue is not touched (run
+                       scripts/generate_rgce_content_assets.py).
+          --worlds --verify
+                       Re-reads those six files with the engine loaders and compares them with the constructors and with the
+                       catalogue. Writes nothing. Exits 1 on any mismatch. (--worlds --check is not an option.)
           --content    The project Content folder (default: RacingGameCasaEngine/Content of the repository).
         """;
 
@@ -24,6 +31,7 @@ internal static class Program
         string? contentDirectory = null;
         bool check = false;
         bool verify = false;
+        bool worlds = false;
         for (int index = 0; index < args.Length; index++)
         {
             switch (args[index])
@@ -37,6 +45,9 @@ internal static class Program
                 case "--verify":
                     verify = true;
                     break;
+                case "--worlds":
+                    worlds = true;
+                    break;
                 default:
                     Console.Error.WriteLine(Usage);
                     return args[index] is "--help" or "-h" ? 0 : 2;
@@ -49,11 +60,22 @@ internal static class Program
             return 2;
         }
 
+        if (worlds && check)
+        {
+            Console.Error.WriteLine("--worlds and --check are exclusive.");
+            return 2;
+        }
+
         contentDirectory ??= FindContentDirectory();
         if (contentDirectory == null || !Directory.Exists(contentDirectory))
         {
             Console.Error.WriteLine("Content folder not found: pass --content <folder>.");
             return 2;
+        }
+
+        if (worlds)
+        {
+            return verify ? VerifyWorlds(contentDirectory) : WriteWorlds(contentDirectory);
         }
 
         var clock = Stopwatch.StartNew();
@@ -86,6 +108,28 @@ internal static class Program
         int verified = Verify(contentDirectory);
         Console.WriteLine($"done in {clock.Elapsed.TotalSeconds:0.0}s");
         return verified;
+    }
+
+    private static int WriteWorlds(string contentDirectory)
+    {
+        var writer = new WorldWriter(contentDirectory);
+        writer.Run();
+        Console.WriteLine($"worlds: {writer.FilesWritten} files written, {writer.FilesUnchanged} unchanged");
+        return 0;
+    }
+
+    private static int VerifyWorlds(string contentDirectory)
+    {
+        var verifier = new WorldVerifier(contentDirectory);
+        verifier.Run();
+        Console.WriteLine($"verify worlds: {verifier.Files} files, {verifier.Entities} entities, {verifier.Components} components");
+        foreach (string mismatch in verifier.Mismatches)
+        {
+            Console.WriteLine($"MISMATCH {mismatch}");
+        }
+
+        Console.WriteLine($"verify worlds: {verifier.Mismatches.Count} mismatches");
+        return verifier.Mismatches.Count == 0 ? 0 : 1;
     }
 
     private static int Verify(string contentDirectory)
