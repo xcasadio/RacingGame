@@ -71,7 +71,7 @@ Arrêts communs, sans commit, l'état précédent étant gardé : script de mesu
 
 ## Tâches
 
-### ⏳ G1 — Moteur à `FilterTaps`, 64 lectures dans le monde de course (ADR-0035)
+### ✅ G1 — Moteur à `FilterTaps`, 64 lectures dans le monde de course (ADR-0035)
 
 - Prérequis : plan du moteur `shadow-filter-taps-tasks.md` terminé, T2 **CONFIRMED**. Si ce plan-là est bloqué, G1 passe en ⚠️ et G2 part de la référence `s22/s2/ref`.
 - Changement : le pointeur du sous-module avance sur la tête de `chantier/shadow-filter-taps` ; `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs` règle `Shadows.FilterTaps` à 64 par une constante nommée, commentée. Aucun contenu. Le carrousel n'est pas touché.
@@ -88,6 +88,17 @@ Arrêts communs, sans commit, l'état précédent étant gardé : script de mesu
 - Arrêts, sans commit : état du moteur non conforme ; rejeux différents entre eux ; une vue bornée au-delà de 3 % ; un changement ailleurs que sur un bord d'ombre ; critère 3 sous 27 ; un des sept écrans cités qui change ; `Expert-tunnel` identique à la référence, ou moucheture au-dessus de 0,60 %.
 - Retour arrière : `git revert` du commit.
 - Commit : `feat(racing-casa): soften the shadow edges of the race world with 64 filter taps`
+
+> Validation (2026-11-18), sorties dans `artifacts/pbr-handover/s24/g1/` (`slice_check.txt`, `ref/`, `masks/`), scripts `s22/scripts/runref.sh`, `s24/scripts/slice_check.py`, `s22/scripts/speckle.py`.
+> - Prérequis : plan du moteur terminé, T2 **CONFIRMED** (6469 tests, 0 échec).
+> - État du moteur construit : `HEAD` de `CasaEngine` = tête de `chantier/shadow-filter-taps` = `46acdf6fd`, qui contient `1eacf5764` (`feat(rendering): make the tap count of the shadow filter a setting`) ; `git -C CasaEngine status --short` vide ; `LitPbr.xnb` du dossier de build : `c5648d76509173c8…` pour `5451c75c2b3fcac9…` avant. Le pointeur committé est `46acdf6fd`.
+> - Build à 0 erreur ; cuiseur `--verify` 0 écart, `--check` 0 ; `--smoke-frontend` et `--verify-legacy-import-profile` en succès ; aucun `[Warning]` ni `[Error]`.
+> - Rejeux deux fois, identiques entre eux (15 vues et tunnel dans les deux modes, 10 écrans, 30 captures d'audit) ; références `s24/g1/ref/`.
+> - Contre `s22/s2/ref` : les six écrans sans monde 3D et `ui-car-selection` identiques octet pour octet ; vues bornées : au plus 1,231 % des pixels changés de plus de 8 niveaux (`audit-Beginner-sector-20` ; puis `audit-Expert-sector-20` 1,106 %, `audit-Beginner-helper-palms` 1,080 %), `ui-race-finished` 0,592 %, `ui-race-hud` 0,444 %, `ui-pause` 0,004 % ; borne 3 %. Masque regardé (`audit-Beginner-helper-palms`) : les pixels changés suivent le bord des ombres du palmier, des panneaux et des glissières.
+> - `E` : `linear` 15,734 (15,732 ; borne 15,782) ; `legacy` 20,245 (20,249). Sondes : `linear` 20/34, 0/4, 27/33, 3/3 ; `legacy` 4/34, 2/4, 27/33, 3/3 ; inchangées.
+> - Preuve que le réglage agit : `Expert-tunnel` en `linear` diffère de la référence (2,171 %) ; `speckle.py` (empreinte `6dbe28b573083f62`) redonne son étalonnage, moucheture 0,304 % (seuil 0,60 %). Les trois vues de tunnel sont identiques octet pour octet à l'essai `s23/taps/t64-tunnel`. Recadrage regardé (`s24/judge/1-penombre-paroi-expert.png`, et `s23/look/taps-expert-wall.png`) : l'éventail de bandes a laissé place à un dégradé lisse, proche du flou de l'original.
+> - Tunnel, mesure de R4 : médiane des parois 30,053, dans la fenêtre ; écart 15,155.
+> - ADR-0035 `Proposed` ; section « Update after the shadow filter taps » du doc de banc. Le coût en temps d'image n'est pas mesuré.
 
 ### ⏳ G2 — Couleur d'ombre du monde de course (ADR-0036)
 

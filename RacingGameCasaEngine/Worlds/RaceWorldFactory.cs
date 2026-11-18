@@ -86,6 +86,9 @@ public static class RaceWorldFactory
     private const float ShadowFadeDistance = 15f;
     private const float ShadowDepthRange = 150f;
     private const float ShadowFilterRadius = 3f;
+    // 64 reads instead of the engine's 12 (ADR-0035, engine ADR-0127): with 12 a shadow edge seen at a grazing angle, on a
+    // tunnel wall, showed as a fan of bands; with 64 it is a gradient, as the original's blurred shadow. Not timed here.
+    private const int ShadowFilterTaps = 64;
     private static readonly Vector3 ShadowColor = new(0.25f, 0.26f, 0.27f);
     private const float ShadowDepthBias = 0.001f;
     private const float ShadowNormalBias = 0.1f;
@@ -149,6 +152,7 @@ public static class RaceWorldFactory
         world.EnvironmentSettings.Shadows.FadeDistance = ShadowFadeDistance;
         world.EnvironmentSettings.Shadows.DepthRange = ShadowDepthRange;
         world.EnvironmentSettings.Shadows.FilterRadius = ShadowFilterRadius;
+        world.EnvironmentSettings.Shadows.FilterTaps = ShadowFilterTaps;
         world.EnvironmentSettings.Shadows.Mode = ShadowMode.MultiplyLitColor;
         world.EnvironmentSettings.Shadows.ShadowColor = ShadowColor;
         world.EnvironmentSettings.Shadows.DepthBias = ShadowDepthBias;

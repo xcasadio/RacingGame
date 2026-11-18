@@ -299,3 +299,9 @@ Measured in `linear` with `artifacts/pbr-handover/s22/scripts/measure_s2.py` (Lr
 | 0.45 / 1 | 86.4 | 165.7 | 16.243 | 7.2 / 12.5 / 16.3 | 0.000 | yes |
 
 Applied state: E 17.762 -> 15.732 in `linear`, 20.572 -> 20.249 in `legacy`; probes 20 of 34, 0 of 4, 27 of 33, 3 of 3 in `linear` (17 of 34 before) and 4 of 34, 2 of 4, 27 of 33, 3 of 3 in `legacy`. Remaining gaps on the road: the highlight is below the original's (189.3 for 209.9), the road in the tunnels is darker than the original's, and the original's darkening of the road near the car (73 of 423 points) is not imitated.
+
+## Update after the shadow filter taps (2026-11-18)
+
+Decisions: see ADR-0035. Plan `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md`, slice G1; outputs under `artifacts/pbr-handover/s24/g1/`.
+
+The race world filters its shadow edges with 64 taps instead of 12 (engine setting `FilterTaps`, CasaEngine ADR-0127). On the right wall of the Expert tunnel the fan of bands at the edge of the shadow becomes a gradient. Against the previous reference only shadow edges change: at most 1.231 % of the pixels of a view outside the tunnels, 2.171 % on the Expert tunnel. E is unchanged: 15.734 in `linear` (15.732 before), 20.245 in `legacy` (20.249); the probes are unchanged. The cost in frame time was not measured.

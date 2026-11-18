@@ -48,3 +48,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0032 | RacingGameCasaEngine balances the light of the race world against the original with an exposure of 0.9 | Proposed | 2026-11-17 |
 | ADR-0033 | RacingGameCasaEngine lights the signs and the car glass as the original does and shadows the tunnel emissive | Proposed | 2026-11-17 |
 | ADR-0034 | RacingGameCasaEngine gives the road the original's sun sheen and takes the environment light off it | Proposed | 2026-11-18 |
+| ADR-0035 | RacingGameCasaEngine filters the shadow edges of the race world with 64 taps | Proposed | 2026-11-18 |
