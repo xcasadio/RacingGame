@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using CasaEngine.Core.Serialization;
 using Microsoft.Xna.Framework;
 
 namespace RacingGame.Gameplay.Components;
@@ -6,10 +7,13 @@ namespace RacingGame.Gameplay.Components;
 [DisplayName("Race Checkpoint Trigger")]
 public sealed class RaceCheckpointTriggerComponent : SceneComponent
 {
+    [SerializedProperty("half_width")]
     public float HalfWidth { get; set; } = 6.0f;
 
+    [SerializedProperty("half_height")]
     public float HalfHeight { get; set; } = 4.0f;
 
+    [SerializedProperty("half_depth")]
     public float HalfDepth { get; set; } = 2.5f;
 
     public RaceCheckpointTriggerComponent()

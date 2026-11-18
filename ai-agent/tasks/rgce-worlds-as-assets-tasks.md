@@ -187,7 +187,7 @@ Un écart à l'un de ces points est un **arrêt** : la tranche passe en ⚠️, 
 > - Builds à 0 erreur sur ce moteur : `dotnet build RacingGame.slnx` et `dotnet build scripts/RgceAssetCooker/RgceAssetCooker.csproj` (lancés avec le code de M3 dans l'arbre ; les sources de M2 seule sont celles du build de M1, à 0 erreur) ; cuiseur `--verify` : 0 écart, `--check` : 0 ; générateur `--check` : 0.
 > - Parité complète de M3, sur ce moteur : `PASS` (`artifacts/worlds-as-assets/m3/slice_check.txt`).
 
-### 🚧 M3 — Champs perdus à l'enregistrement
+### ✅ M3 — Champs perdus à l'enregistrement
 
 - **Prérequis** : M1.
 - **Résultat** : un checkpoint et une ancre de voiture gardent leurs valeurs après un aller-retour d'enregistrement ; rien ne change à l'exécution.
@@ -199,6 +199,13 @@ Un écart à l'un de ces points est un **arrêt** : la tranche passe en ⚠️, 
 - **Arrêts** : communs ; une valeur ou une ancre perdue par la sonde ; un type que le chargeur du moteur ne retrouve pas.
 - **Retour arrière** : `git revert`.
 - **Commit** : `feat(racing-casa): save the checkpoint extents and the car anchor ids`
+
+> Relecture de la tranche (2026-11-18) : **READY**.
+> Validation (2026-11-18), sorties dans `artifacts/worlds-as-assets/m3/` (`ref/`, `export/`, `car-profile/`, `car-top-speed/`, `slice_check.txt`, `probe.txt`, `probe/`) :
+> - Code : quatre attributs `[SerializedProperty]` (`half_width`, `half_height`, `half_depth`, `anchor_id`) et le `using` dans les deux composants ; rien d'autre. Build à 0 erreur.
+> - Parité, par `slice_check.py m3` : `RESULT: PASS`. 76 images identiques octet pour octet à la référence de M1 dans les six genres, deux rejeux identiques entre eux ; `smoke` et `profile` en succès ; export de scène sans enregistrement sans pair (1437, 2033, 4058) ; les deux rapports d'audit de voitures identiques hors la ligne `Generated: ` ; cuiseur `--verify` 0 écart, `--check` 0 ; générateur `--check` 0 ; `check_gameplay_type_names.py` 0. Réglages de l'utilisateur aux empreintes de M1.
+> - Sonde (projet console du scratchpad, types publics) : `RESULT: PASS`. Le checkpoint enregistré porte `half_width` 7,25, `half_height` 3,5, `half_depth` 2,75 et les retrouve au rechargement ; l'arbre d'ancres (une racine, un enfant, quatre petits-enfants) porte six `anchor_id` et retrouve ses six ids et ses positions aux mêmes places ; un second enregistrement des entités rechargées redonne le même texte. Fichiers écrits par la sonde gardés dans `m3/probe/`.
+> - Contrôle différé de M2 : `git rev-parse <commit de M2>:CasaEngine` = `1ed32d862e075030941be3afb1d413b26fb04ffb` ; `git diff --name-only 5f6b9d9 <commit de M2>` : `CasaEngine` et ce plan.
 
 ### ⏳ M4 — Construction des mondes dans la DLL (P11)
 
