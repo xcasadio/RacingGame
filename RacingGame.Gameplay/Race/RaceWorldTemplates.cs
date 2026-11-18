@@ -21,7 +21,7 @@ internal static class RaceWorldTemplates
     // normalize(8500, -7250, 15000) in the original's Z-up space (Core/Graphics/LensFlare.cs:45-47, DefaultLightPos). The
     // port's axes are (x, y, z) -> (x, z, -y), so the direction towards the light is (8500, 15000, 7250) and the light
     // travels along its opposite.
-    private const string KeyLightName = "Light.Key";
+    private const string KeyLightName = RaceWorldNames.KeyLightEntityName;
     private static readonly Vector3 KeyLightDirection = Vector3.Normalize(new Vector3(-8500f, -15000f, -7250f));
 
     // The specular colour of the key light, as it was when this light was one of three (white specular colour x intensity

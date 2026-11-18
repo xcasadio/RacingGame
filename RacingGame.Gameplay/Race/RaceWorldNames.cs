@@ -4,6 +4,7 @@ namespace RacingGame.Gameplay.Race;
 /// assembly (<c>RaceWorldFactory</c>) names the entities with them.</summary>
 internal static class RaceWorldNames
 {
+    internal const string KeyLightEntityName = "Light.Key";
     internal const string CameraEntityName = "BootstrapCamera";
     internal const string PlayerStartEntityName = "PlayerStart";
     internal const string PlayerCarEntityName = "PlayerCar";

@@ -98,13 +98,13 @@ internal sealed class RaceFrontEndFlow
     private void StartRace()
     {
         _pendingStateAfterWorldLoad = RaceHudStateName;
-        _game.GameManager.SetWorldToLoad(RaceWorldFactory.CreateRaceWorld(_game, _state));
+        _game.GameManager.SetWorldToLoad(RaceWorldFactory.GetRaceWorldFileName(RaceFrontEndCatalog.Tracks[_state.SelectedTrackIndex].Name));
     }
 
     private void ReturnToFrontEnd()
     {
         _pendingStateAfterWorldLoad = MainMenuStateName;
-        _game.GameManager.SetWorldToLoad(RaceWorldFactory.CreateFrontEndWorld());
+        _game.GameManager.SetWorldToLoad(RaceWorldFactory.FrontEndWorldFileName);
     }
 
     private void RequestExit()

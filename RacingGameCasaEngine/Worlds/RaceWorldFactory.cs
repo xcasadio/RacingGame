@@ -1,22 +1,19 @@
+using CasaEngine.Framework.Assets;
 using CasaEngine.Framework.Entities;
-using CasaEngine.Framework.Entities.Components;
-using CasaEngine.Framework.Rendering.Environment;
-using CasaEngine.Framework.Rendering.Shadows;
 using CasaEngine.Framework.World;
-using Microsoft.Xna.Framework;
-using RacingGameCasaEngine.Bootstrap;
-using Color = Microsoft.Xna.Framework.Color;
-using RacingGame.Gameplay.Components;
-using RacingGame.Gameplay.Entities;
 using RacingGame.Gameplay.Race;
-using RacingGame.Gameplay.Track;
 
 namespace RacingGameCasaEngine.Worlds;
 
 public static class RaceWorldFactory
 {
-    internal const string FrontEndWorldName = "RacingGameCasaEngine.FrontEndWorld";
-    internal const string RaceWorldNamePrefix = "RacingGameCasaEngine.RaceWorld";
+    // The worlds are assets of the catalogue (written by scripts/RgceAssetCooker --worlds): a loaded world takes the name of
+    // its entry, and is asked for by the file_name of that entry.
+    internal const string FrontEndWorldName = "World.FrontEnd";
+    internal const string FrontEndWorldFileName = "Worlds/FrontEnd.world";
+    internal const string RaceWorldNamePrefix = "World.Race.";
+    internal const string PlayerCarAssetName = "Entity.PlayerCar";
+    internal const string KeyLightEntityName = RaceWorldNames.KeyLightEntityName;
     internal const string CameraEntityName = RaceWorldNames.CameraEntityName;
     internal const string PlayerStartEntityName = RaceWorldNames.PlayerStartEntityName;
     internal const string PlayerCarEntityName = RaceWorldNames.PlayerCarEntityName;
@@ -54,59 +51,15 @@ public static class RaceWorldFactory
         return entity.Name?.StartsWith(TrackRoadEntityNamePrefix, StringComparison.Ordinal) == true;
     }
 
-    internal static World CreateFrontEndWorld()
+    /// <summary>
+    /// The <c>file_name</c> of the catalogue entry of the race world of <paramref name="trackName"/>, which is what
+    /// <c>GameManager.SetWorldToLoad(string)</c> looks the world up by (<c>Worlds/Race/Track&lt;track&gt;.world</c>, the entry
+    /// <c>World.Race.Track&lt;track&gt;</c>). Throws when the catalogue has no such entry.
+    /// </summary>
+    internal static string GetRaceWorldFileName(string trackName)
     {
-        var world = new World
-        {
-            Name = FrontEndWorldName,
-        };
-
-        foreach (Entity entity in RaceWorldTemplates.CreateFrontEndEntities())
-        {
-            world.AddEntity(entity);
-        }
-
-        return world;
-    }
-
-    internal static World CreateRaceWorld(RacingGameCasaEngineGame game, RaceFrontEndState state)
-    {
-        TrackDefinition track = RaceFrontEndCatalog.Tracks[state.SelectedTrackIndex];
-        CarDefinition car = RaceFrontEndCatalog.Cars[state.SelectedCarIndex];
-
-        var world = new World
-        {
-            Name = $"{RaceWorldNamePrefix}.{track.Name}",
-        };
-
-        // The environment first, then the entities in the order the template gives; the player's car comes last.
-        RaceWorldTemplates.ApplyRaceEnvironment(world.EnvironmentSettings, state.EnableShadows, game.UseLinearColorPipeline);
-
-        foreach (Entity entity in RaceWorldTemplates.CreateRaceEntities(track.Name, castShadows: state.EnableShadows))
-        {
-            world.AddEntity(entity);
-        }
-
-        world.AddEntity(CreatePlayerCarEntity(state, car, track));
-
-        return world;
-    }
-
-    private static Entity CreatePlayerCarEntity(RaceFrontEndState state, CarDefinition car, TrackDefinition track)
-    {
-        var profile = car.PerformanceProfile;
-        Entity playerCar = RaceCarEntityFactory.Create();
-        playerCar.Name = PlayerCarEntityName;
-
-        var carState = playerCar.GetComponent<RaceCarStateComponent>()!;
-        carState.CarLabel = car.Name;
-        carState.TrackLabel = track.Name;
-        carState.SelectedCarIndex = state.SelectedCarIndex;
-        carState.SelectedCarColorIndex = state.SelectedCarColorIndex;
-        carState.CarProfile = profile;
-        carState.DrivingMode = state.SelectedDrivingMode;
-        carState.TargetTopSpeedMph = profile.TargetTopSpeedMph;
-
-        return playerCar;
+        string worldName = $"{RaceWorldNamePrefix}Track{trackName}";
+        return AssetCatalog.Get(worldName)?.FileName
+            ?? throw new InvalidOperationException($"The race world '{worldName}' is not in the asset catalog.");
     }
 }

@@ -287,7 +287,7 @@ Un écart à l'un de ces points est un **arrêt** : la tranche passe en ⚠️, 
 > - Constats P4, reportés : le vérificateur de l'outil ne nomme pas l'entité manquante quand le compte diffère (il sort bien en 1) ; l'ordre du décor à l'intérieur de son bloc n'est contrôlé que par l'outil, contre les mêmes constructeurs (l'export de M1 est trié par nom) ; un `[Warning]` de l'éditeur sur Beginner, « View pipeline OverlayViewPipeline does not implement IScenePhaseViewPipeline », non cité plus haut.
 > - Incident de la vérification, sans effet durable : un fichier d'essai écrit par erreur dans un autre dépôt de l'auteur (`D:/development/repo/dbz-legends-decomp`, par un outil dont le projet actif était celui-là), supprimé aussitôt avec les dossiers créés.
 
-### ⏳ M6 — Le jeu charge le front-end et les courses (P13, P14, P15, P18)
+### 🧪 M6 — Le jeu charge le front-end et les courses (P13, P14, P15, P18)
 
 - **Prérequis** : M5 confirmé.
 - **Résultat** : le jeu charge `FrontEnd.world` et les trois courses par le catalogue ; la voiture vient de `PlayerCar.entity` ; le ciel d'une course vient de l'id de son monde. Rendu et jeu inchangés.
@@ -318,6 +318,22 @@ Un écart à l'un de ces points est un **arrêt** : la tranche passe en ⚠️, 
 - **Arrêts** : communs ; une capture qui change ; la voiture qui n'est pas prête quand le lieur la possède ou qui manque à la première image ; un écart d'export sur la voiture ; une erreur au vidage du monde sortant.
 - **Retour arrière** : `git revert` du commit ; M5 reste valable seul.
 - **Commit** : `feat(racing-casa): load the front end and race worlds from the catalogue`
+
+> Relecture de la tranche (2026-11-18) : **REVISE** (rien ne prouvait que le front-end et la voiture venaient des fichiers ; le contrôle d'enchaînement n'était pas exécutable tel qu'écrit), corrigé, puis **READY**.
+> Validation (2026-11-18), sorties dans `artifacts/worlds-as-assets/m6/` (`ref/`, `export/`, `car-profile/`, `car-top-speed/`, `slice_check.txt`, `probes/`, `probes_check.txt`). Statut 🧪 : appliqué et contrôlé ; la vérification indépendante suit.
+> - **Code** : `Program.cs` pose `FirstWorldLoaded` = `Worlds/FrontEnd.world` ; `RaceFrontEndFlow` appelle `SetWorldToLoad` avec le `file_name` de l'entrée (celui de la course est lu au catalogue par `RaceWorldFactory.GetRaceWorldFileName`, entrée `World.Race.Track<Piste>`) ; `RaceWorldFactory` : `World.FrontEnd`, préfixe `World.Race.`, plus aucune construction ; le lieur crée la voiture par `SpawnEntity<Entity>("Entity.PlayerCar")`, la nomme `PlayerCar` et pose son état (libellés, indices, profil, mode, vitesse cible) avant qu'elle n'entre dans le monde ; `OnWorldLoaded` commence par `ApplyRaceWorldEnvironmentOptions` (option des ombres sur le monde et sur `Light.Key`, pipeline remis par défaut en `legacy`, `MarkDirty`), puis ses six appels d'avant, dans le même ordre ; le ciel d'une course vient de l'id de son monde, cubes et pipelines de vue gardés dans deux dictionnaires par id d'asset, id vide ou inconnu : ciel procédural avec un `[Warning]` ; le front-end garde cube nul, aucun pipeline, fond noir ; la règle de visibilité « circuit seul » s'applique aussi à la voiture de la session. Aucun validateur n'a dû changer.
+> - Écarts au texte, sans effet à l'exécution : `KeyLightEntityName` (`Light.Key`) ajouté à `RaceWorldNames.cs` et repris par `RaceWorldTemplates.cs`, pour ne pas dupliquer la chaîne (l'outil réécrit toujours 0 fichier, `--worlds --verify` à 0 écart) ; `FrontEndWorldFileName` est une constante de `RaceWorldFactory`. Restent inutilisés dans la DLL : `RaceSkySystem.ResolveLegacySharedSkyCubePath` et `LegacySharedSkyCubeFileName`.
+> - Builds à 0 erreur (jeu, outil) ; `check_gameplay_type_names.py` : 0 collision.
+> - **Contrôle statique** : sous `RacingGameCasaEngine/`, hors `CarSelectionCarousel.cs`, `rg` ne trouve ni `new World`, ni `RaceCarEntityFactory.Create`, ni `RaceWorldTemplates.Create`, ni `RaceWorldTemplates.Apply` ; les deux appels de `SetWorldToLoad` (`RaceFrontEndFlow.cs:101`, `:107`) passent une chaîne.
+> - **Parité**, par `slice_check.py m6` : `RESULT: PASS`. Les 76 images, dessinées depuis les mondes chargés, sont identiques octet pour octet à la référence de M1 dans les six genres et les deux modes de couleur, deux rejeux identiques entre eux ; aucun `[Warning]` ni `[Error]` ; `smoke` et `profile` en succès ; export de scène sans enregistrement sans pair (1437, 2033, 4058), voiture comprise ; les deux rapports d'audit de voitures identiques à ceux de M1 hors la ligne `Generated: ` ; cuiseur et générateur à 0. Réglages de l'utilisateur aux empreintes de M1.
+> - **Le jeu lit bien les fichiers**, par `m6_probes.sh` sur une copie du dossier de build (`D:/development/rgce-m6-copy/build`), verdict `m6_probes_check.py` : `RESULT: PASS`.
+>   - Copie non modifiée : export égal à celui de M1, 15 vues identiques à la référence, `smoke` en succès, aucune ligne `Track placements` au journal.
+>   - `Track.Scenery.Building.000` retiré de `TrackBeginner.world` : l'export de Beginner perd son unique enregistrement de maillage (1437 -> 1436), Advanced et Expert sans écart.
+>   - `file_name` de `World.FrontEnd` faussé au catalogue : le démarrage échoue, `[Error] System.InvalidOperationException: World not found in the asset catalog: 'Worlds/FrontEnd.world'`.
+>   - `file_name` de `Entity.PlayerCar` faussé : le lancement d'une course échoue, `[Error] System.Exception: Can't load asset …\Content\Entities/Missing.entity` puis `[Error] System.InvalidOperationException: IAssetLoader can't load …/Missing.entity`.
+>   - Id du cube vidé dans `TrackBeginner.world` : les cinq vues de Beginner changent, les dix autres restent identiques ; un `[Warning]` « The race world names no sky cubemap asset. Falling back to the procedural race sky. ».
+>   - Ombres désactivées (fichier d'options de l'utilisateur sauvegardé, modifié pour un lancement, restauré, même empreinte) : les 15 vues identiques à celles de M1 prises sans ombres.
+> - **Enchaînement des mondes** (monde sortant vidé par le moteur) : tous les modes de la parité sortent en succès sans ligne nouvelle au journal ; les rapports d'audit de voitures, qui enchaînent des courses dans un processus, sont identiques à ceux de M1.
 
 ### ⏳ M7 — Le carrousel charge `CarSelection.world` (P16, P18)
 

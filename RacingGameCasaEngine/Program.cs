@@ -7,6 +7,7 @@ using CasaEngine.Framework.Assets;
 using CasaEngine.Framework.Game;
 using CasaEngine.Framework.GUI;
 using RacingGameCasaEngine.Bootstrap;
+using RacingGameCasaEngine.Worlds;
 
 public static class Program
 {
@@ -48,6 +49,8 @@ public static class Program
         var runtimeContext = GameSettings.CreateRuntimeContext();
         runtimeContext.UIViewRuntimeFactory = new MguiViewRuntimeFactory();
         runtimeContext.ProjectSettings.ProjectName = ApplicationName;
+        // The game's first world is the front end, an asset of the catalogue: the engine loads it at the end of LoadContent.
+        runtimeContext.ProjectSettings.FirstWorldLoaded = RaceWorldFactory.FrontEndWorldFileName;
         string userSettingsDirectory = GetUserSettingsDirectory(runtimeContext.ProjectSettings.ProjectName);
         string displaySettingsPath = Path.Combine(userSettingsDirectory, DisplaySettingsFileName);
         string frontEndOptionsPath = Path.Combine(userSettingsDirectory, FrontEndOptionsFileName);

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using CasaEngine.Core.Log;
 using CasaEngine.Framework.Assets;
@@ -34,6 +35,9 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
         (3840, 2160),
     ];
 
+    // The catalogue entry of the sky cube, for the car selection carousel (the race worlds name it by id).
+    private const string RaceSkyCubeAssetName = "Texture.SkyCubeMap";
+
     private readonly RaceFrontEndFlow _frontEndFlow;
     private readonly RuntimeRaceWorldBinder _raceWorldBinder;
     private readonly FrontEndNavigationSmokeValidator? _navigationSmokeValidator;
@@ -46,10 +50,12 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
     private readonly string _displaySettingsFileName;
     private readonly string _frontEndOptionsFileName;
     private readonly bool _ignorePlayerInput;
-    private IViewRenderPipeline? _raceSkyViewPipeline;
+
+    // The race sky, by the id of the cubemap asset a race world carries (Guid.Empty: a world without one). A cube that could
+    // not be loaded is kept as null, so that its loading is attempted once.
+    private readonly Dictionary<Guid, TextureCube?> _raceSkyCubes = [];
+    private readonly Dictionary<Guid, IViewRenderPipeline> _raceSkyViewPipelines = [];
     private TextureCube? _raceSkyFallbackReflectionCube;
-    private TextureCube? _raceSkySharedCube;
-    private bool _raceSkySharedCubeLoadAttempted;
     private IDisposable? _gameFontHold;
     private AssetHandle<CasaEngine.Framework.Assets.Fonts.BitmapFont>? _gameFontMetrics;
     private CarSelectionCarousel? _carSelectionCarousel;
@@ -228,8 +234,8 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
     {
         HoldGameFont();
         MenuSounds = new MenuSounds(this);
-        World world = RaceWorldFactory.CreateFrontEndWorld();
-        GameManager.SetWorldToLoad(world);
+        // No world is built here: the engine loads ProjectSettings.FirstWorldLoaded (the front end, set in Program) at the end of
+        // LoadContent.
     }
 
     /// <summary>
@@ -281,12 +287,40 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
 
     private void OnWorldLoaded(object? sender, EventArgs e)
     {
+        ApplyRaceWorldEnvironmentOptions();
         _raceWorldBinder.BindCurrentWorld(_frontEndFlow.State);
         ApplyFrontEndOptions(_frontEndFlow.State);
         ConfigureCurrentWorldSky();
         ApplyDebugMouseCursorState();
         ApplyRaceWorldVisibilityState();
         _frontEndFlow.InitializeForCurrentWorld();
+    }
+
+    /// <summary>
+    /// What a race world file leaves to the game (the file carries the shadows on, a key light that casts them and the linear
+    /// colour pipeline): the Shadows option, on the world's shadows and on the key light, and, in --color-pipeline legacy, the
+    /// default colour pipeline.
+    /// </summary>
+    private void ApplyRaceWorldEnvironmentOptions()
+    {
+        if (GameManager.CurrentWorld is not { } world || !RaceWorldFactory.IsRaceWorld(world))
+        {
+            return;
+        }
+
+        bool shadowsEnabled = _frontEndFlow.State.EnableShadows;
+        world.EnvironmentSettings.Shadows.Enabled = shadowsEnabled;
+        if (world.Entities.FirstOrDefault(entity => entity.Name == RaceWorldFactory.KeyLightEntityName)?.RootComponent is LightComponent keyLight)
+        {
+            keyLight.CastShadows = shadowsEnabled;
+        }
+
+        if (!UseLinearColorPipeline)
+        {
+            world.EnvironmentSettings.ColorPipeline.ResetToDefaults();
+        }
+
+        world.EnvironmentSettings.MarkDirty();
     }
 
     protected override void Update(GameTime gameTime)
@@ -302,16 +336,22 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
         World? currentWorld = GameManager.CurrentWorld;
         bool isRaceWorld = currentWorld is { } world && RaceWorldFactory.IsRaceWorld(world);
 
+        // A race world names its sky cube by the id of a catalogue asset; the id is read before it is cleared below. The front
+        // end has no sky: a null cube and no pipeline, whatever id it carries.
+        Guid skyCubeAssetId = isRaceWorld
+            ? currentWorld!.EnvironmentSettings.SpecularEnvironmentCubemapAssetId
+            : Guid.Empty;
+
         if (currentWorld != null)
         {
             currentWorld.EnvironmentSettings.SpecularEnvironmentCubemapAssetId = Guid.Empty;
             currentWorld.EnvironmentSettings.SpecularEnvironmentCubemap = isRaceWorld
-                ? GetOrCreateRaceSkyReflectionCube()
+                ? GetOrCreateRaceSkyReflectionCube(skyCubeAssetId)
                 : null;
             currentWorld.EnvironmentSettings.MarkDirty();
         }
 
-        IViewRenderPipeline? pipeline = isRaceWorld ? GetOrCreateRaceSkyViewPipeline() : null;
+        IViewRenderPipeline? pipeline = isRaceWorld ? GetOrCreateRaceSkyViewPipeline(skyCubeAssetId) : null;
         // The front end clears to black, as RacingGame did (BaseGame.BackgroundColor): the menu background is drawn at
         // 0.85 opacity over it (ADR-0009).
         Color clearColor = isRaceWorld ? RaceSkySystem.Settings.HorizonColor : Color.Black;
@@ -329,38 +369,71 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
         }
     }
 
-    private IViewRenderPipeline GetOrCreateRaceSkyViewPipeline()
+    private IViewRenderPipeline GetOrCreateRaceSkyViewPipeline(Guid skyCubeAssetId)
     {
-        if (_raceSkyViewPipeline != null)
+        if (_raceSkyViewPipelines.TryGetValue(skyCubeAssetId, out IViewRenderPipeline? cachedPipeline))
         {
-            return _raceSkyViewPipeline;
+            return cachedPipeline;
         }
 
-        if (TryGetOrCreateRaceSkySharedCube() is { } legacySkyCube)
+        IViewRenderPipeline pipeline;
+        if (TryGetOrCreateRaceSkyCube(skyCubeAssetId) is { } legacySkyCube)
         {
             Effect effect = Content.Load<Effect>("Shaders\\LegacySkyCube").Clone();
-            _raceSkyViewPipeline = new LegacySkyCubeViewPipeline(effect, legacySkyCube, RaceSkySystem.LegacySkyCubeTintColor);
-            return _raceSkyViewPipeline;
+            pipeline = new LegacySkyCubeViewPipeline(effect, legacySkyCube, RaceSkySystem.LegacySkyCubeTintColor);
+        }
+        else
+        {
+            pipeline = new SkyBackgroundViewPipeline(RaceSkySystem.Settings);
         }
 
-        _raceSkyViewPipeline = new SkyBackgroundViewPipeline(RaceSkySystem.Settings);
-        return _raceSkyViewPipeline;
+        _raceSkyViewPipelines[skyCubeAssetId] = pipeline;
+        return pipeline;
     }
 
+    /// <summary>
+    /// The race sky's reflection cube, the catalogue entry <c>Texture.SkyCubeMap</c>, for the car selection carousel (which builds
+    /// its own world until it loads CarSelection.world); the same cache as the race worlds'.
+    /// </summary>
     internal TextureCube GetOrCreateRaceSkyReflectionCube()
-        => TryGetOrCreateRaceSkySharedCube()
+        => GetOrCreateRaceSkyReflectionCube(AssetCatalog.Get(RaceSkyCubeAssetName)?.Id ?? Guid.Empty);
+
+    private TextureCube GetOrCreateRaceSkyReflectionCube(Guid skyCubeAssetId)
+        => TryGetOrCreateRaceSkyCube(skyCubeAssetId)
             ?? (_raceSkyFallbackReflectionCube ??= ProceduralSkyCubeFactory.CreateReflectionCube(GraphicsDevice, RaceSkySystem.Settings));
 
-    private TextureCube? TryGetOrCreateRaceSkySharedCube()
+    /// <summary>
+    /// The cube of the catalogue asset <paramref name="skyCubeAssetId"/>, loaded once with the texture cube loader; null, with a
+    /// warning, when the world names no asset, the catalogue does not know it, or its file is missing or cannot be loaded (the
+    /// callers then use the procedural race sky).
+    /// </summary>
+    private TextureCube? TryGetOrCreateRaceSkyCube(Guid skyCubeAssetId)
     {
-        if (_raceSkySharedCubeLoadAttempted)
+        if (_raceSkyCubes.TryGetValue(skyCubeAssetId, out TextureCube? cachedCube))
         {
-            return _raceSkySharedCube;
+            return cachedCube;
         }
 
-        _raceSkySharedCubeLoadAttempted = true;
+        TextureCube? cube = LoadRaceSkyCube(skyCubeAssetId);
+        _raceSkyCubes[skyCubeAssetId] = cube;
+        return cube;
+    }
 
-        string skyCubePath = RaceSkySystem.ResolveLegacySharedSkyCubePath(Content.RootDirectory);
+    private TextureCube? LoadRaceSkyCube(Guid skyCubeAssetId)
+    {
+        if (skyCubeAssetId == Guid.Empty)
+        {
+            Logs.WriteWarning("The race world names no sky cubemap asset. Falling back to the procedural race sky.");
+            return null;
+        }
+
+        if (AssetCatalog.Get(skyCubeAssetId) is not { } assetInfo)
+        {
+            Logs.WriteWarning($"Race sky cubemap asset '{skyCubeAssetId}' is not in the asset catalog. Falling back to the procedural race sky.");
+            return null;
+        }
+
+        string skyCubePath = AssetContentManager.ResolveAssetFullPath(assetInfo.FileName);
         if (!File.Exists(skyCubePath))
         {
             Logs.WriteWarning($"Race sky cubemap '{skyCubePath}' was not found. Falling back to the procedural race sky.");
@@ -369,8 +442,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
 
         try
         {
-            _raceSkySharedCube = TextureCubeLoader.LoadTextureCube(skyCubePath, GraphicsDevice);
-            return _raceSkySharedCube;
+            return TextureCubeLoader.LoadTextureCube(skyCubePath, GraphicsDevice);
         }
         catch (Exception ex)
         {
@@ -492,13 +564,24 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
         bool circuitOnlyViewEnabled = RaceSession.IsCircuitOnlyViewEnabled;
         foreach (Entity entity in world.Entities)
         {
-            if (!RaceWorldFactory.IsRaceRenderableEntity(entity))
-            {
-                continue;
-            }
-
-            entity.IsVisible = !circuitOnlyViewEnabled || RaceWorldFactory.IsVisibleInCircuitOnlyView(entity);
+            ApplyRaceEntityVisibility(entity, circuitOnlyViewEnabled);
         }
+
+        // During OnWorldLoaded the player's car, spawned by the binder, is not in the world's entity list yet.
+        if (RaceSession.PlayerCar is { } playerCar)
+        {
+            ApplyRaceEntityVisibility(playerCar, circuitOnlyViewEnabled);
+        }
+    }
+
+    private static void ApplyRaceEntityVisibility(Entity entity, bool circuitOnlyViewEnabled)
+    {
+        if (!RaceWorldFactory.IsRaceRenderableEntity(entity))
+        {
+            return;
+        }
+
+        entity.IsVisible = !circuitOnlyViewEnabled || RaceWorldFactory.IsVisibleInCircuitOnlyView(entity);
     }
 
     private void CaptureScreenshot()

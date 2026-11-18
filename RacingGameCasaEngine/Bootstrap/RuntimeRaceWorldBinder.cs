@@ -35,12 +35,7 @@ internal sealed class RuntimeRaceWorldBinder
             return;
         }
 
-        Entity? playerCar = world.Entities.FirstOrDefault(entity => entity.GetComponent<RaceCarStateComponent>() != null);
-        if (playerCar == null)
-        {
-            _game.RaceSession.Clear();
-            return;
-        }
+        Entity playerCar = SpawnPlayerCar(world, state);
 
         var raceGameMode = new RaceGameMode();
         raceGameMode.Configure(state);
@@ -61,18 +56,37 @@ internal sealed class RuntimeRaceWorldBinder
         {
             ControllerId = PlayerIndex.One,
         };
-        CarPerformanceProfile selectedProfile = RaceFrontEndCatalog.ResolveCarProfile(state.SelectedCarIndex);
-        var carState = playerCar.GetComponent<RaceCarStateComponent>()!;
-        carState.CarProfile = selectedProfile;
-        carState.TargetTopSpeedMph = selectedProfile.TargetTopSpeedMph;
-        carState.CarLabel = selectedProfile.Name;
-        carState.DrivingMode = state.SelectedDrivingMode;
         playerControllers.Add(playerController);
         playerController.Possess(playerCar);
 
         _game.RaceSession.Bind(raceGameMode, playerController, playerCar);
         _game.GameManager.SyncPlayerViewAssignments();
         world.SetGameplayMode(raceGameMode);
+    }
+
+    /// <summary>
+    /// Creates the player's car from its asset (<c>Entity.PlayerCar</c>) and sets its state. The spawned car enters the world's
+    /// entity list at the start of the next <c>World.Update</c>, which <c>GameManager.UpdateWorld</c> runs right
+    /// after the WorldLoaded event: before the first frame, and after the entities of the world file, as the car built in code
+    /// was. Its state is set now, before it enters the world, because its visual reads the car index and colour when it is
+    /// initialized.
+    /// </summary>
+    private static Entity SpawnPlayerCar(World world, RaceFrontEndState state)
+    {
+        Entity playerCar = world.SpawnEntity<Entity>(RaceWorldFactory.PlayerCarAssetName);
+        playerCar.Name = RaceWorldFactory.PlayerCarEntityName;
+
+        CarPerformanceProfile profile = RaceFrontEndCatalog.ResolveCarProfile(state.SelectedCarIndex);
+        var carState = playerCar.GetComponent<RaceCarStateComponent>()!;
+        carState.CarLabel = profile.Name;
+        carState.TrackLabel = RaceFrontEndCatalog.Tracks[state.SelectedTrackIndex].Name;
+        carState.SelectedCarIndex = state.SelectedCarIndex;
+        carState.SelectedCarColorIndex = state.SelectedCarColorIndex;
+        carState.CarProfile = profile;
+        carState.DrivingMode = state.SelectedDrivingMode;
+        carState.TargetTopSpeedMph = profile.TargetTopSpeedMph;
+
+        return playerCar;
     }
 
     private static PlayerStartComponent? TryGetPlayerStart(World world)
