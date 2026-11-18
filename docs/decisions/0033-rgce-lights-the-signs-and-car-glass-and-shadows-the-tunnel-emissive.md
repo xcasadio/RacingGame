@@ -1,6 +1,6 @@
 # ADR-0033: RacingGameCasaEngine lights the signs and the car glass as the original does and shadows the tunnel emissive
 
-- **Status**: Proposed; amended by ADR-0038 (the window glass of the buildings changes: received shadow and base colour, per material)
+- **Status**: Proposed; amended by ADR-0038 (the window glass of the buildings changes: received shadow and base colour, per material), ADR-0039 (the base colour of the car glass is no longer grey 224)
 - **Date**: 2026-11-17
 - **Source**: this chantier: `ai-agent/tasks/rgce-render-gaps-tasks.md`, slice R4 (rules of choice written before the measurement, applied mechanically; plan approved by the author on 2026-11-17 in AUTO mode, to be confirmed with this record; the shadow factor of the emissive exists in the engine since slice R2, ADR-0126 of CasaEngine); the measurement: `artifacts/pbr-handover/s20/r4/` (`table.md`, `step1-rule.txt` to `step3-rule.txt`, one folder per candidate, `sheet-*.png`, `scripts/`); open points O14 and O16 of `ai-agent/tasks/rgce-pbr-handover-tasks.md`; ADR-0028, ADR-0030, ADR-0032
 

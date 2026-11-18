@@ -372,3 +372,17 @@ Measured in `linear` with `artifacts/pbr-handover/s23/scripts/measure_windows.py
 | Casino01 / 39 | 8187 | no | 224 grey | 45.87 | 15.135 | yes |  |
 
 Applied together: E 15.199 -> 15.047 in `linear`, 19.959 -> 19.806 in `legacy`; probes unchanged. The statement of the PBR switch section above, that the original's dark opaque glass is replaced by a mirror of the sky and that the black casino wall was not inspected, is completed here: measured over all its pixels, the casino glass is closer to the original with a 224 grey base.
+
+## Update after the car glass (2026-11-18)
+
+Decisions: see ADR-0039. Plan `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md`, slice G5; outputs under `artifacts/pbr-handover/s24/g5/`.
+
+The base colour of the car glass is (255, 174, 148) instead of grey 224: it compensates the blue of the reflected sky. Iteration of `artifacts/pbr-handover/s23/scripts/measure_glass.py` on the rear window of `Beginner-start` (box x 608-626, y 388-391; original 136.9 / 137.6 / 137.9):
+
+| Step | Base colour R / G / B | Box R / G / B | Mean error | Largest error | E | Criterion 3 |
+|---|---|---|---|---|---|---|
+| g0 | 224 / 224 / 224 | 114.7 / 175.7 / 196.2 | 39.50 | 58.22 | 15.047 | 27 |
+| g1 | 255 / 175 / 158 | 134.4 / 138.7 / 147.4 | 4.33 | 9.41 | 15.046 | 27 |
+| g2 | 255 / 174 / 148 | 134.4 / 137.7 / 137.3 | 1.09 | 2.47 | 15.046 | 27 |
+
+E and the probes are unchanged. Side effect: the reflections that are not the sky turn warm; in the car selection carousel the headlights turn orange.

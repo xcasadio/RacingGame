@@ -46,9 +46,10 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0030 | RacingGameCasaEngine lights the tunnel with the original's material ambient as an emissive texture | Accepted; amended by ADR-0033 | 2026-11-17 |
 | ADR-0031 | RacingGameCasaEngine lights the car selection carousel at the PBR scale and sets the ambient colour of both worlds to 0.05 | Proposed | 2026-11-17 |
 | ADR-0032 | RacingGameCasaEngine balances the light of the race world against the original with an exposure of 0.9 | Proposed | 2026-11-17 |
-| ADR-0033 | RacingGameCasaEngine lights the signs and the car glass as the original does and shadows the tunnel emissive | Proposed; amended by ADR-0038 | 2026-11-17 |
+| ADR-0033 | RacingGameCasaEngine lights the signs and the car glass as the original does and shadows the tunnel emissive | Proposed; amended by ADR-0038, ADR-0039 | 2026-11-17 |
 | ADR-0034 | RacingGameCasaEngine gives the road the original's sun sheen and takes the environment light off it | Proposed | 2026-11-18 |
 | ADR-0035 | RacingGameCasaEngine filters the shadow edges of the race world with 64 taps | Proposed | 2026-11-18 |
 | ADR-0036 | RacingGameCasaEngine sets the shadow colour of the race world against the original | Proposed | 2026-11-18 |
 | ADR-0037 | RacingGameCasaEngine brings the palm foliage toward the original with a measured base level and the original's alpha test | Proposed | 2026-11-18 |
 | ADR-0038 | RacingGameCasaEngine lights the window glass of the buildings as the original does | Proposed | 2026-11-18 |
+| ADR-0039 | RacingGameCasaEngine neutralises the colour of the car glass | Proposed | 2026-11-18 |

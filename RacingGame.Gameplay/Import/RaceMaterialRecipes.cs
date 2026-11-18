@@ -64,7 +64,10 @@ public static class RaceMaterialRecipes
     // The base colour of the car glass. The original's glass diffuse colour (13) is no reflectance for a metal: the glass came out
     // black. 224 on the three channels is a linear reflectance of about 0.75, the original's reflection at normal incidence.
     // Measured on the rear window of Beginner-start (ADR-0033): the distance to the original falls from 132.9 to 39.5.
-    private const byte LegacyCarGlassBaseColor = 224;
+    // ADR-0039: the colour is no longer that grey. The glass is a mirror of the sky, so a grey base came out sky blue where the
+    // original's glass is a neutral grey; this base compensates the colour of the reflected sky. Found by iteration on the same box
+    // (the rule and the steps are in the ADR): the box reads 134.4 / 137.7 / 137.3 for 136.9 / 137.6 / 137.9 in the original.
+    private static readonly Color LegacyCarGlassBaseColor = new(255, 174, 148);
 
     // The signs' emissive level: the emissive colour is the material ambient of the original times this level, on the emissive
     // texture (the base texture). The original lights a sign with texture * material ambient; level 1 is that term unchanged
@@ -157,7 +160,7 @@ public static class RaceMaterialRecipes
             NormalTextureFilePath = normalTexturePath,
             Family = RacingGamePbrMaterialMapping.ResolveCarFamily(importedMaterial),
             BaseColor = RacingGamePbrMaterialMapping.IsCarGlassMaterial(importedMaterial)
-                ? new Color(LegacyCarGlassBaseColor, LegacyCarGlassBaseColor, LegacyCarGlassBaseColor, (byte)255)
+                ? LegacyCarGlassBaseColor
                 : LegacyCarDefaultDiffuseColor,
             EmissiveColor = presentation.EmissiveColor,
             SamplerState = RaceMaterialStates.AnisotropicWrap,

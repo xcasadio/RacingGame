@@ -175,7 +175,7 @@ Arrêts communs, sans commit, l'état précédent étant gardé : script de mesu
 > - Documents : ADR-0038 `Proposed`, lignes d'état sur les ADR-0028 et 0033 ; section du doc de banc ; tables écrites et relues par `s24/scripts/gen_docs_g4.py` à partir de la sortie du script figé.
 > - Regardé sur `s24/judge/4-vitres-immeubles-avant-apres.jpg` et, de près, sur `s23/look/casino-a80.png` : les bandes de fenêtres de la tour de `Beginner-sector-20` sont allumées, bleu très clair pour blanc dans l'original ; les bandes de la tour du casino d'`Advanced-sector-80` passent de (59 ; 75 ; 80) à (163 ; 183 ; 189) pour (208 ; 225 ; 226) dans l'original. Sur la planche réduite la tour du casino paraît à tort plus sombre : le recadrage agrandi et la mesure disent l'inverse.
 
-### ⏳ G5 — Vitres de la voiture (ADR-0039)
+### ✅ G5 — Vitres de la voiture (ADR-0039)
 
 - Prérequis : G4 clos. Base : la référence en place.
 - Mesure (D1), en `linear`, sur une copie fraîche du dossier de build. Script : `s23/scripts/measure_glass.py`. Matériau : `Models/Car/Standard 19.material`, clé `base_color`. Captures sous `s24/g5/` : `g0/` (état de départ, base 224 ; 224 ; 224), puis `g1/` à `g4/` au plus, chacune avec la couleur de base que le script imprime après la précédente (ligne `next:`). Lancement : `python artifacts/pbr-handover/s23/scripts/measure_glass.py g0:224,224,224 [g1:<r>,<g>,<b> …]`, relancé après chaque capture avec la liste complète.
@@ -184,6 +184,19 @@ Arrêts communs, sans commit, l'état précédent étant gardé : script de mesu
 - Validation : validation commune, le contrôle « candidat toujours retenu » se faisant ainsi : `s24/g5/applied/` reçoit une copie de tous les états mesurés, de `g0/` au dernier `g<n>/`, chacun avec son dossier `compare/`, le dossier du candidat retenu `g<K>/` étant remplacé par les rejeux d'après application ; commande `python artifacts/pbr-handover/s23/scripts/measure_glass.py --root s24/g5/applied g0:224,224,224 … g<n>:<r>,<g>,<b>`, avec la même liste complète d'arguments que la dernière mesure ; réussi si la ligne `choice:` nomme le même `g<K>` ; en plus, `git status` du contenu limité à `Models/Car/Standard 19.material` ; une planche avant / après de `ui-car-selection` pour l'auteur (D6), et la boîte du pare-brise du carrousel notée avant et après.
 - Arrêts : arrêts communs.
 - Commit : `fix(racing-casa): neutralise the colour of the car glass`
+
+> Validation (2026-11-18), sorties dans `artifacts/pbr-handover/s24/g5/` (`measure_glass.txt`, `measure_glass.json`, `args.txt`, `cook-verify-before.txt`, `slice_check.txt`, `applied/`, `ref/`).
+> - Mesure : `measure_glass.py` inchangé (empreinte `edba6cc454607ff8` contrôlée avant et après). `g0` capturé sur une copie fraîche du build, identique octet pour octet à `s24/g4/ref`. Cible (boîte de l'original) : 136,9 / 137,6 / 137,9.
+> - Itération : `g0` base 224 ; 224 ; 224, boîte 114,7 / 175,7 / 196,2, écart moyen 39,50, plus grand écart 58,22 ; `g1` base 255 ; 175 ; 158, boîte 134,4 / 138,7 / 147,4, écart 4,33 et 9,41 ; `g2` base 255 ; 174 ; 148, boîte 134,4 / 137,7 / 137,3, écart 1,09 et 2,47 : arrêt (plus grand écart sous 6). Les trois états sont éligibles (critère 3 à 27, `E` 15,047 puis 15,046). **Retenu : `g2`, base (255 ; 174 ; 148).**
+> - Application : `RaceMaterialRecipes.LegacyCarGlassBaseColor` devient une couleur, (255 ; 174 ; 148), commentaire renvoyant à l'ADR-0039 ; `LegacyImportProfileVerifier.cs` non touché (il n'épingle que le métal et la rugosité du verre).
+> - Cuiseur : `--verify` avant recuisson, 1 écart (`base_color` de `Models/Car/Standard 19.material`) ; après 0 écart, `--check` 0, générateur `--check` 0 ; `git status` du contenu : ce seul matériau.
+> - Build à 0 erreur ; `--smoke-frontend` et `--verify-legacy-import-profile` en succès ; aucun `[Warning]` ni `[Error]`.
+> - Rejeux deux fois, identiques entre eux ; références `s24/g5/ref/`. Les 15 vues en `linear` sont identiques octet pour octet aux captures de `g2`.
+> - Candidat toujours retenu : `measure_glass.py --root s24/g5/applied g0:224,224,224 g1:255,175,158 g2:255,174,148` : `choice: g2`.
+> - `E` : `linear` 15,047 -> 15,046 ; `legacy` 19,806 inchangé. Sondes inchangées : `linear` 20/34, 2/4, 27/33, 3/3 ; `legacy` 4/34, 0/4, 27/33, 3/3.
+> - Interface et audit : les six écrans sans monde 3D identiques à `s24/g4/ref` ; `ui-car-selection` 0,592 % des pixels changés de plus de 8 niveaux, `ui-pause` 1,093 %, `ui-race-hud` 1,195 %, `ui-race-finished` 0,002 % ; 3 des 30 captures d'audit changent, 27 sont identiques.
+> - Carrousel (D6), planche `s24/judge/5-carrousel-vitres-avant-apres.png` : les pixels qui changent (12 266, vitres et phares) passent en moyenne de 114,5 / 155,2 / 175,0 à 130,0 / 121,3 / 117,0. **Regardé : le pare-brise passe du bleu ciel au gris neutre, et les phares, qui ont le même matériau, virent à l'orangé.** En course (`s24/judge/5-voiture-vitres-avant-apres.png`) : la lunette arrière passe du bleu ciel au gris de l'original ; une vitre latérale montre une tache orangée là où elle ne reflète pas le ciel. Effet de bord que la règle ne mesurait pas : laissé au jugement de l'auteur (O2), la tranche s'annule par `git revert` de son commit.
+> - Documents : ADR-0039 `Proposed`, ligne d'état sur l'ADR-0033 ; section du doc de banc ; table écrite et relue par `s24/scripts/gen_docs_g5.py`.
 
 ### ⏳ G6 — Vérification indépendante et clôture
 
@@ -206,3 +219,4 @@ Arrêts communs, sans commit, l'état précédent étant gardé : script de mesu
 ## Points ouverts
 
 - O1 (auteur, après le plan) : validation des ADR écrites ; avance de `main` du moteur et de `remaster` du jeu ; push, moteur d'abord.
+- O2 (auteur, vitres de la voiture, G5) : la couleur de base qui rend la lunette arrière grise en course teinte en orangé les phares dans le carrousel et une vitre latérale en course (planches `artifacts/pbr-handover/s24/judge/5-*.png`). Garder, ou annuler la tranche (`git revert` de son commit) et revenir au gris 224 de l'ADR-0033.
