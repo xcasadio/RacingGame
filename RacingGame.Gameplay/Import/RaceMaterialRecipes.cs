@@ -74,20 +74,21 @@ public static class RaceMaterialRecipes
     // (ADR-0033, chosen among 0.5, 0.75, 1.0 and 1.3 by the rule written before the measurement).
     private const float SignageEmissiveLevel = 1f;
 
-    // The leaves of the palms, designated by their base texture: a grey base level and the alpha test of the original (0.5,
-    // NormalMapping.fx) instead of the imported white and the cutoff of the import presentation (ADR-0037). With those the leaves
-    // were brighter than the original's and covered more pixels. The cause of the difference in brightness is not established:
-    // the level is a calibration against the original's captures, chosen by the rule written before the measurement.
     // The window glass of the buildings (ADR-0038), designated by model and material. The original draws it as the reflection of
     // the sky, not tinted by the glass colour, plus a small ambient: its windows are light on the faces turned away from the sun.
     // Here the glass is a mirror (BuildingGlass) whose base colour tints the reflection, and a face turned away from the sun is in
-    // its own shadow. Each value was chosen per material by the rule written before the measurement: the reflectance grey 224 of
-    // the car glass (ADR-0033) where it beat the imported colour, and no received shadow where that beat the shadowed glass.
+    // its own shadow. Each value was chosen per material by the rule written before the measurement: the reflectance grey 224
+    // that ADR-0033 first gave the car glass, where it beat the imported colour, and no received shadow where that beat the
+    // shadowed glass.
     private const byte WindowGlassBaseLevel = 224;
 
     private static bool IsWindowGlass(string modelName, string materialName, string windowModel, string windowMaterial)
         => modelName.Equals(windowModel, StringComparison.OrdinalIgnoreCase) && materialName.Equals(windowMaterial, StringComparison.OrdinalIgnoreCase);
 
+    // The leaves of the palms, designated by their base texture: a grey base level and the alpha test of the original (0.5,
+    // NormalMapping.fx) instead of the imported white and the cutoff of the import presentation (ADR-0037). With those the leaves
+    // were brighter than the original's and covered more pixels. The cause of the difference in brightness is not established:
+    // the level is a calibration against the original's captures, chosen by the rule written before the measurement.
     private static readonly string[] PalmLeafTextures = ["PalmLeave.tga", "PalmLeave2.tga"];
     private const byte PalmLeafBaseLevel = 170;
     private const float PalmLeafAlphaCutoff = 0.5f;
