@@ -18,7 +18,7 @@ internal static partial class LegacyTrackSceneFactory
     private static readonly Dictionary<string, List<LegacyCombiObject>> CombiCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, LegacyTerrainHeightSampler> TerrainCache = new(StringComparer.OrdinalIgnoreCase);
 
-    internal static RaceTrackScene Create(string trackName, AssetContentManager assetContentManager)
+    internal static RaceTrackScene Create(string trackName)
     {
         Guid trackAssetId = GetCatalogAssetId(RaceBootstrapAssets.GetTrackDataAssetName(trackName));
         Guid heightmapAssetId = GetCatalogAssetId(RaceBootstrapAssets.LandscapeHeightsData);

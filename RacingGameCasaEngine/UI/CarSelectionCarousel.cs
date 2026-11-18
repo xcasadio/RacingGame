@@ -13,6 +13,7 @@ using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.Worlds;
 using Color = Microsoft.Xna.Framework.Color;
 using RacingGame.Gameplay.Components;
+using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.UI;
 
@@ -38,20 +39,13 @@ namespace RacingGameCasaEngine.UI;
 internal sealed class CarSelectionCarousel : IDisposable
 {
     private const string WorldName = "FrontEnd.CarSelectionCarousel";
-    private const int CarCount = 3;
+    private const int CarCount = RaceWorldTemplates.CarSelectionPlateCount;
     private const float CarouselRadius = 6.74f;
     private const float SpinPerSecond = 1f / 3.9f;
     private const float TurnPerSecond = 5f;
     private const float FieldOfView = MathHelper.PiOver2;
     private const float NearPlane = 0.5f;
     private const float FarPlane = 1750f;
-    private const string PlateModelAssetName = "StaticModel.CarSelectionPlate";
-    // Shadow map of the carousel: the engine's box is centred on the camera, about 11 units from the carousel's centre,
-    // whose cars reach 7 units from it.
-    private const int ShadowMapResolution = 2048;
-    private const float ShadowMaxDistance = 16f;
-    private const float ShadowDepthBias = 0.001f;
-    private const float ShadowNormalBias = 0.05f;
 
     // Fitted to the author's capture at 4:3 (plan rgce-title-car-selection-xna-look-tasks.md, T4.3): front plate edges
     // and bottom, rear car centres, within 6.7 capture pixels on average. RacingGame's code had (1.5, 1, 0) and 5.
@@ -60,19 +54,6 @@ internal sealed class CarSelectionCarousel : IDisposable
     private const float PlateThickness = 0.6103561f;
     private static readonly Vector3 CameraPosition = new(0f, 2.75f, -10.45f);
     private static readonly Vector3 CameraTarget = new(0f, -1f, 0f);
-    // RacingGame's car selection light (CarSelection.PostUIRender: LensFlare.DefaultLightPos with z flipped), towards the
-    // light: (-8500, 7250, 15000) normalised, here (x, z, -y). A LightComponent shines along its Forward, away from it.
-    private static readonly Vector3 LightDirection = -Vector3.Normalize(new Vector3(-8500f, 15000f, -7250f));
-
-    // pi: a lit-pbr surface lit head-on is pi times darker than a lit-diffuse one at the same intensity (CasaEngine
-    // docs/engine/pbr-rendering.md, Units), so the light of a PBR scene keeps the level the original had at intensity 1; the race
-    // world's key light is lit the same way (RaceWorldFactory, KeyLightIntensity). The carousel's cars and plates are lit-pbr
-    // since the PBR materials (plan ai-agent/tasks/rgce-pbr-handover-tasks.md, phase 16, ADR-0031).
-    private const float LightIntensity = MathF.PI;
-
-    // The ambient colour of the carousel is 0.05, the engine's default (WorldEnvironmentSettings.ResetToDefaults), written out as
-    // the race world's is (RaceWorldFactory.AmbientColor, phase 13): lit-pbr multiplies the irradiance of the sky cube by it.
-    private static readonly Vector3 AmbientColor = new(0.05f);
 
     private readonly RacingGameCasaEngineGame _game;
     private readonly World _world;
@@ -106,29 +87,18 @@ internal sealed class CarSelectionCarousel : IDisposable
         _world = new World { Name = WorldName };
         _world.LoadContent(game);
         _world.EnvironmentSettings.SpecularEnvironmentCubemap = game.GetOrCreateRaceSkyReflectionCube();
-        _world.EnvironmentSettings.AmbientColor = AmbientColor;
-        _world.EnvironmentSettings.Shadows.Resolution = ShadowMapResolution;
-        _world.EnvironmentSettings.Shadows.MaxDistance = ShadowMaxDistance;
-        _world.EnvironmentSettings.Shadows.DepthBias = ShadowDepthBias;
-        _world.EnvironmentSettings.Shadows.NormalBias = ShadowNormalBias;
+        RaceWorldTemplates.ApplyCarSelectionEnvironment(_world.EnvironmentSettings);
 
-        _light = new LightComponent
-        {
-            Name = nameof(LightComponent),
-            Type = LightType.Directional,
-            LocalOrientation = RaceWorldFactory.CreateOrientationFromForward(LightDirection),
-            Color = Color.White,
-            SpecularColor = Color.White,
-            Intensity = LightIntensity,
-        };
-        _world.AddEntity(new Entity { Name = "Carousel.Light", RootComponent = _light });
+        Entity lightEntity = RaceWorldTemplates.CreateCarSelectionLightEntity();
+        _light = (LightComponent)lightEntity.RootComponent!;
+        _world.AddEntity(lightEntity);
 
-        // As in RacingGame, only the cars cast shadows; the plates receive them.
-        Guid plateAssetId = GetPlateAssetId();
+        // As in RacingGame, only the cars cast shadows; the plates receive them (the template's plates have CastShadows off).
+        List<Entity> plateEntities = RaceWorldTemplates.CreateCarSelectionPlateEntities();
         for (int i = 0; i < CarCount; i++)
         {
-            _plates[i] = AddModelEntity($"Carousel.Plate.{i}", null, plateAssetId);
-            _plates[i].CastShadows = false;
+            _world.AddEntity(plateEntities[i]);
+            _plates[i] = (StaticModelComponent)plateEntities[i].RootComponent!;
             _cars[i] = AddModelEntity($"Carousel.Car.{i}", LegacyCarVisualFactory.LoadConfiguredCarModel(game.AssetContentManager, i, 0));
         }
 
@@ -338,31 +308,13 @@ internal sealed class CarSelectionCarousel : IDisposable
         return ((int)Math.Round(left), (int)Math.Round(right));
     }
 
-    private StaticModelComponent AddModelEntity(string name, StaticModel? model, Guid staticModelAssetId = default)
+    private StaticModelComponent AddModelEntity(string name, StaticModel? model)
     {
         var component = new StaticModelComponent { Name = nameof(StaticModelComponent), StaticModel = model };
-        if (staticModelAssetId != Guid.Empty)
-        {
-            // The cooked plate, shared by the engine between the three plates: no paint, nothing to own.
-            component.StaticModelAssetId = staticModelAssetId;
-        }
 
         var entity = new Entity { Name = name, RootComponent = component };
         entity.ApplyExplicitPolicies(EntityPolicySet.DynamicDefault);
         _world.AddEntity(entity);
         return component;
-    }
-
-    // The cooked CarSelectionPlate (Y up and in the car's units already, so no root correction, unlike the track scenery).
-    private static Guid GetPlateAssetId()
-    {
-        AssetInfo? assetInfo = AssetCatalog.Get(PlateModelAssetName);
-        if (assetInfo == null)
-        {
-            Logs.WriteWarning($"Car selection: the catalog has no '{PlateModelAssetName}' asset.");
-            return Guid.Empty;
-        }
-
-        return assetInfo.Id;
     }
 }

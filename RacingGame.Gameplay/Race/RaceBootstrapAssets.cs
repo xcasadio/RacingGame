@@ -19,8 +19,9 @@ internal static class RaceBootstrapAssets
     }
 
     /// <summary>
-    /// The reverse of <see cref="GetTrackDataAssetName"/>: the track a catalogued .Track asset belongs to. The track name
-    /// seeds the scenery and selects track-specific rules, so a generator component gets it from its track asset.
+    /// The reverse of <see cref="GetTrackDataAssetName"/>: the track a catalogued .Track asset belongs to. The scenery's seed
+    /// is one constant (<see cref="Track.RaceTrackLayout.ScenerySeed"/>, ADR-0041); the track name only selects the track's
+    /// data and rules, so a generator component gets it from its track asset.
     /// </summary>
     public static bool TryGetTrackName(string trackDataAssetName, out string trackName)
     {
