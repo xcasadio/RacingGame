@@ -163,34 +163,61 @@ Un écart à l'un de ces points est un **arrêt** : la tranche passe en ⚠️, 
 > - **Ombres désactivées** : fichier d'options de l'utilisateur sauvegardé, modifié le temps de deux lancements, restauré, empreinte identique avant et après ; les 15 vues identiques entre les deux lancements ; les douze vues de près diffèrent des vues avec ombres.
 > - **Critère corrigé après mesure** : le texte relu exigeait que les 15 vues diffèrent. Les trois vues d'ensemble (`*-overview`) sont identiques avec et sans ombres. Cause établie : leur caméra est à 577, 776 et 999 unités de sa cible (`s1c/ref/views.json`), à plus de 240 de hauteur, pour une distance d'ombre de 100 et un fondu de 15 (`RaceWorldFactory.cs:85-86`) : aucune ombre n'y est dessinée. L'option a bien agi (douze vues changent). Le critère et l'arrêt sont corrigés en conséquence ; ce que M6 exige ne change pas (les 15 vues sans ombres identiques à celles-ci).
 
-### ⏳ M2 — Le moteur sait écrire un monde depuis du code (D11)
+### ✅ M2 — Le moteur sait écrire un monde depuis du code (D11)
 
-- **Prérequis** : M1 ; plan du moteur `offline-world-writer-tasks.md` exécuté (T0 à T2) et confirmé par sa vérification.
-- **Résultat** : le jeu pointe sur ce moteur ; rien ne change.
+- **Prérequis** : M1 ; plan du moteur `offline-world-writer-tasks.md` exécuté (T0 à T2) et confirmé par sa vérification (fait : moteur `1ed32d862`, vérification **CONFIRMED** sur `de9770f10`).
+- **Résultat** : le jeu pointe sur ce moteur (`1ed32d862`) ; rien ne change.
 - **Fichiers** : le pointeur `CasaEngine` ; ce plan.
-- **Validation** : parité.
-- **Arrêts** : communs.
+- **Validation** (précisée le 2026-11-18, avant exécution) : le pointeur n'entre dans aucun build ; le jeu compile l'arbre du moteur tel qu'il est sur le disque, et la référence de M1 a déjà été construite sur le code de ce moteur. La preuve est donc l'identité des entrées du build, non un rejeu de plus du même binaire :
+  - `git -C CasaEngine diff --name-only de9770f10 1ed32d862` (le moteur du build de M1 contre celui du pointeur) ne nomme que des fichiers sous `docs/` et `ai-agent/` ;
+  - l'arbre du moteur est propre et son `HEAD` est `1ed32d862` ;
+  - **le pointeur enregistré est lu dans le commit lui-même** : `git rev-parse <commit de M2>:CasaEngine` rend `1ed32d862e075030941be3afb1d413b26fb04ffb` ;
+  - `git diff --name-only 5f6b9d9 <commit de M2>` (le jeu du build de M1 contre M2) ne nomme que `CasaEngine` et ce plan ;
+  - `dotnet build RacingGame.slnx` et `dotnet build scripts/RgceAssetCooker/RgceAssetCooker.csproj` à 0 erreur (l'outil, lui, référence `CasaEngine.EditorServices` et compile donc le nouveau code) ; cuiseur `--verify` et `--check` à 0 ;
+  - la parité complète de la tranche suivante (M3) tourne sur ce moteur : elle est citée dans la note.
+- **Ordre** : M2 est committée **avant** M3 et après le rejeu de parité de M3 ; à ce moment le code de M3 est dans l'arbre de travail mais pas dans le commit de M2 (seuls `CasaEngine` et ce plan sont indexés), et aucun build n'est lancé pendant un rejeu.
+- **Arrêts** : un fichier de code dans l'un des deux écarts ; un build en erreur ; un pointeur enregistré autre que `1ed32d862e075030941be3afb1d413b26fb04ffb`.
 - **Retour arrière** : `git revert`.
 - **Commit** : `chore(casaengine): take the offline world writer`
 
-### ⏳ M3 — Champs perdus à l'enregistrement
+> Relecture de la tranche (2026-11-18) : **REVISE** (rien ne lisait le pointeur enregistré), corrigé, puis **READY**.
+> Validation (2026-11-18) :
+> - `git -C CasaEngine diff --name-only de9770f10 1ed32d862` : quatre fichiers, sous `docs/decisions/` et `ai-agent/` ; arbre du moteur propre, `HEAD` `1ed32d862e075030941be3afb1d413b26fb04ffb`.
+> - Le jeu du build de M1 (`5f6b9d9`) contre ce commit : `CasaEngine` et ce plan seulement ; le pointeur lu dans le commit par `git rev-parse HEAD:CasaEngine` est contrôlé juste après le commit (valeur dans la note de M3).
+> - Builds à 0 erreur sur ce moteur : `dotnet build RacingGame.slnx` et `dotnet build scripts/RgceAssetCooker/RgceAssetCooker.csproj` (lancés avec le code de M3 dans l'arbre ; les sources de M2 seule sont celles du build de M1, à 0 erreur) ; cuiseur `--verify` : 0 écart, `--check` : 0 ; générateur `--check` : 0.
+> - Parité complète de M3, sur ce moteur : `PASS` (`artifacts/worlds-as-assets/m3/slice_check.txt`).
+
+### 🚧 M3 — Champs perdus à l'enregistrement
 
 - **Prérequis** : M1.
 - **Résultat** : un checkpoint et une ancre de voiture gardent leurs valeurs après un aller-retour d'enregistrement ; rien ne change à l'exécution.
-- **Fichiers** : `RacingGame.Gameplay/Components/RaceCheckpointTriggerComponent.cs` (`[SerializedProperty]` `half_width`, `half_height`, `half_depth`) ; `RacingCarAnchorComponent.cs` (`anchor_id`) ; leurs `Clone` s'ils ne passent pas déjà par `SerializedProperties.Copy`.
-- **Validation** : parité ; une sonde enregistre (`EditorEntityWriter.SaveEntity`) puis recharge (`Entity.Load`) un checkpoint aux demi-dimensions non par défaut et la voiture de `RaceCarEntityFactory.Create()` : mêmes valeurs, mêmes six ancres.
-- **Arrêts** : un type de propriété que `[SerializedProperty]` n'accepte pas.
+- **Fichiers** : `RacingGame.Gameplay/Components/RaceCheckpointTriggerComponent.cs` : `[SerializedProperty("half_width")]`, `("half_height")`, `("half_depth")` sur `HalfWidth`, `HalfHeight`, `HalfDepth` (`float`) ; `RacingGame.Gameplay/Components/RacingCarAnchorComponent.cs` : `[SerializedProperty("anchor_id")]` sur `AnchorId` (`string`) ; dans les deux, `using CasaEngine.Core.Serialization;`. Leurs constructeurs de copie copient déjà ces champs un à un (`RaceCheckpointTriggerComponent.cs:19-24`, `RacingCarAnchorComponent.cs:14-17`) : ils ne changent pas. Rien d'autre.
+- **Validation** :
+  - parité (le jeu ne lit ni n'écrit ces clés : rien ne doit bouger) ;
+  - une sonde, projet console du scratchpad hors du dépôt, qui référence `RacingGame.Gameplay.csproj` et `CasaEngine.EditorServices.csproj` et n'emploie que des types publics : elle construit une entité dont la racine est un `RaceCheckpointTriggerComponent` aux demi-dimensions 7,25 / 3,5 / 2,75, et une entité dont l'arbre d'ancres est celui de la fabrique (`RaceCarEntityFactory.cs:46-72` : une racine, un enfant, quatre petits-enfants, tous des `RacingCarAnchorComponent`, avec des `AnchorId` distincts et des positions locales non nulles) ; elle les enregistre par `EditorEntityWriter.SaveEntity` sous un `EngineEnvironment.ProjectPath` temporaire, contrôle que le JSON porte `half_width`, `half_height`, `half_depth` et six `anchor_id`, les recharge par `new Entity().Load(json)` (le chargeur du moteur, `Entity.cs:582-631`, qui lit les `[SerializedProperty]` par `ElementFactory.Load`) et compare : mêmes demi-dimensions, mêmes six ids aux mêmes places de l'arbre. Sa sortie est gardée sous `artifacts/worlds-as-assets/m3/` ;
+  - la voiture de `RaceCarEntityFactory.Create()` elle-même (type interne à la DLL) est contrôlée en M5 : `--worlds --verify` compare `PlayerCar.entity` rechargé à ce que rend la fabrique, ancres comprises.
+- **Arrêts** : communs ; une valeur ou une ancre perdue par la sonde ; un type que le chargeur du moteur ne retrouve pas.
 - **Retour arrière** : `git revert`.
 - **Commit** : `feat(racing-casa): save the checkpoint extents and the car anchor ids`
 
 ### ⏳ M4 — Construction des mondes dans la DLL (P11)
 
-- **Prérequis** : M1.
-- **Résultat** : le jeu construit ses mondes avec du code de `RacingGame.Gameplay` que l'outil pourra appeler ; rien ne change à l'exécution.
-- **Fichiers** : `RacingGame.Gameplay/Race/RaceWorldTemplates.cs` (nouveau) ; `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs` et `UI/CarSelectionCarousel.cs`, qui appellent ces constructeurs avec les valeurs d'aujourd'hui ; `LegacyTrackSceneFactory.Create` perd son paramètre inutilisé si rien d'autre ne l'emploie.
-- **Hors tranche** : le chargement par fichier, les noms de mondes, la voiture.
-- **Validation** : parité.
-- **Arrêts** : un type qu'il faudrait déplacer de l'exe vers la DLL et qui tient à l'exe (accès au jeu autrement que par `IRaceGameHost`).
+- **Prérequis** : M1 ; M3 committé (la parité de M4 se compare à la même référence).
+- **Résultat** : le jeu construit ses mondes avec du code de `RacingGame.Gameplay` que l'outil pourra appeler ; rien ne change à l'exécution : mêmes entités, dans le même ordre, mêmes valeurs.
+- **Fichiers** :
+  - `RacingGame.Gameplay/Race/RaceWorldTemplates.cs` (nouveau, `internal static`), qui reçoit de `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs`, **sans changer une valeur et avec leurs commentaires**, les constantes de la lumière, de l'ambiant, de l'exposition et des ombres (`:32-97`) et les constructeurs privés (`:204-348`), sous cette forme :
+    - `CreateFrontEndEntities()` : la caméra sans rig, puis `PlayerStart` en (0, 0, −4) ;
+    - `CreateRaceEntities(string trackName, bool castShadows)` : dans l'ordre d'aujourd'hui (`:148-196`), la caméra avec ses deux composants, `RaceRoot`, `Light.Key`, les entités de piste puis de décor de `LegacyTrackSceneFactory.Create`, les `Checkpoint.NN`, `PlayerStart` ; **sans** `PlayerCar` ;
+    - `ApplyRaceEnvironment(WorldEnvironmentSettings environment, bool shadowsEnabled, bool linearColorPipeline)` : les écritures de `:152-177`, `MarkDirty` compris quand le pipeline `linear` est posé ;
+    - `CreateOrientationFromForward` (`:256-272`), que le carrousel appelle aujourd'hui par `RaceWorldFactory` ;
+    - pour le carrousel, la partie fixe de `CarSelectionCarousel.cs:103-131`, avec ses constantes : `ApplyCarSelectionEnvironment(WorldEnvironmentSettings)` (ambiant, résolution, distance et biais des ombres) ; `CreateCarSelectionLightEntity()`, qui rend l'entité `Carousel.Light` dont la racine est la `LightComponent` d'aujourd'hui (`:115-123`) ; `CreateCarSelectionPlateEntities()`, qui rend **une liste ordonnée de trois entités** `Carousel.Plate.0` à `.2`, chacune avec ce que `AddModelEntity` leur donne aujourd'hui (`:341-354` : racine `StaticModelComponent`, id du modèle `StaticModel.CarSelectionPlate` lu au catalogue, politique `DynamicDefault`) et `CastShadows = false`, posés par le constructeur de la DLL avant tout `AddEntity` (`World.AddEntity` ne fait que mettre en file, `World.cs:182-189`) ;
+  - `RacingGameCasaEngine/Worlds/RaceWorldFactory.cs` : `CreateFrontEndWorld` et `CreateRaceWorld` appellent ces constructeurs et ajoutent les entités au monde dans l'ordre rendu, puis la voiture comme aujourd'hui (`CreatePlayerCarEntity` reste dans l'exe) ; les constantes de noms, `IsRaceWorld`, `IsRaceRenderableEntity`, `IsVisibleInCircuitOnlyView` restent ; `CreateNamedEntity`, inutilisé, est retiré ;
+  - `RacingGameCasaEngine/UI/CarSelectionCarousel.cs` : son constructeur appelle les trois constructeurs du carrousel et **garde l'ordre d'ajout d'aujourd'hui** : `Carousel.Light`, puis dans la même boucle `Carousel.Plate.i` suivi de `Carousel.Car.i` (soit Light, Plate.0, Car.0, Plate.1, Car.1, Plate.2, Car.2) ; `_light` est la racine de l'entité de lumière rendue, `_plates[i]` la racine du plateau `i` rendu ; le cube, les voitures, la caméra, le placement et l'option des ombres ne changent pas ; ses commentaires qui citent `RaceWorldFactory` pour l'intensité et l'ambiant (`:69`, `:74`) suivent le déplacement ;
+  - `LegacyTrackSceneFactory.Create` perd son second paramètre, inutilisé (`LegacyTrackSceneFactory.cs:21`), ainsi que son appelant ;
+  - `RacingGame.Gameplay/Race/RaceBootstrapAssets.cs:22-23` : le commentaire périmé relevé par la vérification de M0 (« The track name seeds the scenery ») est corrigé.
+- **Hors tranche** : le chargement par fichier, les noms de mondes, la voiture, toute valeur.
+- **Validation** : parité ; `git diff` relu : aucune constante ni aucun littéral numérique ne change de valeur entre ce qui est retiré de l'exe et ce qui est ajouté à la DLL (les valeurs sont comparées une à une et listées dans la note) ; l'ordre des `AddEntity` est celui d'avant, et la note donne la suite des ajouts avant et après pour la course (caméra, `RaceRoot`, `Light.Key`, piste, décor, checkpoints, `PlayerStart`, `PlayerCar`) et pour le carrousel (Light, Plate.0, Car.0, Plate.1, Car.1, Plate.2, Car.2) ; le diff montre `_light` et `_plates[i]` pris sur les racines des entités rendues.
+- **Arrêts** : communs ; un type qu'il faudrait déplacer de l'exe vers la DLL et qui tient à l'exe (accès au jeu autrement que par `IRaceGameHost`) ; un nom de type nouveau qui heurte `check_gameplay_type_names.py`.
 - **Retour arrière** : `git revert`.
 - **Commit** : `refactor(racing-casa): build the world entities in RacingGame.Gameplay`
 
@@ -202,7 +229,7 @@ Un écart à l'un de ces points est un **arrêt** : la tranche passe en ⚠️, 
 - **Validation** :
   - parité (le jeu ne lit pas ces fichiers) ;
   - **outil** : un second lancement n'écrit rien ; `--worlds --verify` à 0 écart : pour chaque monde relu par `World.Load`, mêmes entités que les constructeurs de M4 (noms et ordre, composants, transforms à 1e-6, ids de modèles, valeurs de lumière, demi-dimensions des checkpoints), même environnement clé par clé ; les mondes de course et le carrousel portent `specular_cubemap_asset_id` = l'id de `Texture.SkyCubeMap`, le front-end un id vide ; le nombre d'entités de chaque course est celui relevé en M1 plus la caméra, `RaceRoot`, la lumière, trois checkpoints et `PlayerStart` ; chaque id de fichier est celui de son entrée de catalogue ;
-  - **éditeur**, sur une copie du contenu et du build de l'éditeur : chaque monde et la voiture s'ouvrent par `--open-asset` avec le code 0 et sans erreur au journal ; deux `--save-project` réécrivent chaque monde avec les octets de l'outil ; pour la voiture, une sonde la recharge par `Entity.Load` et la réenregistre deux fois par `EditorEntityWriter.SaveEntity` : mêmes octets que l'outil ;
+  - **éditeur**, sur une copie du contenu et du build de l'éditeur : chaque monde et la voiture s'ouvrent par `--open-asset` avec le code 0 et sans erreur au journal ; deux `--save-project` réécrivent chaque monde avec les octets de l'outil ; pour la voiture, `--worlds --verify` compare `PlayerCar.entity` rechargé par `Entity.Load` à l'entité de `RaceCarEntityFactory.Create()` (mêmes composants, mêmes six ancres avec leur `AnchorId` et leur transform), et une sonde la réenregistre deux fois par `EditorEntityWriter.SaveEntity` : mêmes octets que l'outil ;
   - **reste 🧪 pour l'auteur** : enregistrer la voiture depuis l'éditeur lui-même (ouvrir, modifier un champ, le rétablir, enregistrer, comparer les octets). Cette étape manuelle ne bloque pas M6.
 - **Vérification** : un `verifier` frais sur les fichiers écrits (sérialisation : frontière à contrôler avant que le jeu en dépende).
 - **Arrêts** : un champ perdu à l'aller-retour ; un asset que l'automatisation de l'éditeur n'ouvre pas ; un besoin du moteur au-delà du plan `offline-world-writer`.
