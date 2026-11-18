@@ -40,7 +40,7 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0024 | RacingGameCasaEngine's content folder holds every game file (numbered ADR-0016 until 2026-11-16) | Accepted; amended by ADR-0016 and ADR-0017 | 2026-10-08 |
 | ADR-0025 | RacingGame.Gameplay holds the game code, and generator components rebuild the track (numbered ADR-0017 until 2026-11-16) | Accepted; superseded in part by ADR-0019 | 2026-10-08 |
 | ADR-0026 | RacingGameCasaEngine's models, materials and textures are cooked assets (numbered ADR-0018 until 2026-11-16) | Accepted; amended by ADR-0028 | 2026-10-08 |
-| ADR-0027 | RacingGameCasaEngine places the track objects as the original does | Accepted | 2026-11-16 |
+| ADR-0027 | RacingGameCasaEngine places the track objects as the original does | Accepted; amended by ADR-0041 | 2026-11-16 |
 | ADR-0028 | RacingGameCasaEngine cooks the race world materials as PBR, from the surface families of their recipes | Accepted; amended by ADR-0034, ADR-0037, ADR-0038 | 2026-11-17 |
 | ADR-0029 | RacingGameCasaEngine builds the road underside and the city ground plane of the original | Accepted | 2026-11-17 |
 | ADR-0030 | RacingGameCasaEngine lights the tunnel with the original's material ambient as an emissive texture | Accepted; amended by ADR-0033 | 2026-11-17 |
@@ -54,3 +54,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0038 | RacingGameCasaEngine lights the window glass of the buildings as the original does | Accepted | 2026-11-18 |
 | ADR-0039 | RacingGameCasaEngine neutralises the colour of the car glass | Accepted | 2026-11-18 |
 | ADR-0040 | RacingGameCasaEngine gives the leaf of the small palm its own base level | Accepted | 2026-11-18 |
+| ADR-0041 | RacingGameCasaEngine draws the scenery of the game with the seed of the reference capture | Proposed | 2026-11-18 |

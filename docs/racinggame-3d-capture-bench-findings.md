@@ -403,3 +403,20 @@ The leaf of the small palm (`PalmLeave2.tga`) takes a base grey of 220 instead o
 | 190 | 0.5 | 24.38 | 67.8 / 83.4 / 57.2 | 15.042 | 27 |
 
 Applied state: M 26.80 -> 22.63; E 15.046 -> 15.039 in `linear`, 19.806 -> 19.793 in `legacy`; probes unchanged.
+
+## Update after the scenery seed (2026-11-18)
+
+Decisions: see ADR-0041. Plan `ai-agent/tasks/rgce-worlds-as-assets-tasks.md`, slice M0; outputs under `artifacts/worlds-as-assets/m0/`.
+
+The game now draws its random scenery with the seed of the reference capture (1) in every mode; the reference capture no longer sets a seed, it checks the one of its `views.json`. Checked with `artifacts/worlds-as-assets/scripts/m0_check.py`, every run replayed twice and identical byte for byte:
+
+| Runs | Against `artifacts/pbr-handover/s25/g7/ref/` |
+|---|---|
+| 15 reference views, `linear` and `legacy` | byte-identical; scene measures identical |
+| 3 tunnel views, `linear` and `legacy` | byte-identical; scene measures identical |
+| 30 track audit captures | 23 change, 7 identical (the six road-only captures and the terrain overview of Beginner) |
+| 10 interface screens | `ui-race-hud`, `ui-pause`, `ui-race-finished` change; the 7 others identical |
+
+Placement digests logged by the race worlds (`Track placements <track>: ... digest`), the same in the reference views, the track audit, the interface captures and the scene export: Beginner `197D7EF3A381BD78` (1147 placements), Advanced `C6D4C53FF70AEEB1` (1693), Expert `EF69E08B051B8297` (3404). Before, outside the reference views: `6EBF84F81D01AC88` (1274), `FD0564E1183D98FE` (1757), `29A2403A3F0CDCFA` (3432).
+
+Reference of the track audit and of the interface from now on: `artifacts/worlds-as-assets/m0/ref/`.

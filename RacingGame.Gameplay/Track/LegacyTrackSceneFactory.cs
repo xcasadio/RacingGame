@@ -14,14 +14,6 @@ internal static partial class LegacyTrackSceneFactory
     // The start light's models: red, yellow and green (RacingGame.Shared/Landscapes/TrackObjectManager.cs).
     internal const string StartLightEntityNamePrefix = "Track.Scenery.StartLight.";
 
-    /// <summary>
-    /// The seed of the random scenery of the tracks built next. Null (the default) is a seed per track, derived from the track's
-    /// name (<see cref="RaceTrackLayout.CreateTrackSeed"/>): the same scenery on every launch. The original draws its random
-    /// scenery from one generator seeded once from the clock; its reference capture reseeds it per level with <c>new Random(1)</c>; the reference view
-    /// capture sets the seed of its views.json here, so that the port draws the same.
-    /// </summary>
-    internal static int? SceneryRandomSeed { get; set; }
-
     private static readonly Dictionary<string, LegacyTrackLayout> TrackCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, List<LegacyCombiObject>> CombiCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, LegacyTerrainHeightSampler> TerrainCache = new(StringComparer.OrdinalIgnoreCase);
@@ -78,7 +70,7 @@ internal static partial class LegacyTrackSceneFactory
             source.Track,
             source.Heights,
             LoadCombiModel,
-            SceneryRandomSeed ?? RaceTrackLayout.CreateTrackSeed(trackName));
+            RaceTrackLayout.ScenerySeed);
     }
 
     private static Entity CreateGeneratorEntity(string name, RaceTrackGeneratorComponent generator, Guid trackAssetId, Guid heightmapAssetId)

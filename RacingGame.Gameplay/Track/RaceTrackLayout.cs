@@ -157,7 +157,7 @@ internal sealed class RaceTrackLayout
     /// <param name="track">The track's .Track layout.</param>
     /// <param name="terrainSampler">The landscape height map.</param>
     /// <param name="loadCombiModel">Returns the objects of a CombiModel (empty for an unknown one).</param>
-    /// <param name="seed">The seed of the one random generator the generation draws from; see <see cref="CreateTrackSeed"/>.</param>
+    /// <param name="seed">The seed of the one random generator the generation draws from; the game passes <see cref="ScenerySeed"/>.</param>
     /// <param name="settings">The spacing of the guard rail posts and of the columns; null for the legacy values.</param>
     /// <param name="includeScenery">
     /// False skips the generation of the scenery (a generator component does not use it, and it is the only part that draws
@@ -264,22 +264,12 @@ internal sealed class RaceTrackLayout
     }
 
     /// <summary>
-    /// The seed of the random scenery of a track when nothing sets one: derived from the track's name, so that a track has
-    /// the same scenery on every launch. System.HashCode is randomized per process, so the seed uses a stable FNV-1a hash.
+    /// The seed of the random scenery of every track (ADR-0041): the one the original's reference capture reseeds its
+    /// generator with before each level (<c>new Random(1)</c>). The game therefore draws the scenery the capture bench
+    /// compares with the original, object for object, and that scenery is the same on every launch. The original game
+    /// seeds its generator once from the clock: no scenery of its own is canonical.
     /// </summary>
-    internal static int CreateTrackSeed(string trackName)
-    {
-        const uint FnvOffsetBasis = 2166136261u;
-        const uint FnvPrime = 16777619u;
-
-        uint hash = FnvOffsetBasis;
-        foreach (byte value in Encoding.UTF8.GetBytes($"{trackName.ToUpperInvariant()}|LegacyTrackSceneFactory.Scenery"))
-        {
-            hash = unchecked((hash ^ value) * FnvPrime);
-        }
-
-        return unchecked((int)hash);
-    }
+    internal const int ScenerySeed = 1;
 
     /// <summary>
     /// A digest of the placements (model name, then the 16 elements of the transform, in the order the objects were added):

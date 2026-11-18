@@ -1,6 +1,6 @@
 # ADR-0027: RacingGameCasaEngine places the track objects as the original does
 
-- **Status**: Accepted
+- **Status**: Accepted; amended by ADR-0041 (one constant seed, 1, in the game and in every automation mode; the per-track seed is removed)
 - **Date**: 2026-11-16
 - **Source**: this chantier: `ai-agent/tasks/rgce-pbr-handover-tasks.md`, decision D11 (author answer, 2026-11-16: align the topics both machines implemented on the original, now, by correcting the local code), slice S1a, tasks T6.1 and T6.2; measures in `docs/racinggame-3d-capture-bench-local-baseline.md`
 

@@ -105,10 +105,12 @@ internal sealed class ReferenceViewCaptureValidator
             _nearPlane = root.GetProperty("nearPlane").GetSingle();
             _farPlane = root.GetProperty("farPlane").GetSingle();
 
-            // The original reseeds its random scenery with this seed for each level: the race worlds built from now on do too.
-            if (root.TryGetProperty("seed", out JsonElement seed))
+            // The original reseeds its random scenery with this seed for each level. The game draws its scenery with one
+            // fixed seed (RaceTrackLayout.ScenerySeed, ADR-0041): views exported with another seed show another scenery.
+            if (root.TryGetProperty("seed", out JsonElement seed) && seed.GetInt32() != RaceTrackLayout.ScenerySeed)
             {
-                LegacyTrackSceneFactory.SceneryRandomSeed = seed.GetInt32();
+                throw new InvalidDataException(
+                    $"views.json was exported with the scenery seed {seed.GetInt32()}, the game draws its scenery with the seed {RaceTrackLayout.ScenerySeed}.");
             }
 
             foreach (JsonElement track in root.GetProperty("tracks").EnumerateArray())

@@ -98,7 +98,7 @@ Un écart à l'un de ces points est un **arrêt** : la tranche passe en ⚠️, 
 
 ## Tâches
 
-### ⏳ M0 — Le décor du jeu prend la graine du banc (D13, P21)
+### 🧪 M0 — Le décor du jeu prend la graine du banc (D13, P21)
 
 - **Prérequis** : aucun.
 - **Résultat** : le jeu, l'audit, l'interface et l'export de scène montrent le décor de la graine 1, celui des vues du banc. Seule tranche qui change une image.
@@ -116,6 +116,16 @@ Un écart à l'un de ces points est un **arrêt** : la tranche passe en ⚠️, 
 - **Arrêts** : une vue du banc ou une mesure de scène qui change ; un écran sans monde 3D qui change ; une empreinte de placements d'un mode qui n'est pas celle du banc.
 - **Retour arrière** : `git revert` du commit.
 - **Commit** : `feat(racing-casa): draw the scenery of the game with the seed of the reference capture`
+
+> Validation (2026-11-18), sorties dans `artifacts/worlds-as-assets/m0/` (`ref/`, `m0_check.txt`, `seed2/`, `judge-decor.png`) ; contrôle par `artifacts/worlds-as-assets/scripts/m0_check.py` : `RESULT: PASS`. Statut 🧪 : appliqué et contrôlé ; la vérification indépendante suit.
+> - Code : `RaceTrackLayout.ScenerySeed` = 1 ; `CreateTrackSeed` et `SceneryRandomSeed` supprimés (`rg` hors `bin`, `obj`, `artifacts`, `docs/decisions`, `ai-agent` : plus rien) ; le validateur compare la graine du `views.json` à la constante. Build à 0 erreur ; `check_gameplay_type_names.py` à 0.
+> - Rejeux, chacun deux fois, identiques entre eux octet pour octet ; aucun `[Warning]` ni `[Error]` ; `--smoke-frontend` et `--verify-legacy-import-profile` en succès.
+> - Inchangé contre `s25/g7/ref` : les 15 vues et les 3 vues de tunnel en `linear` et en `legacy` (36 images) ; les mesures de scène ; les 7 écrans d'interface hors course.
+> - Empreintes de placements : dans `views-linear-a`, `audit-a`, `ui-a` (Beginner) et l'export de scène, `197D7EF3A381BD78`, `C6D4C53FF70AEEB1`, `EF69E08B051B8297` ; celles de l'audit diffèrent de l'ancienne référence d'audit. Placements : 1147, 1693 et 3404 au lieu de 1274, 1757 et 3432.
+> - Peut changer : 23 des 30 captures d'audit changent, 7 restent identiques (les six prises route seule et `Beginner-terrain-overview`) ; `ui-race-hud`, `ui-pause` et `ui-race-finished` changent.
+> - Graine 2 : `--capture-reference-views` sort avec le code 1, sans image, message « views.json was exported with the scenery seed 2, the game draws its scenery with the seed 1. ».
+> - Planche `judge-decor.png` (avant / après, `start-full` et `sector-50` des trois pistes), regardée : des palmiers et des objets à d'autres places, rien d'anormal ; laissée à l'auteur (O3).
+> - Documents : ADR-0041 `Proposed`, ligne d'état sur l'ADR-0027, section du doc de banc.
 
 ### ⏳ M1 — Références de départ et script de parité
 
