@@ -50,6 +50,7 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0034 | RacingGameCasaEngine gives the road the original's sun sheen and takes the environment light off it | Proposed | 2026-11-18 |
 | ADR-0035 | RacingGameCasaEngine filters the shadow edges of the race world with 64 taps | Proposed | 2026-11-18 |
 | ADR-0036 | RacingGameCasaEngine sets the shadow colour of the race world against the original | Proposed | 2026-11-18 |
-| ADR-0037 | RacingGameCasaEngine brings the palm foliage toward the original with a measured base level and the original's alpha test | Proposed | 2026-11-18 |
+| ADR-0037 | RacingGameCasaEngine brings the palm foliage toward the original with a measured base level and the original's alpha test | Proposed; amended by ADR-0040 | 2026-11-18 |
 | ADR-0038 | RacingGameCasaEngine lights the window glass of the buildings as the original does | Proposed | 2026-11-18 |
 | ADR-0039 | RacingGameCasaEngine neutralises the colour of the car glass | Proposed | 2026-11-18 |
+| ADR-0040 | RacingGameCasaEngine gives the leaf of the small palm its own base level | Proposed | 2026-11-18 |

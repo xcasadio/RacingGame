@@ -89,8 +89,12 @@ public static class RaceMaterialRecipes
     // NormalMapping.fx) instead of the imported white and the cutoff of the import presentation (ADR-0037). With those the leaves
     // were brighter than the original's and covered more pixels. The cause of the difference in brightness is not established:
     // the level is a calibration against the original's captures, chosen by the rule written before the measurement.
-    private static readonly string[] PalmLeafTextures = ["PalmLeave.tga", "PalmLeave2.tga"];
+    // The leaf of the small palm (PalmLeave2) has its own level (ADR-0040): 170 took it away from the original, which the boxes of
+    // ADR-0037 did not contain; measured on its own pixels, 220 is the closest.
+    private const string PalmLeafTexture = "PalmLeave.tga";
+    private const string SmallPalmLeafTexture = "PalmLeave2.tga";
     private const byte PalmLeafBaseLevel = 170;
+    private const byte SmallPalmLeafBaseLevel = 220;
     private const float PalmLeafAlphaCutoff = 0.5f;
 
     // The tint of a material times its diffuse colour D, rounded as CreateLegacyLighting of the other machine does:
@@ -118,8 +122,11 @@ public static class RaceMaterialRecipes
         bool isHotel02Glass = IsWindowGlass(modelName, importedMaterial.DisplayName, "Hotel02", "fenster");
         bool isCasino01Glass = IsWindowGlass(modelName, importedMaterial.DisplayName, "Casino01", "39");
         bool hasNeutralGlassBase = isHotel02Glass || isCasino01Glass;
-        bool isPalmLeaf = importedMaterial.DiffuseTextureFilePath != null
-            && PalmLeafTextures.Any(texture => RacingGamePbrMaterialMapping.IsSameTexture(texture, importedMaterial.DiffuseTextureFilePath));
+        bool isSmallPalmLeaf = importedMaterial.DiffuseTextureFilePath != null
+            && RacingGamePbrMaterialMapping.IsSameTexture(SmallPalmLeafTexture, importedMaterial.DiffuseTextureFilePath);
+        bool isPalmLeaf = isSmallPalmLeaf || (importedMaterial.DiffuseTextureFilePath != null
+            && RacingGamePbrMaterialMapping.IsSameTexture(PalmLeafTexture, importedMaterial.DiffuseTextureFilePath));
+        byte palmLeafBaseLevel = isSmallPalmLeaf ? SmallPalmLeafBaseLevel : PalmLeafBaseLevel;
 
         return new RaceMaterialRecipe
         {
@@ -127,7 +134,7 @@ public static class RaceMaterialRecipes
             BaseTextureFilePath = importedMaterial.DiffuseTextureFilePath,
             NormalTextureFilePath = importedMaterial.NormalTextureFilePath,
             Family = family,
-            BaseColor = isPalmLeaf ? new Color(PalmLeafBaseLevel, PalmLeafBaseLevel, PalmLeafBaseLevel, (byte)255)
+            BaseColor = isPalmLeaf ? new Color(palmLeafBaseLevel, palmLeafBaseLevel, palmLeafBaseLevel, (byte)255)
                 : hasNeutralGlassBase ? new Color(WindowGlassBaseLevel, WindowGlassBaseLevel, WindowGlassBaseLevel, (byte)255)
                 : Opaque(importedMaterial.DiffuseColor),
             ReceiveShadows = !(isHotel01Glass || isHotel02Glass),

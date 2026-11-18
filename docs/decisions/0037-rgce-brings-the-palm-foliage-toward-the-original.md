@@ -1,6 +1,6 @@
 # ADR-0037: RacingGameCasaEngine brings the palm foliage toward the original with a measured base level and the original's alpha test
 
-- **Status**: Proposed
+- **Status**: Proposed; amended by ADR-0040 (the leaf of the small palm, `PalmLeave2.tga`, takes the base grey 220)
 - **Date**: 2026-11-18
 - **Source**: this chantier: `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md`, slice G3 (rule of choice written before the measurement in a frozen script, applied mechanically; author's request of 2026-11-18 to continue in autonomous mode, subject "decor materials"); the measurement: `artifacts/pbr-handover/s24/g3/` (`measure_leaves.json`, `measure_leaves.txt`, one folder per candidate) and the frozen script `artifacts/pbr-handover/s23/scripts/measure_leaves.py`; open point O7 of `ai-agent/tasks/rgce-render-gaps-tasks.md`; ADR-0028
 

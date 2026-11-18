@@ -386,3 +386,20 @@ The base colour of the car glass is (255, 174, 148) instead of grey 224: it comp
 | g2 | 255 / 174 / 148 | 134.4 / 137.7 / 137.3 | 1.09 | 2.47 | 15.046 | 27 |
 
 E and the probes are unchanged. Side effect: the reflections that are not the sky turn warm; in the car selection carousel the headlights turn orange.
+
+## Update after the leaf of the small palm (2026-11-18)
+
+Decisions: see ADR-0040. Plan `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md`, slice G7; outputs under `artifacts/pbr-handover/s25/g7/`.
+
+The leaf of the small palm (`PalmLeave2.tga`) takes a base grey of 220 instead of the 170 of the other palms: the boxes of the foliage rule did not contain it, and 170 took it away from the original. Measured in `linear` with `artifacts/pbr-handover/s25/scripts/measure_smallpalm.py` on the 21601 pixels of the material in the 15 views (original mean colour 83.8 / 98.3 / 57.7; first row: start state):
+
+| Base grey | Alpha cutoff | M | Mean R / G / B over the mask | E | Criterion 3 |
+|---|---|---|---|---|---|
+| 170 | 0.5 | 26.80 | 62.8 / 76.4 / 55.2 | 15.046 | 27 |
+| 255 | 0.35 | 25.72 | 85.1 / 106.5 / 64.5 | 15.047 | 27 |
+| 255 | 0.5 | 25.94 | 86.2 / 107.5 / 65.2 | 15.044 | 27 |
+| 220 | 0.35 | 22.58 | 74.9 / 93.4 / 60.0 | 15.043 | 27 |
+| 220 | 0.5 | 22.63 | 76.0 / 94.4 / 60.7 | 15.039 | 27 |
+| 190 | 0.5 | 24.38 | 67.8 / 83.4 / 57.2 | 15.042 | 27 |
+
+Applied state: M 26.80 -> 22.63; E 15.046 -> 15.039 in `linear`, 19.806 -> 19.793 in `legacy`; probes unchanged.
