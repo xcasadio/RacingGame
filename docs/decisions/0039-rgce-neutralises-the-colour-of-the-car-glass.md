@@ -1,6 +1,6 @@
 # ADR-0039: RacingGameCasaEngine neutralises the colour of the car glass
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-11-18
 - **Source**: this chantier: `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md`, slice G5 (rule and iteration written before the measurement in a frozen script, applied mechanically; the author chose the subject on 2026-11-18 and accepted that the car glass also changes in the car selection carousel: "Oui, carrousel compris"); the measurement: `artifacts/pbr-handover/s24/g5/` (`measure_glass.json`, `measure_glass.txt`, `g0/` to `g2/`) and the frozen script `artifacts/pbr-handover/s23/scripts/measure_glass.py`; ADR-0033 (decision D1)
 

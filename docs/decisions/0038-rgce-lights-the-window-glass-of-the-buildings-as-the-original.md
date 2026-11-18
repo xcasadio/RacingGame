@@ -1,6 +1,6 @@
 # ADR-0038: RacingGameCasaEngine lights the window glass of the buildings as the original does
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-11-18
 - **Source**: this chantier: `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md`, slice G4 (rule of choice written before the measurement in a frozen script, applied mechanically; author's request of 2026-11-18 to continue in autonomous mode, subject "decor materials"); the measurement: `artifacts/pbr-handover/s24/g4/` (`measure_windows.txt`, `gate/measure_windows.txt`, one folder per marker and per candidate, `combined/`) and the frozen script `artifacts/pbr-handover/s23/scripts/measure_windows.py`; open point O7 of `ai-agent/tasks/rgce-render-gaps-tasks.md`; ADR-0028, ADR-0033, ADR-0036
 

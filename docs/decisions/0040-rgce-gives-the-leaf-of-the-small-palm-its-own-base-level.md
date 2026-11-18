@@ -1,6 +1,6 @@
 # ADR-0040: RacingGameCasaEngine gives the leaf of the small palm its own base level
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-11-18
 - **Source**: this chantier: `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md`, slice G7 (rule of choice written before the measurement in a frozen script, applied mechanically; author's request of 2026-11-18 to continue after the verification of slices G1 to G6); the finding: verification of images of that plan (G6), advisory on slice G3; the measurement: `artifacts/pbr-handover/s25/g7/` (`measure_smallpalm.json`, `measure_smallpalm.txt`, `mark/`, one folder per candidate) and the frozen script `artifacts/pbr-handover/s25/scripts/measure_smallpalm.py`; ADR-0037
 

@@ -1,6 +1,6 @@
 # ADR-0034: RacingGameCasaEngine gives the road the original's sun sheen and takes the environment light off it
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-11-18
 - **Source**: this chantier: `ai-agent/tasks/rgce-road-tunnel-shadow-tasks.md`, slice S2 (rule of choice written before the measurement, applied mechanically by a script frozen before it; plan approved by the author on 2026-11-18 in autonomous mode, the use of the occlusion keys approved by the author the same day on the presentation of a trial); the analysis: point O9 of `ai-agent/tasks/rgce-render-gaps-tasks.md`; the measurement: `artifacts/pbr-handover/s22/s2/` (`measure_s2.json`, `measure_s2.txt`, one folder per candidate) and the frozen script `artifacts/pbr-handover/s22/scripts/measure_s2.py`; ADR-0018, ADR-0028
 

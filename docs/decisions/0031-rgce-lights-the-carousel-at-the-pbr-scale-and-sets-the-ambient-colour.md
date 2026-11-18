@@ -1,6 +1,6 @@
 # ADR-0031: RacingGameCasaEngine lights the car selection carousel at the PBR scale and sets the ambient colour of both worlds to 0.05
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-11-17
 - **Source**: this chantier: `ai-agent/tasks/rgce-pbr-handover-tasks.md`, phase 13 (author's decision of 2026-11-17 on open point O13: the ambient colour of the race world goes from white to 0.05) and slice S4 (phase 16, decision taken in AUTO mode, to be confirmed by the author with this record), task T16.1, open point O2; `docs/decisions/0018-race-world-renders-in-linear-hdr-with-pbr-materials.md` (Decision, "Light (P4, P8)" and "Carousel (P5)"); the engine: `CasaEngine/docs/engine/pbr-rendering.md` (Units)
 

@@ -1,6 +1,6 @@
 # ADR-0036: RacingGameCasaEngine sets the shadow colour of the race world against the original
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-11-18
 - **Source**: this chantier: `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md`, slice G2 (rule of choice written before the measurement in a frozen script, applied mechanically; author's request of 2026-11-18 to continue in autonomous mode, subject "ambient of the tunnels and of the terrain"); the measurement: `artifacts/pbr-handover/s24/g2/` (`measure_tint.json`, `measure_tint.txt`, one folder per candidate) and the frozen script `artifacts/pbr-handover/s23/scripts/measure_tint.py`; open points O6 of `ai-agent/tasks/rgce-render-gaps-tasks.md` and O5 of `ai-agent/tasks/rgce-road-tunnel-shadow-tasks.md`; ADR-0032, ADR-0033
 

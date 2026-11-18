@@ -1,6 +1,6 @@
 # ADR-0029: RacingGameCasaEngine builds the road underside and the city ground plane of the original
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-11-17
 - **Source**: this chantier: `ai-agent/tasks/rgce-pbr-handover-tasks.md`, slice S1h, decisions H1 to H4 (taken in AUTO mode, to be confirmed by the author with this record), tasks T12.1 to T12.3; the other machine's commits `0ac894d` and `d0db72f` (`origin/remaster`, `RacingGameCasaEngine/Worlds/LegacyTrackSceneFactory.RoadStructures.cs`); the original: `RacingGameOriginal/Core/Tracks/Track.cs:408-486`, `TrackVertex.cs`, `Landscapes/Landscape.cs:71-77` and `:900-933`, `Graphics/PlaneRenderer.cs`
 

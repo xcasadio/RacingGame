@@ -1,6 +1,6 @@
 # ADR-0035: RacingGameCasaEngine filters the shadow edges of the race world with 64 taps
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-11-18
 - **Source**: this chantier: `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md`, slice G1 (author's request of 2026-11-18 to continue in autonomous mode; the author chose the subject "shadow penumbra", which authorised the engine evolution); the engine setting: ADR-0127 of CasaEngine (`CasaEngine/docs/decisions/0127-the-tap-count-of-the-shadow-filter-is-a-setting.md`); the finding: open point O4 of `ai-agent/tasks/rgce-road-tunnel-shadow-tasks.md`; outputs: `artifacts/pbr-handover/s24/g1/`, trial `artifacts/pbr-handover/s23/taps/`
 
