@@ -305,3 +305,24 @@ Applied state: E 17.762 -> 15.732 in `linear`, 20.572 -> 20.249 in `legacy`; pro
 Decisions: see ADR-0035. Plan `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md`, slice G1; outputs under `artifacts/pbr-handover/s24/g1/`.
 
 The race world filters its shadow edges with 64 taps instead of 12 (engine setting `FilterTaps`, CasaEngine ADR-0127). On the right wall of the Expert tunnel the fan of bands at the edge of the shadow becomes a gradient. Against the previous reference only shadow edges change: at most 1.231 % of the pixels of a view outside the tunnels, 2.171 % on the Expert tunnel. E is unchanged: 15.734 in `linear` (15.732 before), 20.245 in `legacy` (20.249); the probes are unchanged. The cost in frame time was not measured.
+
+## Update after the shadow colour (2026-11-18)
+
+Decisions: see ADR-0036. Plan `ai-agent/tasks/rgce-shadow-colour-decor-tasks.md`, slice G2; outputs under `artifacts/pbr-handover/s24/g2/`.
+
+The shadow colour of the race world is (0.38, 0.3952, 0.4104) instead of the original's (0.25, 0.26, 0.27): the engine applies it in linear light before the tone curve, where 0.25 left the shadows about half as bright as the original's. Measured in `linear` with `artifacts/pbr-handover/s23/scripts/measure_tint.py` (r1, r2: shadow over lit ratio of the terrain on `Beginner-start` and `Expert-sector-80`, original 0.284 and 0.267; S: sum of their differences with the original; E: mean difference per channel over the 15 views; M: median of the top band of the tunnel views, window 28.882 to 31.882; Dt: mean difference per channel of the tunnel views):
+
+| Level | r1 | r2 | S | E | M | Dt | Probes 1 / 2 / 3 / 4 | Eligible |
+|---|---|---|---|---|---|---|---|---|
+| 0.25 (start state) | 0.152 | 0.139 | 0.260 | 15.734 | 30.053 | 15.155 | 20 / 0 / 27 / 3 | yes |
+| 0.30 | 0.198 | 0.176 | 0.177 | 15.573 | 30.382 | 13.911 | 20 / 0 / 27 / 3 | yes |
+| 0.32 | 0.218 | 0.193 | 0.140 | 15.504 | 30.505 | 13.489 | 20 / 0 / 27 / 3 | yes |
+| 0.34 | 0.239 | 0.209 | 0.103 | 15.436 | 30.600 | 13.174 | 20 / 1 / 27 / 3 | yes |
+| 0.36 | 0.261 | 0.227 | 0.063 | 15.371 | 30.741 | 12.940 | 20 / 2 / 27 / 3 | yes |
+| 0.38 | 0.284 | 0.246 | 0.021 | 15.312 | 30.885 | 12.844 | 20 / 2 / 27 / 3 | yes |
+| 0.40 | 0.307 | 0.265 | 0.025 | 15.264 | 31.053 | 13.016 | 20 / 2 / 27 / 3 | yes |
+| 0.42 | 0.332 | 0.284 | 0.065 | 15.233 | 31.267 | 13.552 | 20 / 2 / 27 / 3 | yes |
+| 0.44 | 0.357 | 0.305 | 0.111 | 15.219 | 31.481 | 14.336 | 20 / 1 / 27 / 3 | yes |
+| 0.46 | 0.383 | 0.326 | 0.158 | 15.212 | 31.647 | 15.246 | 20 / 0 / 27 / 3 | yes |
+
+Applied state: E 15.734 -> 15.312 in `linear`, 20.245 -> 20.009 in `legacy`; probes 20 of 34, 2 of 4, 27 of 33, 3 of 3 in `linear` (criterion 2 was 0 of 4) and 4 of 34, 0 of 4, 27 of 33, 3 of 3 in `legacy` (criterion 2 was 2 of 4: there the colour is not decoded). The road of the tunnels is at 11.5 / 20.2 / 27.9 for 11.7 / 21.8 / 31.1 in the original.

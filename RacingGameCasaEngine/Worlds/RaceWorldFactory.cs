@@ -62,7 +62,7 @@ public static class RaceWorldFactory
 
     // Shadow map of the race world, tuned on the track audit views (ai-agent/tasks/rgce-hud-shadows-start-tasks.md, T3.1):
     // - the original multiplies the whole image by a shadow colour of (0.25, 0.26, 0.27) (Core/Content/Shaders/ShadowMap.fx:36,
-    //   240) and softens the shadow in screen space: MultiplyLitColor with that colour, and a 3 texel filter radius for the
+    //   240) and softens the shadow in screen space: MultiplyLitColor with that hue (level: see ShadowColor), and a 3 texel filter radius for the
     //   soft edge (2 left the edge sharper than the original, 5 showed the 12-tap pattern as grain on the boards: the other
     //   machine's measurement, not repeated here);
     // - 4096 texels over 2 x ShadowMaxDistance units, centred on the camera. The original's map is centred on a point
@@ -89,7 +89,10 @@ public static class RaceWorldFactory
     // 64 reads instead of the engine's 12 (ADR-0035, engine ADR-0127): with 12 a shadow edge seen at a grazing angle, on a
     // tunnel wall, showed as a fan of bands; with 64 it is a gradient, as the original's blurred shadow. Not timed here.
     private const int ShadowFilterTaps = 64;
-    private static readonly Vector3 ShadowColor = new(0.25f, 0.26f, 0.27f);
+    // ADR-0036: no longer the original's (0.25, 0.26, 0.27). The engine applies the shadow colour in linear light, before the tone
+    // curve, where 0.25 left the shadowed ground about half as bright, relative to the lit ground, as the original's display-space
+    // multiply. The level 0.38 is measured against the original; the three channels keep the original's 25 : 26 : 27 ratio.
+    private static readonly Vector3 ShadowColor = new(0.38f, 0.3952f, 0.4104f);
     private const float ShadowDepthBias = 0.001f;
     private const float ShadowNormalBias = 0.1f;
 

@@ -100,7 +100,7 @@ Arrêts communs, sans commit, l'état précédent étant gardé : script de mesu
 > - Tunnel, mesure de R4 : médiane des parois 30,053, dans la fenêtre ; écart 15,155.
 > - ADR-0035 `Proposed` ; section « Update after the shadow filter taps » du doc de banc. Le coût en temps d'image n'est pas mesuré.
 
-### ⏳ G2 — Couleur d'ombre du monde de course (ADR-0036)
+### ✅ G2 — Couleur d'ombre du monde de course (ADR-0036)
 
 - Prérequis : G1 clos (✅ ou ⚠️). Base : la référence en place.
 - Mesure (D1, D4), en `linear`, avec un build temporaire lisant `RGCE_BENCH_SHADOW_COLOR` (modèle : `s23/scripts/tempcode.py`), copié hors du dépôt puis retiré du code avant toute mesure. Script : `s23/scripts/measure_tint.py`. Captures sous `s24/g2/` : `base/` et `base-tunnel/` ; pour chaque candidat `t<niveau>/` et `t<niveau>-tunnel/`, la couleur d'ombre valant (niveau ; niveau × 0,26 / 0,25 ; niveau × 0,27 / 0,25). Candidats : 0,30 à 0,46 par pas de 0,02, soit 9 candidats, la variable d'environnement recevant exactement ces chaînes : `t0.30` = `0.30,0.312,0.324` ; `t0.32` = `0.32,0.3328,0.3456` ; `t0.34` = `0.34,0.3536,0.3672` ; `t0.36` = `0.36,0.3744,0.3888` ; `t0.38` = `0.38,0.3952,0.4104` ; `t0.40` = `0.40,0.416,0.432` ; `t0.42` = `0.42,0.4368,0.4536` ; `t0.44` = `0.44,0.4576,0.4752` ; `t0.46` = `0.46,0.4784,0.4968`. Lancement : `python artifacts/pbr-handover/s23/scripts/measure_tint.py base t0.30 … t0.46`. La base capturée sur la copie doit être identique octet pour octet à la référence en place.
@@ -109,6 +109,19 @@ Arrêts communs, sans commit, l'état précédent étant gardé : script de mesu
 - Validation : validation commune (dossier `s24/g2/applied/` : copie de `base/` et `base-tunnel/`, rejeux sous `t<niveau>/` et `t<niveau>-tunnel/` ; commande `measure_tint.py --root s24/g2/applied base t<niveau>` ; réussi si la ligne `choice:` nomme ce candidat) ; en plus, la mesure de R4 du tunnel (`tunnelmeas.py`) et les boîtes de route des tunnels notées avant et après.
 - Arrêts : arrêts communs.
 - Commit : `fix(racing-casa): set the shadow colour of the race world against the original`
+
+> Validation (2026-11-18), sorties dans `artifacts/pbr-handover/s24/g2/` (`measure_tint.txt`, `measure_tint.json`, `strings.txt`, `slice_check.txt`, `applied/`, `ref/`).
+> - Mesure : `measure_tint.py` inchangé (empreinte `537d522d7d767c01` contrôlée avant et après). Build temporaire lisant `RGCE_BENCH_SHADOW_COLOR` copié hors du dépôt, code remis à l'identique (`git status` propre) et rebuild. Base capturée sur la copie, identique octet pour octet à `s24/g1/ref` (15 vues et tunnel). Neuf candidats capturés avec les chaînes du plan (`strings.txt`).
+> - Règle : les neuf candidats et la base sont éligibles ; plus petite somme `S` : 0,021 à 0,38 et 0,025 à 0,40, à moins de 0,01 l'un de l'autre ; écart des tunnels 12,844 à 0,38 pour 13,016 à 0,40. **Retenu : 0,38**, chaîne du candidat `0.38,0.3952,0.4104`. Base : rapports du terrain 0,152 et 0,139 (original 0,284 et 0,267), `E` 15,734, médiane des parois 30,053, écart des tunnels 15,155.
+> - Application : `RaceWorldFactory.cs`, `private static readonly Vector3 ShadowColor = new(0.38f, 0.3952f, 0.4104f);`, mêmes littéraux que la chaîne du candidat ; commentaire renvoyant à l'ADR-0036.
+> - Build à 0 erreur ; cuiseur `--verify` 0 écart, `--check` 0 ; générateur `--check` 0 ; `--smoke-frontend` et `--verify-legacy-import-profile` en succès ; aucun `[Warning]` ni `[Error]`.
+> - Rejeux deux fois, identiques entre eux ; références `s24/g2/ref/`. Les 15 vues et les 3 vues de tunnel en `linear` sont identiques octet pour octet aux captures de `t0.38`.
+> - Candidat toujours retenu : `measure_tint.py --root s24/g2/applied base t0.38` : rapports 0,284 et 0,246, `S` 0,021, `E` 15,312, médiane 30,885, écart des tunnels 12,844, `choice: t0.38` ; `s24/g2/measure_tint.json` non réécrit.
+> - Sondes : `linear` 20/34, 2/4, 27/33, 3/3 (critère 2 : 0/4 avant) ; `legacy` 4/34, 0/4, 27/33, 3/3 (critère 2 : 2/4 avant ; dans ce mode la couleur n'est pas décodée, 0,38 y est plus clair que l'ombre de l'original). `E` : `linear` 15,734 -> 15,312 ; `legacy` 20,245 -> 20,009.
+> - Tunnel, mesure de R4 : médiane des parois 30,053 -> 30,885 (fenêtre tenue), écart 15,155 -> 12,844 ; route des tunnels 7,0 / 11,6 / 15,4 -> 11,5 / 20,2 / 27,9 (original 11,7 / 21,8 / 31,1).
+> - Interface et audit : les six écrans sans monde 3D et `ui-car-selection` identiques à `s24/g1/ref` ; `ui-pause` 0,009 %, `ui-race-hud` 1,064 %, `ui-race-finished` 1,406 % ; 16 des 30 captures d'audit changent (jusqu'à 39,8 %, `audit-Beginner-sector-20`), 14 sont identiques ; vue la plus changée : `Beginner-sector-20`, 24,6 %.
+> - Documents : ADR-0036 `Proposed` ; aucune ADR ne fixait la couleur d'ombre (`rg "0\.26" docs` ne trouve que des sections historiques du doc de référence locale, laissées telles quelles) ; section « Update after the shadow colour » du doc de banc ; table écrite et relue par `s24/scripts/gen_docs_g2.py`.
+> - Regardé sur `s24/judge/2-couleur-ombre-avant-apres.jpg` : les ombres du terrain et des pavés sont moins noires, plus proches de l'original ; la route et les parois des tunnels sont plus claires, proches de l'original sur `Advanced-tunnel` et `Expert-tunnel` ; la face de colline à gauche de `Beginner-start` reste nettement plus sombre que dans l'original (elle est tournée à l'opposé du soleil : c'est l'ambiant, pas l'ombre).
 
 ### ⏳ G3 — Feuillage des palmiers (ADR-0037)
 
