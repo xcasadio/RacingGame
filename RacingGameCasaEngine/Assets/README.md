@@ -15,7 +15,8 @@ Runtime assets are resolved from `RacingGameCasaEngine/Content`.
 - `Content/Textures/` for UI textures, decals, and simple 2D placeholders.
 - `Content/Tracks/` for track data, checkpoints, and race metadata.
 - `Content/Cars/` for car definitions, tuning, and visual assets.
-- `Content/Worlds/` for serialized CasaEngine worlds when the bootstrap stops building them in code.
+- `Content/Worlds/` for the CasaEngine worlds: the ones the game loads (`FrontEnd.world`, `Race/Track<Track>.world`, `CarSelection.world`), the editor's start world and the test world.
+- `Content/Entities/` for entity assets (`PlayerCar.entity`).
 - `Content/Audio/` for music and sound effects.
 - `Content/Shaders/` for shader assets registered in the catalog.
 - `Content/UI/` for MGUI-specific assets or data files.
@@ -41,8 +42,8 @@ Every game file the game reads lives under `Content` and has a catalogue entry (
 
 - Three tools write the catalogue. Ids are uuid5 of the asset name, so a second run changes nothing:
   - `scripts/generate_rgce_ui_assets.py`: the screens, sprites and UI images;
-  - `scripts/generate_rgce_content_assets.py`: `Image.<name>` for the PNG images (`Texture.<name>` for the two DDS cube maps), `Data.<name>` for the height map and CombiModel files, `ModelSource.<name>` for the glTF sources, `Sound.<name>`/`Sound.<name>Wave` for the 22 ported sounds, and `World.<path>` for the worlds;
-  - `scripts/RgceAssetCooker`: the cooked models, materials and textures (see "Cooked models, materials and textures"). Run the content generator first, then the cooker.
+  - `scripts/generate_rgce_content_assets.py`: `Image.<name>` for the PNG images (`Texture.<name>` for the two DDS cube maps), `Data.<name>` for the height map and CombiModel files, `ModelSource.<name>` for the glTF sources, `Sound.<name>`/`Sound.<name>Wave` for the 22 ported sounds, `World.<path>` for the worlds and `Entity.<path>` for the entities;
+  - `scripts/RgceAssetCooker`: the cooked models, materials and textures (see "Cooked models, materials and textures"). Run the content generator first, then the cooker. With `--worlds` it writes the worlds and the player car (see "Worlds and the player car"): there the order is the cooker, then the content generator, then `--worlds --verify`.
 - `python scripts/generate_rgce_content_assets.py --check` lists the content files that no entry names. The project files are not catalogued: the project file, the catalogue, the gameplay dll and pdb, `.casaeditor/`, the `.design.json` and `.xaml` of the screens, and the glTF `.bin` buffers.
 - Textures are PNG, apart from the two cube-map DDS. The 129 legacy `.tga` textures were converted to PNG files of the same name by `scripts/LegacyModelGltfConverter`: 106 by the model conversion (the 100 textures the models name, and the six normal maps of the meshes the game generates, given with `--normal-map`) and 23 by its `--textures` mode. 74 are colour copies with the same RGBA pixels; the 55 `*Normal*` files are normal maps converted to the standard channel layout (red from the legacy green, green from the legacy alpha, blue unchanged, opaque alpha; [ADR-0016](../../docs/decisions/0016-normal-maps-are-converted-to-the-standard-channel-layout.md)). `--verify-textures` checks every pair, first as a colour copy, then as a converted normal map, lists both sets with their counts, and fails only for a pair that is neither. `SkyCubeMap.dds` is not a copy of its source: the converter rewrites it in the axes of the converted world ([ADR-0017](../../docs/decisions/0017-sky-cube-is-converted-to-the-engine-axes.md)); the other cube map is. The game compares texture names without extension, and resolves a `.tga` named by a model's legacy metadata to the `.png` of the same name.
 - `.gitattributes` marks the binaries (`png`, `wav`, `dds`, `data`, `tga`, `bin`); there is no LFS.
@@ -93,6 +94,21 @@ Run-time state that is not cooked:
 - **Car paint.** Each car index takes a private copy of `StaticModel.Car`. The slots that sample the car texture (base texture `Texture.RacerCar` in the cooked material) get, in that copy only, a copy of their material with a new id and the painted or unpainted texture of `CarPaint`, which re-colours the `RacerCar*` image for the chosen colour. The painted-or-not rule is the one of the legacy game, applied to the slot name; the cooker's `--verify` checks it against the recipes.
 - **Start light.** `RaceStartLight` switches its component between `StaticModel.StartLight`, `StartLight2` and `StartLight3` during the countdown.
 - **Track generators.** The road, tunnel, terrain, rail and column meshes are still built in code; their material comes from `material_asset_id`, a cooked `Material.Track.<Role>` by default. The tunnels always use `Material.Track.RoadTunnel`, which the road generator holds as a constant, not as a serialized property.
+
+## Worlds and the player car
+
+The game loads its worlds and its player car from assets ([ADR-0042](../../docs/decisions/0042-rgce-loads-its-worlds-and-its-player-car-from-assets.md)); it builds none of them in code.
+
+- Files and catalogue entries: `Worlds/FrontEnd.world` (`World.FrontEnd`), `Worlds/Race/TrackBeginner.world`, `TrackAdvanced.world`, `TrackExpert.world` (`World.Race.Track<Track>`), `Worlds/CarSelection.world` (`World.CarSelection`), `Entities/PlayerCar.entity` (`Entity.PlayerCar`).
+- A race world holds the camera, `RaceRoot`, the light `Light.Key`, the five track generators, the scenery (649, 904 and 1745 entities), three checkpoints and `PlayerStart`, plus its environment: shadows, ambient, the linear colour pipeline and `specular_cubemap_asset_id` = `Texture.SkyCubeMap`. It holds no car. The scenery is the one of the seed of [ADR-0041](../../docs/decisions/0041-rgce-draws-the-scenery-of-the-game-with-the-seed-of-the-reference-capture.md), frozen in the file.
+- **The builders are the source.** `RacingGame.Gameplay/Race/RaceWorldTemplates.cs` and `RacingGame.Gameplay/Entities/RaceCarEntityFactory.cs` build the entities; the tool writes the files from them:
+  1. `scripts/RgceAssetCooker/bin/Debug/net9.0-windows/RgceAssetCooker.exe --worlds` writes the six files (a second run writes nothing);
+  2. `python scripts/generate_rgce_content_assets.py` catalogues them;
+  3. `RgceAssetCooker.exe --worlds --verify` re-reads them and compares them with the builders.
+  Run them again after a change to the builders or to what they read: a `.Track` file, the CombiModel files, the scenery placement. A world edited and saved in the editor no longer matches the builders: `--worlds --verify` reports it and `--worlds` overwrites it.
+- What the game does when a world is loaded: for a race world, the player's shadows option on the world and on `Light.Key`, the colour pipeline reset in `--color-pipeline legacy`, then the player car spawned from `Entity.PlayerCar` and given its state, then the sky cube loaded from the world's cubemap asset id (a race world without an id gets the procedural sky). The front end has no cube and a black background.
+- What stays in code: the three cars of the carousel, its camera and its placement; the sky background pipeline; the meshes of the track generators.
+- The editor opens the five worlds and the car. It saves the five worlds back without loss: it changes only the `view_distance` and the `viewport` of a camera, which the tool leaves at zero and the editor initializes when it opens the world (the viewport with the size of its window); the game never reads them from the file. Saving the car from the editor's own interface has not been checked yet; loaded and saved again through the engine's `EditorEntityWriter.SaveEntity`, it gives the bytes of the tool.
 
 ## Track generator components
 
