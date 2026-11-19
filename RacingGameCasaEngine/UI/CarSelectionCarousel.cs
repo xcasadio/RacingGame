@@ -4,6 +4,7 @@ using CasaEngine.Framework.Assets;
 using CasaEngine.Framework.Entities;
 using CasaEngine.Framework.Entities.Components;
 using CasaEngine.Framework.Rendering;
+using CasaEngine.Framework.Rendering.Environment;
 using CasaEngine.Framework.Rendering.Models;
 using CasaEngine.Framework.World;
 using MGUI.Core.UI;
@@ -13,14 +14,14 @@ using RacingGameCasaEngine.Bootstrap;
 using RacingGameCasaEngine.Worlds;
 using Color = Microsoft.Xna.Framework.Color;
 using RacingGame.Gameplay.Components;
-using RacingGame.Gameplay.Race;
 
 namespace RacingGameCasaEngine.UI;
 
 /// <summary>
 /// RacingGame's car selection carousel (<c>git show 4f840a3^:RacingGame.Shared/GameScreens/CarSelection.cs</c>,
 /// PostUIRender; ADR-0009): the three cars, each on its CarSelectionPlate, rendered by CasaEngine in a world of their own,
-/// through a view into a render target as large as the screen, which the car selection shows over its sprites.
+/// through a view into a render target as large as the screen, which the car selection shows over its sprites. The world's
+/// light, plates and environment come from the asset <c>Worlds/CarSelection.world</c>; the cars and the camera are created here.
 /// <para/>
 /// RacingGame's world had Z up; RGCE's has Y up. The conversion (x, y, z) -> (x, z, -y) is a rotation, under which the
 /// models keep their own coordinates (RacingGame turned its Y-up models to Z up first), a rotation about Z becomes one
@@ -38,8 +39,11 @@ namespace RacingGameCasaEngine.UI;
 /// </summary>
 internal sealed class CarSelectionCarousel : IDisposable
 {
-    private const string WorldName = "FrontEnd.CarSelectionCarousel";
-    private const int CarCount = RaceWorldTemplates.CarSelectionPlateCount;
+    private const string WorldAssetName = "World.CarSelection";
+    private const string WorldFileName = "Worlds/CarSelection.world";
+    private const string LightEntityName = "Carousel.Light";
+    private const string PlateEntityNamePrefix = "Carousel.Plate.";
+    private const int CarCount = 3;
     private const float CarouselRadius = 6.74f;
     private const float SpinPerSecond = 1f / 3.9f;
     private const float TurnPerSecond = 5f;
@@ -84,21 +88,22 @@ internal sealed class CarSelectionCarousel : IDisposable
     public CarSelectionCarousel(RacingGameCasaEngineGame game)
     {
         _game = game;
-        _world = new World { Name = WorldName };
+        _world = game.AssetContentManager.LoadCopy<World>(AssetCatalog.Get(WorldAssetName)!.Id);
         _world.LoadContent(game);
-        _world.EnvironmentSettings.SpecularEnvironmentCubemap = game.GetOrCreateRaceSkyReflectionCube();
-        RaceWorldTemplates.ApplyCarSelectionEnvironment(_world.EnvironmentSettings);
 
-        Entity lightEntity = RaceWorldTemplates.CreateCarSelectionLightEntity();
-        _light = (LightComponent)lightEntity.RootComponent!;
-        _world.AddEntity(lightEntity);
+        // The world file names its reflection cube by the id of a catalogue asset; as for a race world, the game gives the cube
+        // and the id is cleared.
+        WorldEnvironmentSettings environment = _world.EnvironmentSettings;
+        environment.SpecularEnvironmentCubemap = game.GetOrCreateReflectionCube(environment.SpecularEnvironmentCubemapAssetId);
+        environment.SpecularEnvironmentCubemapAssetId = Guid.Empty;
+        environment.MarkDirty();
 
-        // As in RacingGame, only the cars cast shadows; the plates receive them (the template's plates have CastShadows off).
-        List<Entity> plateEntities = RaceWorldTemplates.CreateCarSelectionPlateEntities();
+        _light = FindRootComponent<LightComponent>(LightEntityName);
+
+        // As in RacingGame, only the cars cast shadows; the plates, from the file, receive them.
         for (int i = 0; i < CarCount; i++)
         {
-            _world.AddEntity(plateEntities[i]);
-            _plates[i] = (StaticModelComponent)plateEntities[i].RootComponent!;
+            _plates[i] = FindRootComponent<StaticModelComponent>(PlateEntityNamePrefix + i);
             _cars[i] = AddModelEntity($"Carousel.Car.{i}", LegacyCarVisualFactory.LoadConfiguredCarModel(game.AssetContentManager, i, 0));
         }
 
@@ -306,6 +311,15 @@ internal sealed class CarSelectionCarousel : IDisposable
         }
 
         return ((int)Math.Round(left), (int)Math.Round(right));
+    }
+
+    // The root component of an entity of the world loaded from the file; a missing entity or another component is an invalid asset.
+    private T FindRootComponent<T>(string entityName) where T : class
+    {
+        Entity? entity = _world.Entities.FirstOrDefault(candidate => candidate.Name == entityName);
+        return entity?.RootComponent as T
+            ?? throw new InvalidOperationException(
+                $"The entity '{entityName}' of {WorldFileName} is missing or its root component is not a {typeof(T).Name}.");
     }
 
     private StaticModelComponent AddModelEntity(string name, StaticModel? model)

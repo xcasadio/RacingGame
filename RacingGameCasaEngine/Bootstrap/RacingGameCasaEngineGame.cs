@@ -36,7 +36,6 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
     ];
 
     // The catalogue entry of the sky cube, for the car selection carousel (the race worlds name it by id).
-    private const string RaceSkyCubeAssetName = "Texture.SkyCubeMap";
 
     private readonly RaceFrontEndFlow _frontEndFlow;
     private readonly RuntimeRaceWorldBinder _raceWorldBinder;
@@ -346,7 +345,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
         {
             currentWorld.EnvironmentSettings.SpecularEnvironmentCubemapAssetId = Guid.Empty;
             currentWorld.EnvironmentSettings.SpecularEnvironmentCubemap = isRaceWorld
-                ? GetOrCreateRaceSkyReflectionCube(skyCubeAssetId)
+                ? GetOrCreateReflectionCube(skyCubeAssetId)
                 : null;
             currentWorld.EnvironmentSettings.MarkDirty();
         }
@@ -392,13 +391,10 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
     }
 
     /// <summary>
-    /// The race sky's reflection cube, the catalogue entry <c>Texture.SkyCubeMap</c>, for the car selection carousel (which builds
-    /// its own world until it loads CarSelection.world); the same cache as the race worlds'.
+    /// The reflection cube of the catalogue asset <paramref name="skyCubeAssetId"/>, for a race world and for the car selection
+    /// carousel's world; the same cache. The procedural cube when the id is empty or its cube cannot be loaded.
     /// </summary>
-    internal TextureCube GetOrCreateRaceSkyReflectionCube()
-        => GetOrCreateRaceSkyReflectionCube(AssetCatalog.Get(RaceSkyCubeAssetName)?.Id ?? Guid.Empty);
-
-    private TextureCube GetOrCreateRaceSkyReflectionCube(Guid skyCubeAssetId)
+    internal TextureCube GetOrCreateReflectionCube(Guid skyCubeAssetId)
         => TryGetOrCreateRaceSkyCube(skyCubeAssetId)
             ?? (_raceSkyFallbackReflectionCube ??= ProceduralSkyCubeFactory.CreateReflectionCube(GraphicsDevice, RaceSkySystem.Settings));
 
