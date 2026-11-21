@@ -43,6 +43,7 @@ import time
 DEFAULT_LOCK = "D:/development/rgce-run.lock"
 LOCK_OWNER = "editor-closure"
 LOCK_POLL_SECONDS = 5
+LOCK_SETTLE_SECONDS = 1
 LOCK_REPORT_SECONDS = 60
 LOCK_GIVE_UP_SECONDS = 45 * 60
 KILL_GRACE_SECONDS = 30
@@ -160,8 +161,22 @@ class LockTimeout(Exception):
     pass
 
 
+def _read_lock(lock_path):
+    """The text of the lock file, or None when it does not exist or cannot be read."""
+    try:
+        with open(lock_path, "r", encoding="utf-8", errors="replace") as handle:
+            return handle.read()
+    except OSError:
+        return None
+
+
 def acquire_lock(lock_path):
-    """Create the lock file exclusively, waiting while it exists; give up (never steal) after 45 minutes."""
+    """Create the lock file exclusively, waiting while it exists; give up (never steal) after 45 minutes.
+
+    Returns the line written. Another launcher may take the lock without an exclusive create and overwrite the file
+    in the instant after ours: the file is read back after a short pause, and when it no longer holds our line the lock
+    is theirs, so we leave it and go back to waiting.
+    """
     started = time.monotonic()
     last_report = started
     while True:
@@ -178,12 +193,24 @@ def acquire_lock(lock_path):
                 last_report = now
             time.sleep(LOCK_POLL_SECONDS)
             continue
+        line = "%s %d %s\n" % (LOCK_OWNER, os.getpid(),
+                                datetime.datetime.now().astimezone().isoformat(timespec="seconds"))
         with os.fdopen(fd, "w", encoding="utf-8") as handle:
-            handle.write("%s %s\n" % (LOCK_OWNER, datetime.datetime.now().astimezone().isoformat(timespec="seconds")))
+            handle.write(line)
+        time.sleep(LOCK_SETTLE_SECONDS)
+        if _read_lock(lock_path) == line:
+            return line
+        print("  lock '%s' was taken over by another launcher: waiting again" % lock_path, flush=True)
+
+
+def release_lock(lock_path, line):
+    """Remove the lock file only when it still holds our own line; a file that holds another line is someone else's."""
+    held = _read_lock(lock_path)
+    if held is None:
         return
-
-
-def release_lock(lock_path):
+    if held != line:
+        print("  lock '%s' holds another line (%s): left in place" % (lock_path, held.strip()), flush=True)
+        return
     try:
         os.remove(lock_path)
     except FileNotFoundError:
@@ -233,12 +260,12 @@ def run_one(args, entry, lock_path):
     if os.path.exists(diagnostics_path):
         os.remove(diagnostics_path)  # a stale file of an earlier run must not be judged
 
-    acquire_lock(lock_path)
+    lock_line = acquire_lock(lock_path)
     try:
         exit_code, duration = launch_editor(args.editor, args.project, file_name, diagnostics_path, stdout_path,
                                             args.timeout)
     finally:
-        release_lock(lock_path)
+        release_lock(lock_path, lock_line)
 
     text = None
     if os.path.exists(diagnostics_path):
