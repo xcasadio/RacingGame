@@ -1,5 +1,5 @@
 {
-  "view_model_type": "RaceCarSelectionViewModel",
+  "view_model_type": "RacingGame.Gameplay.ViewModels.RaceCarSelectionViewModel",
   "values": {
     "Decoration": {
       "LogoLeft": 451,

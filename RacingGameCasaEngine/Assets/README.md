@@ -67,7 +67,7 @@ Every game file the game reads lives under `Content` and has a catalogue entry (
   - It prints the paths of the capture (`<Name>-final.png`) and of the diagnostics.
 - Screen authoring rules for the preview:
   - a full-screen window keeps `ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"` for the game and also declares the design size `Width="1280" Height="720"`. The preview takes a `Window` root as is and would otherwise size the window to its content. In the game, the Stretch placement replaces that size on every update (`MGWindow.ApplyScreenPlacement`);
-  - design-time data is `<Name>.design.json` next to the screen, `{"view_model_type": "<simple type name>", "values": {...}}`, referenced by `design_time_data_file` in the `.uiscreen`. It is not copied to the build output.
+  - design-time data is `<Name>.design.json` next to the screen, `{"view_model_type": "<full type name, namespace included: RacingGame.Gameplay.ViewModels.RaceHudViewModel>", "values": {...}}` (the editor resolves a script type by its full name only, engine ADR-0075), referenced by `design_time_data_file` in the `.uiscreen`. It is not copied to the build output.
 - Preview limits, in CasaEngine and not worked around here:
   - Compatibility parsing: a screen that previews can still fail the Strict load of the game;
   - elements renamed `_cse_<id>`;
