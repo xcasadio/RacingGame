@@ -234,7 +234,7 @@ Un écart à l'un de ces points est un arrêt, sans seuil de tolérance décidé
 > - Export de scène, `compare_geometry.py` de `f0` à `f1` : 0 enregistrement sans pair ; **un seul champ diffère, `MaterialParameters.AmbientColor`, sur les 7528 enregistrements** (le paramètre que T1 ajoute, à sa valeur par défaut), admis. Aucune `ShaderFeature` nouvelle : `RenderFeatures` ne diffère nulle part.
 > - La clé du moteur est donc sans effet sur les images du jeu tant qu'aucun matériau ne s'en sert. Référence précédente de F2 : `artifacts/render-fidelity/f1/ref/`, export `f1/export/scene.json`.
 
-### 🧪 F2 — Ambiant du terrain
+### ✅ F2 — Ambiant du terrain
 
 - Objectif : les faces de terrain tournées à l'opposé du soleil prennent l'ambiant de l'original (blanc, plat, multiplié par la texture et son détail) au lieu de la lumière du ciel.
 - Prérequis : table « Dépendances ».
@@ -288,7 +288,7 @@ Validation : validation commune, avec ces précisions.
 
 Arrêts : arrêts communs ; base de la copie différente de `f1/ref` ; script de mesure modifié après son gel ; cuisson qui change un autre fichier que `Terrain.material` ; candidat qui n'est plus retenu une fois appliqué.
 
-> Validation (2026-11-21), sorties dans `artifacts/render-fidelity/f2/` (`measure_terrain.txt`, `measure_terrain.json`, un dossier par candidat, `materials/`, `applied/`, `ref/`, `export/`, `f2_check.txt`, `measure/`, `judge-terrain.jpg`) et `f2-measure-runs.txt`, `f2-measure-rest-runs.txt`, `f2-runs.txt`. Statut 🧪 jusqu'à la vérification indépendante.
+> Validation (2026-11-21), sorties dans `artifacts/render-fidelity/f2/` (`measure_terrain.txt`, `measure_terrain.json`, un dossier par candidat, `materials/`, `applied/`, `ref/`, `export/`, `f2_check.txt`, `measure/`, `judge-terrain.jpg`) et `f2-measure-runs.txt`, `f2-measure-rest-runs.txt`, `f2-runs.txt`. 
 > - Outils figés avant la mesure (`f2/scripts-frozen.sha256`) : `measure_terrain.py` `6288f619b409c3dd`, `runcopy.sh` `57991acb1aaf9944`, `matcand.py` `45315dc954825273`, `f2_measure.sh` `d9b234eec8814da9` ; inchangés après.
 > - Base de la copie du build : 15, 3 et 15 images identiques octet pour octet à `f1/ref`.
 > - Mesure : 39 lancements, tous `exit 0`, sans `[Warning]` ni `[Error]`. **Incident** : pendant le candidat `s0.345`, le verrou de lancement a été supprimé par un lanceur de la session principale (il le supprimait sans regarder son contenu ; corrigé de son côté le même jour). Le script s'est arrêté ; les trois dossiers du candidat ont été mis de côté (`f2/collision/`), puis le candidat a été rejoué avec les trois restants par `f2_measure_rest.sh` (mêmes fonctions). Le rejeu est identique octet pour octet au passage fait sous collision (33 images). Les prises de verrou suivantes passent par `scripts/lock.sh` (création exclusive, relecture, suppression de sa seule ligne).
@@ -301,6 +301,8 @@ Arrêts : arrêts communs ; base de la copie différente de `f1/ref` ; script de
 > - Documents : ADR-0043 `Proposed` ; ligne d'état sur l'ADR-0032 ; section « Update after the terrain ambient » du doc de banc ; nombres écrits par `gen_docs_f2.py` et relus par `verify_docs_f2.py` (`RESULT: PASS`).
 > - Regardé sur `f2/judge-terrain.jpg`, envoyée à l'auteur : les flancs tournés à l'opposé du soleil, noirs ou gris avant, sont bruns et texturés comme dans l'original (`Beginner-sector-50`, `Beginner-overview`, `Advanced-start`) ; ils restent un peu plus contrastés que dans l'original, dont le dégradé est plus doux ; sur `Expert-sector-80` la pente de droite garde des taches sombres. Les piliers d'éolienne restent sombres (F3), le tuyau d'`Advanced-start` bleuté (reporté, D6).
 > - Référence précédente de F3 : `artifacts/render-fidelity/f2/ref/`, export `f2/export/scene.json`.
+>
+> Vérification indépendante du commit `111582f` (2026-11-21, `verifier` frais) : **CONFIRMED** sur les six points (règle et choix, application égale au candidat, rien d'autre ne bouge, mesure sans recul, documents, sens de l'image), aucun constat P0 à P2. Il a relancé la règle sur une copie des 429 captures (sorties identiques octet pour octet), relancé le cuiseur (aucun octet changé), et rejoué lui-même les 15 vues sous verrou : identiques à `f2/ref`. Sur ses planches, le masque des pixels changés se limite au terrain. Deux remarques P4, reportées : (1) le contexte de l'ADR-0043 écrit « 0.345 * texture * detail » là où la formule de l'original porte `2 * detail` (O9, à l'auteur : l'ADR est `Proposed`) ; (2) deux vues montent un peu en `linear`, `Expert-sector-20` 14,131 -> 14,274 et `Expert-sector-50` 14,051 -> 14,169, la moyenne des 15 vues baissant.
 
 
 ### ⏳ F3 — Ambiant des matériaux du décor
@@ -314,6 +316,49 @@ Arrêts : arrêts communs ; base de la copie différente de `f1/ref` ; script de
 - Validation : validation commune ; table par famille (retenue ou non, `M` avant et après) ; planche de `Expert-sector-80` (piliers), `Beginner-sector-20` (grand palmier), `Beginner-overview` (mur du casino).
 - Arrêts : arrêts communs ; l'ambiant effectif d'un matériau de l'original ne peut pas être établi par lecture.
 - Commit : `fix(racing-casa): give the scenery materials the ambient of the original`
+
+#### Détail d'exécution de F3 (écrit le 2026-11-21, avant la tranche)
+
+Faits relevés le 2026-11-21 par deux lecteurs, chacun recontrôlé (`artifacts/render-fidelity/f3/facts/`), les lignes décisives relues par la session principale :
+- **Original.** Sur le chemin du décor (`Core/Graphics/MeshRenderManager.cs`), le shader reçoit par matériau l'ambiant, le diffus et le spéculaire du bloc `EffectInstance` de son fichier `.X`, par le tag que pose le processeur (`PipelineExtension/RacingGameModelProcessor.cs:94-118`, `Core/Graphics/Material.cs:221-254`, `MeshRenderManager.cs:415-420`). Le forçage à (128, 128, 128) de `Model.cs:271-275` pour les éoliennes, panneaux et banderoles est écrasé par cette valeur : il n'atteint pas le shader du décor. Les techniques du décor multiplient l'ambiant par la texture (`NormalMapping.fx`, techniques `Diffuse`, `Specular20`, `DiffuseSpecular20`, `SpecularWithReflection20`) ; seul le verre l'ajoute sans texture. Valeurs lues dans les `.X`, 76 matériaux : de 0,10 (palmiers, train) à 0,486 (éolienne) ; un matériau sans bloc d'effet garde le défaut 40 sur 255. Le sol de la ville a l'ambiant (32, 32, 32) (`Core/Landscapes/Landscape.cs:614-619`).
+- **Portage.** L'ambiant de chaque matériau arrive jusqu'à la recette : `.X`, puis `extras.legacyEffect.floats.ambientColor` du glTF, puis `LegacyGltfModelReader.cs:94-96` (`AmbientColor` ; 40 sur 255 sans bloc d'effet, `:79-81`), puis `RaceMaterialRecipes.ForScenery` (`:112-151`), qui ne s'en sert que pour l'émissive des panneaux (ADR-0033). La famille d'un matériau vient de `RacingGamePbrMaterialMapping.ResolveImportedFamily` (`:145-183`) : `BuildingGlass` par l'effet, puis `GuardRail`, `LampPost`, `Masonry`, `Signage`, `Vegetation`, `MatteIndustrial` par le nom de la texture, sinon `Default`. Le sol de la ville a sa recette, `ForGround` (`:249-260`). Le cuiseur lit ses modèles dans `Content/Models/*.gltf` du dossier qu'on lui donne par `--content` (`scripts/RgceAssetCooker/CookPlan.cs:79-84`) ; le dossier de build du jeu contient ces 56 fichiers.
+- **Mesure par matériau des tranches précédentes** (ADR-0038, `artifacts/pbr-handover/s23/scripts/measure_windows.py`) : un matériau dessiné seul en marqueur (base noire, émissive magenta, sans ombre reçue) donne le masque de ses pixels ; `M` est l'écart absolu moyen par canal à l'original sur ce masque, sur les 15 vues.
+
+Périmètre exact. Six groupes, traités ensemble dans une même mesure : les familles `Masonry`, `Vegetation`, `LampPost`, `GuardRail`, `MatteIndustrial` et `Default` de `ForScenery`, et le sol de la ville (`ForGround`, groupe `CityGround`). Exclus, et laissés tels quels : les panneaux (`Signage`, P8), le verre (`BuildingGlass`, ADR-0038), les feuilles des palmiers (`PalmLeave.tga`, `PalmLeave2.tga` : leur niveau de base a été calé sans ambiant, ADR-0037 et 0040), la voiture et le plateau du carrousel (autres recettes). Le terrain garde le réglage de F2.
+
+Leviers, par groupe : un facteur `k` appliqué à l'ambiant importé du matériau (`ambient_color = AmbientColor importé × k`, les trois composantes), et la lumière du ciel gardée (`s`) ou coupée par l'occlusion noire à 1 (`n`). Pour `CityGround`, l'ambiant de départ est 32 sur 255. Le facteur 1,22 est le rapport retenu en F2 (0,42 pour 0,345).
+
+Outils, écrits et figés avant toute mesure (empreintes dans `f3/scripts-frozen.sha256`) sous `artifacts/render-fidelity/scripts/` : `tempcode_f3.py` (pose et retire le code temporaire), `f3_measure.sh` (lancements), `measure_decor.py` (grandeurs et règle dans son en-tête, qui fait foi), avec `runcopy.sh`, `matcand.py`, `lock.sh` et `board.py` déjà écrits.
+
+Build temporaire, jamais committé (règle « Mesure » de l'enveloppe) : `tempcode_f3.py on` ajoute à `RaceMaterialRecipes.cs` la lecture de deux variables d'environnement, sans autre changement de comportement quand elles sont absentes :
+- `RGCE_BENCH_SCENERY`, de la forme `Masonry=1.22n;Vegetation=1.00s;…;CityGround=1.22n` : pour chaque groupe nommé, le facteur et la lettre `s` ou `n` ; un groupe absent n'est pas modifié ;
+- `RGCE_BENCH_MARK=<groupe>` : les matériaux de ce groupe deviennent des marqueurs (base noire, émissive (10 ; 0 ; 10), sans texture d'émissive, `ReceiveShadows` faux), les autres sont inchangés.
+Le cuiseur est construit dans cet état, son dossier `bin` copié sous `artifacts/render-fidelity/f3/cooker-temp/`, puis `tempcode_f3.py off` remet le code à l'identique (`git status --porcelain` vide contrôlé, cuiseur normal reconstruit). Les candidats sont cuits par la copie du cuiseur dans la **copie du dossier de build** (`cooker-temp/RgceAssetCooker.exe --content artifacts/render-fidelity/build-copy/Content`), remise à zéro entre deux candidats par `matcand.py reset` ; le dépôt n'est pas touché. Contrôle : sans variable, la copie du cuiseur ne change aucun octet de la copie du build.
+
+Mesure, en `linear` et `legacy`, référence précédente `f2/ref` (ou `f1/ref` si F2 n'a rien appliqué) :
+1. `matcand.py copy` (copie du `bin` du jeu à jour) ; base : `f3/base`, `f3/base-tunnel`, `f3/base-legacy`, identiques octet pour octet à la référence précédente, sinon arrêt.
+2. Masques : pour chacun des six groupes, un lancement des 15 vues `linear` avec `RGCE_BENCH_MARK` (`f3/mark-<groupe>`). Un groupe dont le masque (pixels magenta du marqueur absents de la base) a moins de 500 pixels sur les 15 vues est laissé de côté et nommé dans la note.
+3. Cinq candidats uniformes, chacun en trois lancements (15 vues, tunnels, 15 vues `legacy`), le même réglage sur les six groupes : `k1.00s`, `k1.22s`, `k1.00n`, `k1.22n`, `k1.45n`.
+4. `measure_decor.py` calcule `M` par groupe et par candidat, et compose le candidat `best` : pour chaque groupe, le réglage de plus petit `M` parmi les cinq, s'il est inférieur d'au moins 0,25 au `M` de la base ; sinon le groupe n'est pas modifié. Il écrit la chaîne `RGCE_BENCH_SCENERY` de `best` dans `f3/best.txt`.
+5. `best` est cuit et rejoué en trois lancements (`f3/best`, `-tunnel`, `-legacy`), puis `measure_decor.py` rend son verdict.
+
+Règle (dans l'en-tête de `measure_decor.py`). Un candidat est éligible quand, contre la base : `E` et `E` des tunnels ne montent pas ; le critère 3 reste à 27 au moins en `linear` et en `legacy` ; les critères 1, 2 et 4 ne baissent pas ; la sonde `building-away-1` garde son verdict au critère 1 ; aucune sonde de terrain (`terrain-lit`, `terrain-away`) qui tient le critère 1 ne le perd. Retenu : `best` s'il est éligible ; sinon, parmi les cinq candidats uniformes éligibles, celui dont la moyenne des `M` pondérée par la taille des masques est la plus petite, si elle est inférieure à celle de la base ; sinon la base, et rien n'est appliqué (P5). La dernière ligne imprimée est `choice: <nom>`, suivie du réglage par groupe.
+
+Application, si un candidat est retenu :
+- `RaceMaterialRecipes.cs` : une table privée par groupe (facteur, ciel gardé ou coupé), écrite avec les littéraux du candidat retenu ; `ForScenery` reçoit un paramètre `occlusionTexturePath` et pose `AmbientColor = importedMaterial.AmbientColor * facteur` et, pour un groupe en `n`, l'occlusion à 1 ; `ForGround` de même avec l'ambiant 32 sur 255 de l'original ; commentaire qui dit d'où viennent les valeurs et renvoie à l'ADR. Les matériaux exclus gardent `Vector3.Zero`.
+- `scripts/RgceAssetCooker/CookPlan.cs` : passe `FirstExisting([RaceMaterialRecipes.RoadOcclusionTextureName])` aux deux recettes. `Cooker.cs` et `Verifier.cs` écrivent et contrôlent déjà `ambient_color` (F2) ; leurs deux commentaires « only the terrain » et « only the road and the terrain » sont mis à jour.
+- Cuisson : `dotnet build scripts/RgceAssetCooker/RgceAssetCooker.csproj`, `RgceAssetCooker.exe` sans option ; ne changent que des fichiers `.material` des groupes retenus (liste dans la note), sinon arrêt ; `--verify`, `--check`, `--worlds --verify`, générateur `--check` à 0 ; `dotnet build RacingGame.slnx`.
+- ADR du jeu au premier numéro libre (0044 aujourd'hui), `Proposed` : les matériaux du décor portent l'ambiant de leur fichier d'origine par la clé `ambient_color` ; table par groupe (réglage retenu, `M` avant et après, taille du masque) produite par script ; ce qui est exclu et pourquoi. Ligne d'état sur l'ADR-0033 seulement si un groupe retenu touche un matériau qu'elle régit (ce n'est pas prévu : les panneaux sont exclus). Section « Update after the scenery ambient » du doc de banc ; nombres écrits par `gen_docs_f3.py` et relus par `verify_docs_f3.py`.
+
+Validation : validation commune, avec ces précisions.
+- Les 15 vues et 3 vues de tunnel `linear` et les 15 vues `legacy` de `f3/ref` sont identiques octet pour octet aux captures du candidat retenu (au plus 1 niveau d'écart sur au plus 0,1 % des pixels d'une vue est admis et noté).
+- `measure_decor.py` relancé sur `f3/applied` retient encore le même candidat.
+- Champs d'export admis : `MaterialParameters.AmbientColor`, `MaterialParameters.OcclusionStrength` et `TextureHashes.OcclusionTexture`, sur les seuls enregistrements dont le matériau appartient à un groupe retenu. La commande `compare_geometry.py` de `f2/export/scene.json` à `f3/export/scene.json` porte un `--allow "<champ>@<motif>"` par nom de maillage concerné, la liste des noms étant produite par `measure_decor.py` depuis l'export (`f3/allow.txt`) ; sortie attendue 0 ; sans les `--allow`, la commande liste ces enregistrements et eux seuls, ce que la note montre.
+- Interface et audit : les six écrans sans monde 3D identiques ; les autres changements nommés et chiffrés (le carrousel ne doit pas changer : ses matériaux sont hors périmètre).
+- Planche `f3/judge-decor.jpg` (original, avant, après) : `Expert-sector-80` (piliers d'éolienne), `Beginner-sector-20` (palmier, immeubles), `Beginner-overview` (casino), `Beginner-sector-80`, regardée, décrite, envoyée à l'auteur.
+
+Arrêts : arrêts communs ; base de la copie différente de la référence précédente ; code temporaire non remis à l'identique ; copie du cuiseur qui change la copie du build sans variable ; cuisson qui change un fichier hors des groupes retenus ; candidat qui n'est plus retenu une fois appliqué.
+
 
 ### ⏳ F4 — Pénombre de l'ombre
 
@@ -381,6 +426,7 @@ Arrêts : arrêts communs ; base de la copie différente de `f1/ref` ; script de
 | O4 | Le flare est-il coupé en tunnel dans la capture de l'original ? La vue `Advanced-tunnel` le montre allumé. | F5 |
 | O5 | Lien du glow à l'option `EnablePostEffects` du joueur et option `--post-effects` du banc : point P10, à valider par l'auteur. | F7 |
 | O6 | Couleur de la voiture : écart connu, non traité (P3). | rapport de fin |
+| O9 | ADR-0043, contexte : « 0.345 * texture * detail » devrait dire que le détail est doublé (`2 * detail`), comme la formule citée juste avant. Constat P4 de la vérification de F2 ; l'ADR est `Proposed` et n'est corrigée qu'à la demande de l'auteur. | rapport de fin |
 | O7 | Facteur de reflet d'environnement par matériau : reporté (D6) ; tuyau d'`Advanced-start` plus bleu et plus clair que l'original. | rapport de fin |
 | O8 | Le verrou `D:/development/rgce-run.lock` se teste puis se crée en deux gestes : deux sessions qui le prennent au même instant ne se voient pas. Convention acceptée telle quelle ; un rejeu dont les deux passes diffèrent est un arrêt, ce qui révèle une collision. | toutes |
 
