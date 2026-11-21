@@ -251,4 +251,5 @@ Plan : `ai-agent/tasks/rgce-editor-project-tasks.md`, Phase 7 (T7.1 à T7.8, dé
 - **Le jeu** : parité identique à la référence de M1 après la correction (76 images, export, audits de voitures).
 - **Verrou de lancement** : deux sessions ont travaillé en même temps ; avant tout lancement du jeu ou de l'éditeur, un lanceur prend `D:/development/rgce-run.lock` par création exclusive, le relit, et ne le supprime que s'il porte encore sa ligne.
 - **Limites connues des contrôles** : un `.gltf` sans maillage ; l'enregistrement d'une texture, d'un modèle ou d'un sprite depuis l'éditeur lui-même ; un avertissement qui ne nomme pas l'asset.
+- **Vérification indépendante de clôture** : CONFIRMED sur les neuf affirmations (contrôles rejoués sur un échantillon de son choix avec ses propres témoins, 76 images recalculées, un genre du banc rejoué), quatre remarques P4 notées dans le plan. La copie de travail `D:/development/rgce-s7/` est supprimée.
 - **Avertissements du moteur, à lui signaler** : à l'ouverture de tout projet qui a une DLL de gameplay, « Script assembly context is still alive after unload… » et « The previous script assembly could not be fully unloaded… ».

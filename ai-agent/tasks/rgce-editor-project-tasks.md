@@ -1959,7 +1959,7 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 
 > Validation (2026-11-21) : `RacingGameCasaEngine/Assets/README.md` reçoit la section « Checking the project in the editor » (les deux contrôles, leurs commandes telles que lancées en T7.2 et T7.3, la règle de passage, les niveaux d'ouverture par type, ce que les contrôles ne voient pas, les écarts connus à l'enregistrement) ; `scripts/RgceAssetCooker/README.md` documente `--roundtrip` depuis T7.3 ; `ai-agent/README.md` et `ai-agent/HANDOVER.md` (section 15) sont à jour. Les deux fichiers cités par des liens ou des chemins existent (`scripts/check_editor_opens_assets.py`, `scripts/RgceAssetCooker/README.md`).
 
-### 🚧 T7.8 — Vérification de clôture (A6)
+### ✅ T7.8 — Vérification de clôture (A6)
 
 - **Objectif** : un `verifier` frais confirme l'ensemble.
 - **Fichiers** : ce plan, `ai-agent/README.md`, `ai-agent/HANDOVER.md`.
@@ -1967,6 +1967,20 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 - **Validation** : verdict CONFIRMED sur A1 à A5 tels que ce détail les définit ; aucun constat P0 à P2 ouvert.
 - **Arrêts** : REFUTED ; un INCONCLUSIVE qui subsiste après une reprise.
 - **Commit** : `docs(ai-agent): record the closing verification of the editor project`
+
+> Vérification indépendante (2026-11-21, `verifier` frais sur `677697b`, sorties dans `artifacts/editor-closure/verif/` et `artifacts/worlds-as-assets/s7/verif-ref/`) : **CONFIRMED** sur l'ensemble et sur chacune des neuf affirmations ; aucun constat P0 à P3, quatre remarques P4. **A6 est tenu.**
+> - **A1** : ensemble attendu redérivé des sources et de la règle du moteur (16 classes, 7 portant un `DisplayName`) ; éditeur lancé par lui sur une copie neuve : `component.types` rend 50 noms dont les 16, les deux absences attendues ; un autre monde de course que celui de la tranche, `TrackExpert.world`, s'ouvre sans erreur (journal entier, 0 erreur).
+> - **A2** : son échantillon de 42 assets, les 16 extensions et les 9 écrans compris : 42 passent. Ses deux témoins échouent : un matériau tronqué (code de sortie 1), un `.gltf` au JSON coupé (`[Error]`). Le rejeu enregistré : 622 verdicts, les 622 diagnostics rejugés par lui, 0 écart, plus un contrôle en texte brut indépendant, 0 échec.
+> - **Aller-retour** : `--roundtrip` relancé, 622 sur 622, identique asset par asset au rejeu enregistré ; nœuds de composants recomptés par son propre script, mêmes nombres ; les cinq témoins détectés. Sa propre perte, faite côté source dans une copie de `TrackBeginner.world` : clés ajoutées signalées « key lost », une valeur que l'écrivain arrondit signalée « value changed ». Code de comparaison relu : aucun chemin par lequel une perte réelle passerait.
+> - **Éditeur piloté** : `Worlds/FrontEnd.world` modifié, enregistré, rétabli par lui ; seules changent la valeur modifiée et les clés de caméra d'O4.
+> - **Correction des écrans** : une ligne par fichier dans `14bc77c`, les neuf classes existent dans l'espace de noms ; sur une copie neuve aucun avertissement de résolution ; avec l'ancien `Pause.design.json` remis, les deux avertissements reviennent.
+> - **A4** : empreintes des 76 images recalculées par lui sur les douze dossiers de `s7/ref`, toutes identiques à la référence de M1 ; journaux datés d'après le commit de la correction ; le genre `ui` rejoué par lui sous le verrou, 10 images identiques ; réglages de l'utilisateur inchangés.
+> - **A5**, périmètre et état : seuls changent le script, les trois fichiers de l'outil, les neuf `.design.json`, le README des assets et des documents de `ai-agent/` ; aucun code d'exécution du jeu ; moteur inchangé ; rien de poussé ; les modes existants de l'outil à 0.
+> - **Documents** : commandes et chiffres du README, du README de l'outil et de la section 15 du HANDOVER conformes aux scripts et aux sorties.
+> - **Remarques P4, notées sans rien changer** : (1) le README de l'outil dit que les contrôles sont rapportés « dans l'ordre ci-dessus », alors que sa liste commence par `unstable` et que l'ordre du code commence par `file missing` ; le nom `type not covered` n'y est pas documenté ; (2) la tolérance absolue de 1e-6 laisserait passer la perte d'une valeur plus petite que 1e-6 en valeur absolue (aucune connue dans le contenu) ; (3) la note de T7.2 dit 7,3 s par lancement en moyenne, la mesure complète donne 7,41 s (médiane 7,39 s, 76,8 minutes) ; la ligne « Fichiers » de T7.6 nomme un dossier `artifacts/editor-closure/a5/` qui n'existe pas (A5 est noté dans le plan et dans `s7/`) ; (4) un écran dont les données de conception ne se résolvent pas passe quand même la règle d'ouverture, l'avertissement nommant le `.design.json` et non l'asset : limite déjà écrite dans le README.
+> - **Non rejoués par le vérificateur** : le rejeu complet des 622 assets (échantillon de 42 et rejugement des 622 diagnostics) ; les essais d'automatisation sur une texture et un modèle ; les cinq autres genres de la parité (relus par empreinte).
+>
+> **Clôture (2026-11-21).** A1 à A6 sont tenus. La copie `D:/development/rgce-s7/` (contenu, copies du vérificateur) est supprimée, comme P28 le prévoit. Restent ouverts dans ce plan : O3, O4, O5 (lignes de la table des points ouverts) ; restent à l'auteur : l'avance de `remaster` et le push, les ADR-0041 et 0042 du jeu encore `Proposed`, et les avertissements de déchargement de scripts à signaler au moteur.
 
 ## Points ouverts
 
