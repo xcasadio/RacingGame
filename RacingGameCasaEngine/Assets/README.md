@@ -110,6 +110,33 @@ The game loads its worlds and its player car from assets ([ADR-0042](../../docs/
 - What stays in code: the three cars of the carousel, its camera and its placement; the sky background pipeline; the meshes of the track generators.
 - The editor opens the five worlds and the car. It saves the five worlds back without loss: it changes only the `view_distance` and the `viewport` of a camera, which the tool leaves at zero and the editor initializes when it opens the world (the viewport with the size of its window); the engine reads them when it loads the world, and the camera's initialization then overwrites the size, the depths and the distance at every load; only the viewport's `x` and `y` are kept, and they are 0 in the tool's files and in the editor's. Saving the car from the editor's own interface has not been checked yet; loaded and saved again through the engine's `EditorEntityWriter.SaveEntity`, it gives the bytes of the tool.
 
+## Checking the project in the editor
+
+Two checks say whether the CasaEngine editor still loads and saves this project (plan `ai-agent/tasks/rgce-editor-project-tasks.md`, phase 7). Both run on a **copy** of `RacingGameCasaEngine/Content` outside the repository, after `dotnet build RacingGame.slnx` (it produces `Content/RacingGame.Gameplay.dll`, which the editor loads) and `dotnet build CasaEngine/CasaEngine.Editor.MonoGame.sln`.
+
+- **Every asset opens in the editor.** One editor launch per catalogue entry, about 7 seconds each (622 entries: about 80 minutes):
+
+  ```
+  python -I scripts/check_editor_opens_assets.py --editor <repo>/CasaEngine/CasaEngine.Editor/bin/Debug/net9.0-windows/CasaEngine.Editor.exe --project <copy>/RacingGameCasaEngine.json --out <output folder> --timeout 120
+  ```
+
+  An asset passes when the editor exits 0, its diagnostics carry `[Automation] Opened asset='<file>'`, hold no `[Error]`, and no `[Warning]` that names the asset's file (that is how a preview reports an image, cube map, font or model it cannot load). `--type <extension>` and `--only <file_name>` restrict the run, `--resume` continues an interrupted one. `results.json` gives the verdict per asset, `summary.json` the count per type and every distinct warning. The script holds the lock file `D:/development/rgce-run.lock` during each launch, so that two sessions never run the game or the editor at the same time.
+- **Every editable asset saves without loss, and every preview asset has a readable header**, outside the editor, in a few seconds:
+
+  ```
+  scripts/RgceAssetCooker/bin/Debug/net9.0-windows/RgceAssetCooker.exe --roundtrip --content <copy> --out <output folder>
+  scripts/RgceAssetCooker/bin/Debug/net9.0-windows/RgceAssetCooker.exe --roundtrip-controls --content <copy> --out <output folder>
+  ```
+
+  See `scripts/RgceAssetCooker/README.md`. The second command runs the five negative controls of the check.
+- What opens how (catalogue of 2026-11-21, 622 entries). An editing document: `.world` (7), `.entity` (1), `.staticmodel` (56), `.material` (99), `.texture` (122), `.sound` (28), `.uiscreen` (9), `.sprite` (50). A read-only preview: `.png` (149), `.dds` (2), `.wav` (28), `.fnt` (1), `.gltf` (56), `.track` (3), `.combimodel` (10), `.data` (1).
+- What these checks do not see:
+  - a `.gltf` whose header is sound but that yields no mesh;
+  - a `.wav`, `.fnt` or `.dds` with a wrong header opens in the editor without any trace in its diagnostics: only the second check catches it;
+  - saving a texture, a static model or a sprite from the editor itself: their lossless save is proven outside the editor only;
+  - a warning that does not name the asset's file. The distinct warnings of a run must be read: on 2026-11-21 they showed that the nine screens had lost their design-time data (their `view_model_type` was a simple name).
+- Known differences when the editor saves: the eight values of the `local_transform` of `BodyVisual` in `Entities/PlayerCar.entity`, and the `view_distance` and `viewport` of a camera in a world (see "Worlds and the player car"); a `.sound` gets CRLF line endings, with the same JSON.
+
 ## Track generator components
 
 The race track is not stored as meshes. Four components of `RacingGame.Gameplay` rebuild it from the data assets, in the game and in the editor. Each one is the root component of its own entity:

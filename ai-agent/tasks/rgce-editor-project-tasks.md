@@ -1950,14 +1950,16 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 > - **A5 : tenu.** `RacingGameCasaEngine.csproj` ne lie rien depuis `RacingGame/Content` (son seul lien externe est la police `tahoma.ttf` du contenu du moteur) ; `generate_rgce_content_assets.py --check` : 0 fichier de `Content` non catalogué.
 > - Incident, sans effet : un premier lancement du rejeu a échoué en zéro seconde sur les 14 lancements du banc, parce que le lanceur appelait le `bash` de WSL au lieu de Git Bash ; corrigé (chemin complet de Git Bash), rejeu refait en entier. Aucun lancement du jeu n'avait eu lieu.
 
-### 🚧 T7.7 — Documentation
+### ✅ T7.7 — Documentation
 
 - **Objectif** : la documentation dit comment contrôler le projet dans l'éditeur.
 - **Fichiers** : `RacingGameCasaEngine/Assets/README.md` (section sur les deux contrôles et leurs commandes, niveaux d'ouverture par type) ; `scripts/RgceAssetCooker/README.md` si T7.3 ne l'a pas déjà complété ; `ai-agent/README.md` ; `ai-agent/HANDOVER.md` (section 15) ; ce plan.
 - **Validation** : chaque commande citée a été lancée telle quelle dans cette tranche ; les liens ajoutés mènent à un fichier.
 - **Commit** : `docs(racing-casa): document the editor checks of the project`
 
-### ⏳ T7.8 — Vérification de clôture (A6)
+> Validation (2026-11-21) : `RacingGameCasaEngine/Assets/README.md` reçoit la section « Checking the project in the editor » (les deux contrôles, leurs commandes telles que lancées en T7.2 et T7.3, la règle de passage, les niveaux d'ouverture par type, ce que les contrôles ne voient pas, les écarts connus à l'enregistrement) ; `scripts/RgceAssetCooker/README.md` documente `--roundtrip` depuis T7.3 ; `ai-agent/README.md` et `ai-agent/HANDOVER.md` (section 15) sont à jour. Les deux fichiers cités par des liens ou des chemins existent (`scripts/check_editor_opens_assets.py`, `scripts/RgceAssetCooker/README.md`).
+
+### 🚧 T7.8 — Vérification de clôture (A6)
 
 - **Objectif** : un `verifier` frais confirme l'ensemble.
 - **Fichiers** : ce plan, `ai-agent/README.md`, `ai-agent/HANDOVER.md`.
