@@ -1,0 +1,304 @@
+# Plan agent IA — Écarts de rendu restants entre RacingGameCasaEngine et l'original
+
+Suite des points ouverts O4 de `rgce-shadow-colour-decor-tasks.md`, O1, O6 et O7 de `rgce-render-gaps-tasks.md`, O4 et O5 de `rgce-road-tunnel-shadow-tasks.md`. Demande de l'auteur du 2026-11-21 : une session à part gère ce chantier, de la découverte à la clôture. Les décisions D1 à D8 ci-dessous ont été arbitrées avec l'auteur le 2026-11-21, en deux séries de questions : **ce plan les applique, il ne les rediscute pas**. Les points P1 à P10 sont des arbitrages de l'agent, à valider par l'auteur à l'approbation du plan.
+
+Plan du moteur associé : `CasaEngine/ai-agent/tasks/render-fidelity-tasks.md` (T0 à T6).
+
+> Relecture du plan (2026-11-21, deux `plan-verifier` frais et un contrôle des faits de l'« État vérifié ») : **REVISE** sur l'enveloppe (un P1, trois P2) et sur F0 (deux P2), tous traités (`FIX`) dans cette version : (1) la comparaison complète de l'export de scène ne pouvait pas tenir dès F1, le matériau étant dans sa clé : elle est limitée à F0, et les tranches comparent la géométrie en nommant les champs de matériau admis ; (2) le lien du glow à l'option du joueur est devenu le point P10, et F7 nomme le code d'exécution et l'option du banc ; (3) « close » est défini ; (4) les tâches du moteur sont placées dans l'ordre P1 et le pointeur est contrôlé avant chaque série de rejeux ; (5) l'adaptation des scripts du banc est une table ligne par ligne ; (6) la preuve que le worktree produit lui-même ses shaders est écrite. Six imprécisions de l'« État vérifié » corrigées (aucune ne portait de décision).
+>
+> Seconde relecture (2026-11-21, relecteurs frais) : **REVISE** encore, sur l'enveloppe (un P1, cinq P2) et sur F0 (deux P2). Dispositions, toutes `FIX`, avec une simplification : les prérequis épars sont remplacés par **une seule table de dépendances** (dans ce plan, le plan du moteur y renvoie), qui lève les contradictions entre les deux plans ; l'export de scène se compare à la référence précédente et non à `m1` ; le contrôle du pointeur porte sur l'index du jeu et ignore les documents de plan du moteur ; F2 et F3 nomment le champ de recette, le cuiseur et son vérificateur ; F8 a ses prérequis et ses arrêts ; la validation commune interdit le recul des critères 1, 2 et 4 et des vues de tunnel ; `compare_geometry.py` a son emplacement. Une relecture de clôture suit ; un nouveau `REVISE` serait remonté à l'auteur.
+>
+> Relecture de clôture (2026-11-21, relecteurs frais) : plan du moteur **READY** ; ce plan **REVISE** encore, sur l'enveloppe (deux P2) et sur F0 (un P2). La boucle de relecture automatique s'arrête ici, comme le veut la règle : les trois blocages sont corrigés dans cette version (`FIX`), **sans avoir été relus**, et c'est à l'auteur de dire s'il veut une relecture de plus avant d'approuver. Corrections : (1) le pointeur du moteur étant cumulatif, une tâche du moteur ne démarre que si la précédente est prouvée par la parité de sa tranche ou annulée, et la tâche de correction `T<n>b` a sa place dans la table ; (2) F2 et F3 admettent dans `RenderFeatures` la capacité de shader que T1 peut ajouter ; (3) les nombres attendus de F0 sont ancrés sur un calcul rejouable, avec leur méthode, la commande des sondes et un arrêt. Remarques mineures intégrées.
+
+Ce fichier doit être mis à jour pendant le travail : l'icône au début de chaque tâche indique son statut courant.
+
+## Objectif
+
+Rapprocher le rendu des trois courses de celui du jeu original, mesuré par le banc de captures, sur cinq écarts :
+
+1. les faces tournées à l'opposé du soleil (flancs de colline, piliers d'éolienne, murs), grises ou noires là où l'original est texturé : ambiant par matériau (clé du moteur, puis matériaux du jeu) ;
+2. la pénombre en paliers au bord des ombres (motif par pixel du filtre d'ombre du moteur) ;
+3. le soleil et son halo, absents (composant de lens flare du moteur, puis données du jeu) ;
+4. les ombres portées à d'autres places que dans l'original (ombre projetée en perspective depuis une lumière virtuelle, dans le moteur) ;
+5. le glow de l'original, absent (bloom du moteur et réglages de couleur de l'image).
+
+Chaque tranche se juge par une mesure contre l'original et par une planche que l'auteur regarde. Ce plan ne promet aucun chiffre : il fixe la règle de chaque tranche avant sa mesure, et un réglage qui ne passe pas sa règle n'est pas appliqué.
+
+## État vérifié du dépôt (2026-11-21, jeu `5e5d17a` = `remaster` = `origin/remaster`, moteur `01cdf483f` = `main` = `origin/main`)
+
+Relevés en lecture seule. Huit lecteurs ont lu le source de l'original, du moteur et du portage, chacun recontrôlé fait par fait par un second lecteur ; les faits marqués **(relu)** ont en plus été relus par la session principale dans le fichier cité. Les sorties de la découverte sont hors du dépôt, dans le dossier temporaire de la session ; les nombres qui en viennent sont recalculés en F0 par un script figé.
+
+**Mesure d'aujourd'hui.** Référence du port : `artifacts/worlds-as-assets/m1/ref/` du checkout principal (152 PNG : 76 par rejeu, deux rejeux `-a` et `-b`). La passation (`ai-agent/HANDOVER.md`, section 14) la dit rejouée identique octet pour octet sur le moteur fusionné du 2026-11-19 ; ce plan ne l'a pas encore rejouée (c'est la tranche F0). Comparaison lancée le 2026-11-21 avec `scripts/TrackCaptureCompare` du checkout principal, `views-linear-a` contre `artifacts/pbr-handover/s1c/ref`, variante `nopost`, `--probes scripts/TrackCaptureCompare/probes.json --no-terrain-detail-correction` :
+
+- écart moyen par canal des 15 vues `E` = 15,039 ; contre la variante `full` de l'original (avec son post-traitement) : 31,648 ; `E` calculé en pleine précision sur les PNG (numpy : écart absolu moyen de chaque vue, tous canaux, puis moyenne des 15 vues ; même définition que `artifacts/pbr-handover/s22/scripts/measure_s2.py:122`), `views-linear-a` contre `s1c/ref/<vue>-nopost.png` et `<vue>-full.png` ;
+- sondes : critère 1, 20 sur 34 ; critère 2, 2 sur 4 ; critère 3, 27 sur 33 ; critère 4, 3 sur 3 ;
+- pire vue : `Beginner-sector-20` (31,5 ; 32,3 ; 32,1 par canal), les autres entre 9,4 et 17,6 ;
+- les 12 sondes `terrain-away` : 8 échouent au critère 1 ; le port y est tantôt plus sombre (`Beginner-overview` 14,15,15 pour 39,31,18), tantôt plus clair et gris (`Expert-sector-80` 73,73,70 pour 49,44,34) ; ces pixels sont identiques dans les captures sans ombre (`m1/noshadow-a`) : l'ombre n'y est pour rien ;
+- empreintes SHA-1 des réglages de l'utilisateur, contrôlées : `front-end-options.json` `84abb0c0a6bf4d495295b61a6c7e1a43b5040301` (il porte `"EnablePostEffects": true` et `"EnableShadows": true`, lu le 2026-11-21), `display-settings.json` `18eafcb4c8df587195def3f11aead8a887090e1a`.
+
+**Terrain de l'original (relu).** Technique `DiffuseWithDetail20` (`RacingGameOriginal/Core/Landscapes/Landscape.cs:1252-1254`). Pixel : `diffusePixel * (ambientColor + saturate(dot(N, L)) * diffuseColor) * 2 * detailPixel` (`Core/Content/Shaders/LandscapeNormalMapping.fx:498-520`), sans spéculaire ni autre terme. Matériau : ambiant (88, 88, 88), diffus (234, 234, 234) (`Landscape.cs:597-607`). L'ombre est multipliée sur l'image déjà rendue (`Core/Shaders/ShadowMapBlur.cs:22-29`, `:225`, fusion `Zero` / `SourceColor`) ; que l'ambiant du terrain soit ainsi ombré s'en déduit, la sonde `building-away-shadowed-1` le mesure (pixels multipliés par 0,25).
+
+**Autres matériaux de l'original.** Chaque matériau porte son ambiant, multiplié par sa texture : défaut 40 sur 255 (`Core/Graphics/Material.cs:30-32`, relu), tunnel 182 (`Core/Tracks/Track.cs:84-88`, relu), éolienne 0,486275 dans `Windmill.X` et un forçage à 128 pour les noms `windmill`, panneaux et banderoles (`Core/Graphics/Model.cs:212-217`, `:271-275`), troncs de palmier 0,1 (`AlphaPalm*.X`). Pour le décor, les valeurs effectives passent par `Core/Graphics/MeshRenderManager.cs:415-420` (matériau refait depuis le tag du modèle) : à relire à la tranche F3 avant tout réglage.
+
+**Ombre de l'original (relu).** Lumière virtuelle : œil à `lightLookPos + LightDirection * 129,25`, visant `lightLookPos` = position de la voiture + direction de la voiture × 21,54, ou la position de la voiture seule dans les menus (`Core/Shaders/ShadowMapShader.cs:249-261`) ; projection `Matrix.CreatePerspective(atan2(129,25 ; 171,6), 1, 1, 218,75)` (`:238-247`, constantes `:212-215`) : les deux premiers arguments sont une **largeur** et une **hauteur** au plan proche, pas un champ de vision, donc le volume n'est pas carré. Hors de la carte, rien n'est ombré ; un fondu vient de la texture `ShadowDistanceFadeoutMap` (`Core/Content/Shaders/ShadowMap.fx:223-240`), dont le contenu n'a pas été lu. Le terrain reçoit sans projeter ; la route se projette sur elle-même (`Core/Tracks/Track.cs:1294-1334`, `Landscape.cs:1284-1325`). Filtre : 10 lectures, puis flou d'écran en deux passes dont les poids somment à 0,965 (`Core/Content/Shaders/PostScreenShadowBlur.fx:98`). Le `views.json` du banc porte, pour chaque vue, un objet `car` avec `position`, `direction`, `up` et `visible` (lu le 2026-11-21 dans `artifacts/pbr-handover/s1c/ref/views.json`).
+
+**Ombre du moteur.** Carte orthographique unique, centrée sur la caméra (`CasaEngine/CasaEngine/Framework/Rendering/Draw/ShadowPass.cs:255-267`). Réglages `ShadowSettings` (`Framework/Rendering/Shadows/ShadowSettings.cs:13-23`) : pas de mode de projection. Filtre : disque fixe de 12, 32 ou 64 lectures, sans motif par pixel (`Content/Shaders/Lighting.fxh:173-245`) ; l'ADR-0127 du moteur a laissé ce motif hors périmètre.
+
+**Matériaux du moteur.** `lit-pbr` a 17 clés, aucune d'ambiant ni de reflet par matériau (`Framework/Materials/Definitions/BuiltInMaterialDefinitions.cs:221-394`). L'occlusion multiplie l'ambiant diffus et le reflet d'environnement, pas la lumière directe ni l'émissive. L'émissive ne reçoit pas la texture de détail (`Content/Shaders/LitPbr.fx:525-530`, `:258-269`, relu).
+
+**Soleil.** Original : classe `LensFlare`, 17 éléments additifs, 7 textures, position `DefaultSunPos` (2500, -22500, 15000) relative à la caméra, distincte de la direction de lumière, sans test d'occlusion, coupé quand la voiture est dans un tunnel (`Core/Graphics/LensFlare.cs`, `Core/Graphics/UIRenderer.cs:427-431`). Moteur : ni soleil ni lens flare ; le dessin additif existe pour les sprites. Portage : aucun code de soleil ; les entrées de catalogue `Image.Sun`, `Image.Glow`, `Image.Lens` existent sans être utilisées.
+
+**Post-traitement.** Original, en course : `PostScreenGlow.fx`, technique `ScreenGlow20` : flou radial selon la vitesse, glow, `0,75 × scène + 0,7 × glow + 0,4 × highlight`, bord d'écran assombri, décalage de couleur (+0,027 ; -0,0105 ; -0,0175), luminosité × 0,95, contraste × 1,05 autour de 0,5. Moteur : bloom, SSAO, FXAA, courbe de tons et exposition par monde (`Framework/Rendering/Environment/ColorPipelineSettings.cs`) ; aucun réglage de luminosité, de contraste ni de teinte, aucun point d'extension de post-traitement pour un jeu. Portage : bloom coupé (`RacingGame.Gameplay/Race/RaceWorldTemplates.cs`), option `EnablePostEffects` du joueur présente (`RacingGame.Gameplay/Race/RaceFrontEndState.cs:35`, vraie par défaut), enregistrée et affichée à l'écran d'options, mais lue par aucun code de rendu (`rg EnablePostEffects` hors de l'original et du moteur : 7 occurrences, toutes dans l'état, la persistance, l'écran d'options et son view model). L'option `EnableShadows`, elle, est appliquée au monde chargé dans `RacingGameCasaEngine/Bootstrap/RacingGameCasaEngineGame.cs:310`. `RaceWorldTemplates` n'est appelé que par le cuiseur, pas à l'exécution.
+
+**Portage (relu).** Terrain : `RaceMaterialRecipes.ForTerrain` (`RacingGame.Gameplay/Import/RaceMaterialRecipes.cs:266-280`), famille `Terrain`, base 234, normal map et détail × 24, ni émissive ni occlusion. Monde de course : ambiant 0,05 en `Auto`, exposition 0,9, ACES, ombres 4096 texels, distance 100, 64 lectures, couleur (0,38 ; 0,3952 ; 0,4104), mode `MultiplyLitColor` (`RaceWorldTemplates.cs`).
+
+**Couleur de la voiture.** Pas un défaut du rendu. L'original dessine la couleur 0 sans repeindre (`Core/Graphics/Model.cs:512-518` : la surcharge passe `RacingGameManager.currentCarColor != 0` au paramètre `useCarColor`, relu) ; le portage repeint avec la première couleur de la palette de l'ADR-0009 (acceptée), Orange (`RacingGame.Gameplay/Race/RaceFrontEndCatalog.cs:21-34`, `Components/LegacyCarVisualFactory.cs:440-476`, relu). Hors périmètre (P3).
+
+**Reflet de la route.** Clos par mesure le 2026-11-18 (`rgce-shadow-colour-decor-tasks.md`, « État vérifié ») : rien à reprendre.
+
+**Worktree.** Ce plan s'exécute dans `D:/development/repo/RacingGame/.claude/worktrees/rgce-render-fidelity-bffbce`, branche `chantier/rgce-render-fidelity` créée depuis `5e5d17a`. Le sous-module `CasaEngine` y est initialisé hors ligne depuis le checkout principal, à `01cdf483f` ; ses sous-modules `MGUI` et `NvgSharp` ne le sont pas encore. Son dépôt git est `D:/development/repo/RacingGame/.git/worktrees/rgce-render-fidelity-bffbce/modules/CasaEngine`, un clone distinct de celui du checkout principal. `artifacts/` est ignoré par git (`.gitignore:45`). Un build de worktree neuf ne produit pas 93 fichiers de contenu générés du moteur, shaders compris (mémoire du projet, relevé du 2026-10-15) ; la cause n'est pas connue.
+
+Derniers ADR : jeu 0042, moteur 0145.
+
+## Décisions verrouillées
+
+| Réf | Décision |
+|---|---|
+| D1 | Ambiant par matériau : une **clé du moteur** sur `lit-pbr` (réponse « Clé dans le moteur »), pas le détour par l'émissive. |
+| D2 | Ombre projetée en perspective comme l'original : **oui, dans le moteur, après les tranches du jeu** (réponse « Oui, en dernier »). |
+| D3 | Soleil et halo : **composant du moteur** sur le modèle du composant Lens Flare de Unity (liste d'éléments en données, dessin additif), sans occlusion comme l'original ; l'occlusion par la profondeur est laissée pour plus tard. |
+| D4 | Glow : **bloom existant du moteur et réglages de couleur de l'image ajoutés au moteur** (luminosité, contraste, teinte), en fin de chantier, mesuré contre l'original complet ; pas de flou radial. |
+| D5 | Pénombre : **motif par pixel du filtre d'ombre**, réglage optionnel du moteur coupé par défaut ; pas de flou d'écran. |
+| D6 | Facteur de reflet d'environnement par matériau : **reporté**, hors de ce chantier. |
+| D7 | Mode d'exécution **AUTO** : les tranches approuvées s'enchaînent, chacune relue avant et mesurée après ; l'agent tranche seul les constats mineurs et s'arrête sur tout constat grave, toute décision de produit, tout dépassement de périmètre. |
+| D8 | Rien n'est poussé ; `master`, `remaster` et `main` du moteur ne sont ni committés ni avancés sans demande explicite de l'auteur. Le code fait foi pour les mondes : un réglage de monde se change dans `RaceWorldTemplates`, puis `RgceAssetCooker --worlds`, `python scripts/generate_rgce_content_assets.py`, `RgceAssetCooker --worlds --verify`. |
+
+## Points à valider par l'auteur à l'approbation
+
+| Réf | Arbitrage de l'agent |
+|---|---|
+| P1 | **Ordre**, tâches du moteur comprises, strict et linéaire : F0 (avec T0) ; T1 ; F1 ; F2 ; F3 ; T2 ; F4 ; T3 ; F5 ; T4 ; F6 ; T5 ; F7 ; F8 (avec T6). Chaque tâche du moteur s'exécute juste avant la tranche du jeu qui la consomme, qui avance le pointeur avant de mesurer. Une étape démarre quand la précédente est close, en ✅ ou en ⚠️, sauf les dépendances dures de la table « Dépendances » plus bas, seule source des prérequis des deux plans. Le glow vient après l'ombre en perspective, bien que D2 dise « en dernier » : il s'applique par-dessus la scène et change la variante de l'original à laquelle on compare, donc il se mesure sur une scène finie. |
+| P2 | **Branche du moteur** `chantier/render-fidelity`, créée depuis `origin/main` (`01cdf483f`) dans le clone du sous-module du worktree. Ses commits n'existent que dans ce clone : après chaque tâche du moteur terminée, la branche est copiée dans le dépôt du moteur du checkout principal par `git -C D:/development/repo/RacingGame/CasaEngine fetch <clone du worktree> chantier/render-fidelity:chantier/render-fidelity`. Cette commande crée ou avance cette seule branche et réécrit le fichier `FETCH_HEAD` de ce dépôt ; elle ne touche ni l'arbre de travail ni la branche courante de l'autre session. Sans elle, supprimer le worktree perdrait le travail du moteur. |
+| P3 | **Couleur de la voiture** : non traitée (ADR-0009 acceptée). Elle reste un écart connu des trois vues de départ, noté au rapport de fin. |
+| P4 | **Banc dans le worktree** : build, scripts et sorties sous le worktree (`artifacts/render-fidelity/`, ignoré par git). Les références et les captures de l'original du checkout principal sont lues en place, jamais écrites. À la clôture (F8), les sorties sont copiées dans `artifacts/render-fidelity/` du checkout principal, seul geste d'écriture de ce plan dans ce checkout avec P2. Aucune copie de build ou de contenu hors du dépôt ; comme aujourd'hui, le jeu écrit ses captures d'interface et d'audit sous `%LOCALAPPDATA%/CasaEngine/RacingGameCasaEngine/Screenshots/`, où elles s'accumulent sans être supprimées par ce plan. |
+| P5 | **Règle non tenue** : un réglage qui ne passe pas sa règle n'est pas appliqué ; la tranche se clôt avec ses chiffres et l'écart reste ouvert (règle des plans précédents). |
+| P6 | **Mode `legacy`** : mesuré et noté à chaque tranche, avec le seul critère 3 des sondes (au moins 27 sur 33), comme dans les plans précédents. |
+| P7 | **Noms** des clés et réglages du moteur (`ambient_color`, `filter_rotation`, `LensFlareComponent`, `projection`, `brightness`, `contrast`, `color_offset`) : propositions, fixées par le plan du moteur à la relecture de chaque tâche. |
+| P8 | **Émissives existantes** : les panneaux et le tunnel gardent l'émissive de l'ADR-0033, la route son occlusion de l'ADR-0034. Ce plan ne les migre pas vers la clé d'ambiant. |
+| P9 | **Sous-modules `MGUI` et `NvgSharp` du worktree** : initialisés hors ligne depuis le checkout principal par une seule commande (F0), aux commits que le moteur désigne. Aucune autre commande git n'y est lancée. |
+| P10 | **Glow et option du joueur** : l'option « effets » déjà présente à l'écran d'options (`EnablePostEffects`, sans effet aujourd'hui) allume et coupe le glow de F7, comme l'option du même nom de l'original coupe son post-traitement. Le banc choisit l'état par une option de ligne de commande des modes automatiques (proposée : `--post-effects on|off`, sur le modèle de `--color-pipeline`), sans écrire les réglages de l'utilisateur. Si l'auteur refuse ce lien, F7 règle le glow dans le monde sans le relier à l'option, et le banc ne mesure que l'état actif. |
+
+## Règles d'exécution pour l'agent
+
+- **Branches** : jeu `chantier/rgce-render-fidelity`, moteur `chantier/render-fidelity` (P2). Jamais de commit sur `master`, `remaster` ni `main`. Jamais de push. Aucune commande git dans le checkout principal, sauf le `fetch` de P2.
+- **Une tâche à la fois**, passée en 🚧 avant, en ✅, 🧪 ou ⚠️ après, avec une note de validation ; un commit par tâche qui inclut ce plan ; jamais de 🚧 en fin de session. L'autorité de committer vient des règles de travail de l'auteur (un commit par tâche terminée, sur la branche du chantier).
+- **Commits** : `git add` fichier par fichier ; jamais `.serena/`, `.codegraph/`, `log.txt` ; commande commençant par `cd D:/...`, message par fichier et `git commit -F`, en anglais, `type(area): summary`, terminé par `Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>`. Le pointeur `CasaEngine` n'est indexé que par une tâche qui le dit.
+- **Un seul lancement du jeu ou de l'éditeur sur la machine** : avant tout lancement ou rejeu, créer `D:/development/rgce-run.lock` (une ligne : `rgce-render-fidelity` et l'heure) ; s'il existe, attendre qu'il disparaisse ; le supprimer dès la fin, erreur comprise. Jamais de lancement pendant un build. Les empreintes des deux fichiers de réglages de l'utilisateur sont contrôlées avant chaque série de rejeux ; ces fichiers ne sont jamais modifiés.
+- **Mesure** : la règle d'une tranche est écrite dans un script figé (empreinte SHA-256 notée) avant sa mesure, puis appliquée mécaniquement. Les candidats de code sont mesurés avec un build temporaire lisant une variable d'environnement `RGCE_BENCH_*`, jamais committé, code remis à l'identique (`git status` propre contrôlé). Les candidats de matériaux sont mesurés sur une copie du dossier de build placée sous `artifacts/render-fidelity/` du worktree. Les chiffres des documents et des ADR sont produits par script et relus par un second script.
+- **Moteur** : un défaut ou un manque du moteur se traite dans le moteur, par son plan, ses tests (`dotnet test CasaEngine.Tests/CasaEngine.Tests.csproj`, jamais `--no-build`) et son ADR ; jamais par un contournement dans le jeu.
+- **ADR** : chaque réglage retenu ou évolution est une décision, ADR `Proposed`, au premier numéro libre au moment de la tâche (jeu : 0043 aujourd'hui). Aucune ADR existante n'est réécrite : nouvelle ADR et ligne d'état.
+- **Détail des tranches** : F0 est décrite pas à pas. F1 à F7 sont décrites par leur résultat, leur périmètre, leur règle d'acceptation et leurs arrêts ; leur détail d'exécution (fichiers, candidats, script figé) est écrit dans ce plan avant la tranche, relu par un `plan-verifier` frais, et ne peut pas élargir le périmètre approuvé ici. Un élargissement est un arrêt.
+- **Sous-agents** : rôles nommés, sans surcharge de modèle, avec `effort`. `plan-verifier` avant chaque tranche ; `executor` pour une implémentation à périmètre et critères de fin clairs ; `verifier` frais après chaque tâche du moteur, après F2 (champ nouveau du cuiseur et de son vérificateur), après F6, après F7 (option de ligne de commande et réglage du joueur), et pour l'ensemble en F8. La session principale garde le diagnostic, la conception des mesures, l'intégration et le jugement.
+- **Langue et fichiers** : plan en français ; code, commits, docs et ADR en anglais ; fins de ligne des fichiers existants conservées ; Python lancé avec `-I` (ou `-P` quand un script a besoin de `numpy`, installé dans le dossier de l'utilisateur) ; aucune écriture avec les outils Serena.
+- **Retour arrière** de toute tranche : `git revert` de ses commits ; les sorties sous `artifacts/render-fidelity/` sont gardées.
+- **Budget par tranche** : au plus 12 candidats par grille de mesure ; au plus deux passes de correction après une vérification, chacune sur un changement réel ; au-delà, arrêt.
+- **Tranche « close »** : une tranche ou une tâche est close en ✅ quand sa validation est tenue, y compris quand sa règle n'a rien retenu et que rien n'est appliqué (P5) ; elle est close en ⚠️ quand elle s'est arrêtée, sa question écrite dans « Points ouverts ». Les prérequis se lisent dans la table « Dépendances » et nulle part ailleurs.
+- **Pointeur et sous-module** : avant chaque série de rejeux, le moteur construit est celui que le jeu désigne, aux documents de plan près. Contrôle : avec `P` le commit que donne `git ls-files -s CasaEngine` (l'index du jeu), `git -C CasaEngine diff --name-only P HEAD` et `git -C CasaEngine status --porcelain` ne listent que des chemins sous `ai-agent/` ; sinon arrêt. Une tranche qui avance le pointeur l'indexe (`git add CasaEngine`) **avant** ses rejeux et le committe après, avec sa note ; si sa validation échoue, elle le désindexe (`git restore --staged CasaEngine`). En F0 le pointeur reste `01cdf483f` et le commit de T0 ne touche que `ai-agent/`.
+
+### Dépendances
+
+Seule source des prérequis des tranches F de ce plan et des tâches T du plan du moteur. Tout ce qui n'y figure pas suit l'ordre P1 : l'étape démarre quand la précédente est close, en ✅ ou en ⚠️.
+
+| Étape | Dépendance dure |
+|---|---|
+| F0, T0 | Plan approuvé. T0 demande l'étape 1 de F0 (`MGUI` et `NvgSharp` initialisés). |
+| T1 | T0 ✅ ; F0 ✅ (sans banc, aucune tâche du moteur ne peut être prouvée). |
+| T2, T3, T4, T5 | T0 ✅ ; F0 ✅ ; et la tâche du moteur précédente est **prouvée ou annulée** : la tranche qui avance le pointeur dessus (F1 pour T1, commit (a) de F4 pour T2, de F5 pour T3, de F6 pour T4) a tenu sa parité, ou la tâche est annulée par son retour arrière sur `chantier/render-fidelity`. Le pointeur n'avance donc jamais sur une tâche dont la parité n'est pas tenue. |
+| `T<n>b`, correction d'une tâche du moteur réfutée par la parité | Juste après le ⚠️ de la tranche qui l'a réfutée, avant toute autre tâche du moteur ; la parité de cette tranche est rejouée ensuite. |
+| F1 | F0 ✅ ; T1 ✅, vérifiée, branche copiée (P2). |
+| F2 | F1 ✅. |
+| F3 | F1 ✅ ; F2 pas en ⚠️ pour un défaut de la clé d'ambiant. |
+| F4 | F0 ✅ ; T2 ✅, vérifiée, branche copiée. |
+| F5 | F0 ✅ ; T3 ✅, vérifiée, branche copiée. |
+| F6 | F0 ✅ ; T4 ✅, vérifiée, branche copiée. Les tranches F2 à F5 restées en ⚠️ sont nommées dans la note de F6 : leurs réglages restent à mesurer sur les ombres nouvelles. |
+| F7 | F6 ✅ (appliquée ou non : le glow se mesure sur la scène finale) ; T5 ✅, vérifiée, branche copiée. |
+| T6, F8 | Toutes les étapes précédentes closes ; F8 après T6. Une étape en ⚠️ n'empêche pas la clôture : elle est rapportée comme restante. |
+
+### Arrêts en mode AUTO
+
+L'agent s'arrête, passe la tâche en ⚠️ et écrit la question dans « Points ouverts » quand : un constat de vérification est grave (P0 ou P1) ; une tranche demande plus que son périmètre ; une décision de produit manque ; le banc n'est pas déterministe (deux rejeux différents) ; une empreinte de réglages de l'utilisateur a changé ; le fichier de verrou reste présent plus de 30 minutes ; un test du moteur échoue sans lien établi avec la tâche ; deux relectures de plan de suite rendent `REVISE` sans que l'agent puisse lever les blocages. Les tranches qui ne dépendent pas de la tranche arrêtée continuent.
+
+### Validation commune aux tranches qui changent une image (F2 à F7)
+
+Notée « validation commune ». `<t>` est la tranche ; la « référence précédente » est celle de la dernière tranche qui a changé le jeu (`f0/ref` au départ).
+
+1. `dotnet build RacingGame.slnx` à 0 erreur ; `python scripts/check_gameplay_type_names.py` à 0 ; cuiseur `--verify` et `--check` à 0, `--worlds --verify` à 0 écart ; `python scripts/generate_rgce_content_assets.py --check` à 0.
+2. Rejeux deux fois (`-a`, `-b`), identiques entre eux octet pour octet : 15 vues et 3 vues de tunnel en `linear` et en `legacy`, 10 écrans d'interface, 30 captures d'audit ; une fois : `--smoke-frontend` et `--verify-legacy-import-profile` en succès, l'export de scène (`--export-track-runtime-scene`) et les deux audits de voiture ; aucun `[Warning]` ni `[Error]` absent des journaux de la référence précédente. Sorties sous `artifacts/render-fidelity/<t>/ref/`.
+3. Ce plan ne déplace aucun objet : `artifacts/render-fidelity/scripts/compare_geometry.py` (écrit et figé en F0) apparie les enregistrements de l'export de scène à ceux de l'export de la **référence précédente** (gardé sous `<t>/ref/export/`) par maillage (`MeshName`, `VertexHash`, `IndexHash`, `PrimitiveType`, les comptes, les champs `SubMesh*`, `EntityIsVisible`) et par matrice de monde, avec 0 enregistrement sans pair. Pour les paires, il liste les champs de matériau et de dessin qui diffèrent (`MaterialType`, `MaterialParameters`, `TextureHashes`, `CastShadows`, `ReceiveShadows`, `RenderFeatures`) : seuls ceux que la tranche nomme d'avance sont admis, tout autre est un arrêt. La comparaison complète de `scripts/compare_race_scene_exports.py`, qui inclut le matériau dans sa clé, n'est exigée qu'en F0, contre `m1`. Audits de voiture identiques à ceux de la référence précédente hors la ligne `Generated:`. Les rapports `scene-measure-*.txt` des vues sont identiques à ceux de la référence précédente.
+4. Ce qui ne doit pas changer est identique octet pour octet à la référence précédente : les six écrans d'interface sans monde 3D (`ui-splash`, `ui-main-menu`, `ui-highscores`, `ui-options`, `ui-help`, `ui-track-selection`), et ce que la tranche nomme. Tout autre changement est nommé et chiffré dans la note.
+5. Mesure contre l'original : `E` (définition de `artifacts/pbr-handover/s22/scripts/measure_s2.py` : moyenne sur les 15 vues de l'écart absolu moyen par canal, en pleine précision) et les quatre critères des sondes dans les deux modes ; critère 3 au moins à 27 sur 33 dans les deux modes ; le script figé de la tranche relancé sur les rejeux appliqués retient encore le candidat. **Aucun recul** en `linear` par rapport à la référence précédente : `E` des 15 vues, `E` des 3 vues de tunnel, nombres de sondes tenues aux critères 1, 2 et 4. Un recul n'est admis que si le détail de la tranche, relu avant son exécution, le nomme d'avance avec sa raison ; tout autre recul est un arrêt. (F7 mesure son état actif contre `full` : ses grandeurs sont celles de sa règle.)
+6. Une planche original / avant / après des vues où le changement se voit, regardée, décrite dans la note, envoyée à l'auteur.
+
+Un écart à l'un de ces points est un arrêt, sans seuil de tolérance décidé par l'agent, sauf celui que la tranche écrit.
+
+## Légende des statuts
+
+⏳ Todo · 🚧 In progress · 🧪 Needs testing · ✅ Done · ⚠️ Blocked
+
+---
+
+## Tâches
+
+### ⏳ F0 — Banc monté dans le worktree, référence rejouée à l'identique
+
+- Objectif : prouver, avant tout changement, que le build du worktree rend les images de la référence, et figer les outils de mesure. Aucun fichier versionné ne change hors ce plan.
+- Prérequis : table « Dépendances ». T0 du plan du moteur est fait dans la même tranche (étape 2).
+- Sources et sorties : scripts du banc du checkout principal (lus) ; sorties sous `artifacts/render-fidelity/` du worktree.
+- Étapes :
+  1. Sous-modules du moteur (P9), depuis le worktree : `git -C CasaEngine -c protocol.file.allow=always -c url.D:/development/repo/RacingGame/CasaEngine/MGUI.insteadOf=https://github.com/xcasadio/MGUI.git -c url.D:/development/repo/RacingGame/CasaEngine/NvgSharp.insteadOf=https://github.com/xcasadio/NvgSharp.git submodule update --init`. Contrôle : `git -C CasaEngine submodule status` donne les commits de `git -C CasaEngine ls-tree HEAD MGUI NvgSharp` ; l'empreinte de `D:/development/repo/RacingGame/.git/config` est la même avant et après. Si un commit demandé manque dans les clones du checkout principal, arrêt : aucun repli par le réseau.
+  2. T0 du plan du moteur : branche `chantier/render-fidelity` créée sur `origin/main` dans le clone du worktree, tests du moteur lancés une fois pour relever le compte de départ ; T0 committée, la branche est copiée dans le dépôt du moteur du checkout principal par le `fetch` de P2.
+  3. `dotnet build RacingGame.slnx` à 0 erreur ; puis `dotnet build scripts/TrackCaptureCompare/TrackCaptureCompare.csproj` et `dotnet build scripts/RgceAssetCooker/RgceAssetCooker.csproj` à 0 erreur (ces deux outils ne sont pas dans la solution).
+  4. Contenu généré du moteur. Une tranche qui change un shader du moteur ne peut pas tourner avec un shader copié d'ailleurs : le build du worktree doit **produire lui-même** ses shaders. Preuve attendue, dans l'ordre :
+     - avant l'étape 2 (T0 construit déjà le moteur), constater qu'aucun dossier `bin` ni `obj` n'existe dans le worktree, moteur compris (`fd -t d -H "^(bin|obj)$" .` vide ; c'est le cas le 2026-11-21 pour `RacingGameCasaEngine` et `CasaEngine/CasaEngine`), et qu'aucun `.xnb` n'y est versionné sous `CasaEngine/` ; ne rien copier dans un `bin` avant la fin de cette étape ;
+     - après le build, lister `Content/Shaders/*.xnb` du `bin` du worktree. S'il en manque par rapport à la liste du `bin` du checkout principal (lue, jamais modifiée), en trouver la cause dans le build (projets `CasaEngine.csproj`, `Content.mgcb`, cible `RestoreDotnetTools`, journal du build) et la corriger par la commande de build ou de restauration qui manque, sans modifier de fichier versionné ; si la correction demande de modifier un fichier versionné, arrêt (O1) ;
+     - supprimer `Content/Shaders/*.xnb` du `bin` du worktree, relancer le build, constater que chaque shader est recréé ; les empreintes SHA-256 des deux générations, égales, sont écrites dans `artifacts/render-fidelity/f0/shaders.sha256` ;
+     - les autres fichiers générés (polices, icônes, `checkboard*`) que le build ne produit pas peuvent être copiés du `bin` du checkout principal ; leur liste et leurs empreintes sont écrites dans `f0/generated-content.sha256`, qui ne contient aucun chemin sous `Content/Shaders/`, et sont recontrôlées avant chaque série de rejeux ; si un build les a effacés, ils sont recopiés depuis la même source et leurs empreintes doivent être celles de la liste, sinon arrêt ;
+     - l'écart d'empreinte d'un shader avec celui du `bin` du checkout principal est noté pour information : ce `bin` est celui d'une autre session, seule la parité de l'étape 8 tranche.
+  5. Scripts : copier sous `artifacts/render-fidelity/scripts/` du worktree les quatre scripts du checkout principal, `artifacts/pbr-handover/s22/scripts/runref.sh` (`d87c28b24ac0078f`), `artifacts/worlds-as-assets/scripts/slice_runs.sh` (`b23c5f1bd42e825a`), `parity.py` (`849169478d78c4a9`) et `slice_check.py` (`be4a0c6009fd0677`), avec les seuls changements de la table ci-dessous. `WT` est la racine du worktree, `MAIN` est `D:/development/repo/RacingGame`. Aucun script ne prend le verrou : il est pris à la main à l'étape 7.
+
+     | Script, ligne d'origine | Devient |
+     |---|---|
+     | `runref.sh:5` `cd D:/development/repo/RacingGame` | `cd WT` |
+     | `runref.sh:9` `out=".../artifacts/pbr-handover/$root/$name"` | `out="WT/artifacts/render-fidelity/$root/$name"` |
+     | `runref.sh:13-16` chemins relatifs des `views.json` | inchangés (les entrées sont copiées au même chemin relatif, étape 6) |
+     | `slice_runs.sh:5` `cd D:/development/repo/RacingGame` | `cd WT` |
+     | `slice_runs.sh:7` `RR=artifacts/pbr-handover/s22/scripts/runref.sh` | `RR=artifacts/render-fidelity/scripts/runref.sh` |
+     | `slice_runs.sh:8` `W=.../artifacts/worlds-as-assets/$t` | `W=WT/artifacts/render-fidelity/$t` |
+     | `slice_runs.sh:22-26` argument `../worlds-as-assets/$t/ref` passé à `runref.sh` | `$t/ref` |
+     | `parity.py:18` racine unique `A` | deux racines : `NEW_ROOT = WT/artifacts/render-fidelity/` pour le dossier contrôlé, `REF_ROOT` pour la référence, `MAIN/artifacts/` par défaut ; une option `--ref-root` la remplace (les tranches suivantes comparent à une référence du worktree) |
+     | `parity.py:21-27` `NEW, REF = A + ...` | `NEW = NEW_ROOT + argument`, `REF = REF_ROOT + ref` |
+     | `slice_check.py:6` `R` | `WT/` : dossier courant et outils (cuiseur, générateur, `check_gameplay_type_names.py`) sont ceux du worktree |
+     | `slice_check.py:7` `W` | `WT/artifacts/render-fidelity/` pour les sorties `<t>/` ; une nouvelle constante `M1 = MAIN/artifacts/worlds-as-assets/m1/` pour les seules références `export-a`, `car-profile-a`, `car-top-speed-a` (lignes 35 et 52) |
+     | `slice_check.py:28` appel de `parity.py` avec `worlds-as-assets/%s/ref` | `W + "scripts/parity.py"` avec l'argument `%s/ref` |
+     | `slice_check.py:28, 35, 61, 63` sous-scripts Python lancés par `sys.executable` | lancés avec l'option `-P` (pas de dossier courant dans le chemin d'import ; `numpy`, dont `compare_race_scene_exports.py` a besoin, reste visible) |
+
+     Le `diff` de chaque copie avec son original est gardé dans `f0/scripts-diff.txt` : chaque ligne changée y correspond à une ligne de la table, et inversement. Dans les copies, une racine du checkout principal n'apparaît que pour lire `worlds-as-assets/m1/{ref,export-a,car-profile-a,car-top-speed-a}`. Les empreintes des copies sont notées. La copie de `parity.py` est essayée après l'étape 7, comme en M1 : `f0/ref` contre lui-même (`--ref-root` sur le worktree et `--ref f0/ref`) rend `PASS` ; une copie de `f0/ref` faite sous le worktree, où un octet d'une image est changé, rend un échec.
+  6. Entrées : copier `artifacts/pbr-handover/s1c/ref` et `artifacts/pbr-handover/s3/ref-tunnel` du checkout principal au même chemin relatif du worktree (les `views.json`, `scene.json` et les captures de l'original) ; empreintes égales à celles des sources.
+  7. Contrôle « Pointeur et sous-module » ; empreintes des réglages de l'utilisateur contrôlées ; verrou pris ; rejeux de la parité : six genres deux fois, `smoke`, `profile`, export de scène, deux audits de voiture ; verrou rendu.
+  8. Verdict : la copie de `parity.py` contre `worlds-as-assets/m1/ref` du checkout principal rend `PASS` (76 PNG identiques octet pour octet, rapports `scene-measure-*.txt` identiques) ; l'export de scène est identique à celui de `m1` par `scripts/compare_race_scene_exports.py` (0 enregistrement sans pair, matériaux compris) et par `artifacts/render-fidelity/scripts/compare_geometry.py`, écrit et figé dans cette tranche (validation commune, point 3), qui ne liste aucun champ différent et qui, essayé sur une copie de l'export où un paramètre de matériau est changé à la main, liste ce champ et lui seul ; les audits sont identiques à ceux de `m1` ; cuiseur et générateur du worktree à 0.
+  9. Mesure de départ, par un script `artifacts/render-fidelity/scripts/measure_base.py` écrit et figé dans cette tranche. Il calcule `E` (définition du point 5 de la validation commune) contre `nopost` et contre `full`, par vue et en moyenne, pour les 15 vues et les 3 vues de tunnel, dans les deux modes ; et il lance l'outil du worktree pour les sondes : `scripts/TrackCaptureCompare/bin/Debug/net9.0-windows/TrackCaptureCompare.exe artifacts/pbr-handover/s1c/ref/views.json artifacts/pbr-handover/s1c/ref <dossier des vues> <dossier de sortie> --variant nopost --probes scripts/TrackCaptureCompare/probes.json --no-terrain-detail-correction`, dont il lit les quatre comptes dans `probes.md`. **Ancre** : le script est lancé deux fois, sur `MAIN/artifacts/worlds-as-assets/m1/ref` (en lecture, sorties sous le worktree) et sur `f0/ref` ; ses nombres doivent être exactement égaux dans les deux cas. Repère : en `linear`, `E` 15,039 contre `nopost` et 31,648 contre `full`, à la troisième décimale, et sondes 20 sur 34, 2 sur 4, 27 sur 33, 3 sur 3 (« État vérifié », même méthode).
+- Validation : étapes 1, 4, 5, 6, 8 et 9 tenues ; à l'étape 9, les nombres sur `f0/ref` exactement égaux à ceux de l'ancre, et égaux au repère à la précision dite.
+- Arrêts : une image différente de la référence d'un seul octet (la cause est à trouver, pas à tolérer) ; un export, un rapport `scene-measure`, un audit de voiture différent de celui de `m1` ; un `[Warning]` ou `[Error]` absent des journaux de la référence ; cuiseur ou générateur en échec ; nombres de l'étape 9 différents de l'ancre ou du repère (la cause est cherchée, les attendus ne sont pas corrigés par l'agent) ; le build du worktree ne peut pas produire lui-même les shaders du moteur ; un shader absent après le second build, ou dont l'empreinte change entre les deux ; empreinte de réglages différente ; verrou présent plus de 30 minutes.
+- Retour arrière : supprimer `artifacts/render-fidelity/`, les `bin` et `obj` du worktree, et, dans le clone du moteur du worktree, la branche `chantier/render-fidelity` avec le commit de T0 ; les sous-modules `MGUI` et `NvgSharp` initialisés restent. Dans le dépôt du moteur du checkout principal, la branche `chantier/render-fidelity` copiée par P2 reste tant que l'auteur ne demande pas de la supprimer. Rien d'autre n'a changé.
+- Commit : `docs(ai-agent): record the render fidelity bench of the worktree`
+
+### ⏳ F1 — Jeu sur le moteur qui porte la clé d'ambiant
+
+- Objectif : le jeu pointe sur le moteur de la tâche T1 (clé `ambient_color` de `lit-pbr`), sans s'en servir ; preuve que le moteur ne change aucune image par défaut.
+- Prérequis : table « Dépendances ».
+- Périmètre : le pointeur `CasaEngine`, indexé avant les rejeux ; aucun fichier du jeu sauf une adaptation de compilation, s'il y en a une, nommée dans la note.
+- Validation : build à 0 erreur ; contrôle « Pointeur et sous-module » ; parité complète de F0 rejouée : 76 PNG identiques octet pour octet à `f0/ref`, rapports `scene-measure-*.txt` et audits identiques ; export de scène par `compare_geometry.py` contre celui de `f0/ref` : 0 enregistrement sans pair, et pour seule différence le paramètre que T1 ajoute aux matériaux `lit-pbr` (dans `MaterialParameters` de chaque enregistrement, à sa valeur par défaut), et, si T1 en ajoute une, sa `ShaderFeature` dans `RenderFeatures`. Les rejeux de F1 deviennent la référence précédente de F2 (`f1/ref`).
+- Cette validation est aussi celle du commit (a) des tranches F4 à F7 : le seul champ différent admis est alors celui que la tâche du moteur de la tranche ajoute à un type exporté, nommé dans la note ; s'il n'y en a pas, aucun.
+- Arrêts : une image qui change ; un champ différent non admis ; une adaptation du jeu qui dépasse la compilation. Une image qui change réfute la tâche du moteur : elle est rouverte selon la règle « Parité réfutée » de son plan.
+- Commit : `chore(engine): point CasaEngine at the per-material ambient key`
+
+### ⏳ F2 — Ambiant du terrain
+
+- Objectif : les faces de terrain tournées à l'opposé du soleil prennent l'ambiant de l'original (blanc, plat, multiplié par la texture et son détail) au lieu de la lumière du ciel.
+- Prérequis : table « Dépendances ».
+- Périmètre : `RaceMaterialRecipes.ForTerrain` seul (le sol de la ville a sa recette, `ForGround`, et relève de F3) ; le champ d'ambiant de la recette (`RacingGame.Gameplay/Import/RaceMaterialRecipe.cs`), son écriture par le cuiseur (`scripts/RgceAssetCooker/Cooker.cs`) et son contrôle (`scripts/RgceAssetCooker/Verifier.cs`), posés une fois ici pour toutes les recettes ; matériaux recuits ; ADR du jeu ; doc de banc. Leviers : le niveau de `ambient_color` du terrain, et la lumière du ciel gardée ou coupée sur ce matériau (occlusion à 1 sur une texture noire, comme la route).
+- Hors périmètre : l'ambiant du monde (0,05 en `Auto`), l'exposition, la couleur d'ombre, tout autre matériau.
+- Mesure et règle (figées avant la mesure dans `scripts/measure_terrain.py`) : grandeur `A` = écart absolu moyen par canal des 12 sondes `terrain-away` à l'original ; candidats : une grille de niveaux d'ambiant autour de la valeur de l'original décodée en lumière linéaire, avec et sans lumière du ciel. Éligible si `E` ne dépasse pas celui de la base, si le critère 3 reste à 27 au moins, si aucune sonde `terrain-lit` qui passe le critère 1 ne le perd. Retenu : le plus petit `A`. Si la base gagne ou si rien n'est éligible, rien n'est appliqué (P5).
+- Champs d'export admis (validation commune, point 3) : `MaterialParameters` et `TextureHashes` des seuls enregistrements du terrain, et dans leur `RenderFeatures` la seule capacité de shader que T1 a introduite, s'il y en a une.
+- Validation : validation commune ; `A`, les 12 sondes et `E` notés avant et après ; planche des vues `Beginner-sector-50`, `Beginner-overview`, `Expert-sector-80`, `Advanced-start`.
+- Arrêts : arrêts communs ; le grain du détail ou l'ombre sur l'ambiant ne se comportent pas comme la clé le promet (défaut du moteur : retour au plan du moteur, pas de contournement).
+- Commit : `fix(racing-casa): give the terrain the flat ambient of the original`
+
+### ⏳ F3 — Ambiant des matériaux du décor
+
+- Objectif : les matériaux du décor dont les faces à l'ombre s'écartent de l'original (éolienne, troncs de palmier, murs d'immeuble, autres familles relevées par la mesure) prennent leur ambiant de l'original.
+- Prérequis : table « Dépendances ».
+- Périmètre : `RaceMaterialRecipes` (recettes du décor et du sol de la ville, avec le champ d'ambiant posé en F2 ; si F2 s'est arrêtée avant de le poser, F3 le pose) et `RacingGamePbrMaterialMapping` ; cuisson ; ADR ; doc de banc. Première étape, en lecture : relire `MeshRenderManager.cs` et le processeur de modèles de l'original pour établir l'ambiant effectif de chaque matériau, et mesurer l'écart par matériau sur les 15 vues avec des masques (chaque matériau dessiné seul en marqueur, méthode de l'ADR-0038).
+- Hors périmètre : panneaux, tunnel, route (P8) ; vitres (ADR-0038, 0039) ; feuilles de palmier (ADR-0037, 0040) sauf si la mesure montre que la règle les améliore, auquel cas la tranche le dit avant de mesurer ; voiture.
+- Mesure et règle : par famille de matériaux, grandeur `M` = écart moyen par canal à l'original sur les pixels du masque ; une famille est modifiée seulement si son `M` baisse, si `E` ne monte pas et si la sonde `building-away-1` et le critère 4 ne se dégradent pas. Familles traitées une à une, la plus grande surface d'abord ; script figé `scripts/measure_decor.py`.
+- Champs d'export admis : `MaterialParameters` et `TextureHashes` des seuls enregistrements des familles retenues, nommées dans la note, et dans leur `RenderFeatures` la seule capacité de shader que T1 a introduite, s'il y en a une.
+- Validation : validation commune ; table par famille (retenue ou non, `M` avant et après) ; planche de `Expert-sector-80` (piliers), `Beginner-sector-20` (grand palmier), `Beginner-overview` (mur du casino).
+- Arrêts : arrêts communs ; l'ambiant effectif d'un matériau de l'original ne peut pas être établi par lecture.
+- Commit : `fix(racing-casa): give the scenery materials the ambient of the original`
+
+### ⏳ F4 — Pénombre de l'ombre
+
+- Objectif : la pénombre en paliers du bord des ombres devient un dégradé, par le motif par pixel du filtre (T2 du moteur).
+- Prérequis : table « Dépendances ».
+- Périmètre : deux commits. (a) pointeur `CasaEngine`, parité identique comme en F1 ; (b) réglage dans `RaceWorldTemplates`, mondes recuits, ADR, doc de banc.
+- Hors périmètre : le flou d'écran de l'ombre et la comparaison matérielle (D5) ; le carrousel et les menus ; le nombre de lectures et le rayon du filtre (ADR-0035).
+- Mesure et règle (script figé `scripts/measure_penumbra.py`, sur le modèle de `artifacts/pbr-handover/s22/scripts/speckle.py`) : sur la paroi d'`Expert-tunnel` et sur trois bords d'ombre de vues extérieures, nombre de paliers et moucheture ; retenu si les paliers diminuent, si la moucheture ne dépasse pas celle de l'original de plus du seuil que le script écrit, et si `E` ne monte pas.
+- Validation : validation commune ; planche agrandie de la paroi d'`Expert-tunnel` et d'un bord d'ombre extérieur.
+- Arrêts : arrêts communs ; grain visible que l'anticrénelage ne lisse pas (rien n'est appliqué).
+- Commits : `chore(engine): point CasaEngine at the shadow filter rotation` ; `fix(racing-casa): rotate the shadow filter of the race world per pixel`
+
+### ⏳ F5 — Soleil et halo
+
+- Objectif : le soleil et son halo de l'original dans les trois courses, par le composant de lens flare du moteur (T3) et les données de l'original (17 éléments, 7 textures, position, tailles, fondus).
+- Prérequis : table « Dépendances ».
+- Périmètre : deux commits. (a) pointeur, parité identique ; (b) entité de soleil dans les trois mondes de course par `RaceWorldTemplates`, textures cataloguées, coupure en tunnel comme l'original (`Track.disableLensFlareInTunnel`), ADR, doc de banc. À établir en lecture avant la mesure : si la capture de l'original coupe le flare en tunnel (la vue `Advanced-tunnel` de la référence le montre allumé).
+- Hors périmètre : test d'occlusion (D3) ; soleil dans les menus et le carrousel.
+- Mesure et règle (script figé `scripts/measure_flare.py`) : sur les vues où l'original montre le flare, écart moyen par canal dans les boîtes des éléments, et `E` ; retenu si l'écart des boîtes baisse et si `E` ne monte pas, vues de tunnel comprises (point 5 de la validation commune). Les données sont celles de l'original, pas un calage : un écart restant est noté, pas compensé.
+- Validation : validation commune ; planche de `Beginner-sector-20`, `Advanced-sector-20`, `Advanced-tunnel`.
+- Arrêts : arrêts communs ; le composant ne peut pas reproduire un élément de la table de l'original (retour au plan du moteur).
+- Commits : `chore(engine): point CasaEngine at the lens flare component` ; `feat(racing-casa): draw the sun and its flare of the original`
+
+### ⏳ F6 — Ombre projetée en perspective
+
+- Objectif : les ombres des trois courses sont projetées comme dans l'original (T4 du moteur) : lumière virtuelle en perspective, centrée devant la voiture, portée et fondu de l'original, rien d'ombré hors de la carte.
+- Prérequis : table « Dépendances ».
+- Périmètre : deux commits. (a) pointeur, parité identique ; (b) réglages d'ombre dans `RaceWorldTemplates`, point visé fourni par le jeu (position et direction de la voiture ; en capture, celles du `views.json`), drapeaux de projection et de réception relus contre l'original (la route se projette sur elle-même, le terrain ne projette pas), ADR, doc de banc. Les réglages d'ombre liés à la projection actuelle (distance, biais, rayon du filtre, 64 lectures, couleur) sont remesurés par la règle.
+- Hors périmètre : le carrousel et les menus ; le flou d'écran de l'original (D5).
+- Mesure et règle (script figé `scripts/measure_shadow.py`) : les 9 sondes de ville et de route à l'ombre aujourd'hui hors d'atteinte (`city-lit`, `city-shadow`, `road-shadow`), le critère 2 des quatre couples vue-surface, `E` de `Beginner-sector-20`, `Beginner-sector-80`, `Advanced-start`, et `E` global. Retenu si le nombre de sondes tenues augmente, si `E` global baisse et si le critère 3 ne descend pas sous sa valeur de base. La médiane des parois des tunnels reste dans la fenêtre de l'auteur [28,882 ; 31,882] (ADR-0036).
+- Champs d'export admis : `CastShadows` et `ReceiveShadows` des enregistrements dont la relecture contre l'original change le drapeau, listés dans la note avec la ligne de l'original qui le justifie.
+- Validation : validation commune ; vérification indépendante de la tranche ; planche des trois vues citées et d'une vue de tunnel.
+- Arrêts : arrêts communs ; la projection de l'original ne se reproduit pas avec les réglages du moteur sans les sortir de leur définition (retour au plan du moteur).
+- Commits : `chore(engine): point CasaEngine at the perspective shadow projection` ; `fix(racing-casa): cast the shadows of the race world as the original does`
+
+### ⏳ F7 — Glow
+
+- Objectif : le monde de course prend le glow de l'original par le bloom du moteur et les réglages de couleur de l'image (T5), mesuré contre la variante `full` de l'original.
+- Prérequis : table « Dépendances ».
+- Périmètre : deux commits. (a) pointeur, parité identique ; (b) bloom et réglages de couleur du monde de course dans `RaceWorldTemplates`, mondes recuits, ADR, doc de banc ; et, si P10 est validé : le code d'exécution du jeu qui applique les options du joueur au monde chargé (`RacingGameCasaEngine/Bootstrap/RacingGameCasaEngineGame.cs`, là où `EnableShadows` est appliquée) coupe ou allume le bloom et les réglages de couleur selon `EnablePostEffects`, et `RacingGameCasaEngine/Program.cs` avec `RacingGameCasaEngine/Bootstrap/RaceLaunchOptions.cs` (par où passe déjà `--color-pipeline`) reçoivent l'option `--post-effects on|off` des modes automatiques, qui prime sur le réglage du joueur sans l'écrire. Le banc mesure alors deux états : `--post-effects off` contre `nopost` (identique octet pour octet à la référence de F6) et `--post-effects on` contre `full`. Les genres `ui` et `audit`, qui suivent le réglage du joueur (effets actifs), changent sur leurs écrans à monde 3D : ils sont nommés et chiffrés.
+- Hors périmètre : flou radial, bord d'écran assombri, post-traitement des menus.
+- Mesure et règle (script figé `scripts/measure_glow.py`) : `E` contre `full` des 15 vues et des 3 vues de tunnel ; candidats : seuil, intensité et rayon du bloom, luminosité, contraste, décalage de couleur, à partir des valeurs de l'original. Retenu : le plus petit `E` contre `full`, sous la condition que les six écrans d'interface sans monde 3D ne changent pas. Si aucun candidat ne fait mieux que les effets coupés, rien n'est appliqué.
+- Validation : validation commune dans les deux états ; planche original complet / avant / après de trois vues.
+- Arrêts : arrêts communs ; l'option du joueur ne peut pas couper les effets sans changer les images de l'état coupé.
+- Commits : `chore(engine): point CasaEngine at the colour adjustments` ; `feat(racing-casa): give the race world the glow of the original`
+
+### ⏳ F8 — Vérification indépendante et clôture
+
+- Objectif : l'ensemble vérifié par un `verifier` frais (lancements, images, documents) ; documents à jour ; sorties sauvées ; rapport de fin.
+- Prérequis : table « Dépendances » (toutes les étapes closes, T6 faite).
+- Étapes : parité finale rejouée ; `verifier` sur trois volets ; `ai-agent/HANDOVER.md` (nouvelle section), `docs/racinggame-3d-capture-bench-findings.md`, `ai-agent/README.md`, index des ADR ; copie de `artifacts/render-fidelity/` vers le checkout principal (P4) ; branche du moteur copiée (P2) ; rapport de fin écart par écart : corrigé avec ses chiffres, restant et pourquoi, ce qui revient à l'auteur (validation des ADR, avance de `main` et de `remaster`, push).
+- Validation : verdict `CONFIRMED`, ou constats dispositionnés un à un ; `git status` propre dans les deux dépôts du worktree hors fichiers ignorés.
+- Arrêts : verdict `REFUTED` ou constat P0 ou P1 (la clôture attend la correction ou la décision de l'auteur) ; parité finale non tenue ; échec de la copie des sorties vers le checkout principal ou du `fetch` de la branche du moteur (rien n'est forcé : l'état est rapporté à l'auteur).
+- Commit : `docs(ai-agent): close the render fidelity plan`
+
+---
+
+## Points ouverts
+
+| Réf | Sujet | Tâche concernée |
+|---|---|---|
+| O1 | Cause des 93 fichiers de contenu non produits par un build de worktree : à établir. | F0 |
+| O2 | Contenu de `ShadowDistanceFadeoutMap` de l'original (fondu de bord de l'ombre) : non lu. | F6, T4 |
+| O3 | Ambiant effectif des matériaux du décor de l'original (tag du modèle ou forçage à 128) : à relire. | F3 |
+| O4 | Le flare est-il coupé en tunnel dans la capture de l'original ? La vue `Advanced-tunnel` le montre allumé. | F5 |
+| O5 | Lien du glow à l'option `EnablePostEffects` du joueur et option `--post-effects` du banc : point P10, à valider par l'auteur. | F7 |
+| O6 | Couleur de la voiture : écart connu, non traité (P3). | rapport de fin |
+| O8 | Le verrou `D:/development/rgce-run.lock` se teste puis se crée en deux gestes : deux sessions qui le prennent au même instant ne se voient pas. Convention acceptée telle quelle ; un rejeu dont les deux passes diffèrent est un arrêt, ce qui révèle une collision. | toutes |
+| O7 | Facteur de reflet d'environnement par matériau : reporté (D6) ; tuyau d'`Advanced-start` plus bleu et plus clair que l'original. | rapport de fin |
+
+## Hors périmètre
+
+- La couleur de la voiture (P3) ; le facteur de reflet par matériau (D6) ; le reflet de la route (clos).
+- Le flou radial, le bord d'écran assombri et le post-traitement des menus de l'original ; le flou d'écran de l'ombre ; l'occlusion du soleil.
+- Le carrousel et les menus, sauf les effets de bord nommés par une tranche.
+- La géométrie des pistes et du décor ; le projet éditeur (tranche S7 de `rgce-editor-project-tasks.md`, autre session).
+- L'avance de `master`, de `remaster` et de `main` du moteur ; tout push.
