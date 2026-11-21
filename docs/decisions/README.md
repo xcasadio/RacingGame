@@ -57,3 +57,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0041 | RacingGameCasaEngine draws the scenery of the game with the seed of the reference capture | Proposed | 2026-11-18 |
 | ADR-0042 | RacingGameCasaEngine loads its worlds and its player car from assets | Proposed | 2026-11-19 |
 | ADR-0043 | RacingGameCasaEngine gives the terrain the flat ambient of the original | Proposed | 2026-11-21 |
+| ADR-0044 | RacingGameCasaEngine gives the scenery materials the ambient of the original | Proposed | 2026-11-21 |

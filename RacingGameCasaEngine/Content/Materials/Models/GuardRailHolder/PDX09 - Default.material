@@ -14,6 +14,7 @@
   "properties": {
     "base_color_texture": "214d041f-02c3-5f81-856a-77340643731a",
     "normal_texture": "e3ea4176-c059-59fb-9f9a-e868aec92025",
+    "occlusion_texture": "89f1f02b-e8bc-5127-a8c8-0c9721ea9709",
     "detail_texture": "00000000-0000-0000-0000-000000000000",
     "detail_tiling": 1.0,
     "base_color": {
@@ -29,6 +30,12 @@
       "y": 0.0,
       "z": 0.0
     },
+    "ambient_color": {
+      "x": 0.45490274,
+      "y": 0.45490274,
+      "z": 0.45490274
+    },
+    "occlusion_strength": 1.0,
     "clear_coat": 0.0,
     "clear_coat_roughness": 0.1,
     "alpha_cutoff": 0.5

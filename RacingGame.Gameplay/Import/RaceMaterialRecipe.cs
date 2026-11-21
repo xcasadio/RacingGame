@@ -94,8 +94,9 @@ public sealed record RaceMaterialRecipe
     public Vector3 AmbientColor { get; init; } = Vector3.Zero;
 
     /// <summary>
-    /// The occlusion texture (its red channel), or <c>null</c> when the material has none (every material but the road's and the
-    /// terrain's): the cooker then writes neither the <c>occlusion_texture</c> nor the <c>occlusion_strength</c> key. The engine's
+    /// The occlusion texture (its red channel), or <c>null</c> when the material has none (every material but the road's, the
+    /// terrain's, the city ground's and those of the scenery families that lose the light of the sky): the cooker then writes
+    /// neither the <c>occlusion_texture</c> nor the <c>occlusion_strength</c> key. The engine's
     /// <c>lit-pbr</c> occlusion, 1 + <see cref="OcclusionStrength"/> x (red - 1), scales the image-based light only, never the
     /// direct light nor the flat ambient of the material.
     /// </summary>

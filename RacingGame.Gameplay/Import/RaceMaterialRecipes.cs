@@ -97,6 +97,53 @@ public static class RaceMaterialRecipes
     private const byte SmallPalmLeafBaseLevel = 220;
     private const float PalmLeafAlphaCutoff = 0.5f;
 
+    // The scenery takes the ambient of the original (ADR-0044). The original lights a scenery material with its texture times
+    // its own ambient colour, read from the model file (the EffectInstance block of the .X; 40 of 255 without one), and the
+    // import carries that colour to here (StaticModelImportedMaterial.AmbientColor). The engine key ambient_color carries it,
+    // times a factor per family, and a black occlusion texture at full strength takes the light of the sky off the material,
+    // as on the road and the terrain. Factor and sky were retained per family by measurement against the original on the
+    // pixels of each family, by the rule written before the measurement; the factor is above 1 because the tone curve of the
+    // race world darkens the low values. A family that is not listed keeps no ambient of its own and keeps the light of the
+    // sky: the signs (their ambient is an emissive, ADR-0033), the window glass (ADR-0038) and the plants of Hotel01 (too few
+    // pixels in the reference views to be measured). The leaves of the palms are left out too: their base level was
+    // calibrated without an ambient (ADR-0037, ADR-0040).
+    private readonly record struct SceneryAmbient(float Factor, bool CutsSkyLight);
+
+    private static SceneryAmbient? SceneryAmbientOf(RacingGamePbrFamily family)
+    {
+        if (family == RacingGamePbrMaterialMapping.Masonry)
+        {
+            return new SceneryAmbient(1.45f, true);
+        }
+
+        if (family == RacingGamePbrMaterialMapping.LampPost)
+        {
+            return new SceneryAmbient(1.45f, true);
+        }
+
+        if (family == RacingGamePbrMaterialMapping.GuardRail)
+        {
+            return new SceneryAmbient(1.45f, true);
+        }
+
+        if (family == RacingGamePbrMaterialMapping.MatteIndustrial)
+        {
+            return new SceneryAmbient(1.45f, true);
+        }
+
+        if (family == RacingGamePbrMaterialMapping.Default)
+        {
+            return new SceneryAmbient(1.45f, true);
+        }
+
+        return null;
+    }
+
+    // The city ground takes the ambient of the original too (ADR-0044): 32 of 255 (Landscapes/Landscape.cs:614-619), at
+    // factor 1, without the light of the sky.
+    private const float LegacyCityGroundAmbient = 32f / 255f;
+    private static readonly SceneryAmbient CityGroundAmbient = new(1.00f, true);
+
     // The tint of a material times its diffuse colour D, rounded as CreateLegacyLighting of the other machine does:
     // (c * D + 127) / 255 per channel. The tint is white when the material has a texture.
     private static Color WithLegacyDiffuse(Color tint, byte diffuse)
@@ -108,8 +155,12 @@ public static class RaceMaterialRecipes
             (byte)255);
     }
 
-    /// <summary>A scenery, post, segment or start light material of the model <paramref name="modelName"/>.</summary>
-    public static RaceMaterialRecipe ForScenery(string modelName, StaticModelImportedMaterial importedMaterial)
+    /// <summary>
+    /// A scenery, post, segment or start light material of the model <paramref name="modelName"/>.
+    /// <paramref name="occlusionTexturePath"/> is <see cref="RoadOcclusionTextureName"/> when it exists, or null (a material
+    /// that loses the light of the sky then keeps it).
+    /// </summary>
+    public static RaceMaterialRecipe ForScenery(string modelName, StaticModelImportedMaterial importedMaterial, string? occlusionTexturePath)
     {
         LegacyImportedMaterialPresentation presentation = LegacyImportedMaterialPresentationResolver.Resolve(importedMaterial);
         RacingGamePbrFamily family = RacingGamePbrMaterialMapping.ResolveImportedFamily(importedMaterial);
@@ -127,6 +178,7 @@ public static class RaceMaterialRecipes
         bool isPalmLeaf = isSmallPalmLeaf || (importedMaterial.DiffuseTextureFilePath != null
             && RacingGamePbrMaterialMapping.IsSameTexture(PalmLeafTexture, importedMaterial.DiffuseTextureFilePath));
         byte palmLeafBaseLevel = isSmallPalmLeaf ? SmallPalmLeafBaseLevel : PalmLeafBaseLevel;
+        SceneryAmbient? ambient = isPalmLeaf ? null : SceneryAmbientOf(family);
 
         return new RaceMaterialRecipe
         {
@@ -140,6 +192,8 @@ public static class RaceMaterialRecipes
             ReceiveShadows = !(isHotel01Glass || isHotel02Glass),
             EmissiveColor = isSignage ? importedMaterial.AmbientColor * SignageEmissiveLevel : presentation.EmissiveColor,
             EmissiveTextureFilePath = isSignage ? importedMaterial.DiffuseTextureFilePath : null,
+            AmbientColor = ambient is { } sceneryAmbient ? importedMaterial.AmbientColor * sceneryAmbient.Factor : Vector3.Zero,
+            OcclusionTextureFilePath = ambient is { CutsSkyLight: true } ? occlusionTexturePath : null,
             SamplerState = RaceMaterialStates.AnisotropicWrap,
             Queue = presentation.Queue,
             AlphaCutoff = isPalmLeaf ? PalmLeafAlphaCutoff : presentation.AlphaCutoff,
@@ -244,15 +298,18 @@ public static class RaceMaterialRecipes
     /// <summary>
     /// The city ground plane: the original's cityMat, ("CityGround", "CityGroundNormal") (Landscape.cs), drawn like the road
     /// (counter-clockwise culling). The paths are <see cref="CityGroundTextureName"/> and <see cref="CityGroundNormalTextureName"/>
-    /// when they exist, or null.
+    /// when they exist, or null; <paramref name="occlusionTexturePath"/> is <see cref="RoadOcclusionTextureName"/> when it
+    /// exists, or null (the city ground then keeps the light of the sky).
     /// </summary>
-    public static RaceMaterialRecipe ForGround(string trackName, string? diffuseTexturePath, string? normalTexturePath)
+    public static RaceMaterialRecipe ForGround(string trackName, string? diffuseTexturePath, string? normalTexturePath, string? occlusionTexturePath)
     {
         return new RaceMaterialRecipe
         {
             Name = $"{trackName}.GroundMaterial",
             BaseTextureFilePath = diffuseTexturePath,
             NormalTextureFilePath = normalTexturePath,
+            AmbientColor = new Vector3(LegacyCityGroundAmbient) * CityGroundAmbient.Factor,
+            OcclusionTextureFilePath = CityGroundAmbient.CutsSkyLight ? occlusionTexturePath : null,
             Family = RacingGamePbrMaterialMapping.Terrain,
             BaseColor = WithLegacyDiffuse(diffuseTexturePath != null ? Color.White : new Color(182, 166, 118), LegacyCityGroundDiffuse),
             SamplerState = RaceMaterialStates.AnisotropicWrap,

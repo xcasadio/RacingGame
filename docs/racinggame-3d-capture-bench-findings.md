@@ -446,3 +446,23 @@ The terrain carries the flat ambient of the original through the engine key `amb
 Applied state: A 11.583 -> 8.056; E 15.039 -> 14.374 in `linear`, 19.793 -> 15.509 in `legacy`; E against the original with its post-process 31.648 -> 30.116; tunnel views 12.844 -> 12.844; probes 20 / 2 / 27 / 3 -> 27 / 2 / 27 / 3 in `linear`, 4 / 0 / 27 / 3 -> 16 / 0 / 27 / 3 in `legacy`.
 
 Reference of the bench from now on: `artifacts/render-fidelity/f2/ref/` of the worktree.
+
+## Update after the scenery ambient (2026-11-21)
+
+Decisions: see ADR-0044. Plan `ai-agent/tasks/rgce-render-fidelity-tasks.md`, slice F3; outputs under `artifacts/render-fidelity/f3/` of the worktree of the chantier.
+
+Five scenery families and the city ground carry the ambient of the original through the engine key `ambient_color` and no longer receive the light of the sky. M = mean absolute difference per channel with the original on the pixels of a group (mask taken with the materials of the group drawn as markers).
+
+| Group | Materials | Mask (pixels) | M start | x 1.00, sky | x 1.22, sky | x 1.00, no sky | x 1.22, no sky | x 1.45, no sky | Retained | M applied |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `Masonry` | 13 | 222482 | 14.546 | 13.315 | 13.142 | 12.800 | 11.829 | 11.137 | x 1.45, without the sky light | 11.136 |
+| `Vegetation` | 1 | 32 | - | - | - | - | - | - | left aside (mask below 500 pixels) | - |
+| `LampPost` | 11 | 94829 | 24.715 | 26.101 | 26.893 | 27.263 | 25.357 | 23.132 | x 1.45, without the sky light | 23.132 |
+| `GuardRail` | 1 | 5740 | 19.576 | 22.081 | 23.667 | 17.942 | 16.434 | 15.991 | x 1.45, without the sky light | 15.987 |
+| `MatteIndustrial` | 6 | 209154 | 31.949 | 29.294 | 28.382 | 26.120 | 24.816 | 23.883 | x 1.45, without the sky light | 23.883 |
+| `Default` | 28 | 94106 | 12.435 | 12.870 | 13.486 | 9.551 | 9.292 | 9.262 | x 1.45, without the sky light | 9.261 |
+| city ground | 1 | 410871 | 42.047 | 42.440 | 42.654 | 41.088 | 41.307 | 41.592 | x 1.00, without the sky light | 41.091 |
+
+Applied state: E 14.374 -> 14.131 in `linear`, 15.509 -> 15.355 in `legacy`; E against the original with its post-process 30.116 -> 30.183; tunnel views 12.844 -> 12.835; difference outside the masks 13.130 -> 13.125; probes 27 / 2 / 27 / 3 -> 27 / 2 / 27 / 3 in `linear`, 16 / 0 / 27 / 3 -> 16 / 0 / 27 / 3 in `legacy`.
+
+Reference of the bench from now on: `artifacts/render-fidelity/f3/ref/` of the worktree.

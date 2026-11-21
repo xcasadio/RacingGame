@@ -108,6 +108,10 @@ internal static class CookPlanner
             throw new InvalidOperationException($"{gltfFile}: the reader returned no mesh.");
         }
 
+        // The occlusion texture of the scenery materials that lose the light of the sky: the black image of the road, or null.
+        string occlusionPath = Path.Combine(texturesDirectory, RaceMaterialRecipes.RoadOcclusionTextureName);
+        string? occlusionTexturePath = File.Exists(occlusionPath) ? occlusionPath : null;
+
         var usedSlots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var materials = new List<CookedMaterial>(import.Materials.Count);
         foreach (StaticModelImportedMaterial imported in import.Materials)
@@ -117,7 +121,7 @@ internal static class CookPlanner
             {
                 CarModelName => RaceMaterialRecipes.ForCar(imported, 0, texturesDirectory),
                 PlateModelName => RaceMaterialRecipes.ForPlate(modelName, imported),
-                _ => RaceMaterialRecipes.ForScenery(modelName, imported),
+                _ => RaceMaterialRecipes.ForScenery(modelName, imported, occlusionTexturePath),
             };
 
             string name = $"Material.{modelName}.{slot}";
@@ -174,7 +178,8 @@ internal static class CookPlanner
             ["Ground"] = RaceMaterialRecipes.ForGround(
                 "Track",
                 FirstExisting([RaceMaterialRecipes.CityGroundTextureName]),
-                FirstExisting([RaceMaterialRecipes.CityGroundNormalTextureName])),
+                FirstExisting([RaceMaterialRecipes.CityGroundNormalTextureName]),
+                FirstExisting([RaceMaterialRecipes.RoadOcclusionTextureName])),
             ["Terrain"] = RaceMaterialRecipes.ForTerrain(
                 "Track", ground,
                 FirstExisting(RaceMaterialRecipes.TerrainNormalTextureCandidates),
