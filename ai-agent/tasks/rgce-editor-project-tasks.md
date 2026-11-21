@@ -1873,7 +1873,7 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 > - `git status --short` : les trois fichiers de l'outil et ce plan ; rien sous `Content` ; moteur intact.
 > - Relevés sans effet sur les contrôles : le premier enregistrement est identique à la source octet pour octet pour 340 assets ; pour 24 `.sound` il n'en diffère que par les fins de ligne, pour 8 `.uiscreen` par les fins de ligne et des blancs de fin. L'entrée de catalogue de la police s'écrit avec des barres inverses (`UI\Fonts\GameFont.fnt`).
 
-### 🚧 T7.4 — Mesure : aller-retour dans l'éditeur piloté, échantillon (P26)
+### ✅ T7.4 — Mesure : aller-retour dans l'éditeur piloté, échantillon (P26)
 
 - **Objectif** : voir l'éditeur lui-même modifier, enregistrer et rétablir un asset de chaque type qu'il sait piloter.
 - **Fichiers** : ce plan (script et sorties sous `artifacts/editor-closure/driven/`).
@@ -1882,7 +1882,19 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 - **Arrêts** : une commande refusée par l'éditeur pour une raison que la documentation ne donne pas ; une écriture hors de la copie.
 - **Commit** : `docs(ai-agent): record the driven save round trip of the editor`
 
-### ⏳ T7.5 — Bilan et décision de l'auteur (D15)
+> Mesure (2026-11-21), sorties dans `artifacts/editor-closure/driven/` (script `driven_run.py`, un `record-*.json` par asset, `diagnostics-*.txt`, `remote-logs.json`, `end-state.json`, `notes.txt`). Faite par un `executor` ; état final recontrôlé par la session principale. Aucune commande de l'éditeur n'a été refusée, aucun `[Error]` (117 lignes de journal dans la session pilotée, deux diagnostics).
+> - **Par les commandes à distance** (une session de l'éditeur avec `--remote`, la copie remise aux octets du dépôt après chaque asset) :
+>   - matériau `Materials/Models/Banner/orig 09 - Default.material`, `roughness` 0,6 → 0,7 : une seule valeur change à l'enregistrement ; valeur remise, octets de la source ;
+>   - son `Audio/Beep.sound`, `volume` 0,251 → 0,5 : une seule valeur change ; valeur remise, **JSON identique, octets différents par les seules fins de ligne** (la source a 9 LF, l'éditeur écrit 9 CRLF) ;
+>   - écran `UI/Screens/MainMenu/MainMenu.uiscreen`, nœud `wndMainMenu`, `Width` 1280 → 1000 : il n'existe pas de `screen.save` ; c'est `project.save` qui écrit, et il n'écrit que `MainMenu.xaml` (la balise `<Window …>` passe sur une ligne, rien d'autre ne change) ; valeur remise, octets de la source ; le `.uiscreen` et le `.design.json` ne sont pas réécrits ;
+>   - entité `Entities/PlayerCar.entity`, `CastShadows` du composant `BodyVisual` : la valeur modifiée plus les 8 valeurs de son `local_transform` admises en O2 ; valeur remise, ces 8 valeurs seules, rien d'autre ;
+>   - monde `Worlds/CarSelection.world`, `CastShadows` de `Carousel.Light` : une seule valeur change ; valeur remise, octets de la source. Ce monde n'a pas de caméra : l'écart des deux clés de caméra d'O4 n'a pas été exercé ici (il l'a été en M5).
+>   - `material.save`, `sound.save` et `entity_asset.save` ne touchent que leur asset ; `project.save` ne change, par empreinte, que le fichier modifié (il réécrit aussi `AssetInfos.json`, le fichier projet et `Worlds/Editor.world`, aux mêmes octets, d'après leurs dates).
+> - **Par les options d'automatisation** (contrôle borné de P26), deux lancements sortis en 0, copie aux mêmes empreintes avant et après : texture `Textures/Ast.texture`, `[Automation] Updated texture sampler 'address_u'='Clamp' (saved file: address_u=Clamp)` ; modèle `Models/Banner.staticModel`, `[Automation] Updated static model material '0'='dc5962ff-…' (saved file: mesh 0 material_asset_id=dc5962ff-…)`.
+> - **`[Warning]` relevés** : les deux avertissements de déchargement de scripts à chaque lancement, et sur l'écran les deux avertissements de données de conception non résolues (les mêmes qu'en T7.2).
+> - **État final** : la copie a ses 700 fichiers aux empreintes de départ, aucun ajouté ; ni verrou ni processus de l'éditeur laissés ; `git status --short` propre. Relevé : `RacingGame.Gameplay.dll` et son `.pdb` du `Content` du dépôt ont été reconstruits à 15 h 38 par le build de l'outil de T7.3 (fichiers ignorés par git) ; la copie garde ceux de 14 h 09, que l'éditeur a chargés pendant toutes les mesures.
+
+### ⚠️ T7.5 — Bilan et décision de l'auteur (D15)
 
 - **Objectif** : rendre la liste des échecs et des pertes, classés par cause, avec une proposition.
 - **Fichiers** : ce plan.
@@ -1890,6 +1902,30 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 - **Validation** : chaque échec de T7.2 à T7.4 est dans le tableau ; chaque texte distinct de `[Warning]` relevé en T7.2 et en T7.4 est classé « admis », avec sa raison, ou « échec ». Le bilan écrit aussi **ce que les contrôles ne voient pas** : un glTF sans maillage (P30) ; l'enregistrement d'une texture, d'un modèle ou d'un sprite depuis l'éditeur lui-même, prouvé seulement hors de l'éditeur (P25, P26).
 - **Suite** : **s'il y a au moins un échec, une perte ou un `[Warning]` classé « échec », la tâche passe en ⚠️, la question est écrite dans « Points ouverts » et la session s'arrête** : les corrections sont un plan que l'auteur approuve (D15). S'il n'y en a aucun, la session continue avec T7.6.
 - **Commit** : `docs(ai-agent): record the outcome of the editor checks`
+
+> Bilan (2026-11-21). **Un défaut réel est relevé : la tâche passe en ⚠️ et la session s'arrête ici (D15), question O10.** T7.6 à T7.8 ne sont pas commencées.
+>
+> | Contrôle | Résultat |
+> |---|---|
+> | A1, projet et composants (T7.2) | tenu : 16 composants du jeu proposés sur 16 attendus, monde de course ouvert sans erreur |
+> | A2, ouverture des 622 assets (T7.2) | 622 passent la règle de P23, aucun délai dépassé |
+> | Aller-retour hors de l'éditeur, 372 assets (T7.3) | 372 passent, aucune clé perdue, aucune valeur changée, second enregistrement identique |
+> | En-têtes des 250 assets d'aperçu (T7.3) | 250 lisibles |
+> | Aller-retour dans l'éditeur piloté, 7 assets (T7.4) | aucune perte ; écarts connus d'O2 seuls sur la voiture |
+>
+> **Classement des `[Warning]`**, texte par texte :
+>
+> | Avertissement | Où | Classement |
+> |---|---|---|
+> | « Script type '<Nom>ViewModel' (key 'view_model_type', …) could not be resolved … Did you mean 'RacingGame.Gameplay.ViewModels.<Nom>ViewModel'? » (deux lignes par écran) | les 9 `.uiscreen` | **Échec.** Les neuf `<Écran>.design.json` nomment leur modèle de vue par son nom court ; le moteur ne résout plus que par nom complet depuis `d4524e84c`, arrivé avec la fusion du 2026-11-19. Les données de conception ne sont plus appliquées dans l'aperçu des écrans : ce que l'ADR-0002 décidait (« Design-time data ») ne fonctionne plus. Le jeu n'est pas touché : ces fichiers ne sont pas copiés dans son build. |
+> | « Script assembly context is still alive after unload… » et « The previous script assembly could not be fully unloaded… » | chaque lancement de l'éditeur (622 + 2) | Admis. Écrits à l'ouverture de tout projet qui a une DLL de gameplay, déjà présents en M5 ; ils ne concernent aucun asset et n'empêchent rien. Défaut du moteur (un type de script reste référencé au déchargement), à lui signaler ; hors de ce chantier. |
+> | « [ColorPipeline] View pipeline OverlayViewPipeline does not implement IScenePhaseViewPipeline… » | les 3 mondes de course | Admis. Information du moteur sur la vue de l'éditeur en mode de couleur `linear`, déjà relevée en M5 ; le monde s'ouvre et s'affiche. |
+>
+> **Écarts à l'enregistrement, classés** : les 8 valeurs du transform de `BodyVisual` de la voiture (admis par l'auteur, O2 de `rgce-worlds-as-assets-tasks.md`) ; un `.sound` enregistré par l'éditeur prend des fins de ligne CRLF là où le fichier du dépôt a des LF, à JSON identique (admis : aucune donnée ne change ; git, en `core.autocrlf=true`, normalise ces fins de ligne à l'indexation).
+>
+> **Ce que les contrôles ne voient pas** : un modèle source `.gltf` à l'en-tête sain mais sans maillage (P30) ; l'enregistrement d'une texture, d'un modèle ou d'un sprite depuis l'éditeur lui-même, prouvé seulement hors de l'éditeur (P25, P26) ; l'écart des clés de caméra d'un monde enregistré par l'éditeur (O4), mesuré en M5, pas rejoué ici.
+>
+> **Correction proposée pour l'échec** (un plan court que l'auteur approuve, D15) : écrire le nom complet (`RacingGame.Gameplay.ViewModels.<Nom>ViewModel`) dans `view_model_type` des neuf `<Écran>.design.json`, et corriger la phrase du README des assets qui demande un « simple type name ». Lieu : contenu du jeu seulement, 10 fichiers, aucun code. Preuve : le script de T7.1 relancé sur les 9 `.uiscreen` ne relève plus ces avertissements ; une capture de l'aperçu d'un écran montre les données de conception ; `--roundtrip` reste à 622 sur 622 ; la parité du jeu est inchangée (ces fichiers ne sont pas dans son build).
 
 ### ⏳ T7.6 — Jeu et dépôt (A4, A5)
 
@@ -1928,6 +1964,7 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 | O6 | **Levé (T0.2).** Le panneau Logs de l'éditeur restait vide sur les captures d'automatisation. Sur décision de l'auteur, il a été corrigé (MGUI `4e94d7e8`, CasaEngine `c0f3343`), et l'option `--logs-filter` (`4ce5ea0`) met l'avertissement à l'écran. La sonde `pluginprobe`, d'abord proposée, n'a pas été retenue. | T0.1, T1.2 |
 | O7 | **Levé (2026-10-09), par le plan [rgce-track-helpers-tasks.md](rgce-track-helpers-tasks.md) et l'ADR-0019.** Les aides et les CombiModel sont lus comme dans l'original. Il reste le contrôle visuel de l'auteur (T3.1 🧪) et la luminosité des tunnels (O3 de ce plan). **Décidé (D9) : corrigé avant S6.** Défaut ancien relevé en T4.5 : les éléments `WidthHelper`, `RoadHelper` et `CombiObject` des `.Track` et des `.CombiModel` ne correspondent pas aux types que lisait `XmlSerializer` (`LegacyWidthHelper`, `LegacyRoadHelper`, `LegacyCombiObject`). Le jeu ignore donc les aides de largeur et de route (palmiers, lanternes, tunnels) et le contenu des CombiModel. Le chantier garde ce comportement pour la parité ; le corriger change le rendu, c'est un chantier à part. | Après le chantier |
 | O9 | **Levé (2026-11-18), par la décision D10 du plan [rgce-worlds-as-assets-tasks.md](rgce-worlds-as-assets-tasks.md) et l'ADR-0042 : les mondes de course et celui du carrousel portent l'id de la cubemap du ciel, le jeu le lit, et une sonde montre que l'id sert. Texte d'origine :** S6 en pause (2026-10-09). Le détail de S6 a eu trois relectures, toutes REVISE ; les deux premières ont été corrigées (Phase 6). Reste le ciel (P14) : les mondes de course portent `specular_cubemap_asset_id` = `Texture.SkyCubeMap`, mais rien ne prouve que le jeu s'en sert. Le carrousel charge le cube de la course au front-end, et ce cube est mis en cache par chemin, au premier essai.<br>**Correction proposée**, non relue :<br>(a) le cube du carrousel vient de l'entrée `Texture.SkyCubeMap`, résolue par le catalogue ;<br>(b) le cache des cubes est indexé par id d'asset ;<br>(c) T6.4 ajoute une sonde qui charge une course avec l'id vidé (ciel procédural), puis avec l'id réel (le cube), et montre que les images diffèrent ; la parité A4 se fait avec l'id réel.<br>**Autre voie** : restreindre D2 pour le ciel. Il resterait réglé en code, les mondes ne porteraient pas de cubemap, et le résultat de S6 serait corrigé.<br>**Question à l'auteur** : appliquer (a) à (c), avec une relecture puis l'exécution de S6 ; restreindre D2 pour le ciel ; ou relire le plan d'abord ? | S6 |
+| O10 | **S7 en pause (2026-11-21), décision de l'auteur attendue (D15).** Les contrôles de S7 passent tous (622 assets ouverts, 372 réenregistrés sans perte, 250 en-têtes lisibles, 7 assets pilotés), mais leurs avertissements montrent un défaut réel : les données de conception des 9 écrans ne sont plus appliquées dans l'aperçu de l'éditeur, parce que les `.design.json` nomment leur modèle de vue par son nom court et que le moteur ne résout plus que par nom complet (`d4524e84c`). Correction proposée dans le bilan de T7.5 : nom complet dans les 9 fichiers et phrase du README, contenu du jeu seulement. À décider : corriger ainsi puis finir S7 (T7.6 à T7.8) ; ou clore S7 en l'état, le défaut noté ; ou autre chose. | T7.5 |
 | O8 | **Levé (2026-10-08) : l'auteur a demandé une dernière relecture du brouillon corrigé, rendue READY, puis l'exécution.** S5 en pause (2026-10-08). Le détail de S5 a eu trois relectures, toutes REVISE ; les deux dernières ont relevé des P1, et la règle d'arrêt interdit de les lever par une nouvelle boucle sans l'auteur. Les blocages sont tous corrigés dans le brouillon (`s5_plan.md` du scratchpad). Ils portent sur trois points : (1) le compilateur nomme les états de rendu que le jeu laisse vides ; (2) la conception de la voiture et de sa peinture ; (3) les fonctionnalités de rendu d'un matériau compilé ignorent le maillage, d'où une carte de normales sans tangentes. Le point (3) demande une correction de CasaEngine (`RenderFeatureResolver`, `RenderItem.Features`) et un export qui enregistre les fonctionnalités et le matériau de chaque sous-maillage. S6 et S7 dépendent de S5. Question à l'auteur : relancer une revue sur le brouillon corrigé puis exécuter S5, ou relire le plan d'abord. | S5 |
 
 ## Hors périmètre
