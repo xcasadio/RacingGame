@@ -1796,6 +1796,8 @@ Faits relevés pour cette phase (2026-10-09), à `2fa7ac7`. Les sources :
 >
 > Relecture demandée par l'auteur (2026-11-21, « Oui, relis encore », relecteur frais) : **REVISE**, un constat bloquant, né de la correction précédente : exiger « plus de zéro composant » par monde faisait échouer `Worlds/Editor.world`, monde correct dont l'unique entité n'a aucun composant, et arrêtait la tranche en T7.5 sans défaut réel. `FIX` : le nombre de composants chargés doit être égal au nombre de nœuds de composants du fichier source. Remarques appliquées : `entity_references` vidé en tableau vide, dossiers de sortie créés par l'outil, saut de ligne final des `.uiscreen`, « P22 à P30 », les 5 mondes d'A3 et les 7 du catalogue.
 > Confirmé par ce relecteur sur le code : la méthode d'écriture d'un monde hors du jeu fonctionne et sa seconde écriture doit être identique à la première ; les 7 mondes n'ont que des références en ligne ; aucune raison connue et voulue ne fait rompre la règle de comparaison à un asset correct des huit types ; les quatre remarques de la relecture de clôture sont appliquées ; la phase se lit de bout en bout sans incohérence.
+>
+> **Approuvée par l'auteur le 2026-11-21 (« Approuvé, exécute »), pour exécution en mode `AUTO` (D16).** La dernière correction (compte des composants égal à celui du fichier source) n'a pas été relue par un tiers ; la session principale l'a contrôlée sur les sept mondes (0 composant pour `Editor.world`, de 2 à 1761 pour les six autres).
 
 Faits relevés pour cette phase (2026-11-21, jeu `5e5d17a` = `remaster` = `origin/remaster`, moteur `01cdf483f` = `main` = `origin/main`, arbres propres) :
 
@@ -1810,7 +1812,7 @@ Faits relevés pour cette phase (2026-11-21, jeu `5e5d17a` = `remaster` = `origi
 
 Règles propres à cette phase, en plus des règles du plan : aucun fichier de `Content`, du moteur ni du jeu (hors `scripts/` et documents) n'est modifié ; un contrôle qui échoue est noté, pas corrigé (D15) ; un seul lancement de l'éditeur ou du jeu à la fois sur la machine, sous le verrou de P28, jamais pendant un build ; **toute empreinte de la copie prise dans cette phase exclut `.casaeditor/`**, que l'éditeur réécrit à chaque fermeture (`GameEditor.cs:535-540`) ; les réglages de l'utilisateur sous `%LOCALAPPDATA%/CasaEngine/RacingGameCasaEngine/` ne sont jamais modifiés, et leurs empreintes sont celles de M1 avant tout rejeu du jeu.
 
-### ⏳ T7.1 — Script de contrôle d'ouverture (A2)
+### ✅ T7.1 — Script de contrôle d'ouverture (A2)
 
 - **Objectif** : un script versionné qui ouvre chaque asset du catalogue dans l'éditeur et rend un verdict par asset.
 - **Fichiers** : `scripts/check_editor_opens_assets.py` (nouveau) ; ce plan.
@@ -1823,7 +1825,15 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 - **Arrêts** : l'éditeur ne s'ouvre pas sur le projet ; un témoin passe, ou échoue par une autre condition que la sienne (le critère ne distingue rien).
 - **Commit** : `feat(scripts): check that the editor opens every catalogued asset`
 
-### ⏳ T7.2 — Mesure : le projet et les 622 assets dans l'éditeur (A1, A2)
+> Validation (2026-11-21), sorties dans `artifacts/editor-closure/t71/` (`trial/`, `controls-abc/`, `control-d.json`, `fingerprint-*.json`, `notes.txt`). Écrit par un `executor`, relu par la session principale.
+> - **Script** : `scripts/check_editor_opens_assets.py` (bibliothèque standard seule, `python -I`). La règle de P23 est une fonction pure, `judge_asset(code de sortie, texte du diagnostic, file_name)`, qui rend la première condition en défaut : `timeout`, `exit_code`, `opened_line`, `error`, `warning_names_file`. Options `--only`, `--type`, `--resume`, `--timeout`, `--lock`, et `--judge` pour rejuger un diagnostic enregistré. `results.json` et `summary.json` sont réécrits après chaque asset. Verrou de P28 pris avant chaque lancement (création exclusive), rendu en `finally`, jamais volé (arrêt après 45 minutes d'attente).
+> - **Builds** : `dotnet build RacingGame.slnx` et `dotnet build CasaEngine/CasaEngine.Editor.MonoGame.sln` à 0 erreur. **Copie** : `D:/development/rgce-s7/content`, 700 fichiers, avec `RacingGame.Gameplay.dll`.
+> - **Essais**, tous passés, 7,2 à 7,4 s par lancement : `Worlds/CarSelection.world`, `UI/Sprites/Ui.Menu.BackgroundTexture.texture`, `Textures/background.png` (aperçu `Image`), `Models/AlphaPalm.gltf` (aperçu `Model`).
+> - **Témoins**, chacun en échec par sa condition, le script sortant en 1 : (a) `Textures/background.png` retiré de la copie : `exit_code` (l'éditeur sort en 1) ; (b) premier `LightComponent` de `Worlds/CarSelection.world` remplacé par `NoSuchComponentTypeXyz` : `error`, l'éditeur sortant en 0 avec « Unknown component type » ; (c) `Textures/buttons.png` remplacé par du texte : `warning_names_file`, l'éditeur sortant en 0 avec sa ligne d'ouverture ; (d) fonction de verdict sur le diagnostic d'un asset passé, ligne d'ouverture retirée : `opened_line`.
+> - **Copie intacte** : après remise des trois fichiers, les 700 empreintes hors `.casaeditor/` sont celles d'avant, et celles du `Content` du dépôt. `git status --short` : le script et ce plan seulement.
+> - **Relevés** : la ligne d'ouverture reprend le `file_name` tel que passé (barres obliques), sans écart de casse ; le diagnostic nomme le panneau d'un aperçu (`kind=`), d'un document (`Opened texture asset=`), pas celui d'un monde (le script lit alors `Active document panel`) ; les avertissements figurent dans deux sections du diagnostic, lues toutes deux. Deux `[Warning]` reviennent à chaque lancement, sans nommer l'asset : « Script assembly context is still alive after unload… » et « The previous script assembly could not be fully unloaded… » ; ils seront classés en T7.5.
+
+### 🚧 T7.2 — Mesure : le projet et les 622 assets dans l'éditeur (A1, A2)
 
 - **Objectif** : savoir ce qui s'ouvre et ce qui ne s'ouvre pas.
 - **Fichiers** : ce plan (sorties sous `artifacts/editor-closure/a2/`, ignorées par git).
