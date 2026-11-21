@@ -12,7 +12,9 @@ Plan du moteur associé : `CasaEngine/ai-agent/tasks/render-fidelity-tasks.md` (
 >
 > Relecture de plus, demandée par l'auteur (2026-11-21, relecteurs frais) : tranche F0 **READY** ; enveloppe **REVISE**, quatre P2 sur les chemins d'échec des tranches suivantes, corrigés dans cette version (`FIX`), **non relus** : (1) une étape dont une dépendance dure ne peut plus être tenue se clôt en ⚠️ sans démarrer, ce qui laisse la suite et la clôture atteignables ; (2) la parité des commits (a) de F4 à F7 se fait contre la référence précédente et non contre `f0/ref` ; (3) F8 avance le pointeur sur la tête finale de la branche du moteur après une parité finale ; (4) une tranche close en ⚠️ ne laisse aucun changement non validé dans le jeu et ne devient pas une référence.
 >
-> Relecture de l'enveloppe pendant F0 (2026-11-21, relecteur frais) : **REVISE**, trois P2, encore sur les chemins d'échec (cascade d'arrêts après une tâche du moteur en ⚠️, clôture contradictoire quand la parité finale échoue, fichiers nouveaux d'une tranche arrêtée). Disposition : `FIX` par **réduction** et non par une règle de plus. Les quatre relectures de l'enveloppe ont toutes buté sur ce que l'agent fait seul après un arrêt ; cette version le lui retire : **tout ⚠️ met le chantier en pause** jusqu'à la décision de l'auteur. Les règles de cascade, de continuation et de clôture dégradée sont supprimées. Cette réduction du mode AUTO est soumise à l'auteur avec le résultat de F0 (P11) ; non relue.
+> Relecture de l'enveloppe pendant F0 (2026-11-21, relecteur frais) : **REVISE**, trois P2, encore sur les chemins d'échec (cascade d'arrêts après une tâche du moteur en ⚠️, clôture contradictoire quand la parité finale échoue, fichiers nouveaux d'une tranche arrêtée). Disposition : `FIX` par **réduction** et non par une règle de plus. Les quatre relectures de l'enveloppe ont toutes buté sur ce que l'agent fait seul après un arrêt ; cette version le lui retire : **tout ⚠️ met le chantier en pause** jusqu'à la décision de l'auteur. Les règles de cascade, de continuation et de clôture dégradée sont supprimées. Cette réduction du mode AUTO (P11) a été validée par l'auteur le 2026-11-21 avec le résultat de F0.
+>
+> Relecture de l'enveloppe après F0 (2026-11-21, relecteur frais, condition de D10) : **READY**.
 
 Ce fichier doit être mis à jour pendant le travail : l'icône au début de chaque tâche indique son statut courant.
 
@@ -76,11 +78,12 @@ Derniers ADR : jeu 0042, moteur 0145.
 | D6 | Facteur de reflet d'environnement par matériau : **reporté**, hors de ce chantier. |
 | D7 | Mode d'exécution **AUTO** : les tranches approuvées s'enchaînent, chacune relue avant et mesurée après ; l'agent tranche seul les constats mineurs et s'arrête sur tout constat grave, toute décision de produit, tout dépassement de périmètre. |
 | D9 | **Approbation du 2026-11-21 : la tranche F0 seule** (réponse « F0 seule, enveloppe relue »), avec T0 du plan du moteur qu'elle contient. Les tranches F1 à F8 et les tâches T1 à T6 attendent l'approbation de l'auteur, demandée avec le résultat de F0 et la relecture de l'enveloppe. |
+| D10 | **Approbation conditionnelle du 2026-11-21 : les tranches F1 à F8 et les tâches T1 à T6** (réponse « Approuver si relecture prête »), à la condition qu'un relecteur frais juge l'enveloppe de ce plan prête. Si oui, l'exécution s'enchaîne en mode AUTO sans autre question ; sinon l'agent s'arrête et donne les constats à l'auteur. La règle de pause P11 est validée par la même réponse. **Condition tenue le 2026-11-21** : un relecteur frais a rendu `READY` sur l'enveloppe ; F1 à F8 et T1 à T6 sont approuvées, exécution en mode AUTO. |
 | D8 | Rien n'est poussé ; `master`, `remaster` et `main` du moteur ne sont ni committés ni avancés sans demande explicite de l'auteur. Le code fait foi pour les mondes : un réglage de monde se change dans `RaceWorldTemplates`, puis `RgceAssetCooker --worlds`, `python scripts/generate_rgce_content_assets.py`, `RgceAssetCooker --worlds --verify`. |
 
 ## Points à valider par l'auteur à l'approbation
 
-Validés par l'auteur le 2026-11-21, à la question d'approbation : P1, P2, P10 (et P8 du plan du moteur). Les autres restent à valider à l'approbation du plan.
+Validés par l'auteur le 2026-11-21 : P1, P2, P10, P11 (et P8 du plan du moteur). Les autres restent à valider à l'approbation du plan.
 
 | Réf | Arbitrage de l'agent |
 |---|---|
@@ -94,7 +97,7 @@ Validés par l'auteur le 2026-11-21, à la question d'approbation : P1, P2, P10 
 | P8 | **Émissives existantes** : les panneaux et le tunnel gardent l'émissive de l'ADR-0033, la route son occlusion de l'ADR-0034. Ce plan ne les migre pas vers la clé d'ambiant. |
 | P9 | **Sous-modules `MGUI` et `NvgSharp` du worktree** : initialisés hors ligne depuis le checkout principal par une seule commande (F0), aux commits que le moteur désigne. Aucune autre commande git n'y est lancée. |
 | P10 | **Glow et option du joueur** : l'option « effets » déjà présente à l'écran d'options (`EnablePostEffects`, sans effet aujourd'hui) allume et coupe le glow de F7, comme l'option du même nom de l'original coupe son post-traitement. Le banc choisit l'état par une option de ligne de commande des modes automatiques (proposée : `--post-effects on|off`, sur le modèle de `--color-pipeline`), sans écrire les réglages de l'utilisateur. Si l'auteur refuse ce lien, F7 règle le glow dans le monde sans le relier à l'option, et le banc ne mesure que l'état actif. **Validé par l'auteur le 2026-11-21.** |
-| P11 | **Tout ⚠️ met le chantier en pause** : en mode AUTO l'agent enchaîne les étapes closes en ✅ ; dès qu'une tranche ou une tâche du moteur se clôt en ⚠️, il n'entame aucune autre étape, met de côté ce qui n'est pas validé (règle « Tranche arrêtée »), rapporte le constat avec sa proposition (corriger, annuler, sauter), et attend la décision de l'auteur. Une règle de mesure non tenue n'est pas un ⚠️ : la tranche se clôt en ✅ sans rien appliquer (P5) et la suite continue. |
+| P11 | **Tout ⚠️ met le chantier en pause** : en mode AUTO l'agent enchaîne les étapes closes en ✅ ; dès qu'une tranche ou une tâche du moteur se clôt en ⚠️, il n'entame aucune autre étape, met de côté ce qui n'est pas validé (règle « Tranche arrêtée »), rapporte le constat avec sa proposition (corriger, annuler, sauter), et attend la décision de l'auteur. Une règle de mesure non tenue n'est pas un ⚠️ : la tranche se clôt en ✅ sans rien appliquer (P5) et la suite continue. **Validé par l'auteur le 2026-11-21.** |
 
 ## Règles d'exécution pour l'agent
 
