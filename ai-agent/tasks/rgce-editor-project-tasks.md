@@ -89,6 +89,9 @@ Découverte en lecture seule, en deux workflows. Le premier, de 4 agents, portai
 | D7 | `RacingGameCasaEngine.UI` est **renommé `RacingGame.Gameplay`** et devient la DLL de gameplay. |
 | D8 | Les nouveaux binaires vont dans git normalement, avec un `.gitattributes` qui marque png, wav, dds, data et tga comme binaires. |
 | D9 | Ajoutée le 2026-10-08, réponse de l'auteur sur O7 : le défaut de lecture des éléments `WidthHelper`, `RoadHelper` et `CombiObject` est corrigé **avant S6**. Le décor complet (palmiers, lanternes, tunnels, aides de largeur, contenu des CombiModel) entre dans le jeu, avec de nouvelles références de rendu, puis S6 le fige dans les mondes. Le plan à part `ai-agent/tasks/rgce-track-helpers-tasks.md` s'exécute **après la clôture de S5 et avant S6**. Il porte trois décisions de l'auteur (2026-10-08) : la comparaison avec l'original par `scripts/TrackPlacementExporter`, plus un contrôle visuel de l'auteur ; une suite aléatoire propre aux palmiers ; et l'ordre d'exécution. S6 part de ses références « après ». |
+| D14 | Ajoutée le 2026-11-21 (réponse de l'auteur, « Ouverture + aller-retour »), pour S7. Les décisions D10 à D13 sont celles du plan `rgce-worlds-as-assets-tasks.md` ; la numérotation continue ici. **Jusqu'où va le contrôle de l'éditeur** : chacun des assets du catalogue s'ouvre dans l'éditeur sans erreur ; l'enregistrement sans perte est prouvé sur tous les assets des types éditables par les écrivains du moteur, hors de l'éditeur, et dans l'éditeur piloté sur un échantillon des types qu'il sait piloter. Aucun changement du moteur dans cette tranche. |
+| D15 | Ajoutée le 2026-11-21 (« Mesurer, puis décider »). **Échecs** : la tranche écrit les contrôles et les lance sans rien corriger. La liste des échecs, classés par cause, revient à l'auteur avec une proposition ; les corrections font l'objet d'un plan qu'il approuve. |
+| D16 | Ajoutée le 2026-11-21. **Mode d'exécution de S7** : `AUTO` une fois le détail approuvé ; ni push, ni avance de `master` ou de `remaster` sans demande de l'auteur. |
 
 ## Points à valider avec ce plan
 
@@ -106,6 +109,14 @@ Arbitrages proposés par l'agent : l'approbation du plan les valide.
 | P8 | **Modèles.** Un outil du dépôt les cuit en `.staticModel`, `.material` et `.texture` standard, aux identifiants déterministes (uuid5, comme les générateurs existants) :<br>• le profil RacingGame et les réglages de matériaux sont appliqués dans les valeurs des `.material` ;<br>• la rotation de π/2 autour de X appliquée au décor est cuite dans les modèles de décor seulement ;<br>• les tangentes ne sont pas perdues, puisque les modèles actuels n'en ont pas. |
 | P9 | **Références de parité.** Elles sont prises en S0, avant toute modification. S4 étend l'export de scène à un enregistrement par maillage dessiné : nom, matrice, matériau, nombre et empreinte des sommets. |
 | P10 | **Musiques et sons non joués.** Les musiques sont en `is_streaming: true` sur le bus `Music`, que le moteur sait lire en WAV ; les effets sont sur `Sfx`. Les boucles des vitesses (`Gear1`…`Gear5`) sont `is_looped: true`. Rien n'est joué par le jeu dans ce chantier. |
+| P22 | **S7, branche.** Le jeu travaille sur `chantier/rgce-editor-closure`, créée depuis `remaster` (`5e5d17a` = `origin/remaster`). Le moteur ne change pas : le pointeur reste `01cdf483f` (= `main` = `origin/main` du moteur), qui est donc « le commit final du chantier moteur » du résultat de S7. P22 à P29 suivent P11 à P21 du plan `rgce-worlds-as-assets-tasks.md`. |
+| P23 | **S7, critère d'ouverture (A2).** Un lancement de l'éditeur par asset, sur une copie du contenu hors du dépôt : `CasaEngine.Editor.exe --project <copie>/RacingGameCasaEngine.json --open-asset <file_name de l'entrée> --diagnostics-out <fichier> --automation-timeout <secondes>`. Un asset **passe** quand le code de sortie est 0 (`EditorAutomationOutcome` : 0 réussi, 1 échec, 2 délai dépassé), que le fichier de diagnostic porte la ligne `[Automation] Opened asset='<file_name>'` et qu'il ne porte aucune ligne `[Error]`. Les `[Warning]` sont comptés et listés, ils ne font pas échouer. Un asset qui ne passe pas est un **échec mesuré**, noté avec sa cause, jamais corrigé ici (D15). |
+| P24 | **S7, niveau d'ouverture par type, sur le catalogue d'aujourd'hui** (P1 mis à jour ; 622 entrées relevées le 2026-11-21). Document d'édition : `.world` (7), `.entity` (1), `.staticmodel` (56), `.material` (99), `.texture` (122), `.sound` (28), `.uiscreen` (9), `.sprite` (50), soit 372. Aperçu en lecture seule (`CasaEngine/docs/editor/asset-documents.md`) : images `.png` (149) et `.dds` (2), `.wav` (28), `.fnt` (1), modèles source `.gltf` (56), données `.track` (3), `.combimodel` (10), `.data` (1), soit 250. Le contrôle note pour chaque asset la sorte de panneau ouvert, lue dans le diagnostic. |
+| P25 | **S7, aller-retour hors de l'éditeur.** Un mode de l'outil, `scripts/RgceAssetCooker --roundtrip`, charge chacun des 372 assets éditables par le chargeur du moteur pour son type, sans périphérique graphique, l'écrit par l'écrivain de l'éditeur (`EditorAssetJsonSerializer.TrySerialize`, qui couvre ces huit types), le recharge et le réécrit, dans un dossier de sortie sous `artifacts/editor-closure/` ; il n'écrit jamais dans `Content`. Deux contrôles par asset : la seconde écriture a les octets de la première ; aucune clé du fichier source ne manque dans le fichier écrit et aucune valeur ne diffère (nombres à 1e-6 près, tableaux dans le même ordre). Les clés que l'écrivain ajoute sont listées par type, elles ne sont pas des pertes. Un type que l'outil ne sait pas charger hors du jeu est un échec mesuré, pas un contournement. |
+| P26 | **S7, aller-retour dans l'éditeur piloté, sur un échantillon.** Un asset par type que l'éditeur sait piloter. Par les commandes à distance (`casa-editor`, éditeur lancé avec `--remote`, script `artifacts/entity-asset-remote/scripts/editorctl.py`) : un matériau, un son, un écran, l'entité `PlayerCar.entity`, un monde ; modifier une valeur, enregistrer, relire le fichier (il ne diffère de la source que par cette valeur, écarts admis d'O2 et d'O4 du plan `rgce-worlds-as-assets-tasks.md` mis à part), remettre la valeur, enregistrer, comparer à la source. Par les options d'automatisation, qui restaurent d'elles-mêmes le fichier en fin de lancement : une texture (`--set-texture-sampler`) et un modèle (`--set-static-model-material`) ; le lancement sort en 0, le diagnostic montre la modification appliquée et la ligne `[Automation] Restored edited …`, et la copie est intacte ensuite. Les sprites n'ont ni commande ni option : ils ne sont couverts que par P25, et la note le dit. |
+| P27 | **S7, références.** A4 se juge contre `artifacts/worlds-as-assets/m1/ref/` (76 images), `m1/export-a` et les audits de voitures de M1, par la « Validation commune (parité) » du plan `rgce-worlds-as-assets-tasks.md` : les références de S0 ont été remplacées par des décisions prises depuis (ADR-0027 à 0041), et cette référence tient sur le moteur d'aujourd'hui (plan `origin-main-integration-2-tasks.md` du moteur, T3.1). A3 s'appuie sur M5 et M9 de ce même plan, avec leurs deux écarts admis par l'auteur (clés de caméra, O4 ; transform de `BodyVisual`, O2), et P26 en rejoue un monde et la voiture. |
+| P28 | **S7, copie et verrou.** La copie du contenu (`RacingGameCasaEngine/Content`, 258 Mo, avec `RacingGame.Gameplay.dll` produite par le build) va dans `D:/development/rgce-s7/`, hors du dépôt ; elle est créée par T7.1 et **supprimée à la clôture** (l'approbation de ce détail le couvre). Une autre session travaille sur les écarts de rendu dans son propre worktree : avant chaque lancement de l'éditeur ou du jeu, la session crée `D:/development/rgce-run.lock` (son nom, l'heure), attend s'il existe déjà, et le supprime à la fin du lancement, erreur comprise. |
+| P29 | **S7, documents.** Aucune nouvelle ADR n'est prévue : celles qui remplacent l'ADR-0002 existent (ADR-0023 et ADR-0024, sa ligne d'état les nomme) et D14 à D16 règlent un contrôle, pas l'architecture. Si le bilan de T7.5 amène une décision d'architecture, elle sera prise avec l'auteur et aura son ADR dans le plan de corrections. |
 
 ## Règles d'exécution pour l'agent
 
@@ -281,7 +292,7 @@ Un arrêt fige la tranche et celles qui en dépendent.
 - **Acceptation** : A3 et A4 identiques aux références.
 - **Références de parité** : elles partent de `artifacts/o7-track-helpers/after/`, prises à la fin du plan O7 (décor corrigé, tunnels compris).
 
-### S7 — Contrôle de l'éditeur et clôture (à détailler)
+### S7 — Contrôle de l'éditeur et clôture (détaillée en Phase 7 le 2026-11-21)
 
 - **Résultat** :
   - A1 à A6 ;
@@ -1764,6 +1775,98 @@ Faits relevés pour cette phase (2026-10-09), à `2fa7ac7`. Les sources :
 - **Commit** : `docs(adr): record the worlds and the player car as assets`
 
 ---
+
+## Phase 7 — Contrôle de l'éditeur et clôture (S7)
+
+> Détail écrit le 2026-11-21, sur les décisions D14 à D16 et les points P22 à P29. À relire par un vérificateur de plan, puis à approuver par l'auteur avant exécution.
+
+Faits relevés pour cette phase (2026-11-21, jeu `5e5d17a` = `remaster` = `origin/remaster`, moteur `01cdf483f` = `main` = `origin/main`, arbres propres) :
+
+- **Catalogue** : `RacingGameCasaEngine/Content/AssetInfos.json` a 622 entrées (clés `id`, `name`, `file_name`, `asset_type`), réparties comme en P24.
+- **Ouverture d'un asset** : les routes de l'éditeur (`CasaEngine/CasaEngine.Editor/GameEditor.cs:4976-4992`) donnent un document aux `.uiscreen`, `.entity`, `.sprite`, `.sound`, `.material`, `.texture`, `.staticmodel`, `.world` ; tout autre fichier qui n'est pas un format du moteur s'ouvre en aperçu en lecture seule (`CasaEngine/docs/editor/asset-documents.md:9-21` : image, cube, audio, police, modèle, texte, binaire).
+- **Automatisation** : options `--project`, `--open-asset`, `--diagnostics-out`, `--automation-timeout`, `--set-material-property`, `--set-texture-sampler`, `--set-static-model-material`, `--set-screen-property`, `--save-project`, `--keep-open`, `--remote` (`CasaEngine/CasaEngine.Editor/EditorAutomationOptions.cs:150-395`). Le code de sortie d'un lancement vaut 0, 1 ou 2 (`EditorAutomationOutcome.cs`) : 1 dès qu'une ligne de diagnostic commence par `[Automation] Unable to open asset`, `[Automation] Failed to `, `[Automation] Refused to ` ou `[Automation] Timed out`. L'automatisation restaure en fin de lancement les fichiers qu'elle a modifiés (`GameEditor.cs:10540-10627`, lignes `[Automation] Restored edited …`).
+- **Durée** : un lancement de l'éditeur sur un monde prend 6 à 8 secondes (`artifacts/worlds-as-assets/m5/roundtrip-worlds.log`) ; 622 lancements font de l'ordre d'une heure et demie.
+- **Écrivain** : `EditorAssetJsonSerializer.TrySerialize` (`CasaEngine/CasaEngine.EditorServices/EditorAssetJsonSerializer.cs:31-117`) écrit `Entity`, `World`, `MaterialAsset`, `SpriteData`, `UIScreenAsset`, `StaticModel`, `Texture`, `SoundAsset`.
+- **Composants** : l'éditeur propose à l'ajout toute sous-classe concrète d'`EntityComponent` à constructeur sans paramètre, non marquée `[Browsable(false)]` (`CasaEngine/CasaEngine.Editor/Runtime/EditorWorldOperations.cs:37-44`) ; la commande `component.types` rend cette liste par nom d'affichage. `RacingGame.Gameplay` déclare 18 classes de composants, dont les quatre générateurs de D5 (`RaceRoadGeneratorComponent`, `RaceGuardRailGeneratorComponent`, `RaceColumnGeneratorComponent`, `RaceTerrainGeneratorComponent`).
+- **Pilotage** : scripts de la session du 2026-11-19, ignorés par git, `artifacts/entity-asset-remote/scripts/editorctl.py` (lancer l'éditeur avec `--remote`, appeler `casa-editor`, l'arrêter) et `m9_run.py`.
+- **Parité** : 76 images identiques à `artifacts/worlds-as-assets/m1/ref/` sur le moteur d'aujourd'hui (plan du moteur `origin-main-integration-2-tasks.md`, T3.1).
+
+Règles propres à cette phase, en plus des règles du plan : aucun fichier de `Content`, du moteur ni du jeu (hors `scripts/` et documents) n'est modifié ; un contrôle qui échoue est noté, pas corrigé (D15) ; un seul lancement de l'éditeur ou du jeu à la fois sur la machine, sous le verrou de P28, jamais pendant un build ; les réglages de l'utilisateur sous `%LOCALAPPDATA%/CasaEngine/RacingGameCasaEngine/` ne sont jamais modifiés, et leurs empreintes sont celles de M1 avant tout rejeu du jeu.
+
+### ⏳ T7.1 — Script de contrôle d'ouverture (A2)
+
+- **Objectif** : un script versionné qui ouvre chaque asset du catalogue dans l'éditeur et rend un verdict par asset.
+- **Fichiers** : `scripts/check_editor_opens_assets.py` (nouveau) ; ce plan.
+- **Étapes** :
+  - le script lit `AssetInfos.json` de la copie, lance l'éditeur une fois par entrée selon P23, sous le verrou de P28, avec un délai borné, et écrit dans un dossier de sortie un fichier `results.json` (par asset : nom, fichier, type, code de sortie, ligne d'ouverture trouvée ou non, sorte de panneau, nombre d'`[Error]` et de `[Warning]`, durée, verdict) et un résumé par type ; options `--only <fichier>`, `--type <extension>`, `--resume` (ne relance pas un asset déjà jugé) ; il sort en 1 dès qu'un asset échoue ;
+  - `dotnet build RacingGame.slnx` et `dotnet build CasaEngine/CasaEngine.Editor.MonoGame.sln`, puis copie de `RacingGameCasaEngine/Content` vers `D:/development/rgce-s7/content` ;
+  - essai sur quatre assets (un monde, une texture, un `.png`, un `.gltf`) et sur un **témoin négatif** : une entrée dont le fichier est retiré de la copie doit échouer, puis le fichier est remis.
+- **Validation** : les quatre essais passent et le témoin échoue, sortie 1 du script ; `git status --short` ne nomme que le script et ce plan ; l'empreinte de chaque fichier de la copie (hors `.casaeditor/`) est la même avant et après les essais.
+- **Arrêts** : l'éditeur ne s'ouvre pas sur le projet ; le témoin négatif passe (le critère ne distingue rien).
+- **Commit** : `feat(scripts): check that the editor opens every catalogued asset`
+
+### ⏳ T7.2 — Mesure : le projet et les 622 assets dans l'éditeur (A1, A2)
+
+- **Objectif** : savoir ce qui s'ouvre et ce qui ne s'ouvre pas.
+- **Fichiers** : ce plan (sorties sous `artifacts/editor-closure/a2/`, ignorées par git).
+- **Étapes** :
+  - A1 : éditeur lancé avec `--remote` sur la copie ; `editor.status` nomme le projet ; `component.types` est relevé, et chacune des 18 classes de composants du jeu y est cherchée par son nom d'affichage ; `world.open` d'un monde de course, puis `logs.read` : aucune ligne `[Error]` (une ligne « Unknown component type » montrerait que la DLL du jeu n'est pas chargée) ;
+  - A2 : le script de T7.1 sur les 622 entrées ; les échecs sont classés par cause, à partir de leurs lignes de diagnostic.
+- **Validation** (c'est une mesure : la tâche est faite quand la mesure est complète et notée, quel que soit le nombre d'échecs) : 622 verdicts dans `results.json`, aucun asset sans verdict ; pour chaque type, le nombre d'assets passés et échoués ; pour chaque cause d'échec, la ligne de diagnostic et la liste des assets ; les quatre générateurs de D5 présents ou non dans `component.types` ; la copie intacte après la mesure (empreintes).
+- **Arrêts** : une empreinte de la copie qui change (l'éditeur écrit en ouvrant) ; plus de 5 % de délais dépassés (la mesure ne vaut rien, le délai est à revoir avec l'auteur).
+- **Commit** : `docs(ai-agent): record the editor opening check of every asset`
+
+### ⏳ T7.3 — Mesure : aller-retour d'enregistrement hors de l'éditeur (P25)
+
+- **Objectif** : savoir si les écrivains du moteur réécrivent les 372 assets éditables sans perte.
+- **Fichiers** : `scripts/RgceAssetCooker/RoundTripChecker.cs` (nouveau), `scripts/RgceAssetCooker/Program.cs` (option `--roundtrip`), `scripts/RgceAssetCooker/README.md` ; ce plan.
+- **Étapes** : le mode de P25 ; un rapport par asset (stable ou non au second enregistrement ; clés perdues ; valeurs changées ; clés ajoutées) et un résumé par type, sous `artifacts/editor-closure/roundtrip/`.
+- **Validation** : `dotnet build scripts/RgceAssetCooker/RgceAssetCooker.csproj` à 0 erreur ; l'outil sans option, `--verify`, `--check` et `--worlds --verify` rendent ce qu'ils rendaient (0 écart) ; `--roundtrip` rend un verdict pour chacun des 372 assets ; **témoin** : sur une copie d'un matériau où une clé est retirée du fichier écrit avant la comparaison, la perte est signalée ; `git status --short` ne nomme que les trois fichiers de l'outil et ce plan, rien sous `Content`.
+- **Arrêts** : l'outil devrait modifier le moteur ou initialiser un périphérique graphique pour charger un type (le type est noté non chargeable, D15) ; le témoin ne signale rien.
+- **Commit** : `feat(scripts): check the save round trip of the editable assets`
+
+### ⏳ T7.4 — Mesure : aller-retour dans l'éditeur piloté, échantillon (P26)
+
+- **Objectif** : voir l'éditeur lui-même modifier, enregistrer et rétablir un asset de chaque type qu'il sait piloter.
+- **Fichiers** : ce plan (script et sorties sous `artifacts/editor-closure/driven/`).
+- **Étapes** : sur la copie, selon P26 : un matériau, un son, un écran, `Entities/PlayerCar.entity`, un monde par les commandes à distance ; une texture et un modèle par les options d'automatisation.
+- **Validation** (mesure) : pour chaque asset de l'échantillon, ce qui a été modifié, les octets changés à l'enregistrement, et l'état après rétablissement (identique à la source, ou différences listées) ; la voiture retrouve l'écart de huit valeurs admis en O2, le monde celui des deux clés de caméra d'O4, et rien d'autre ; à la fin la copie est remise à l'état de la source (empreintes), par restauration des fichiers touchés.
+- **Arrêts** : une commande refusée par l'éditeur pour une raison que la documentation ne donne pas ; une écriture hors de la copie.
+- **Commit** : `docs(ai-agent): record the driven save round trip of the editor`
+
+### ⏳ T7.5 — Bilan et décision de l'auteur (D15)
+
+- **Objectif** : rendre la liste des échecs et des pertes, classés par cause, avec une proposition.
+- **Fichiers** : ce plan.
+- **Étapes** : tableau par cause (ouverture, enregistrement hors éditeur, enregistrement piloté) : assets touchés, ligne de diagnostic ou différence, lieu probable de la cause (jeu, contenu, moteur), correction proposée et son coût.
+- **Validation** : chaque échec de T7.2 à T7.4 est dans le tableau.
+- **Suite** : **s'il y a au moins un échec ou une perte, la tâche passe en ⚠️, la question est écrite dans « Points ouverts » et la session s'arrête** : les corrections sont un plan que l'auteur approuve (D15). S'il n'y en a aucun, la session continue avec T7.6.
+- **Commit** : `docs(ai-agent): record the outcome of the editor checks`
+
+### ⏳ T7.6 — Jeu et dépôt (A4, A5)
+
+- **Objectif** : le jeu et le dépôt sont dans l'état que le plan exige à la clôture.
+- **Fichiers** : ce plan (sorties sous `artifacts/worlds-as-assets/s7/` et `artifacts/editor-closure/a5/`).
+- **Étapes** : A4 par la « Validation commune (parité) » de `rgce-worlds-as-assets-tasks.md`, points 1 à 6, contre la référence de M1 (P27), sous le verrou ; A5 : `RacingGameCasaEngine.csproj` ne lie plus rien depuis `RacingGame/Content` (lecture du fichier) ; `python scripts/generate_rgce_content_assets.py --check` à 0.
+- **Validation** : `slice_check.py s7` rend `RESULT: PASS` ; A5 tenu.
+- **Arrêts** : une image, un export ou un rapport qui diffère de la référence.
+- **Commit** : `docs(ai-agent): record the game and repository checks of the editor project`
+
+### ⏳ T7.7 — Documentation
+
+- **Objectif** : la documentation dit comment contrôler le projet dans l'éditeur.
+- **Fichiers** : `RacingGameCasaEngine/Assets/README.md` (section sur les deux contrôles et leurs commandes, niveaux d'ouverture par type) ; `scripts/RgceAssetCooker/README.md` si T7.3 ne l'a pas déjà complété ; `ai-agent/README.md` ; `ai-agent/HANDOVER.md` (section 15) ; ce plan.
+- **Validation** : chaque commande citée a été lancée telle quelle dans cette tranche ; les liens ajoutés mènent à un fichier.
+- **Commit** : `docs(racing-casa): document the editor checks of the project`
+
+### ⏳ T7.8 — Vérification de clôture (A6)
+
+- **Objectif** : un `verifier` frais confirme l'ensemble.
+- **Fichiers** : ce plan, `ai-agent/README.md`, `ai-agent/HANDOVER.md`.
+- **Étapes** : le vérificateur rejoue par lui-même : le script d'ouverture sur un échantillon de son choix d'au moins 40 assets couvrant tous les types, avec un témoin négatif de son invention ; `--roundtrip` en entier, avec une perte de son invention ; un aller-retour piloté de son choix ; la relecture des sorties de T7.2 à T7.6 contre les notes ; l'état des dépôts. Traitement des constats par la session principale ; rapport de fin ; suppression de `D:/development/rgce-s7/` (P28), chemin regardé avant.
+- **Validation** : verdict CONFIRMED sur A1 à A5 tels que ce détail les définit ; aucun constat P0 à P2 ouvert.
+- **Arrêts** : REFUTED ; un INCONCLUSIVE qui subsiste après une reprise.
+- **Commit** : `docs(ai-agent): record the closing verification of the editor project`
 
 ## Points ouverts
 
