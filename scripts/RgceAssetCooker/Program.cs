@@ -8,6 +8,7 @@ internal static class Program
         RgceAssetCooker: cooks the glTF models of RacingGameCasaEngine into catalogued assets.
 
         Usage: RgceAssetCooker [--content <Content folder>] [--check | --verify] [--worlds]
+               RgceAssetCooker --content <copy of the Content folder> (--roundtrip | --roundtrip-controls) [--out <folder>] [--type <extension>] [--file <file name>]
 
           (no option)  Writes Content/Models/<Name>.staticModel, Content/Materials/**/*.material and
                        Content/Textures/<Name>.texture, updates their entries in Content/AssetInfos.json,
@@ -23,7 +24,18 @@ internal static class Program
           --worlds --verify
                        Re-reads those six files with the engine loaders and compares them with the constructors and with the
                        catalogue. Writes nothing. Exits 1 on any mismatch. (--worlds --check is not an option.)
-          --content    The project Content folder (default: RacingGameCasaEngine/Content of the repository).
+          --roundtrip  Loads and writes again, outside the editor and with no graphics device, every editable asset of the catalogue
+                       of the COPY of the project named by --content (world, entity, static model, material, texture, sound, screen,
+                       sprite), checks that nothing is lost, and reads the header of every preview asset (image, wav, font, glTF...).
+                       Writes only into --out (default: artifacts/editor-closure/roundtrip of the repository), never into the
+                       Content folder. Exits 1 if any asset fails. --type and --file restrict the run to one extension (without its
+                       dot) or one file name of the catalogue.
+          --roundtrip-controls
+                       Runs the five negative controls of --roundtrip on altered copies in <out>/controls and exits 1 if one is not
+                       reported under the name of its own check.
+          --content    The project Content folder (default: RacingGameCasaEngine/Content of the repository; required by the
+                       roundtrip modes, which must be given a copy).
+          --out        The output folder of the roundtrip modes.
         """;
 
     private static int Main(string[] args)
@@ -32,12 +44,32 @@ internal static class Program
         bool check = false;
         bool verify = false;
         bool worlds = false;
+        bool roundTrip = false;
+        bool roundTripControls = false;
+        string? outputDirectory = null;
+        string? typeFilter = null;
+        string? fileFilter = null;
         for (int index = 0; index < args.Length; index++)
         {
             switch (args[index])
             {
                 case "--content" when index + 1 < args.Length:
                     contentDirectory = Path.GetFullPath(args[++index]);
+                    break;
+                case "--out" when index + 1 < args.Length:
+                    outputDirectory = Path.GetFullPath(args[++index]);
+                    break;
+                case "--type" when index + 1 < args.Length:
+                    typeFilter = args[++index];
+                    break;
+                case "--file" when index + 1 < args.Length:
+                    fileFilter = args[++index];
+                    break;
+                case "--roundtrip":
+                    roundTrip = true;
+                    break;
+                case "--roundtrip-controls":
+                    roundTripControls = true;
                     break;
                 case "--check":
                     check = true;
@@ -66,11 +98,28 @@ internal static class Program
             return 2;
         }
 
+        if ((roundTrip || roundTripControls) && (check || verify || worlds || (roundTrip && roundTripControls)))
+        {
+            Console.Error.WriteLine("--roundtrip and --roundtrip-controls are exclusive with each other and with --check, --verify and --worlds.");
+            return 2;
+        }
+
+        if ((roundTrip || roundTripControls) && contentDirectory == null)
+        {
+            Console.Error.WriteLine("--roundtrip needs --content <copy of the Content folder>.");
+            return 2;
+        }
+
         contentDirectory ??= FindContentDirectory();
         if (contentDirectory == null || !Directory.Exists(contentDirectory))
         {
             Console.Error.WriteLine("Content folder not found: pass --content <folder>.");
             return 2;
+        }
+
+        if (roundTrip || roundTripControls)
+        {
+            return RoundTrip(contentDirectory, outputDirectory, typeFilter, fileFilter, roundTripControls);
         }
 
         if (worlds)
@@ -108,6 +157,37 @@ internal static class Program
         int verified = Verify(contentDirectory);
         Console.WriteLine($"done in {clock.Elapsed.TotalSeconds:0.0}s");
         return verified;
+    }
+
+    private static int RoundTrip(string contentDirectory, string? outputDirectory, string? typeFilter, string? fileFilter, bool controls)
+    {
+        string? repository = FindRepositoryDirectory();
+        outputDirectory ??= repository == null ? null : Path.Combine(repository, "artifacts", "editor-closure", "roundtrip");
+        if (outputDirectory == null)
+        {
+            Console.Error.WriteLine("Output folder not found: pass --out <folder>.");
+            return 2;
+        }
+
+        // The mode writes only into the output folder: refuse one that is inside a Content folder.
+        var contentFolders = new List<string> { contentDirectory };
+        if (repository != null)
+        {
+            contentFolders.Add(Path.Combine(repository, "RacingGameCasaEngine", "Content"));
+        }
+
+        foreach (string folder in contentFolders)
+        {
+            string relative = Path.GetRelativePath(folder, outputDirectory);
+            if (relative == "." || !(relative.StartsWith("..", StringComparison.Ordinal) || Path.IsPathRooted(relative)))
+            {
+                Console.Error.WriteLine($"The output folder '{outputDirectory}' is inside the Content folder '{folder}'.");
+                return 2;
+            }
+        }
+
+        var checker = new RoundTripChecker(contentDirectory, outputDirectory);
+        return controls ? checker.RunControls() : checker.Run(typeFilter, fileFilter);
     }
 
     private static int WriteWorlds(string contentDirectory)
@@ -229,11 +309,17 @@ internal static class Program
 
     private static string? FindContentDirectory()
     {
+        string? repository = FindRepositoryDirectory();
+        return repository == null ? null : Path.Combine(repository, "RacingGameCasaEngine", "Content");
+    }
+
+    private static string? FindRepositoryDirectory()
+    {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory != null; directory = directory.Parent)
         {
             if (File.Exists(Path.Combine(directory.FullName, "RacingGame.slnx")))
             {
-                return Path.Combine(directory.FullName, "RacingGameCasaEngine", "Content");
+                return directory.FullName;
             }
         }
 

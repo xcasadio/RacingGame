@@ -1854,7 +1854,7 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 >   3. « [ColorPipeline] View pipeline OverlayViewPipeline does not implement IScenePhaseViewPipeline: its interface is rendered into the HDR target and tonemapped with the scene. » : les 3 mondes de course.
 >   4. **Sur chacun des 9 `.uiscreen`, deux avertissements** (« UIScreenDesignTimeDataLoader: … » et « UIScreen preview design-time data: … ») : « Script type '<Nom>ViewModel' (key 'view_model_type', file …) could not be resolved: no public top-level type has this full name in the registered script assemblies. Searched assemblies: RacingGame.Gameplay. Did you mean 'RacingGame.Gameplay.ViewModels.<Nom>ViewModel'? ». Les neuf fichiers `<Écran>.design.json` nomment leur modèle de vue par son nom court (`"view_model_type": "RaceHudViewModel"`), et le moteur résout depuis `d4524e84c` (« resolve script objects by full name from the script assemblies only », arrivé avec la fusion d'`origin/main` du 2026-11-19) par nom complet seulement. **Les données de conception des neuf écrans ne sont donc plus appliquées dans l'aperçu de l'éditeur.** L'écran s'ouvre, d'où le verdict « passe » de P23 ; c'est un défaut réel, que T7.5 classe.
 
-### 🚧 T7.3 — Mesure : aller-retour d'enregistrement et en-têtes d'aperçu, hors de l'éditeur (P25, P30)
+### ✅ T7.3 — Mesure : aller-retour d'enregistrement et en-têtes d'aperçu, hors de l'éditeur (P25, P30)
 
 - **Objectif** : savoir si les écrivains du moteur réécrivent les 372 assets éditables sans perte, et si les 250 assets d'aperçu ont un en-tête lisible.
 - **Fichiers** : `scripts/RgceAssetCooker/RoundTripChecker.cs` (nouveau), `scripts/RgceAssetCooker/Program.cs` (option `--roundtrip`), `scripts/RgceAssetCooker/README.md` ; ce plan.
@@ -1863,7 +1863,17 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 - **Arrêts** : l'outil devrait modifier le moteur ou initialiser un périphérique graphique pour charger un type (le type est noté non chargeable, D15) ; un témoin n'est pas signalé, ou l'est sous un autre nom que le sien.
 - **Commit** : `feat(scripts): check the save round trip of the editable assets`
 
-### ⏳ T7.4 — Mesure : aller-retour dans l'éditeur piloté, échantillon (P26)
+> Mesure (2026-11-21), sorties dans `artifacts/editor-closure/roundtrip/` (`roundtrip.json`, `summary.txt`, `first/`, `second/`, `controls/controls.json`, `notes.txt`). Écrit par un `executor`, relu et relancé par la session principale (mêmes résultats).
+> - **Outil** : `scripts/RgceAssetCooker/RoundTripChecker.cs` (nouveau), options `--roundtrip` et `--roundtrip-controls` dans `Program.cs`, avec `--content <dossier>` (obligatoire) et `--out <dossier>` ; un `--out` placé dans un dossier `Content` est refusé. Les sept types hors monde passent par leur `Load(JObject)` et `EditorAssetWriterService.SaveAsset` ; un monde par la méthode de P25 ; aucun type interne du moteur n'est appelé. `dotnet build` de l'outil à 0 erreur, 0 avertissement. `--verify` : 0 écart ; `--check` : 0 ; `--worlds --verify` : 0 écart ; l'outil sans option n'a pas été lancé.
+> - **Commandes** : `RgceAssetCooker.exe --roundtrip --content D:/development/rgce-s7/content --out artifacts/editor-closure/roundtrip`, puis la même avec `--roundtrip-controls`.
+> - **372 assets éditables sur 372 passent** : second enregistrement identique au premier, aucune clé perdue, aucune valeur changée, aucune clé ajoutée par l'écrivain, aucune erreur ni avertissement au journal de l'outil. Par type : `.world` 7, `.entity` 1, `.staticmodel` 56, `.material` 99, `.texture` 122, `.sound` 28, `.uiscreen` 9, `.sprite` 50. Les huit types se chargent hors du jeu, sans périphérique graphique.
+> - **Composants** (chargés sous leur vrai type / non résolus / nœuds du fichier source) : `PlayerCar.entity` 12 / 0 / 12 ; `CarSelection.world` 4 / 0 / 4 ; `Editor.world` 0 / 0 / 0 ; `FrontEnd.world` 2 / 0 / 2 ; `TrackAdvanced.world` 920 / 0 / 920 ; `TrackBeginner.world` 665 / 0 / 665 ; `TrackExpert.world` 1761 / 0 / 1761 ; `Test/TrackBeginnerGenerators.world` 7 / 0 / 7.
+> - **250 assets d'aperçu sur 250 ont un en-tête lisible** (`Problem` nul) : `.png` 149, `.gltf` 56, `.wav` 28, `.combimodel` 10, `.track` 3, `.dds` 2, `.fnt` 1, `.data` 1.
+> - **Témoins**, les cinq signalés sous leur nom : (a) clé `name` retirée du premier enregistrement d'un matériau : « key lost » ; (b) sa valeur changée : « value changed » ; (c) un octet du second enregistrement altéré : « unstable » ; (d) `CameraLookAtComponent` renommé en `RgceControlNoSuchComponentType` dans une copie de `FrontEnd.world` : « unresolved type » (le compte des composants, 1 pour 2, et l'erreur au journal se déclenchent aussi) ; (e) copie de `Audio/Beep.wav` remplacée par du texte : « unreadable preview », « Not a RIFF/WAVE file ».
+> - `git status --short` : les trois fichiers de l'outil et ce plan ; rien sous `Content` ; moteur intact.
+> - Relevés sans effet sur les contrôles : le premier enregistrement est identique à la source octet pour octet pour 340 assets ; pour 24 `.sound` il n'en diffère que par les fins de ligne, pour 8 `.uiscreen` par les fins de ligne et des blancs de fin. L'entrée de catalogue de la police s'écrit avec des barres inverses (`UI\Fonts\GameFont.fnt`).
+
+### 🚧 T7.4 — Mesure : aller-retour dans l'éditeur piloté, échantillon (P26)
 
 - **Objectif** : voir l'éditeur lui-même modifier, enregistrer et rétablir un asset de chaque type qu'il sait piloter.
 - **Fichiers** : ce plan (script et sorties sous `artifacts/editor-closure/driven/`).
