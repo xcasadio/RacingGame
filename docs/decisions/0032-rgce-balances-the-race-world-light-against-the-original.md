@@ -1,6 +1,6 @@
 # ADR-0032: RacingGameCasaEngine balances the light of the race world against the original with an exposure of 0.9
 
-- **Status**: Accepted
+- **Status**: Accepted; amended by ADR-0043 (the terrain carries its own flat ambient and no longer receives the light of the sky)
 - **Date**: 2026-11-17
 - **Source**: this chantier: `ai-agent/tasks/rgce-render-gaps-tasks.md`, slice R3 (rule of choice written before the measurement, applied mechanically; plan approved by the author on 2026-11-17 in AUTO mode, to be confirmed with this record); the measurement: `artifacts/pbr-handover/s20/r3/` (`table.md`, `step1-rule.txt` to `step4-rule.txt`, one folder per candidate, `sheet-*.png`, `scripts/`); open point O13 of `ai-agent/tasks/rgce-pbr-handover-tasks.md`; ADR-0018, ADR-0031
 

@@ -145,9 +145,15 @@ internal sealed class Cooker
             asset.SetPropertyValue("emissive_shadow_factor", MaterialValue.FromFloat(recipe.EmissiveShadowFactor));
         }
 
+        if (recipe.AmbientColor != Vector3.Zero)
+        {
+            // Only the terrain asks for a flat ambient of its own: the key is absent otherwise, and the engine default (0, 0, 0) applies.
+            asset.SetPropertyValue("ambient_color", MaterialValue.FromVector3(recipe.AmbientColor));
+        }
+
         if (material.OcclusionTextureId != Guid.Empty)
         {
-            // Only the road has an occlusion texture (it scales the image-based light only): the other materials keep their files as they are, without either key.
+            // Only the road and the terrain have an occlusion texture (it scales the image-based light only): the other materials keep their files as they are, without either key.
             asset.SetPropertyValue("occlusion_texture", MaterialValue.FromTextureId(material.OcclusionTextureId));
             asset.SetPropertyValue("occlusion_strength", MaterialValue.FromFloat(recipe.OcclusionStrength));
         }

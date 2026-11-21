@@ -420,3 +420,29 @@ The game now draws its random scenery with the seed of the reference capture (1)
 Placement digests logged by the race worlds (`Track placements <track>: ... digest`), the same in the reference views, the track audit, the interface captures and the scene export: Beginner `197D7EF3A381BD78` (1147 placements), Advanced `C6D4C53FF70AEEB1` (1693), Expert `EF69E08B051B8297` (3404). Before, outside the reference views: `6EBF84F81D01AC88` (1274), `FD0564E1183D98FE` (1757), `29A2403A3F0CDCFA` (3432).
 
 Reference of the track audit and of the interface from now on: `artifacts/worlds-as-assets/m0/ref/`.
+
+## Update after the terrain ambient (2026-11-21)
+
+Decisions: see ADR-0043. Plan `ai-agent/tasks/rgce-render-fidelity-tasks.md`, slice F2; outputs under `artifacts/render-fidelity/f2/` of the worktree of the chantier. From this slice on the bench runs from that worktree; its first replay (slice F0) is byte-identical to `artifacts/worlds-as-assets/m1/ref/`.
+
+The terrain carries the flat ambient of the original through the engine key `ambient_color` (0.42) and no longer receives the light of the sky. A = mean absolute difference per channel with the original on the 12 `away` probes of the terrain.
+
+| Candidate | A | E | Et | Probes 1 / 2 / 3 / 4 | Criterion 3, `legacy` | Eligible |
+|---|---|---|---|---|---|---|
+| start state (no ambient of its own, sky light) | 11.583 | 15.039 | 12.844 | 20 / 2 / 27 / 3 | 27 | - |
+| 0.345, without the sky light | 9.500 | 14.579 | 12.844 | 25 / 2 / 27 / 3 | 27 | yes |
+| 0.42, without the sky light | 8.056 | 14.374 | 12.844 | 27 / 2 / 27 / 3 | 27 | yes |
+| 0.50, without the sky light | 6.889 | 15.025 | 12.844 | 24 / 2 / 27 / 3 | 27 | no (1 lit probe(s) lost) |
+| 0.58, without the sky light | 7.833 | 16.788 | 12.844 | 15 / 2 / 27 / 3 | 27 | no (E, c1, 8 lit probe(s) lost) |
+| 0.66, without the sky light | 11.694 | 19.330 | 12.844 | 13 / 2 / 27 / 3 | 27 | no (E, c1, 9 lit probe(s) lost) |
+| 0.74, without the sky light | 16.417 | 22.273 | 12.844 | 9 / 2 / 27 / 3 | 27 | no (E, c1, 11 lit probe(s) lost) |
+| 0.82, without the sky light | 21.444 | 25.428 | 12.844 | 4 / 1 / 27 / 3 | 27 | no (E, c1, c2, 12 lit probe(s) lost) |
+| 0.25, with the sky light | 11.000 | 14.521 | 12.844 | 20 / 2 / 27 / 3 | 27 | yes |
+| 0.345, with the sky light | 10.583 | 14.655 | 12.844 | 21 / 2 / 27 / 3 | 27 | yes |
+| 0.42, with the sky light | 11.056 | 15.470 | 12.844 | 20 / 2 / 27 / 3 | 27 | no (E, 1 lit probe(s) lost) |
+| 0.50, with the sky light | 13.556 | 17.207 | 12.844 | 17 / 2 / 27 / 3 | 27 | no (E, c1, 4 lit probe(s) lost) |
+| 0.58, with the sky light | 17.167 | 19.497 | 12.844 | 11 / 2 / 27 / 3 | 27 | no (E, c1, 8 lit probe(s) lost) |
+
+Applied state: A 11.583 -> 8.056; E 15.039 -> 14.374 in `linear`, 19.793 -> 15.509 in `legacy`; E against the original with its post-process 31.648 -> 30.116; tunnel views 12.844 -> 12.844; probes 20 / 2 / 27 / 3 -> 27 / 2 / 27 / 3 in `linear`, 4 / 0 / 27 / 3 -> 16 / 0 / 27 / 3 in `legacy`.
+
+Reference of the bench from now on: `artifacts/render-fidelity/f2/ref/` of the worktree.

@@ -260,11 +260,22 @@ public static class RaceMaterialRecipes
         };
     }
 
+    // The terrain takes the flat ambient of the original (ADR-0043). The original gives its terrain the ambient 88 of 255
+    // (Landscapes/Landscape.cs:597-607), multiplied by the texture and its detail, and nothing else lights a face turned away
+    // from the sun (LandscapeNormalMapping.fx, PS_DiffuseWithDetail). The engine key ambient_color carries that ambient, and a
+    // black occlusion texture at full strength takes the light of the sky off the terrain, as on the road: with the sky those
+    // faces were grey or blue instead of the brown of the texture. 0.42 is the level retained by measurement against the
+    // original; it is above the original's 0.345 because the tone curve of the race world darkens the low values.
+    private const float TerrainAmbientLevel = 0.42f;
+    private const float TerrainOcclusionStrength = 1f;
+
     /// <summary>
     /// The terrain. The paths are the first of <see cref="GroundTextureCandidates"/> and <see cref="TerrainNormalTextureCandidates"/> that
-    /// load, or null; <paramref name="detailTexturePath"/> is <see cref="TerrainDetailTextureName"/> when it exists, or null.
+    /// load, or null; <paramref name="detailTexturePath"/> is <see cref="TerrainDetailTextureName"/> when it exists, or null;
+    /// <paramref name="occlusionTexturePath"/> is <see cref="RoadOcclusionTextureName"/> when it exists, or null (the terrain then
+    /// keeps the environment light).
     /// </summary>
-    public static RaceMaterialRecipe ForTerrain(string trackName, string? diffuseTexturePath, string? normalTexturePath, string? detailTexturePath)
+    public static RaceMaterialRecipe ForTerrain(string trackName, string? diffuseTexturePath, string? normalTexturePath, string? detailTexturePath, string? occlusionTexturePath)
     {
         return new RaceMaterialRecipe
         {
@@ -273,6 +284,9 @@ public static class RaceMaterialRecipes
             NormalTextureFilePath = normalTexturePath,
             DetailTextureFilePath = detailTexturePath,
             DetailTiling = TerrainDetailTiling,
+            AmbientColor = new Vector3(TerrainAmbientLevel),
+            OcclusionTextureFilePath = occlusionTexturePath,
+            OcclusionStrength = TerrainOcclusionStrength,
             Family = RacingGamePbrMaterialMapping.Terrain,
             BaseColor = WithLegacyDiffuse(diffuseTexturePath != null ? Color.White : new Color(182, 166, 118), LegacyTerrainDiffuse),
             SamplerState = RaceMaterialStates.AnisotropicWrap,

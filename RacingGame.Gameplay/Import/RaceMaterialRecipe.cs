@@ -87,9 +87,17 @@ public sealed record RaceMaterialRecipe
     public float EmissiveShadowFactor { get; init; }
 
     /// <summary>
-    /// The occlusion texture (its red channel), or <c>null</c> when the material has none (every material but the road's): the cooker
-    /// then writes neither the <c>occlusion_texture</c> nor the <c>occlusion_strength</c> key. The engine's <c>lit-pbr</c> occlusion,
-    /// 1 + <see cref="OcclusionStrength"/> x (red - 1), scales the image-based light only, never the direct light.
+    /// The flat ambient of the material, a display colour (the engine's <c>ambient_color</c>, engine ADR-0146): the engine adds
+    /// base colour x ambient colour to the pixel, detail texture included, without the occlusion of the material, and with the
+    /// shadow tint of the race world. (0, 0, 0), the default, adds nothing; the cooker writes no <c>ambient_color</c> key then.
+    /// </summary>
+    public Vector3 AmbientColor { get; init; } = Vector3.Zero;
+
+    /// <summary>
+    /// The occlusion texture (its red channel), or <c>null</c> when the material has none (every material but the road's and the
+    /// terrain's): the cooker then writes neither the <c>occlusion_texture</c> nor the <c>occlusion_strength</c> key. The engine's
+    /// <c>lit-pbr</c> occlusion, 1 + <see cref="OcclusionStrength"/> x (red - 1), scales the image-based light only, never the
+    /// direct light nor the flat ambient of the material.
     /// </summary>
     public string? OcclusionTextureFilePath { get; init; }
 
