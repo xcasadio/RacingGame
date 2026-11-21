@@ -216,7 +216,7 @@ Un écart à l'un de ces points est un arrêt, sans seuil de tolérance décidé
 > - Étape 9 : `measure_base.py` (`5678640aa44e74e0`) lancé sur l'ancre `m1/ref` du checkout principal et sur `f0/ref` : `measure_base.json` identiques octet pour octet. `linear` : `E` 15,039 contre `nopost`, 31,648 contre `full` ; tunnels 12,844 et 15,194 ; sondes 20/34, 2/4, 27/33, 3/3, égaux au repère. `legacy` : `E` 19,793 et 39,394 ; tunnels 13,745 et 15,552 ; sondes 4/34, 0/4, 27/33, 3/3.
 > - Référence de départ des tranches suivantes : `artifacts/render-fidelity/f0/ref/`.
 
-### ⏳ F1 — Jeu sur le moteur qui porte la clé d'ambiant
+### ✅ F1 — Jeu sur le moteur qui porte la clé d'ambiant
 
 - Objectif : le jeu pointe sur le moteur de la tâche T1 (clé `ambient_color` de `lit-pbr`), sans s'en servir ; preuve que le moteur ne change aucune image par défaut.
 - Prérequis : table « Dépendances ».
@@ -225,6 +225,14 @@ Un écart à l'un de ces points est un arrêt, sans seuil de tolérance décidé
 - Cette validation est aussi celle du commit (a) des tranches F4 à F7, **contre la référence précédente** et non contre `f0/ref` (images, rapports `scene-measure-*.txt`, audits, export) : le seul champ d'export différent admis est alors celui que la tâche du moteur de la tranche ajoute à un type exporté, nommé dans la note ; s'il n'y en a pas, aucun. Les rejeux d'un commit (a) tenu deviennent la référence précédente du commit (b).
 - Arrêts : une image qui change ; un champ différent non admis ; une adaptation du jeu qui dépasse la compilation. Une image qui change réfute la tâche du moteur : elle est rouverte selon la règle « Parité réfutée » de son plan.
 - Commit : `chore(engine): point CasaEngine at the per-material ambient key`
+
+> Validation (2026-11-21), sorties dans `artifacts/render-fidelity/f1/` (`build-game.txt`, `f1_check.txt`, `compare_geometry.json`, `ref/`, `export/`) et `f1-runs.txt`.
+> - Prérequis : T1 du plan du moteur ✅ (clé `ambient_color`, ADR-0146 du moteur `Proposed`). Sa première vérification indépendante l'avait réfutée sur un point (un pixel ombré à émissive non nulle différait au dernier bit en `MultiplyLitColor`, clé non utilisée) ; corrigée, contre-vérifiée **CONFIRMED**, 8324 tests du moteur. Tête de `chantier/render-fidelity` : `5d9467a91`, copiée dans le dépôt du moteur du checkout principal (P2).
+> - Pointeur `CasaEngine` indexé sur `5d9467a91` avant les rejeux ; contrôle « Pointeur et sous-module » tenu (différence nulle, arbre du moteur propre). `dotnet build RacingGame.slnx` à 0 erreur, **sans aucune adaptation du jeu** ; le `bin` du jeu porte le shader corrigé (`LitPbr.xnb` `eee9e258…`).
+> - Rejeux, 17 lancements sous verrou, tous `exit 0`, aucun `[Warning]` ni `[Error]`. Le verrou a été attendu jusqu'à la fin de la série de l'autre session (libre 90 secondes de suite) ; son contenu à la fin des rejeux était encore celui de cette session.
+> - **Parité : 76 PNG identiques octet pour octet à `f0/ref`**, rapports `scene-measure-*.txt` identiques. Audits de voiture identiques à ceux de `f0` hors `Generated:`. Cuiseur `--verify` 0 écart, `--check` 0, `--worlds --verify` 0 ; générateur `--check` 0 ; `check_gameplay_type_names.py` 0.
+> - Export de scène, `compare_geometry.py` de `f0` à `f1` : 0 enregistrement sans pair ; **un seul champ diffère, `MaterialParameters.AmbientColor`, sur les 7528 enregistrements** (le paramètre que T1 ajoute, à sa valeur par défaut), admis. Aucune `ShaderFeature` nouvelle : `RenderFeatures` ne diffère nulle part.
+> - La clé du moteur est donc sans effet sur les images du jeu tant qu'aucun matériau ne s'en sert. Référence précédente de F2 : `artifacts/render-fidelity/f1/ref/`, export `f1/export/scene.json`.
 
 ### ⏳ F2 — Ambiant du terrain
 
