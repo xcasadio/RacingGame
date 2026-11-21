@@ -1936,7 +1936,7 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 > - La note de contexte de l'ADR-0002 (« resolves design-time view models by simple type name ») décrit le moteur du 2026-10-05 ; elle n'est pas réécrite, l'ADR-0075 du moteur fait foi depuis.
 > - Écart au déroulé prévu : les notes de T7.4 et de T7.5 sont dans un seul commit (`8f0eb0d`) au lieu de deux.
 
-### 🚧 T7.6 — Jeu et dépôt (A4, A5)
+### ✅ T7.6 — Jeu et dépôt (A4, A5)
 
 - **Objectif** : le jeu et le dépôt sont dans l'état que le plan exige à la clôture.
 - **Fichiers** : ce plan (sorties sous `artifacts/worlds-as-assets/s7/` et `artifacts/editor-closure/a5/`).
@@ -1945,7 +1945,12 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 - **Arrêts** : une image, un export ou un rapport qui diffère de la référence.
 - **Commit** : `docs(ai-agent): record the game and repository checks of the editor project`
 
-### ⏳ T7.7 — Documentation
+> Validation (2026-11-21, après la correction de T7.5, jeu `14bc77c`), sorties dans `artifacts/worlds-as-assets/s7/` (`ref/`, `export/`, `car-profile/`, `car-top-speed/`, `slice_check.txt`) ; lanceur `artifacts/editor-closure/s7_parity_runs.py`, qui fait ce que fait `slice_runs.sh`, chaque lancement du jeu sous le verrou de P28.
+> - **A4 : tenu.** `dotnet build RacingGame.slnx` à 0 erreur ; `check_gameplay_type_names.py` : 0 collision ; réglages de l'utilisateur aux empreintes de M1 avant et après. `slice_check.py s7` : `RESULT: PASS`. Les 76 images des six genres, rejouées deux fois, sont identiques octet pour octet à la référence de M1 ; `smoke` et `profile` en succès ; aucun `[Warning]` ni `[Error]` dans les journaux ; export de scène sans enregistrement sans pair (1437, 2033, 4058) ; les deux rapports d'audit de voitures identiques à ceux de M1 hors la ligne `Generated: ` ; cuiseur `--verify` et `--check` à 0. La correction des neuf `.design.json` ne change donc rien au jeu.
+> - **A5 : tenu.** `RacingGameCasaEngine.csproj` ne lie rien depuis `RacingGame/Content` (son seul lien externe est la police `tahoma.ttf` du contenu du moteur) ; `generate_rgce_content_assets.py --check` : 0 fichier de `Content` non catalogué.
+> - Incident, sans effet : un premier lancement du rejeu a échoué en zéro seconde sur les 14 lancements du banc, parce que le lanceur appelait le `bash` de WSL au lieu de Git Bash ; corrigé (chemin complet de Git Bash), rejeu refait en entier. Aucun lancement du jeu n'avait eu lieu.
+
+### 🚧 T7.7 — Documentation
 
 - **Objectif** : la documentation dit comment contrôler le projet dans l'éditeur.
 - **Fichiers** : `RacingGameCasaEngine/Assets/README.md` (section sur les deux contrôles et leurs commandes, niveaux d'ouverture par type) ; `scripts/RgceAssetCooker/README.md` si T7.3 ne l'a pas déjà complété ; `ai-agent/README.md` ; `ai-agent/HANDOVER.md` (section 15) ; ce plan.
