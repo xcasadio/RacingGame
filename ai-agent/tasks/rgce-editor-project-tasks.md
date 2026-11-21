@@ -1833,7 +1833,7 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 > - **Copie intacte** : après remise des trois fichiers, les 700 empreintes hors `.casaeditor/` sont celles d'avant, et celles du `Content` du dépôt. `git status --short` : le script et ce plan seulement.
 > - **Relevés** : la ligne d'ouverture reprend le `file_name` tel que passé (barres obliques), sans écart de casse ; le diagnostic nomme le panneau d'un aperçu (`kind=`), d'un document (`Opened texture asset=`), pas celui d'un monde (le script lit alors `Active document panel`) ; les avertissements figurent dans deux sections du diagnostic, lues toutes deux. Deux `[Warning]` reviennent à chaque lancement, sans nommer l'asset : « Script assembly context is still alive after unload… » et « The previous script assembly could not be fully unloaded… » ; ils seront classés en T7.5.
 
-### 🚧 T7.2 — Mesure : le projet et les 622 assets dans l'éditeur (A1, A2)
+### ✅ T7.2 — Mesure : le projet et les 622 assets dans l'éditeur (A1, A2)
 
 - **Objectif** : savoir ce qui s'ouvre et ce qui ne s'ouvre pas.
 - **Fichiers** : ce plan (sorties sous `artifacts/editor-closure/a2/`, ignorées par git).
@@ -1844,7 +1844,17 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 - **Arrêts** : une empreinte de la copie qui change (l'éditeur écrit en ouvrant) ; plus de 5 % de délais dépassés (la mesure ne vaut rien, le délai est à revoir avec l'auteur).
 - **Commit** : `docs(ai-agent): record the editor opening check of every asset`
 
-### ⏳ T7.3 — Mesure : aller-retour d'enregistrement et en-têtes d'aperçu, hors de l'éditeur (P25, P30)
+> Mesure (2026-11-21), sorties dans `artifacts/editor-closure/a1/` (`a1.json`, script `artifacts/editor-closure/a1_run.py`) et `artifacts/editor-closure/a2/` (`results.json`, `summary.json`, un diagnostic par asset ; journal `a2-stdout.txt`). La mesure est complète ; son classement revient à T7.5.
+> - **A1 : tenu.** Éditeur lancé avec `--remote` sur la copie : `editor.status` nomme le projet de la copie ; `component.types` rend 50 noms, dont les 16 classes de composants du jeu attendues (aucune manquante) ; `RaceTrackGeneratorComponent` et `RaceGeneratedModelComponent` en sont absentes, comme attendu. `world.open` de `Worlds/Race/TrackBeginner.world` : 661 entités ; journal lu en entier après l'ouverture, 1646 lignes, **aucune erreur**, un avertissement (le troisième de la liste ci-dessous). L'éditeur s'est fermé de lui-même.
+> - **A2 : 622 assets sur 622 passent** la règle de P23, aucun délai dépassé ; 7,3 s par lancement en moyenne, 9,9 s au plus, 77 minutes en tout. Par type : `.png` 149, `.texture` 122, `.material` 99, `.gltf` 56, `.staticmodel` 56, `.sprite` 50, `.wav` 28, `.sound` 28, `.combimodel` 10, `.uiscreen` 9, `.world` 7, `.track` 3, `.dds` 2, `.fnt` 1, `.data` 1, `.entity` 1. Panneaux ouverts : document pour les 372 assets éditables ; aperçu `Image` 149, `Model` 56, `Audio` 28, `Text` 13, `CubeMap` 2, `BitmapFont` 1, `Binary` 1.
+> - **Copie intacte** : les 700 empreintes hors `.casaeditor/` après la mesure sont celles d'avant.
+> - **Textes distincts de `[Warning]`**, aucun ne nomme le fichier de son asset ; à classer en T7.5 :
+>   1. « Script assembly context is still alive after unload: a script type is still referenced somewhere. » : 622 fois, à chaque lancement.
+>   2. « The previous script assembly could not be fully unloaded; a script type is still referenced. » : 622 fois, à chaque lancement.
+>   3. « [ColorPipeline] View pipeline OverlayViewPipeline does not implement IScenePhaseViewPipeline: its interface is rendered into the HDR target and tonemapped with the scene. » : les 3 mondes de course.
+>   4. **Sur chacun des 9 `.uiscreen`, deux avertissements** (« UIScreenDesignTimeDataLoader: … » et « UIScreen preview design-time data: … ») : « Script type '<Nom>ViewModel' (key 'view_model_type', file …) could not be resolved: no public top-level type has this full name in the registered script assemblies. Searched assemblies: RacingGame.Gameplay. Did you mean 'RacingGame.Gameplay.ViewModels.<Nom>ViewModel'? ». Les neuf fichiers `<Écran>.design.json` nomment leur modèle de vue par son nom court (`"view_model_type": "RaceHudViewModel"`), et le moteur résout depuis `d4524e84c` (« resolve script objects by full name from the script assemblies only », arrivé avec la fusion d'`origin/main` du 2026-11-19) par nom complet seulement. **Les données de conception des neuf écrans ne sont donc plus appliquées dans l'aperçu de l'éditeur.** L'écran s'ouvre, d'où le verdict « passe » de P23 ; c'est un défaut réel, que T7.5 classe.
+
+### 🚧 T7.3 — Mesure : aller-retour d'enregistrement et en-têtes d'aperçu, hors de l'éditeur (P25, P30)
 
 - **Objectif** : savoir si les écrivains du moteur réécrivent les 372 assets éditables sans perte, et si les 250 assets d'aperçu ont un en-tête lisible.
 - **Fichiers** : `scripts/RgceAssetCooker/RoundTripChecker.cs` (nouveau), `scripts/RgceAssetCooker/Program.cs` (option `--roundtrip`), `scripts/RgceAssetCooker/README.md` ; ce plan.
