@@ -264,7 +264,7 @@ Sur l'état B (R4). Si l'auteur choisit ensuite de revenir à l'état A (T4.1), 
 
 ## Phase 4 — Décision, documents, clôture
 
-### ⚠️ T4.1 — Décision de l'auteur et documents (E5)
+### ✅ T4.1 — Décision de l'auteur et documents (E5)
 
 - Objectif : arrêter l'état final et l'écrire.
 - Fichiers : `docs/decisions/0045-…md` et `docs/decisions/README.md` (skill `adr`, P6) ; `RacingGameCasaEngine/Assets/README.md` (phrases qui nomment la caméra ou ses clés, relevé du 2026-11-22 : lignes 111, 138, 165) ; `scripts/RgceAssetCooker/README.md` (lignes 67-68, 86-92) ; `ai-agent/README.md`, `ai-agent/HANDOVER.md` (section 16) ; ce plan.
@@ -275,9 +275,19 @@ Sur l'état B (R4). Si l'auteur choisit ensuite de revenir à l'état A (T4.1), 
 - Validation : `rg "CameraLookAt|Camera3dComponent"` dans `RacingGameCasaEngine/Assets/README.md`, `scripts/RgceAssetCooker/README.md` et le code : aucune phrase fausse ; liens des documents valides.
 - Commits : si A est retenu, d'abord `refactor(racing-casa): return to the look-at camera of the game` ; puis `docs(adr): record the camera of the game on the engine's simple cameras` ; `docs(racing-casa): describe the game on the engine's origin/main`
 
-> **En pause (2026-11-22) : décision de l'auteur attendue (D1, O1).** L'écart de l'étape B n'est pas nul (T2.2) : 70 images sur 76 diffèrent de la référence de M1, d'un niveau sur 255 pour l'essentiel, sans objet déplacé ni manquant ; décalage global ajusté de 0,0005 pixel en médiane, 0,028 au plus. Tout le reste tient sur l'état B : export, audits de voitures, outils, 622 ouvertures dans l'éditeur, aller-retour, composants proposables, échantillon piloté. La question est dans « Points ouverts », O1. Rien de T4.1 n'est commencé : ni ADR, ni documents.
+> **Pause du 2026-11-22 (D1, O1), levée le même jour.** L'écart de l'étape B n'est pas nul (T2.2) : 70 images sur 76 diffèrent de la référence de M1, d'un niveau sur 255 pour l'essentiel, sans objet déplacé ni manquant ; décalage global ajusté de 0,0005 pixel en médiane, 0,028 au plus. Tout le reste tient sur l'état B : export, audits de voitures, outils, 622 ouvertures dans l'éditeur, aller-retour, composants proposables, échantillon piloté. La question est dans « Points ouverts », O1. Rien de T4.1 n'est commencé : ni ADR, ni documents.
+>
+> Validation (2026-11-22) :
+> - **Décision de l'auteur** : à la question « Gardez-vous la caméra du moteur, ou revenez-vous à l'état A ? », posée avec le rapport de mesure et deux planches, l'auteur répond « Recommandation » ; la recommandation était de garder la caméra du moteur. **L'état B est retenu** ; aucun retour en arrière, T3.1 à T3.3 ne sont pas rejouées.
+> - **Référence du banc** : les images se jugent désormais contre `artifacts/worlds-as-assets/e2/ref` ; `m1/ref` reste en place. `slice_check.py` (hors dépôt) reçoit une option `--ref`, transmise à `parity.py` ; sans elle il compare toujours à `m1/ref`. `slice_check.py e2 --ref worlds-as-assets/e2/ref` rend `RESULT: PASS` (export et audits de voitures toujours comparés à M1).
+> - **ADR-0045** (`Proposed`, `d75f8cf`) : contexte, décision, mesures, conséquences, limites ; ligne ajoutée à l'index. Aucun ADR existant n'est modifié.
+> - **Documents** : `RacingGameCasaEngine/Assets/README.md` (la caméra d'un monde de course est nommée, avec le lien vers l'ADR ; les phrases sur `view_distance` et `viewport` restent justes, T3.3 les a mesurées de nouveau) ; `scripts/RgceAssetCooker/README.md` (type et clés du nœud de caméra, relus dans `Worlds/FrontEnd.world`) ; `ai-agent/HANDOVER.md` section 16 ; `ai-agent/README.md`.
+> - `rg "CameraLookAt|Camera3dComponent|ArcBall|CameraTargeted"` hors `artifacts/`, `CasaEngine/`, `ai-agent/` et les ADR antérieurs : aucune occurrence dans le code, le contenu ni les deux README. Une seule ailleurs, `docs/casaengine-entity-update-strategy-agent-plan.md:464`, un plan ancien qui nomme des classes du moteur à sa date : laissé tel quel (hors tâche).
+> - Le conseil de caméra du README des assets (l'éditeur part à la distance 10) est relu dans le moteur : `EditorViewportCameraController.DefaultDistance` vaut toujours 10.
+> - Remarque hors tâche, non corrigée : `scripts/RgceAssetCooker/README.md` dit encore, dans sa section `--worlds`, que le jeu ne charge pas ces fichiers ; c'est faux depuis M5 du plan des mondes en assets.
+> - **E5 est tenu.**
 
-### ⏳ T4.2 — Vérification indépendante (E6)
+### 🚧 T4.2 — Vérification indépendante (E6)
 
 - Objectif : un `verifier` frais confirme ou réfute E1 à E5 sur l'état final.
 - Étapes : lui donner les affirmations exactes, le diff `d71dc65..HEAD`, les chemins des sorties ; il rejoue ce qu'il choisit sous le verrou (au moins : les builds du jeu et de l'outil, `--worlds --verify`, un genre du banc, un échantillon d'ouvertures dans l'éditeur, le recalcul des empreintes des images) et pose ses propres témoins.
@@ -314,4 +324,4 @@ Sur l'état B (R4). Si l'auteur choisit ensuite de revenir à l'état A (T4.1), 
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
-| O1 | **Décision de l'auteur attendue (2026-11-22).** Écart d'image de l'étape B, mesuré en T2.2 : 70 images sur 76 diffèrent de la référence de M1 (d'un niveau sur 255 pour l'essentiel, décalage ajusté de 0,0005 pixel en médiane et 0,028 au plus, aucun objet déplacé ; rapport `artifacts/engine-simple-cameras/b-measure/report.md`). Choix : **garder l'état B** (la caméra du moteur ; les images de `artifacts/worlds-as-assets/e2/ref` deviennent la référence du banc, celle de M1 n'étant plus atteignable à l'octet) ou **revenir à l'état A** (la classe `RaceLookAtCameraComponent` du jeu, images identiques à M1 à l'octet ; T3.1 à T3.3 sont alors rejouées, environ 80 minutes de machine). | T4.1 |
+| O1 | **Clos le 2026-11-22 : l'auteur garde l'état B** (réponse « Recommandation », ADR-0045). Question posée : Écart d'image de l'étape B, mesuré en T2.2 : 70 images sur 76 diffèrent de la référence de M1 (d'un niveau sur 255 pour l'essentiel, décalage ajusté de 0,0005 pixel en médiane et 0,028 au plus, aucun objet déplacé ; rapport `artifacts/engine-simple-cameras/b-measure/report.md`). Choix : **garder l'état B** (la caméra du moteur ; les images de `artifacts/worlds-as-assets/e2/ref` deviennent la référence du banc, celle de M1 n'étant plus atteignable à l'octet) ou **revenir à l'état A** (la classe `RaceLookAtCameraComponent` du jeu, images identiques à M1 à l'octet ; T3.1 à T3.3 sont alors rejouées, environ 80 minutes de machine). | T4.1 |

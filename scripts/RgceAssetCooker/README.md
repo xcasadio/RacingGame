@@ -83,6 +83,8 @@ these files yet (plan `ai-agent/tasks/rgce-worlds-as-assets-tasks.md`, M5).
   entity has child entities (the writer does not save them).
 - The catalogue is not written by the tool: run `python scripts/generate_rgce_content_assets.py` after `--worlds` (it catalogues `Worlds/**/*.world`
   as `World.<path>` and `Entities/**/*.entity` as `Entity.<path>`, with the asset type the engine infers from the extension, and checks that each file's `id` is its entry's).
+- The camera of a world is the engine's `PerspectiveCameraComponent` (ADR-0045): its node carries its pose in `local_transform`, and the keys `view_distance`,
+  `viewport`, `fieldOfView` and `picture_offset`.
 - A camera component is written in its state before initialization: `view_distance` and `viewport` are zeros. The editor initializes the camera when it opens the
   world and saves the size of its window, 1, 1000 and 999; the game never reads those values from the file.
 - `--worlds --verify` re-reads the six files with public engine APIs only (`World.Load` on the file, `Entity.Load` on each inline entity node and on the car file) and
