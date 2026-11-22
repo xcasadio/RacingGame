@@ -154,7 +154,7 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 
 ## Phase 3 — L'éditeur du nouveau moteur (E4)
 
-### 🚧 T3.1 — Ouvertures retenues et aller-retour
+### ✅ T3.1 — Ouvertures retenues et aller-retour
 
 - Objectif : rejouer, sur l'éditeur de `aac8911cf`, le contrôle d'ouverture sur les 22 assets de P2 et l'aller-retour complet.
 - Fichiers : ce plan ; sorties sous `artifacts/engine-depth-range/{open-worlds,open-kinds,roundtrip}/`.
@@ -167,7 +167,15 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 - Validation : 8 sur 8 puis 14 sur 14 ouvertures réussies ; aucun avertissement distinct absent du relevé précédent, aucun qui parle de `depth range` ; aller-retour 622 sur 622 (372 éditables sans perte, 250 en-têtes lisibles) ; cinq témoins détectés.
 - Commit : `docs(ai-agent): record the editor checks on the engine's camera depth range`
 
-### ⏳ T3.2 — Échantillon piloté sur un monde à caméra
+> Validation (2026-11-22, jeu `f724ee4`, moteur et éditeur `aac8911cf`), lanceur `artifacts/engine-depth-range/t31_run.py`, sorties dans `artifacts/engine-depth-range/` :
+> - Builds du jeu, de l'outil (T1.2) et de l'éditeur (T1.1) à jour, 0 erreur ; `RacingGameCasaEngine/Content` copié dans `D:/development/rgce-e5/content` (939 fichiers, P3) ; la DLL de gameplay de la copie a l'empreinte de celle du dossier de build du jeu.
+> - **Mondes et voiture** (`open-worlds/summary.json`) : `--type world --type entity` sélectionne 8 assets ; **8 jugés, 8 passent** (7 mondes, 1 entité), 78,6 s d'éditeur.
+> - **Un asset par autre genre** (`open-kinds/summary.json`), après 60 secondes de verrou libre : 14 sélectionnés, **14 jugés, 14 passent**, un par genre (`sound`, `wav`, `data`, `material`, `gltf`, `staticmodel`, `combimodel`, `dds`, `png`, `track`, `uiscreen`, `sprite`, `texture`, `fnt`), 114,4 s d'éditeur.
+> - **Avertissements distincts** : les trois du relevé précédent (`artifacts/engine-simple-cameras/open/summary.json`) et aucun autre : les deux de déchargement de scripts (une fois par lancement) et celui d'`OverlayViewPipeline` (3 fois, sur des mondes). Aucun fichier des deux dossiers ne contient `depth range`.
+> - **Aller-retour** (`roundtrip/roundtrip.json`, `roundtrip-stdout.txt`) : la sortie est celle du plan précédent ligne pour ligne, hors durées et chemin du rapport : **622 sur 622**, aucun échec. `--roundtrip-controls` : **les cinq témoins détectés sous leur nom**.
+> - Aucun verrou ni processus d'éditeur à la fin.
+
+### 🚧 T3.2 — Échantillon piloté sur un monde à caméra
 
 - Objectif : rejouer l'échantillon piloté du plan précédent (modifier, enregistrer, rétablir par l'éditeur piloté) : c'est le contrôle qui fait écrire par l'éditeur les plans d'une caméra dans un fichier de monde.
 - Fichiers : ce plan ; `artifacts/engine-depth-range/driven/driven_run.py`, copie de `artifacts/engine-simple-cameras/driven/driven_run.py` (P6) ; l'original et ses sorties ne sont pas touchés.
