@@ -13,9 +13,9 @@
         "spatial_policy": "DynamicIndex",
         "render_dynamic_policy": "Static",
         "root_component": {
-          "id": "0264d433-ba60-55d4-98f8-b9d1bfd8ab8b",
-          "name": "RaceLookAtCameraComponent",
-          "type": "RaceLookAtCameraComponent",
+          "id": "dff93a59-8b2a-5117-9d51-c2ddf56b2b66",
+          "name": "PerspectiveCameraComponent",
+          "type": "PerspectiveCameraComponent",
           "local_transform": {
             "position": {
               "x": 0.0,
@@ -29,9 +29,9 @@
             },
             "rotation": {
               "x": 0.0,
-              "y": 0.0,
-              "z": 0.0,
-              "w": 1.0
+              "y": 0.9870874,
+              "z": 0.16018224,
+              "w": 0.0
             }
           },
           "children_component": [],

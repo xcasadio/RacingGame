@@ -10,10 +10,10 @@ namespace RacingGame.Gameplay.Components;
 public sealed class DebugFreeCameraComponent : EntityComponent
 {
     private const float PitchLimitRadians = 1.45f;
-    private const float TargetDistance = 10.0f;
 
     private float _yaw;
     private float _pitch;
+    private Vector3 _up = Vector3.Up;
     private bool _wasActive;
 
     public float MoveSpeedUnitsPerSecond { get; set; } = 18.0f;
@@ -31,7 +31,7 @@ public sealed class DebugFreeCameraComponent : EntityComponent
 
     public override void Update(float elapsedTime)
     {
-        if (Owner?.RootComponent is not RaceLookAtCameraComponent camera)
+        if (Owner?.RootComponent is not PerspectiveCameraComponent camera)
         {
             return;
         }
@@ -117,14 +117,17 @@ public sealed class DebugFreeCameraComponent : EntityComponent
             displacement.Normalize();
         }
 
-        Vector3 position = camera.Position + displacement * (MoveSpeedUnitsPerSecond * elapsedTime);
-        camera.SetPositionAndTarget(position, position + forward * TargetDistance);
+        // The camera is posed by its transform (it has no parent). The up vector is the one the camera had when the
+        // free camera was switched on: it does not follow the orientation written here.
+        camera.LocalPosition = camera.Position + displacement * (MoveSpeedUnitsPerSecond * elapsedTime);
+        camera.LocalOrientation = Quaternion.CreateFromRotationMatrix(Matrix.CreateWorld(Vector3.Zero, forward, _up));
         CenterMouse(game);
     }
 
-    private void InitializeFromCamera(RaceLookAtCameraComponent camera)
+    private void InitializeFromCamera(PerspectiveCameraComponent camera)
     {
-        Vector3 forward = camera.Target - camera.Position;
+        _up = camera.Up;
+        Vector3 forward = camera.Forward;
         if (forward.LengthSquared() < 0.0001f)
         {
             forward = Vector3.Forward;

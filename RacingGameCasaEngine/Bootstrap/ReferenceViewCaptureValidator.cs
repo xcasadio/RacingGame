@@ -535,15 +535,14 @@ internal sealed class ReferenceViewCaptureValidator
 
     private bool ApplyView(ReferenceView view)
     {
-        if (_trackSpace == null || !TryGetRaceCamera(out RaceLookAtCameraComponent? camera, out _))
+        if (_trackSpace == null || !TryGetRaceCamera(out PerspectiveCameraComponent? camera, out _))
         {
             return false;
         }
 
-        // The view matrix takes its up vector from the orientation, which the chase camera left tilted: the
+        // SetPositionAndTarget writes the orientation with the world up, whatever the chase camera left: the
         // original's views are all taken with the world up.
-        camera!.LocalOrientation = Quaternion.Identity;
-        camera.FieldOfView = _fieldOfViewY;
+        camera!.FieldOfView = _fieldOfViewY;
         camera.NearPlane = _nearPlane;
         camera.FarPlane = _farPlane;
         camera.SetPositionAndTarget(_trackSpace.ToRaceWorld(view.Position), _trackSpace.ToRaceWorld(view.Target));
@@ -559,10 +558,10 @@ internal sealed class ReferenceViewCaptureValidator
         return true;
     }
 
-    private bool TryGetRaceCamera(out RaceLookAtCameraComponent? camera, out Entity? cameraEntity)
+    private bool TryGetRaceCamera(out PerspectiveCameraComponent? camera, out Entity? cameraEntity)
     {
         cameraEntity = _game.GameManager.CurrentWorld?.Entities.FirstOrDefault(entity => entity.Name == RaceWorldFactory.CameraEntityName);
-        camera = cameraEntity?.RootComponent as RaceLookAtCameraComponent;
+        camera = cameraEntity?.RootComponent as PerspectiveCameraComponent;
         return camera != null;
     }
 

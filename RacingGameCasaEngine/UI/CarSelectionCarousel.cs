@@ -62,7 +62,7 @@ internal sealed class CarSelectionCarousel : IDisposable
     private readonly RacingGameCasaEngineGame _game;
     private readonly World _world;
     private readonly Entity _cameraEntity;
-    private readonly RaceLookAtCameraComponent _camera;
+    private readonly PerspectiveCameraComponent _camera;
     private readonly OpaqueGeometryAlphaViewPipeline _pipeline = new();
     private readonly StaticModelComponent[] _plates = new StaticModelComponent[CarCount];
     private readonly StaticModelComponent[] _cars = new StaticModelComponent[CarCount];
@@ -108,7 +108,7 @@ internal sealed class CarSelectionCarousel : IDisposable
         }
 
         _cameraEntity = new Entity { Name = "Carousel.Camera" };
-        _camera = new RaceLookAtCameraComponent { Name = nameof(RaceLookAtCameraComponent) };
+        _camera = new PerspectiveCameraComponent { Name = nameof(PerspectiveCameraComponent) };
         _cameraEntity.RootComponent = _camera;
         _cameraEntity.Initialize();
         _cameraEntity.InitializeWithWorld(_world);
@@ -282,7 +282,7 @@ internal sealed class CarSelectionCarousel : IDisposable
 
     private void ConfigureCamera()
     {
-        // Camera3dComponent.OnScreenResized sets its own field of view: RacingGame's is set after it.
+        // OnScreenResized gives the camera the size of the surface: RacingGame's field of view and planes are set after it.
         _camera.OnScreenResized(_surfaceWidth, _surfaceHeight);
         _camera.FieldOfView = FieldOfView;
         _camera.NearPlane = NearPlane;

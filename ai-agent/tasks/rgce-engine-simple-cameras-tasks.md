@@ -153,7 +153,7 @@ Relevé en lecture seule (quatre lecteurs indépendants, faits décisifs relus p
 
 ## Phase 2 — La caméra du moteur (étape B)
 
-### 🚧 T2.1 — Passer à `PerspectiveCameraComponent`
+### ✅ T2.1 — Passer à `PerspectiveCameraComponent`
 
 - Objectif : le jeu n'a plus de caméra propre ; chaque poseur suit P4.
 - Fichiers : suppression de `RaceLookAtCameraComponent.cs` ; les six fichiers de T1.2 ; les quatre `.world` régénérés (R6) ; commentaire de `CarSelectionCarousel.cs:285` (il nomme `Camera3dComponent`).
@@ -165,7 +165,15 @@ Relevé en lecture seule (quatre lecteurs indépendants, faits décisifs relus p
 - Validation : les deux builds à 0 erreur ; `--worlds --verify`, `--verify`, `--check`, catalogue, noms de types à 0 ; étapes 2 et 4 conformes.
 - Commit : `refactor(racing-casa): pose the cameras of the game through the engine's perspective camera`
 
-### ⏳ T2.2 — Mesure de l'étape B (E3)
+> Validation (2026-11-22), sorties dans `artifacts/engine-simple-cameras/build/` et `artifacts/engine-simple-cameras/t21/` :
+> - **Code, selon P4** : `RaceLookAtCameraComponent.cs` supprimée. Poursuite : `LocalPosition` puis `LocalOrientation = CreateCameraOrientation(…)`, celle-ci inchangée. Caméra libre : le haut (`camera.Up`) et la direction (`camera.Forward`) sont relevés à l'activation, la pose est écrite par `LocalPosition` et `LocalOrientation = CreateFromRotationMatrix(Matrix.CreateWorld(Zero, avant, haut relevé))` ; la constante `TargetDistance`, devenue inutile, est retirée. Validateurs : la remise à l'identité est retirée, l'ordre champ de vision, plans, pose est gardé. Mondes et carrousel : `new PerspectiveCameraComponent` et `SetPositionAndTarget`. Le commentaire du carrousel ne nomme plus `Camera3dComponent`.
+> - **Poses verticales ou nulles** (étape 2), par lecture et calcul : les 15 vues de `s1c/ref/views.json` ont au plus un cosinus de 0,716 avec la verticale (`sector-50`), les 3 vues du tunnel 0,375 ; le calcul est fait sur l'axe Z des valeurs brutes, la conversion du validateur étant un changement d'axes suivi d'une translation et de la matrice du générateur de route, que les journaux du banc donnent à l'identité pour les trois circuits (`identity True`). Mondes : direction `(0, -6, 18)`, cosinus 0,316. Carrousel : `(0, -3,75, 10,45)`, cosinus 0,338. Les quatre poses de `TrackMigrationCaptureValidator.cs` sont obliques par construction (hauteur de 10 à 12 pour un recul de 18 à 20 ; vue d'ensemble décalée de `0,6 d` en X et en Z). Aucune pose verticale ni nulle.
+> - **Builds** : `dotnet build RacingGame.slnx`, 0 erreur ; `dotnet build scripts/RgceAssetCooker/RgceAssetCooker.csproj`, 0 erreur (R7).
+> - **Mondes** (R6) : `--worlds` écrit 4 fichiers, 2 inchangés ; catalogue inchangé (622) ; `--worlds --verify`, `--verify`, `--check`, catalogue, noms de types : 0.
+> - **Diff des mondes** : dans chacun des quatre, 6 lignes changées, toutes dans le nœud de caméra : `id`, `name`, `type`, et trois composantes de la rotation (`y` 0,9870874, `z` 0,16018224, `w` 0 : la pose écrite par `SetPositionAndTarget`). Rien d'autre.
+> - **Restes** : plus aucune occurrence de `RaceLookAtCameraComponent` ni de `CameraLookAtComponent` hors `CasaEngine`, `docs`, `ai-agent`, `artifacts` ; les deux `.Target` restants de `ReferenceViewCaptureValidator.cs` (472, 548) sont le champ d'une vue de référence, pas d'une caméra.
+
+### 🚧 T2.2 — Mesure de l'étape B (E3)
 
 - Objectif : dire exactement ce que la caméra du moteur change à l'image.
 - Fichiers : ce plan ; sorties sous `artifacts/worlds-as-assets/e2/` et `artifacts/engine-simple-cameras/b-measure/` ; script de mesure `artifacts/engine-simple-cameras/measure_images.py` (Pillow et numpy).

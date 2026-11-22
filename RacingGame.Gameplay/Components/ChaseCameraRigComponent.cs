@@ -72,7 +72,7 @@ public sealed class ChaseCameraRigComponent : EntityComponent
 
     public override void Update(float elapsedTime)
     {
-        if (Owner?.RootComponent is not RaceLookAtCameraComponent camera)
+        if (Owner?.RootComponent is not PerspectiveCameraComponent camera)
         {
             return;
         }
@@ -121,7 +121,7 @@ public sealed class ChaseCameraRigComponent : EntityComponent
         UpdateFollowCamera(camera, anchor, carState, elapsedTime);
     }
 
-    private void UpdateFollowCamera(RaceLookAtCameraComponent camera, Vector3 anchor, RaceCarStateComponent carState, float elapsedTime)
+    private void UpdateFollowCamera(PerspectiveCameraComponent camera, Vector3 anchor, RaceCarStateComponent carState, float elapsedTime)
     {
         float speedRatio = carState.TargetTopSpeedMph <= 0.01f
             ? 0f
@@ -134,7 +134,7 @@ public sealed class ChaseCameraRigComponent : EntityComponent
         ApplyCameraPose(camera, desiredPosition, lookTarget, elapsedTime);
     }
 
-    private void UpdateFinishOrbit(RaceLookAtCameraComponent camera, Vector3 anchor, float elapsedTime, bool isPinned)
+    private void UpdateFinishOrbit(PerspectiveCameraComponent camera, Vector3 anchor, float elapsedTime, bool isPinned)
     {
         // Under the UI capture the orbit stays behind the car and the pose is applied at once: the captured frame may show
         // an earlier update than the current one, and the image must not depend on which (ADR-0009).
@@ -226,7 +226,7 @@ public sealed class ChaseCameraRigComponent : EntityComponent
         _smoothedUp = NormalizeOrFallback(Vector3.Cross(_smoothedForward, right), _smoothedUp, Vector3.Up);
     }
 
-    private void ApplyCameraPose(RaceLookAtCameraComponent camera, Vector3 desiredPosition, Vector3 lookTarget, float elapsedTime, bool snapToPose = false)
+    private void ApplyCameraPose(PerspectiveCameraComponent camera, Vector3 desiredPosition, Vector3 lookTarget, float elapsedTime, bool snapToPose = false)
     {
         if (!_hasInitializedPosition || snapToPose)
         {
@@ -239,7 +239,9 @@ public sealed class ChaseCameraRigComponent : EntityComponent
             _smoothedPosition = Vector3.Lerp(_smoothedPosition, desiredPosition, blend);
         }
 
-        camera.SetPositionAndTarget(_smoothedPosition, lookTarget);
+        // The camera is posed by its transform (it has no parent): it looks along the orientation's forward, at
+        // lookTarget, with the smoothed up.
+        camera.LocalPosition = _smoothedPosition;
         camera.LocalOrientation = CreateCameraOrientation(lookTarget - _smoothedPosition, _smoothedUp);
     }
 
