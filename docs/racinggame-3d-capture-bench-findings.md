@@ -469,9 +469,9 @@ Reference of the bench from now on: `artifacts/render-fidelity/f3/ref/` of the w
 
 ## Update after the perspective shadow (2026-11-22)
 
-Decisions: see ADR-0045. Plan `ai-agent/tasks/rgce-render-fidelity-tasks.md`, slice F6; outputs under `artifacts/render-fidelity/f6/` of the worktree of the chantier.
+Decisions: see ADR-0046. Plan `ai-agent/tasks/rgce-render-fidelity-tasks.md`, slice F6; outputs under `artifacts/render-fidelity/f6/` of the worktree of the chantier.
 
-The race world casts its shadow in perspective from a virtual light, with the projection of the original (engine ADR-0147), aimed ahead of the player's car. E = mean absolute difference per channel with the original (`nopost`) over the 15 views; H = probes held among the nine the slice aimed at; M = mean of the median luminances of the three tunnel views, to hold between 28.882 and 31.882 (ADR-0036). First grid, around the settings of the original:
+The race world casts its shadow in perspective from a virtual light, with the projection of the original (engine ADR-0155), aimed ahead of the player's car. E = mean absolute difference per channel with the original (`nopost`) over the 15 views; H = probes held among the nine the slice aimed at; M = mean of the median luminances of the three tunnel views, to hold between 28.882 and 31.882 (ADR-0036). First grid, around the settings of the original:
 
 | Candidate | Setting | H | E | E tunnels | M | Criteria 1 / 2 / 3 / 4 | Criterion 3 `legacy` | E `Beginner-sector-20` | Eligible |
 |---|---|---|---|---|---|---|---|---|---|
@@ -507,7 +507,7 @@ Reference of the bench from now on: `artifacts/render-fidelity/f6/ref/` of the w
 
 ## State at the end of the render fidelity plan (2026-11-22)
 
-Plan `ai-agent/tasks/rgce-render-fidelity-tasks.md` (slices F0 to F8), with the engine plan `CasaEngine/ai-agent/tasks/render-fidelity-tasks.md`. Decisions: ADR-0043, ADR-0044, ADR-0045. Outputs under `artifacts/render-fidelity/` of the worktree of the chantier, copied to the main checkout at the closing.
+Plan `ai-agent/tasks/rgce-render-fidelity-tasks.md` (slices F0 to F8), with the engine plan `CasaEngine/ai-agent/tasks/render-fidelity-tasks.md`. Decisions: ADR-0043, ADR-0044, ADR-0046. Outputs under `artifacts/render-fidelity/` of the worktree of the chantier, copied to the main checkout at the closing.
 
 | Measure against the original | Start (F0) | After the terrain ambient (F2) | After the scenery ambient (F3) | After the perspective shadow (F6), final |
 |---|---|---|---|---|

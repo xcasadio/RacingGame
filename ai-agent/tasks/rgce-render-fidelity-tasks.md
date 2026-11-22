@@ -1,5 +1,7 @@
 # Plan agent IA — Écarts de rendu restants entre RacingGameCasaEngine et l'original
 
+> **Numéros d'ADR.** Depuis le 2026-11-22 (plan `rgce-render-reunion-tasks.md`) : la décision que ce plan cite sous ADR-0045 du jeu (ombre projetée en perspective) est numérotée ADR-0046, `remaster` portant une autre décision sous 0045 ; les décisions du moteur qu'il cite sous ADR-0146, ADR-0147 et ADR-0148 sont numérotées ADR-0154, ADR-0155 et ADR-0156. Ce plan garde les numéros sous lesquels ses tranches ont été faites.
+
 Suite des points ouverts O4 de `rgce-shadow-colour-decor-tasks.md`, O1, O6 et O7 de `rgce-render-gaps-tasks.md`, O4 et O5 de `rgce-road-tunnel-shadow-tasks.md`. Demande de l'auteur du 2026-11-21 : une session à part gère ce chantier, de la découverte à la clôture. Les décisions D1 à D8 ci-dessous ont été arbitrées avec l'auteur le 2026-11-21, en deux séries de questions : **ce plan les applique, il ne les rediscute pas**. Les points P1 à P10 sont des arbitrages de l'agent, à valider par l'auteur à l'approbation du plan.
 
 Plan du moteur associé : `CasaEngine/ai-agent/tasks/render-fidelity-tasks.md` (T0 à T6).
