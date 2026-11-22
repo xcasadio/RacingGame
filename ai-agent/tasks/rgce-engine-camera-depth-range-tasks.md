@@ -209,13 +209,30 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 > - Aucun code n'est touché par cette tâche : pas de build à refaire.
 > - **E5 est tenu.**
 
-### 🚧 T4.2 — Vérification indépendante (E6)
+### ✅ T4.2 — Vérification indépendante (E6)
 
 - Objectif : un `verifier` frais juge E1 à E5 sur l'état du commit de T4.1 ; il reçoit les critères, les chemins des sorties et ce plan ; il rejoue ce qu'il juge utile sous le verrou.
 - Validation : **CONFIRMED** ; un constat P0 à P2 introduit est traité ou arrête le plan ; P3 et P4 sont notés.
 - Commit : `docs(ai-agent): record the closing verification of the camera depth range integration`
 
-### ⏳ T4.3 — Clôture
+> Validation (2026-11-22, état `88892d3`, moteur `aac8911cf`), `verifier` frais, sorties dans `artifacts/engine-depth-range/verif/` : **CONFIRMED** sur E1 à E5, aucun constat P0 à P3.
+> - **E1** : les trois références du moteur à `aac8911cf`, arbre propre ; tests du moteur rejoués par lui avec build, sous le verrou : 8562 réussis, 0 échec, les 27 résultats `CameraDepthRangeTests` réussis ; le `CasaEngine.dll` des dossiers de build du jeu, de l'éditeur, de l'outil et du moteur est le même fichier et contient `IsValidDepthRange`.
+> - **E2** : `git diff 6e8424d..88892d3 --stat` ne montre que le pointeur, les deux README et les fichiers de `ai-agent/` ; `f724ee4` ne change que le pointeur et le plan ; `--worlds --verify` rejoué : 6 fichiers, 3341 entités, 0 écart.
+> - **E3** : empreintes des 152 PNG (76 noms, `-a` et `-b`, dans `e5` et `e2`) recalculées par son propre script : identiques à l'octet ; aucun `[Warning]`/`[Error]` ni `depth range` dans les 17 journaux ; audits de voitures égaux à M1 ; export identique à celui de `e2` hors l'horodatage. **Un genre rejoué par lui** (`views-linear`, 15 images, celui qui passe par le validateur qui règle les plans) : identique à l'octet à `e2/ref`.
+> - **E4** : jugé sur les enregistrements (22 ouvertures, aller-retour, cinq témoins, échantillon piloté recomparé par `compare_with_previous.py`) ; il n'a rejoué que son propre témoin d'éditeur.
+> - **E5** : les deux passages des README et la section 17 du `HANDOVER` concordent avec `InitializeWithWorld` et `Load` à `aac8911cf`.
+> - **Aucun chemin du jeu ne voit le changement du moteur** : il a cherché un contre-exemple et n'en a pas trouvé (mondes toujours chargés en copie fraîche, plans réglés par code seulement après l'entrée dans le monde, aucune caméra qui rejoint un monde deux fois).
+> - **Ses témoins**, tous détectés : un octet changé dans une image copiée et une ligne d'avertissement injectée dans un journal (parité : 2 écarts) ; un monde copié dont la caméra porte les plans 5 et 2, ouvert dans l'éditeur (l'avertissement « the depth range 5..2 is not valid » apparaît parmi les avertissements distincts) puis passé à `--worlds --verify` (2 écarts).
+> - **Non rejoué par lui** : les 11 autres rejeux du banc, `smoke`, `profile`, l'export et les audits de voitures ; les 22 ouvertures, l'aller-retour et l'échantillon piloté ; les builds du jeu et de l'outil.
+> - **Remarques P4, notées et non corrigées** (la règle interdit de modifier un candidat confirmé pour elles) :
+>   1. Antérieure : « export égal à M1 » s'entend au sens de `compare_race_scene_exports.py` (0 enregistrement sans pair), pas à l'octet ; l'export est identique à celui de `e2` hors l'horodatage.
+>   2. Antérieure : `check_editor_opens_assets.py` laisse passer un asset dont le journal porte un avertissement qui ne nomme pas son fichier ; un avertissement de plans non valides n'est donc vu que par la comparaison des avertissements distincts, que T3.1 fait.
+>   3. Introduite : les deux README décrivent le cas valide et le cas à zéro, pas le cas non valide et non nul (1 et 1000 avec un avertissement) ; le `HANDOVER` le dit.
+> - **Constat de déroulé** : pendant son rejeu du banc, la session de rendu a lancé des tests du moteur sans tenir le verrou (20:58) ; ses images sont restées identiques à l'octet.
+> - État laissé : arbre propre, aucun verrou ni processus à lui, `D:/development/rgce-e5/content` égal à `Content`, réglages de l'utilisateur aux empreintes de M1.
+> - **E6 est tenu.**
+
+### 🚧 T4.3 — Clôture
 
 - Étapes : regarder puis supprimer `D:/development/rgce-e5/` (P3) ; vérifier qu'il ne reste ni verrou ni processus de cette session ; `git status --short` ; état final dans `ai-agent/README.md` et `ai-agent/HANDOVER.md` ; prévenir la session de rendu de la nouvelle base (`aac8911cf`), à titre d'information.
 - Validation : aucune tâche en 🚧 ; rien de poussé ; `remaster` inchangé (P8).
