@@ -287,14 +287,29 @@ Sur l'état B (R4). Si l'auteur choisit ensuite de revenir à l'état A (T4.1), 
 > - Remarque hors tâche, non corrigée : `scripts/RgceAssetCooker/README.md` dit encore, dans sa section `--worlds`, que le jeu ne charge pas ces fichiers ; c'est faux depuis M5 du plan des mondes en assets.
 > - **E5 est tenu.**
 
-### 🚧 T4.2 — Vérification indépendante (E6)
+### ✅ T4.2 — Vérification indépendante (E6)
 
 - Objectif : un `verifier` frais confirme ou réfute E1 à E5 sur l'état final.
 - Étapes : lui donner les affirmations exactes, le diff `d71dc65..HEAD`, les chemins des sorties ; il rejoue ce qu'il choisit sous le verrou (au moins : les builds du jeu et de l'outil, `--worlds --verify`, un genre du banc, un échantillon d'ouvertures dans l'éditeur, le recalcul des empreintes des images) et pose ses propres témoins.
 - Validation : **CONFIRMED**. Constat P0/P1 : arrêt. P2 introduit : corrigé dans le périmètre puis une revérification. P3/P4 : notés.
 - Commit : `docs(ai-agent): record the closing verification of the engine integration`
 
-### ⏳ T4.3 — Clôture
+> Validation (2026-11-22, état `ae503f6`), `verifier` frais, sorties dans `artifacts/engine-simple-cameras/verif/` : **CONFIRMED** sur E1 à E5, aucun constat P0 à P3.
+> - **E1** : les trois références du moteur à `164f8d680`, arbre propre, 85 commits ; tests du moteur rejoués par lui avec build, sous le verrou : 8533 réussis, 0 échec ; le fichier de résultats de l'ancien commit ne contient aucun test `PerspectiveCamera*`, celui du nouveau en contient 33.
+> - **E2** : empreintes SHA-256 recalculées par son propre script : `e1/ref` égal à `m1/ref` sur 76 images sur 76. L'étape A n'a pas été rejouée (elle demanderait de changer de commit) : il s'appuie sur les sorties enregistrées, datées entre les deux commits.
+> - **E3** : aucune autre classe de caméra dans le code ni le contenu ; builds du jeu et de l'outil à 0 erreur ; `--worlds --verify` (6 fichiers, 3341 entités, 0 écart), `--verify`, `--check`, catalogue et noms de types à 0 ; `e2/ref` `-a` égal à `-b` sur 76 ; 70 images diffèrent de `m1/ref`, les 6 identiques sont celles annoncées ; les chiffres par genre recalculés avec `numpy` pour les six genres sont ceux du rapport, à l'unité ; export et audits de voitures de `e2` égaux à M1 ; **deux genres rejoués à `ae503f6`** (`ui`, 10 images, et `tunnel-linear`, 3 images) : identiques à l'octet à `e2/ref`, sans `[Warning]` ni `[Error]`.
+> - **E4** : sorties des 622 ouvertures relues (622 fichiers distincts, tous réussis, aucun avertissement absent de S7) ; six ouvertures rejouées par lui (quatre mondes, la voiture, un écran), toutes réussies ; aller-retour et ses cinq témoins rejoués : 622 sur 622, cinq détectés. Les composants proposables et l'échantillon piloté sont jugés sur leurs sorties enregistrées, comparées par son propre outil : `FrontEnd.world` rétabli ne diffère du dépôt que par les cinq valeurs annoncées.
+> - **E5** : les phrases de l'ADR-0045 vérifiables sont relues dans le source du moteur (`PerspectiveCameraComponent.cs`, vue et `SetPositionAndTarget`) et dans le code du jeu ; les documents concordent avec ses mesures ; `remaster` = `origin/remaster` = `3e33238`, aucune branche du chantier côté distant (références locales, sans `fetch`).
+> - **Ses témoins**, tous détectés : un octet changé dans une image copiée (parité : 1 écart) ; un type de caméra `CameraLookAtComponent` dans un monde copié (`--worlds --verify` : `UnresolvedComponent` au lieu de `PerspectiveCameraComponent`) ; une pose changée de 1,8e-5 (détectée ; 6e-8, sous la tolérance documentée de 1e-6, ne l'est pas) ; une ligne `[Error]` injectée dans un diagnostic d'ouverture (verdict `fail`).
+> - **Non rejoué par lui** : l'étape A, les autres genres du banc, les composants proposables, l'échantillon piloté, les 616 autres ouvertures, la caméra libre de débogage en jeu (code relu seulement).
+> - **Remarques P4, notées et non corrigées** (la règle interdit de modifier un candidat confirmé pour elles) :
+>   1. Introduite : l'ADR-0045 écrit, pour l'image la plus touchée, « differs on 40.8 % of its pixels, 13 % of them by more than one level ». Les 13 % sont une part de l'image entière (269 026 pixels, 12,97 %), soit 31,8 % des pixels différents ; la phrase se lit à tort comme 13 % des pixels différents. La note de T2.2 de ce plan porte la même tournure. Correction d'une phrase, laissée à la décision de l'auteur (O2).
+>   2. Introduite : l'estimation hors jeu des deux formules de vue (9e-5 sur un élément) citée par l'ADR vient d'un script ponctuel non gardé ; elle n'est pas reproductible telle quelle. Elle est plausible en simple précision à cette distance, et `shift-fit.txt`, lui, est gardé.
+>   3. Antérieure, déjà notée en T4.1 : la section `--worlds` du README de l'outil dit encore que le jeu ne charge pas ces fichiers.
+> - État laissé par le vérificateur : arbre propre, aucun verrou ni processus à lui, `D:/development/rgce-e4/content` inchangé (939 fichiers, mêmes empreintes), réglages de l'utilisateur aux empreintes de M1. Il laisse `verif/content-ctrl/` (copie modifiée de `Content`, 258 Mo, hors version).
+> - **E6 est tenu.**
+
+### 🚧 T4.3 — Clôture
 
 - Objectif : état final écrit, dossier hors dépôt supprimé.
 - Étapes : regarder puis supprimer `D:/development/rgce-e4/` (P5) ; vérifier qu'aucun verrou ni processus ne reste ; mettre à jour `ai-agent/README.md` et `ai-agent/HANDOVER.md` ; rapport de fin de tâche. Prévenir la session de rendu que le moteur local et le jeu de cette branche sont sur `164f8d680` : un message d'information envoyé à sa session par l'outil de messages entre sessions de l'application, sans rien lui demander ; si l'outil n'est pas disponible, l'information est donnée à l'auteur dans le rapport de fin.
@@ -324,4 +339,5 @@ Sur l'état B (R4). Si l'auteur choisit ensuite de revenir à l'état A (T4.1), 
 
 | Réf | Sujet | Tâche concernée |
 |---|---|---|
+| O2 | Deux phrases à préciser, relevées par la vérification de clôture (P4) : dans l'ADR-0045 et dans la note de T2.2, les « 13 % de plus d'un niveau » de `audit-Expert-helper-laterns` sont une part de l'image entière (31,8 % des pixels différents) ; l'estimation hors jeu des deux formules de vue n'a pas de script gardé. À corriger ou à laisser, au choix de l'auteur. | T4.2 |
 | O1 | **Clos le 2026-11-22 : l'auteur garde l'état B** (réponse « Recommandation », ADR-0045). Question posée : Écart d'image de l'étape B, mesuré en T2.2 : 70 images sur 76 diffèrent de la référence de M1 (d'un niveau sur 255 pour l'essentiel, décalage ajusté de 0,0005 pixel en médiane et 0,028 au plus, aucun objet déplacé ; rapport `artifacts/engine-simple-cameras/b-measure/report.md`). Choix : **garder l'état B** (la caméra du moteur ; les images de `artifacts/worlds-as-assets/e2/ref` deviennent la référence du banc, celle de M1 n'étant plus atteignable à l'octet) ou **revenir à l'état A** (la classe `RaceLookAtCameraComponent` du jeu, images identiques à M1 à l'octet ; T3.1 à T3.3 sont alors rejouées, environ 80 minutes de machine). | T4.1 |
