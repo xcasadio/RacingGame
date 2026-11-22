@@ -133,7 +133,7 @@ Relevé en lecture seule (quatre lecteurs indépendants, faits décisifs relus p
 > - **Diff des mondes** : dans chacun des quatre, 8 lignes ajoutées et 4 retirées, toutes dans le nœud de caméra : `id`, `name`, `type`, et la clé `picture_offset` (`x` 0, `y` 0) que l'écrivain du moteur ajoute. Rien d'autre.
 > - **Restes** : `rg CameraLookAtComponent` hors `CasaEngine`, `docs`, `ai-agent`, `artifacts` : aucune occurrence.
 
-### 🚧 T1.3 — Parité de l'étape A (E2)
+### ✅ T1.3 — Parité de l'étape A (E2)
 
 - Objectif : prouver que le jeu rend les mêmes images sur le nouveau moteur.
 - Fichiers : ce plan ; sorties sous `artifacts/worlds-as-assets/e1/` ; lanceur `artifacts/engine-simple-cameras/parity_runs.py <tranche>` (copie de `artifacts/editor-closure/s7_parity_runs.py` dont la tranche devient un argument ; même verrou, même contrôle R5, Git Bash par son chemin complet ; il compare d'abord, par empreinte, tous les `.world` du dossier `bin/…/Content/Worlds` à ceux de `RacingGameCasaEngine/Content/Worlds` et s'arrête s'ils diffèrent, R1).
@@ -143,11 +143,17 @@ Relevé en lecture seule (quatre lecteurs indépendants, faits décisifs relus p
 - Validation : `RESULT: PASS` (R3) ; réglages de l'utilisateur aux empreintes de R5 avant et après.
 - Commit : `docs(ai-agent): record the parity of the game on the engine's origin/main`
 
+> Validation (2026-11-22, jeu `20e1aff`, moteur `164f8d680`), sorties dans `artifacts/worlds-as-assets/e1/` et `artifacts/worlds-as-assets/e1-runs.txt` :
+> - `dotnet build RacingGame.slnx` refait après la recuisson, 0 erreur ; le lanceur a constaté que les mondes du dossier de build sont ceux de `Content`, et les réglages de l'utilisateur aux empreintes de M1 avant et après (R5).
+> - Les 14 lancements du banc, l'export et les deux audits de voitures sortent en `exit 0`, sans `[Warning]` ni `[Error]` au journal.
+> - `slice_check.py e1` : **`RESULT: PASS`**. Point 3 : 76 PNG comparés dans les six genres, identiques à l'octet entre `-a`, `-b` et la référence de M1. Point 4 : export sans enregistrement sans pair (1437, 2033, 4058). Point 5 : les deux rapports d'audit identiques à ceux de M1 hors la ligne `Generated: `. Point 6 : `--verify`, `--check`, catalogue à 0. Point 1 : 0 collision.
+> - **E2 est tenu.** Sur ce que le banc exerce, les 85 commits du moteur ne changent rien : ni l'ADR-0152 (boîtes englobantes), ni la pose « vue d'ensemble » du genre `audit`, ni la politique par monde.
+
 ---
 
 ## Phase 2 — La caméra du moteur (étape B)
 
-### ⏳ T2.1 — Passer à `PerspectiveCameraComponent`
+### 🚧 T2.1 — Passer à `PerspectiveCameraComponent`
 
 - Objectif : le jeu n'a plus de caméra propre ; chaque poseur suit P4.
 - Fichiers : suppression de `RaceLookAtCameraComponent.cs` ; les six fichiers de T1.2 ; les quatre `.world` régénérés (R6) ; commentaire de `CarSelectionCarousel.cs:285` (il nomme `Camera3dComponent`).
