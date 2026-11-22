@@ -45,7 +45,7 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0029 | RacingGameCasaEngine builds the road underside and the city ground plane of the original | Accepted | 2026-11-17 |
 | ADR-0030 | RacingGameCasaEngine lights the tunnel with the original's material ambient as an emissive texture | Accepted; amended by ADR-0033 | 2026-11-17 |
 | ADR-0031 | RacingGameCasaEngine lights the car selection carousel at the PBR scale and sets the ambient colour of both worlds to 0.05 | Accepted | 2026-11-17 |
-| ADR-0032 | RacingGameCasaEngine balances the light of the race world against the original with an exposure of 0.9 | Accepted | 2026-11-17 |
+| ADR-0032 | RacingGameCasaEngine balances the light of the race world against the original with an exposure of 0.9 | Accepted; amended by ADR-0043 | 2026-11-17 |
 | ADR-0033 | RacingGameCasaEngine lights the signs and the car glass as the original does and shadows the tunnel emissive | Accepted; amended by ADR-0038, ADR-0039 | 2026-11-17 |
 | ADR-0034 | RacingGameCasaEngine gives the road the original's sun sheen and takes the environment light off it | Accepted | 2026-11-18 |
 | ADR-0035 | RacingGameCasaEngine filters the shadow edges of the race world with 64 taps | Accepted | 2026-11-18 |
