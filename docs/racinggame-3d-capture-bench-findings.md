@@ -504,3 +504,20 @@ Applied state (`n-db0.002`): E 14.131 -> 12.772 in `linear`, 15.355 -> 14.134 in
 The bench now sets the aimed point of the shadow for each view from the car of the views file (`car.position` and `car.direction`), as the original's capture does, and logs on each view the point computed from the car of the port next to it (`[CaptureBench] view <name> shadowFocus ...`): on the three start views the distance is 0.000.
 
 Reference of the bench from now on: `artifacts/render-fidelity/f6/ref/` of the worktree.
+
+## State at the end of the render fidelity plan (2026-11-22)
+
+Plan `ai-agent/tasks/rgce-render-fidelity-tasks.md` (slices F0 to F8), with the engine plan `CasaEngine/ai-agent/tasks/render-fidelity-tasks.md`. Decisions: ADR-0043, ADR-0044, ADR-0045. Outputs under `artifacts/render-fidelity/` of the worktree of the chantier, copied to the main checkout at the closing.
+
+| Measure against the original | Start (F0) | After the terrain ambient (F2) | After the scenery ambient (F3) | After the perspective shadow (F6), final |
+|---|---|---|---|---|
+| E, 15 views, `linear`, `nopost` | 15.039 | 14.374 | 14.131 | 12.772 |
+| E, 3 tunnel views, `linear`, `nopost` | 12.844 | 12.844 | 12.835 | 12.471 |
+| Probes held, `linear` (criteria 1 / 2 / 3 / 4, of 34 / 4 / 33 / 3) | 20 / 2 / 27 / 3 | 27 / 2 / 27 / 3 | 27 / 2 / 27 / 3 | 27 / 3 / 30 / 3 |
+| E, 15 views, `legacy`, `nopost` | 19.793 | 15.509 | 15.355 | 14.134 |
+| Probes held, `legacy` | 4 / 0 / 27 / 3 | 16 / 0 / 27 / 3 | 16 / 0 / 27 / 3 | 19 / 0 / 30 / 3 |
+| E, 15 views, `linear`, against the original with its post-process (`full`) | 31.648 | 30.116 | 30.183 | 28.920 |
+
+Measured and not applied: the per-pixel rotation of the shadow filter (slice F4: no gain; it does not compile as a guarded option on the `ps_3_0` profile) and the glow (slice F7: eleven candidates of brightness, contrast, colour offset and bloom against `full`; the best, a brightness of 1.2, takes the views from 28.920 to 27.174 but the tunnel views from 14.744 to 14.836, and none is eligible under the rule). Not done: the sun and its lens flare (slice F5), deferred by the author until an audit of the component life cycle of the engine.
+
+Reference of the bench: `artifacts/render-fidelity/f6/ref/` of the worktree.

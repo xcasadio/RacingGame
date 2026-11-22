@@ -637,7 +637,7 @@ Arrêts : arrêts communs ; état coupé ou état allumé à monde inchangé dif
 > - Chemin « rien retenu » suivi : `Program.cs`, `RaceLaunchOptions.cs` et `RacingGameCasaEngineGame.cs` restaurés (`git restore`), jeu reconstruit à 0 erreur, `git status --porcelain` ne montre que ce plan ; rejeu de contrôle des 15 vues et des 3 vues de tunnel du jeu reconstruit (`f7/close/`, par `runref.sh`) : **18 PNG et rapports `scene-measure` identiques octet pour octet à `f6/ref`**. Pas de commit (b), pas d'ADR, pas de ligne de README ni de section du doc de banc, pas de vérification indépendante de tranche : la vérification finale de F8 couvre l'état. L'option « effets » du joueur reste sans effet, comme avant la tranche. Les réglages de couleur de l'image restent disponibles dans le moteur (T5, ADR-0148 du moteur), inutilisés par le jeu ; le pointeur du commit (a) reste.
 > - La référence du banc reste `f6/ref`.
 
-### ⏳ F8 — Vérification indépendante et clôture
+### 🧪 F8 — Vérification indépendante et clôture
 
 - Objectif : l'ensemble vérifié par un `verifier` frais (lancements, images, documents) ; documents à jour ; sorties sauvées ; rapport de fin.
 - Prérequis : table « Dépendances » (toutes les étapes closes, T6 faite).
