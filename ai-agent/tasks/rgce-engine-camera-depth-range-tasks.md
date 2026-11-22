@@ -132,7 +132,7 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 
 ## Phase 2 — Le banc
 
-### 🚧 T2.1 — Parité avec la référence (E3)
+### ✅ T2.1 — Parité avec la référence (E3)
 
 - Objectif : prouver que le jeu rend les mêmes images sur `aac8911cf` que sur `164f8d680`.
 - Fichiers : ce plan ; sorties sous `artifacts/worlds-as-assets/e5/`.
@@ -143,11 +143,18 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 - Validation : `RESULT: PASS` (R3) ; aucune ligne `depth range` ; réglages de l'utilisateur aux empreintes de R5 avant et après.
 - Commit : `docs(ai-agent): record the parity of the game on the engine's camera depth range`
 
+> Validation (2026-11-22, jeu `f724ee4`, moteur `aac8911cf`), sorties dans `artifacts/worlds-as-assets/e5/` et `artifacts/worlds-as-assets/e5-runs.txt` :
+> - Build du jeu à jour (celui de T1.2, la recuisson n'ayant rien changé) ; le lanceur a constaté que les mondes du dossier de build sont ceux de `Content`, et les réglages de l'utilisateur aux empreintes de M1 avant et après (R5).
+> - Les 14 lancements du banc, l'export et les deux audits de voitures sortent en `exit 0`, avec 0 ligne `[Warning]`/`[Error]` au journal de chacun.
+> - `slice_check.py e5 --ref worlds-as-assets/e2/ref` : **`RESULT: PASS`**. Point 3 : 76 PNG comparés dans les six genres, identiques à l'octet entre `-a`, `-b` et `e2/ref`. Point 4 : export sans enregistrement sans pair (1437, 2033, 4058). Point 5 : les deux rapports d'audit identiques à ceux de M1 hors la ligne `Generated: `. Point 6 : `--verify`, `--check`, catalogue à 0. Point 1 : 0 collision.
+> - Aucun fichier de la tranche ne contient `depth range` (`rg -l -i`).
+> - **E3 est tenu.** Sur ce que le banc exerce, les 8 commits du moteur ne changent aucune image du jeu.
+
 ---
 
 ## Phase 3 — L'éditeur du nouveau moteur (E4)
 
-### ⏳ T3.1 — Ouvertures retenues et aller-retour
+### 🚧 T3.1 — Ouvertures retenues et aller-retour
 
 - Objectif : rejouer, sur l'éditeur de `aac8911cf`, le contrôle d'ouverture sur les 22 assets de P2 et l'aller-retour complet.
 - Fichiers : ce plan ; sorties sous `artifacts/engine-depth-range/{open-worlds,open-kinds,roundtrip}/`.
