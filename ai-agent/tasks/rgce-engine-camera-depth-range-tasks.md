@@ -195,14 +195,21 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 
 ## Phase 4 — Documents, vérification, clôture
 
-### 🚧 T4.1 — Documents (E5)
+### ✅ T4.1 — Documents (E5)
 
 - Objectif : les documents du jeu disent ce que le moteur fait à `aac8911cf`.
 - Fichiers : `RacingGameCasaEngine/Assets/README.md` (ligne 111 : l'initialisation de la caméra remplace la taille et recalcule la distance ; elle garde les plans du fichier quand ils sont valides, ce qui est le cas des 1 et 1000 que l'éditeur écrit, et met 1 et 1000 quand le fichier porte des zéros, ADR-0153 du moteur) ; `scripts/RgceAssetCooker/README.md` (lignes 88 et 89 : le jeu lit les plans du fichier quand ils sont valides ; ceux de l'outil sont à zéro) ; `ai-agent/HANDOVER.md` (section 17 : le moteur à `aac8911cf`, ce qui est mesuré, la phrase de l'ADR-0042 qui décrit le moteur d'avant, le point ouvert O1) ; `ai-agent/README.md` (ligne de ce plan) ; ce plan. Pas d'ADR (P4).
 - Validation : `rg "overwrites the size, the depths|never reads those values"` hors `artifacts/`, `ai-agent/` et `docs/decisions/` : aucune occurrence ; chaque phrase nouvelle est relue contre `NEW/CasaEngine/Framework/Scene/Entities/Components/CameraComponent.cs`.
 - Commit : `docs(racing-casa): say what the engine keeps of a camera's depth range`
 
-### ⏳ T4.2 — Vérification indépendante (E6)
+> Validation (2026-11-22) :
+> - `RacingGameCasaEngine/Assets/README.md` (ligne 111) et `scripts/RgceAssetCooker/README.md` (lignes 88 à 90) : la phrase fausse est remplacée ; chaque affirmation nouvelle est relue contre `CasaEngine/CasaEngine/Framework/Scene/Entities/Components/CameraComponent.cs` à `aac8911cf` (taille prise de l'écran, lignes 102 et 103 ; plans gardés si `IsValidDepthRange`, sinon 1 et 1000, lignes 107 à 118 ; distance recalculée, ligne 120).
+> - `rg "overwrites the size, the depths|never reads those values"` hors `artifacts/`, `ai-agent/` et `docs/decisions/` : aucune occurrence.
+> - `ai-agent/HANDOVER.md` section 17 et `ai-agent/README.md` portent l'état du chantier. Pas d'ADR (P4) ; l'ADR-0042 n'est pas modifiée.
+> - Aucun code n'est touché par cette tâche : pas de build à refaire.
+> - **E5 est tenu.**
+
+### 🚧 T4.2 — Vérification indépendante (E6)
 
 - Objectif : un `verifier` frais juge E1 à E5 sur l'état du commit de T4.1 ; il reçoit les critères, les chemins des sorties et ce plan ; il rejoue ce qu'il juge utile sous le verrou.
 - Validation : **CONFIRMED** ; un constat P0 à P2 introduit est traité ou arrête le plan ; P3 et P4 sont notés.
