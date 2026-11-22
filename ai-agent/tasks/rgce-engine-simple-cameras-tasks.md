@@ -309,12 +309,19 @@ Sur l'état B (R4). Si l'auteur choisit ensuite de revenir à l'état A (T4.1), 
 > - État laissé par le vérificateur : arbre propre, aucun verrou ni processus à lui, `D:/development/rgce-e4/content` inchangé (939 fichiers, mêmes empreintes), réglages de l'utilisateur aux empreintes de M1. Il laisse `verif/content-ctrl/` (copie modifiée de `Content`, 258 Mo, hors version).
 > - **E6 est tenu.**
 
-### 🚧 T4.3 — Clôture
+### ✅ T4.3 — Clôture
 
 - Objectif : état final écrit, dossier hors dépôt supprimé.
 - Étapes : regarder puis supprimer `D:/development/rgce-e4/` (P5) ; vérifier qu'aucun verrou ni processus ne reste ; mettre à jour `ai-agent/README.md` et `ai-agent/HANDOVER.md` ; rapport de fin de tâche. Prévenir la session de rendu que le moteur local et le jeu de cette branche sont sur `164f8d680` : un message d'information envoyé à sa session par l'outil de messages entre sessions de l'application, sans rien lui demander ; si l'outil n'est pas disponible, l'information est donnée à l'auteur dans le rapport de fin.
 - Validation : `git status` propre hors `.serena/`, `log.txt` ; aucune tâche en 🚧.
 - Commit : `docs(ai-agent): close the engine integration plan`
+
+> Validation (2026-11-22) :
+> - `D:/development/rgce-e4/` regardé (un seul dossier `content`, 939 fichiers, la copie de T3.1, inchangée d'après les empreintes du vérificateur) puis supprimé (P5) ; il n'existe plus. `D:/development/rgce-bench-r7` n'est pas touché. La copie de contrôle du vérificateur, `artifacts/engine-simple-cameras/verif/content-ctrl/` (dans le dépôt, hors version), est supprimée aussi ; ses verdicts restent dans `verif/ctrl-worlds-verify-*.txt`.
+> - Aucun verrou ni processus de cette session. Au moment du contrôle, le verrou existe et un `RacingGameCasaEngine.exe` tourne : ce sont ceux de la session de rendu, laissés tels quels.
+> - `git status --short` : seulement `.serena/` et `log.txt` ; aucune tâche en 🚧.
+> - `ai-agent/README.md` et `ai-agent/HANDOVER.md` (section 16) portent l'état final. La session de rendu est prévenue par un message d'information après ce commit.
+> - **Restent à l'auteur** : la validation de l'ADR-0045 (`Proposed`) ; O2 (deux phrases à préciser) ; l'avance de `remaster` sur cette branche et les push (le `main` du moteur local est déjà égal à `origin/main` : il n'y a rien à pousser côté moteur) ; la réunion avec les branches de rendu, encore basées sur le moteur `01cdf483f`.
 
 ---
 
