@@ -1,0 +1,33 @@
+# ADR-0045: RacingGameCasaEngine poses its cameras through the engine's perspective camera
+
+- **Status**: Proposed
+- **Date**: 2026-11-22
+- **Source**: this chantier: `ai-agent/tasks/rgce-engine-simple-cameras-tasks.md`, decision D1 (the author's answer of 2026-11-22: measure, then decide), tasks T1.2 to T3.3 and open point O1; the author's answer of 2026-11-22 to the question "keep the engine camera, or return to state A": the recommendation, which was to keep the engine camera; the measurements: `artifacts/engine-simple-cameras/b-measure/report.md` and `shift-fit.txt`, `artifacts/worlds-as-assets/e1/` and `e2/`; engine ADR-0147, ADR-0148 and ADR-0149; ADR-0042
+
+## Context
+
+Facts verified on 2026-11-22:
+
+- Up to the engine commit `01cdf483f`, every camera of the game was the engine's `CameraLookAtComponent`: the camera of the front end world and of the three race worlds (written in the four `.world` files), the camera of the car selection carousel (built in code), and the camera the chase rig, the debug free camera and the two capture validators pose. Its view was `Matrix.CreateLookAt(Position, Target, Up)`, with the up vector taken from the component's orientation; its target was not saved.
+- The engine's `origin/main` (`164f8d680`, 85 commits later) removes `CameraLookAtComponent`, `ArcBallCameraComponent`, `CameraTargeted2dComponent` and `Camera3dComponent` (engine ADR-0149). What remains for a 3D view is `PerspectiveCameraComponent`: its view is the inverse of its world matrix without scale, so it is posed by its transform; `SetPositionAndTarget` writes the local position and orientation of the look-at with the world up, and throws when the target is the position or when the direction is vertical. A component whose `type` is one of the removed names is loaded as an unresolved component: the entity has no camera.
+- The plan measured the change in two steps, each replayed twice on the capture bench (76 pictures: 15 reference views and 3 tunnel views in `linear` and in `legacy`, 10 interface screens, 30 track audit captures; the scene export; the two car audits).
+  - **Step A** (`20e1aff`): the game on the new engine, with the old view formula kept in a camera class of the game derived from `PerspectiveCameraComponent`. The 76 pictures are byte-identical to the reference of M1 (`artifacts/worlds-as-assets/m1/ref`); the export and the car audits are the ones of M1. The 85 engine commits change nothing else that the bench exercises.
+  - **Step B** (`8d31748`): the game on `PerspectiveCameraComponent` alone. The two replays are byte-identical to each other. Against the reference of M1, 70 pictures of 76 differ; the 6 identical ones are interface screens without a 3D scene. Differing pixels per kind: 4.5 % (`views-linear`), 3.6 % (`views-legacy`), 6.1 % (`tunnel-linear`), 4.6 % (`tunnel-legacy`), 0.7 % (`ui`), 7.7 % (`audit`); most of them differ by one level of 255; the largest difference of a channel is 201. The most affected picture, `audit-Expert-helper-laterns`, differs on 40.8 % of its pixels, 13 % of them by more than one level. No object or shadow is moved, added or missing. A global shift fitted picture by picture is 0.0005 pixel in median and 0.028 pixel at most. Computed outside the game in single precision for the 18 reference views, the two view matrices differ by at most 9e-5 on an element, with camera positions up to 1010 units from the origin. Between step A and step B only the computation of the view changes.
+  - The export, the car audits and the tool checks are the same in step B as in step A.
+- The plan gave the agent no threshold to accept a difference (D1): the choice between step B and a return to step A was the author's.
+
+## Decision
+
+- **The game has no camera class of its own.** Every camera of the game is the engine's `PerspectiveCameraComponent`: the four world files name it, `RaceWorldTemplates` and the carousel build it.
+- **A camera is posed by its transform.** The chase rig and the debug free camera write `LocalPosition` and `LocalOrientation` (the rig with its smoothed up vector, the free camera with the up vector the camera had when it was switched on); the capture validators, the world builder and the carousel call `SetPositionAndTarget`.
+- **The pictures of step B are the reference of the capture bench.** `artifacts/worlds-as-assets/e2/ref` replaces `artifacts/worlds-as-assets/m1/ref` for the pictures; the reference of M1 stays in place and is no longer reachable byte for byte. The references of the scene export and of the car audits stay those of M1.
+
+## Consequences
+
+- The game follows the engine: no class of the game re-creates what the engine removed, and the camera of a world is a component the editor knows ("Perspective Camera").
+- The difference to the pictures taken before this change is accepted as measured above: it has the order of magnitude of a single-precision rounding of the view, not that of another pose. A later slice is judged against `e2/ref` (`parity.py <root> --ref worlds-as-assets/e2/ref`, or `slice_check.py <slice> --ref worlds-as-assets/e2/ref`); a comparison with a capture older than this change is not byte for byte any more.
+- The four world files changed: the camera node has the type and the name `PerspectiveCameraComponent`, a new id, its pose in `local_transform`, and the key `picture_offset`. `RgceAssetCooker --worlds` writes them from the builders, as before (ADR-0042).
+- A world file that still names `CameraLookAtComponent` loads without a camera and the engine logs the unresolved type; the engine has no translation path (engine ADR-0149).
+- `SetPositionAndTarget` refuses a vertical direction and a target equal to the position. The poses of the bench and of the builders are not in that case; a new caller with a camera that may look straight up or down must write the orientation itself, as the chase rig does.
+- Measured on step B with the editor of the same engine commit: the 622 assets of the catalogue open, with no warning that the previous check did not have; the round trip outside the editor gives 622 of 622 and its five controls are caught; the 16 components of the game that can be offered are offered; a world with a camera (`Worlds/FrontEnd.world`), changed, saved and restored in the editor, differs from the file of the repository only by the `view_distance` and the `viewport` of the camera, the differences ADR-0042 already describes.
+- Limits: the pictures were compared by measure and on enlarged crops of the most and least affected pictures, not one by one by eye; the difference in motion (a race played, not a captured pose) was not measured.
