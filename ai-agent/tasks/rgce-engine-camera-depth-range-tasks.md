@@ -175,7 +175,7 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 > - **Aller-retour** (`roundtrip/roundtrip.json`, `roundtrip-stdout.txt`) : la sortie est celle du plan précédent ligne pour ligne, hors durées et chemin du rapport : **622 sur 622**, aucun échec. `--roundtrip-controls` : **les cinq témoins détectés sous leur nom**.
 > - Aucun verrou ni processus d'éditeur à la fin.
 
-### 🚧 T3.2 — Échantillon piloté sur un monde à caméra
+### ✅ T3.2 — Échantillon piloté sur un monde à caméra
 
 - Objectif : rejouer l'échantillon piloté du plan précédent (modifier, enregistrer, rétablir par l'éditeur piloté) : c'est le contrôle qui fait écrire par l'éditeur les plans d'une caméra dans un fichier de monde.
 - Fichiers : ce plan ; `artifacts/engine-depth-range/driven/driven_run.py`, copie de `artifacts/engine-simple-cameras/driven/driven_run.py` (P6) ; l'original et ses sorties ne sont pas touchés.
@@ -183,11 +183,19 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 - Validation : pour les six assets hors monde, mêmes écarts qu'au plan précédent et pas d'autre. Pour `Worlds/FrontEnd.world`, après le rétablissement : les cinq différences du plan précédent, toutes dans le nœud de caméra (`view_distance` 0 → 999, `viewport` `w` et `h` à la taille de la fenêtre, `min_depth` 0 → 1, `max_depth` 0 → 1000), et pas d'autre. Ces plans, 1 et 1000, sont valides et égaux aux valeurs par défaut du moteur (`CameraComponent.DefaultNearPlane`, `DefaultFarPlane`, lus dans `NEW`) : un monde enregistré par l'éditeur se rend donc comme le fichier de l'outil, ce qui est déduit du code et non mesuré par une image. À la fin, la copie de contenu est identique à la source, aucun verrou, aucun processus d'éditeur. Toute autre différence : citée et jugée, ou ⚠️ Blocked.
 - Commit : `docs(ai-agent): record the driven editor sample on the engine's camera depth range`
 
+> Validation (2026-11-22, éditeur `aac8911cf`), `artifacts/engine-depth-range/driven/driven_run.py` (copie du script du plan précédent, `COPY` et `OUT` changés, P6), sorties dans `artifacts/engine-depth-range/driven/` et `driven-stdout.txt` ; comparaison aux enregistrements du plan précédent par `driven/compare_with_previous.py` :
+> - Le script va au bout de ses trois phases en `exit 0` ; à la fin la copie de contenu est identique à la source (700 fichiers, empreintes égales), aucun verrou, aucun processus d'éditeur ni de jeu.
+> - **Les six assets hors monde** (matériau, son, écran, voiture, texture et modèle par l'automatisation) : mêmes différences qu'au plan précédent, fichier par fichier et clé par clé, après le premier enregistrement comme après le rétablissement.
+> - **`Worlds/FrontEnd.world`** : `PlayerStart` / « Player Start » / `PlayerIndex` passé de `One` à `Two` puis remis à `One`. Après le premier enregistrement : `player_index` 0 → 1 et les cinq valeurs de caméra. Après le rétablissement : **les cinq différences du plan précédent et pas d'autre**, toutes dans le nœud de caméra : `view_distance` 0 → 999, `viewport` `w` 0 → 1600, `h` 0 → 900, `min_depth` 0 → 1, `max_depth` 0 → 1000. Le nœud garde `"type": "PerspectiveCameraComponent"`, les mêmes clés et la même `local_transform` que le fichier du dépôt.
+> - Les plans que l'éditeur écrit, 1 et 1000, sont valides et égaux à `DefaultNearPlane` et `DefaultFarPlane` : le nouveau moteur les garde au chargement et la caméra a les mêmes plans qu'avec le fichier de l'outil. C'est déduit du code de `CameraComponent.InitializeWithWorld` à `aac8911cf`, pas mesuré par une image.
+> - Remarque de déroulé : le script, lancé avec `-I` sans `-B`, a créé `scripts/__pycache__/` (un fichier `.pyc`) dans le dépôt ; le dossier a été regardé puis supprimé.
+> - **E4 est tenu** (T3.1 et T3.2), dans le périmètre de P2.
+
 ---
 
 ## Phase 4 — Documents, vérification, clôture
 
-### ⏳ T4.1 — Documents (E5)
+### 🚧 T4.1 — Documents (E5)
 
 - Objectif : les documents du jeu disent ce que le moteur fait à `aac8911cf`.
 - Fichiers : `RacingGameCasaEngine/Assets/README.md` (ligne 111 : l'initialisation de la caméra remplace la taille et recalcule la distance ; elle garde les plans du fichier quand ils sont valides, ce qui est le cas des 1 et 1000 que l'éditeur écrit, et met 1 et 1000 quand le fichier porte des zéros, ADR-0153 du moteur) ; `scripts/RgceAssetCooker/README.md` (lignes 88 et 89 : le jeu lit les plans du fichier quand ils sont valides ; ceux de l'outil sont à zéro) ; `ai-agent/HANDOVER.md` (section 17 : le moteur à `aac8911cf`, ce qui est mesuré, la phrase de l'ADR-0042 qui décrit le moteur d'avant, le point ouvert O1) ; `ai-agent/README.md` (ligne de ce plan) ; ce plan. Pas d'ADR (P4).
