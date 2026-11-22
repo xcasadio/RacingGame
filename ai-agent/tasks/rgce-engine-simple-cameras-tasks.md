@@ -173,7 +173,7 @@ Relevé en lecture seule (quatre lecteurs indépendants, faits décisifs relus p
 > - **Diff des mondes** : dans chacun des quatre, 6 lignes changées, toutes dans le nœud de caméra : `id`, `name`, `type`, et trois composantes de la rotation (`y` 0,9870874, `z` 0,16018224, `w` 0 : la pose écrite par `SetPositionAndTarget`). Rien d'autre.
 > - **Restes** : plus aucune occurrence de `RaceLookAtCameraComponent` ni de `CameraLookAtComponent` hors `CasaEngine`, `docs`, `ai-agent`, `artifacts` ; les deux `.Target` restants de `ReferenceViewCaptureValidator.cs` (472, 548) sont le champ d'une vue de référence, pas d'une caméra.
 
-### 🚧 T2.2 — Mesure de l'étape B (E3)
+### ✅ T2.2 — Mesure de l'étape B (E3)
 
 - Objectif : dire exactement ce que la caméra du moteur change à l'image.
 - Fichiers : ce plan ; sorties sous `artifacts/worlds-as-assets/e2/` et `artifacts/engine-simple-cameras/b-measure/` ; script de mesure `artifacts/engine-simple-cameras/measure_images.py` (Pillow et numpy).
@@ -185,13 +185,35 @@ Relevé en lecture seule (quatre lecteurs indépendants, faits décisifs relus p
 - Validation : `-a` et `-b` identiques à l'octet (R4) ; rapport présent, 76 lignes ; témoins du script justes.
 - Commit : `docs(ai-agent): record the image measure of the engine's perspective camera`
 
+> Validation (2026-11-22, jeu `8d31748`, moteur `164f8d680`), sorties dans `artifacts/worlds-as-assets/e2/`, `artifacts/worlds-as-assets/e2-runs.txt` et `artifacts/engine-simple-cameras/b-measure/` :
+> - `dotnet build RacingGame.slnx` refait après la recuisson, 0 erreur ; mondes du dossier de build identiques à ceux de `Content` ; réglages de l'utilisateur aux empreintes de M1 avant et après.
+> - **Tout ce qui n'est pas image tient comme à l'étape A** : les 14 lancements, l'export et les deux audits en `exit 0`, aucun `[Warning]` ni `[Error]` ; export sans enregistrement sans pair (1437, 2033, 4058) ; audits de voitures identiques à M1 ; `--verify`, `--check`, catalogue, noms de types à 0.
+> - **Les deux rejeux sont identiques entre eux à l'octet** (`parity.py` de `e2/ref` contre lui-même : 76 PNG, PASS) : l'écart est déterministe (R4).
+> - **Écart à la référence de M1** (`slice_check.py e2` : 1 échec, le point 3) : **70 images sur 76 diffèrent** ; les 6 identiques à l'octet sont des écrans sans scène 3D (`ui-help`, `ui-highscores`, `ui-main-menu`, `ui-options`, `ui-splash`, `ui-track-selection`).
+> - **Mesure** (`measure_images.py`, témoins justes, `report.md`, 76 lignes, 70 planches) :
+>
+>   | Genre | Images | Identiques | Pixels différents (part) | Plus grand écart d'un canal |
+>   |---|---|---|---|---|
+>   | `views-linear` | 15 | 0 | 628 919 (4,5 %) | 112 |
+>   | `views-legacy` | 15 | 0 | 496 457 (3,6 %) | 201 |
+>   | `tunnel-linear` | 3 | 0 | 168 391 (6,1 %) | 95 |
+>   | `tunnel-legacy` | 3 | 0 | 126 163 (4,6 %) | 109 |
+>   | `ui` | 10 | 6 | 154 377 (0,7 %) | 111 |
+>   | `audit` | 30 | 0 | 4 814 484 (7,7 %) | 120 |
+>
+>   L'essentiel des pixels différents l'est d'**un seul niveau sur 255** (par exemple `views-linear/Advanced-sector-20` : 37 973 pixels différents, dont 2 553 de plus d'un niveau, 254 de plus de 8, 9 de plus de 32). L'écart absolu moyen par canal va de 0,002 à 0,38 niveau selon l'image. Les deux images les plus touchées sont `audit-Expert-helper-laterns` (40,8 % des pixels, dont 13 % de plus d'un niveau) et `audit-Beginner-helper-palms` (34,8 %) ; `ui-car-selection` ne change que de 54 pixels.
+> - **Ce qu'on voit** (étape 4, planches et agrandissements `crop-*.png`, cartes `map-*.png`) : rien à l'œil sur les images côte à côte. La différence amplifiée seize fois est un grain réparti sur toute la surface texturée (pavés du sol, route), plus dense là où la texture est contrastée, avec quelques pixels forts sur les contours et les bords d'ombre. **Aucun objet déplacé, ajouté ou manquant, aucune ombre déplacée.**
+> - **Ordre de grandeur du déplacement** : un décalage global ajusté image par image (`fit_shift.py`, `shift-fit.txt`) vaut 0,0005 pixel en médiane et 0,028 pixel au plus ; l'écart quadratique moyen de luminance vaut 0,27 niveau en médiane et 1,23 au plus. Estimation faite hors du jeu, en simple précision, des deux formules de vue pour les 18 vues de référence (script ponctuel, non gardé) : les deux matrices diffèrent d'au plus 9e-5 sur un élément (la translation, les positions de caméra allant jusqu'à 1010 unités), soit 0,001 pixel en médiane et 0,006 au plus pour un point entre 5 et 100 unités devant la caméra. C'est l'ordre de grandeur d'un arrondi de simple précision, pas celui d'une pose différente.
+> - **Attribution** : entre l'étape A (`20e1aff`, identique à M1 à l'octet) et l'étape B (`8d31748`), seul le calcul de la vue change ; l'écart mesuré lui est donc dû en entier.
+> - **E3 est tenu.** L'écart n'étant pas nul, R4 s'applique : la suite (T3.1 à T3.3) se fait sur l'état B, puis T4.1 s'arrête pour la décision de l'auteur.
+
 ---
 
 ## Phase 3 — Le projet d'éditeur sur le nouveau moteur (E4)
 
 Sur l'état B (R4). Si l'auteur choisit ensuite de revenir à l'état A (T4.1), les tâches T3.1 à T3.3 sont rejouées sur cet état avant la clôture ; le type de caméra attendu dans leurs validations est alors celui de l'état retenu (`RaceLookAtCameraComponent`, affiché « Race Look-At Camera »).
 
-### ⏳ T3.1 — Ouverture des 622 assets et aller-retour
+### 🚧 T3.1 — Ouverture des 622 assets et aller-retour
 
 - Objectif : rejouer les deux contrôles versionnés de S7 sur l'éditeur de `164f8d680`.
 - Fichiers : ce plan ; aucun fichier versionné d'outil (une adaptation de `RoundTripChecker.cs` exigée par le compilateur est faite en T1.2) ; sorties sous `artifacts/engine-simple-cameras/{open,roundtrip}/`.
