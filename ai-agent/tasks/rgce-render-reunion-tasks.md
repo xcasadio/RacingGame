@@ -101,7 +101,7 @@ Vérifié par commandes git dans le worktree `D:/development/repo/RacingGame/.cl
 
 > Validation (2026-11-22). Scripts du banc écrits sous `artifacts/render-reunion/scripts/` (`state.sh`, `runs.sh`, `parity.py`, `measure_base.py`, `measure_images.py` copié du checkout principal), empreintes dans `artifacts/render-reunion/scripts.sha256` ; outil des sondes construit sur la branche et copié avec `probes.json` dans `artifacts/render-reunion/tools/`. Contrôles : `bash -n` des deux lanceurs ; `parity.py` sur le cas connu, `render-fidelity/f8/ref` contre `render-fidelity/f6/ref` : **PASS, 76 images** ; `measure_base.py` de la réunion sur `f0/ref` : 15,039, 12,844, 31,648, sondes 20 / 2 / 27 / 3 en `linear` (19,793 et 4 / 0 / 27 / 3 en `legacy`), et sur `f6/ref` : 12,772, 12,471, 28,920, sondes 27 / 3 / 30 / 3, soit exactement les valeurs des plans clos. Réglages de l'utilisateur aux empreintes attendues. Le verrou de lancement est tenu au moment du commit par l'autre session (`engine-depth-range-tests`), dont le plan `rgce-engine-camera-depth-range` est donc en cours (point ouvert O3) : les rejeux de ce plan attendront leur tour. `git status --porcelain` avant le commit : ce plan, `ai-agent/README.md` et l'entrée du sous-module (le plan du moteur, non suivi).
 
-### ⏳ R1 — Le jeu de `remaster` sur `aac8911cf` (mesure de la cible)
+### ✅ R1 — Le jeu de `remaster` sur `aac8911cf` (mesure de la cible)
 
 - Objectif : savoir si `e2/ref` vaut encore sur `aac8911cf` (D2), avant toute fusion.
 - Prérequis : E0 (la cible est dans le clone, les tests y sont comptés).
@@ -110,6 +110,14 @@ Vérifié par commandes git dans le worktree `D:/development/repo/RacingGame/.cl
 - Issue B, **des images diffèrent** : mesure par `measure_images.py` (par genre : pixels différents, au-delà de 1, 8 et 32 niveaux, maximum, moyenne), planche des plus grands écarts, journaux lus (le correctif de portée de profondeur écrit un avertissement quand une portée est invalide) ; la tranche passe en ⚠️ avec la question à l'auteur (D3) : adopter `r1/ref` comme référence « sans travail de rendu » sur `aac8911cf`, ou revenir à la cible `164f8d680`.
 - Validation : les deux rejeux identiques ; l'issue écrite dans la note avec ses chiffres.
 - Commit : `docs(ai-agent): record the measure of the remaster game on the engine target`
+
+> Validation (2026-11-22). **Issue A : `e2/ref` vaut sur `aac8911cf`.**
+> - E0 du moteur fait avant (cible dans le clone, `N0` = 8562 tests). Extraction (P3) : sous-module placé sur le pointeur (`d3c479021`), `git status --porcelain` vide des deux côtés ; `git switch --detach 6e8424d` ; sous-module sur `origin/main` = `aac8911cf` ; le jeu ne montre que ` M CasaEngine`.
+> - Sorties de build de l'état (`state.sh r1`, `artifacts/render-reunion/r1/`) : shaders et contenus générés du moteur supprimés puis recréés (18 shaders), jeu et cuiseur à 0 erreur ; cuiseur `--worlds --verify` 0 écart (6 fichiers, 3341 entités, 3364 composants), `--verify` 0 écart, `--check` 0 ; générateur `--check` 0 ; noms de types 0 collision ; 7 mondes du `bin` identiques à ceux de `Content`. Pour information : les 18 empreintes de `r1/shaders.sha256` sont celles de `f0/shaders.sha256` du chantier de rendu (`origin/main` n'a touché aucun shader, et la compilation est reproductible).
+> - Validation commune (`runs.sh r1`, sous le verrou, 17 lancements en sortie 0, 0 avertissement) : **76 PNG identiques octet pour octet à `worlds-as-assets/e2/ref`** (`parity.py` : PASS, les deux rejeux identiques, rapports `scene-measure` identiques) ; export de scène contre celui d'`e2` : 0 champ différent, 0 enregistrement sans pair ; audits de voiture identiques hors `Generated:`.
+> - **Mesure contre l'original de l'état « sans travail de rendu » sur la nouvelle base** (`r1/measure/`, par `measure_base.py` de la réunion) : en `linear`, écart des 15 vues 15,039 contre `nopost` et 31,648 contre `full`, tunnels 12,845 et 15,194, sondes 20 / 2 / 27 / 3, moyenne des médianes des tunnels 30,884 ; en `legacy`, 19,792 et 39,394, tunnels 13,745, sondes 4 / 0 / 27 / 3. Sur l'ancienne base (`f0`, même script, contrôle fait en R0) : 15,039, 31,648, 12,844, 20 / 2 / 27 / 3, 30,885 ; 19,793 en `legacy`. Le nouveau calcul de vue déplace donc ces mesures d'un millième au plus quand le jeu ne se sert pas du travail de rendu.
+> - Retour (P3, pas 5) : moteur sur `chantier/render-fidelity`, arbre propre ; jeu sur `chantier/rgce-render-fidelity`, exactement ` M CasaEngine`.
+> - Le plan `rgce-engine-camera-depth-range` de l'autre session est en cours d'exécution (il tenait le verrou avant ces rejeux) ; sa mesure et celle-ci sont indépendantes.
 
 ### ⏳ R3 — Le jeu de `remaster` sur le moteur fusionné (preuve de neutralité)
 
