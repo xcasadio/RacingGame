@@ -43,7 +43,7 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 |---|---|
 | D1 | **Intégrer les 8 commits, avec la même mesure sur le banc** (« Oui » de l'auteur, 2026-11-22). |
 | D2 | **Aucun seuil d'image** : la règle « mesurer, puis décider » du plan précédent reste celle de l'auteur. Si une image diffère de la référence, l'agent mesure et s'arrête ; il n'admet aucun écart de lui-même. |
-| D3 | **Mode d'exécution** : choisi par l'auteur à l'approbation (AUTO ou ASK). En AUTO : commits sur la branche de chantier seulement ; ni push, ni avance de `remaster` ou de `master` ; arrêt sur blocage, défaut du moteur, ou décision qui revient à l'auteur. |
+| D3 | **Mode d'exécution : AUTO** (réponse de l'auteur du 2026-11-22 : « Approuvé AUTO »). En AUTO : commits sur la branche de chantier seulement ; ni push, ni avance de `remaster` ou de `master` ; arrêt sur blocage, défaut du moteur, ou décision qui revient à l'auteur. |
 
 ## Points que l'approbation du plan valide
 
@@ -93,7 +93,7 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 
 ## Phase 1 — Le moteur avancé, le jeu dessus
 
-### ⏳ T1.1 — Avancer le moteur local et le contrôler (E1)
+### ✅ T1.1 — Avancer le moteur local et le contrôler (E1)
 
 - Objectif : sous-module et `main` local du moteur à `aac8911cf` ; build de l'éditeur et tests du moteur relevés sur ce poste.
 - Fichiers : aucun fichier versionné du jeu, hors ce plan (le pointeur est indexé en T1.2).
@@ -104,7 +104,14 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 - Validation : `git -C CasaEngine rev-parse HEAD refs/heads/main` rend deux fois `aac8911cf…`, et ce commit est un ancêtre de `refs/remotes/origin/main` ou lui est égal ; build de l'éditeur à 0 erreur ; 0 échec de test, au moins 8533 tests, les tests `CameraDepthRangeTests` présents dans le `.trx` (sinon R2).
 - Commit : `docs(ai-agent): record the engine advance to the camera depth range`
 
-### ⏳ T1.2 — Le jeu compile sur le nouveau moteur, sans changement (E2)
+> Approbation de l'auteur (2026-11-22) : « Approuvé AUTO ».
+>
+> Validation (2026-11-22), sorties dans `artifacts/engine-depth-range/` :
+> - **Avance** (étape 1, P1) : avant, `HEAD` sur `chantier/rgce-on-origin-main-4` = `main` local = `164f8d680`, arbre propre, `origin/main` = `aac8911cf`, `merge-base --is-ancestor` vrai. `git merge --ff-only aac8911cf…` puis `git update-ref refs/heads/main aac8911cf… 164f8d680…`. Après : `git rev-parse HEAD refs/heads/main refs/remotes/origin/main` rend trois fois `aac8911cf373e80f0f8b7c414919b2181b11f284` ; `git status` propre ; `MGUI` (`2f9773d05`) et `NvgSharp` (`9c0da031d`) non signalés modifiés. Aucun commit du moteur, rien de poussé.
+> - **Build de l'éditeur** (étape 2) : `dotnet build CasaEngine/CasaEngine.Editor.MonoGame.sln`, 0 erreur (`build/editor.txt`). Le `CasaEngine.dll` du dossier de build de l'éditeur contient `IsValidDepthRange` et `DefaultNearPlane` : c'est bien le nouveau moteur.
+> - **Tests sur `aac8911cf`** (étape 3), sous le verrou : **8562 tests, 8562 réussis, 0 échec** (`engine-tests.txt`, `engine-tests/new.trx`), soit 29 de plus que les 8533 du même jour sur `164f8d680` ; le fichier de résultats contient 27 résultats `CameraDepthRangeTests` et 15 `OrientedSpriteSampleDataTests`. **E1 est tenu.**
+
+### 🚧 T1.2 — Le jeu compile sur le nouveau moteur, sans changement (E2)
 
 - Objectif : le pointeur du sous-module est à `aac8911cf` ; le jeu, l'outil et les mondes sont inchangés.
 - Fichiers : `CasaEngine` (pointeur), ce plan. Aucun autre (R4).
