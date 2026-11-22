@@ -214,13 +214,18 @@ Vérifié par commandes git dans le worktree `D:/development/repo/RacingGame/.cl
 
 > **Décision de l'auteur (2026-11-22, réponses aux deux questions du point ouvert O4).** (1) « Oui, adopter r5/ref » : `artifacts/render-reunion/r5/ref` est la référence du banc de l'état réuni (D6). (2) « Oui, fusionner 4fc96a5 » : tranche R5b ci-dessous (D7). La tranche R5 est close.
 
-### ⏳ R5b — Fusion de la tête de `remaster` (`4fc96a5`)
+### ✅ R5b — Fusion de la tête de `remaster` (`4fc96a5`)
 
 - Objectif (D7) : `chantier/rgce-render-fidelity` contient tout `remaster` ; sa fusion finale dans `remaster` devient une avance rapide.
 - Ce que `4fc96a5` ajoute à `6e8424d` (`git diff --stat 6e8424d 4fc96a5`, 6 fichiers) : le pointeur `CasaEngine` (`aac8911cf`, déjà contenu dans la tête fusionnée du moteur), deux phrases de `RacingGameCasaEngine/Assets/README.md` et de `scripts/RgceAssetCooker/README.md`, la section 17 de `ai-agent/HANDOVER.md`, une ligne de `ai-agent/README.md` et le plan `rgce-engine-camera-depth-range-tasks.md`. Aucun code, aucun fichier de `Content`.
 - Étapes : `git merge --no-ff --no-commit 4fc96a5` ; conflit attendu (prévisualisé par `git merge-tree`) : `ai-agent/HANDOVER.md` seulement, résolu ainsi : les sections 15, 16 et 17 de `remaster` telles quelles, la section du chantier de rendu renumérotée **18** ; le pointeur `CasaEngine` reste la tête fusionnée du moteur (`10e00776b`, qui contient `aac8911cf`). Tout autre conflit : `git merge --abort`, ⚠️. Contrôles avant le commit : hors de `ai-agent/` et des deux README, l'arbre fusionné est celui de `0d97d1e` (`git diff` vide sur le code, `Content`, `docs/` et le pointeur) ; les fichiers que seul `remaster` a changés sont ceux de `4fc96a5` ; `dotnet build RacingGame.slnx` à 0 erreur ; cuiseur `--worlds --verify`, `--verify`, `--check` à 0.
 - Validation : `git rev-parse HEAD^2` = `4fc96a5…` ; `git merge-base --is-ancestor remaster HEAD` vrai ; arbre propre. Aucun rejeu propre à cette tranche : le rejeu de contrôle de R6 (15 vues `linear` contre `r5/ref`) se fait sur l'état qui contient cette fusion.
 - Commit : `chore(racing-casa): merge remaster (camera depth range integration) into the render fidelity branch`
+
+> Validation (2026-11-22). `git merge --no-ff --no-commit 4fc96a5`, depuis `e6decfb`. `git rev-parse remaster` et `origin/remaster` : `4fc96a5`.
+> - **Un seul conflit, celui prévu** : `ai-agent/HANDOVER.md`, un bloc ; résolu avec les sections 15, 16 et 17 de `remaster` telles quelles, puis la section du chantier de rendu renumérotée 18 (contre `4fc96a5`, le fichier ne fait qu'ajouter cette section, 15 lignes). Le sous-module est fusionné par git en avance rapide : le pointeur reste `10e00776b`.
+> - Hors de `ai-agent/` et des deux README, l'index fusionné est celui de `e6decfb` (`git diff --cached --stat` vide : ni code, ni `Content`, ni `docs/`, ni pointeur). Des six fichiers que `remaster` a changés depuis `6e8424d`, trois sont ceux de `4fc96a5` (les deux README et le plan `rgce-engine-camera-depth-range-tasks.md`) ; `ai-agent/README.md` porte les lignes des deux côtés (une ligne ajoutée à celui de la branche), `ai-agent/HANDOVER.md` les sections des deux côtés, `CasaEngine` la tête fusionnée du moteur.
+> - `dotnet build RacingGame.slnx` et le cuiseur : 0 erreur ; cuiseur `--worlds --verify` 0 écart (6 fichiers, 3341 entités, 3367 composants), `--verify` 0 écart, `--check` 0 ; générateur `--check` 0 ; noms de types 0 collision.
 
 ### ⏳ R6 — Clôture
 

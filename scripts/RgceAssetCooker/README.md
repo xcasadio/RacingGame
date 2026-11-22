@@ -86,7 +86,8 @@ these files (plan `ai-agent/tasks/rgce-worlds-as-assets-tasks.md`, M5).
 - The camera of a world is the engine's `PerspectiveCameraComponent` (ADR-0045): its node carries its pose in `local_transform`, and the keys `view_distance`,
   `viewport`, `fieldOfView` and `picture_offset`.
 - A camera component is written in its state before initialization: `view_distance` and `viewport` are zeros. The editor initializes the camera when it opens the
-  world and saves the size of its window, 1, 1000 and 999; the game never reads those values from the file.
+  world and saves the size of its window, 1, 1000 and 999. When the game loads a world, the engine takes the size from the screen and recomputes the distance; it keeps
+  the two depths of the file when they are valid and uses 1 and 1000 when they are zeros (engine ADR-0153): the tool's file and the editor's give the same camera.
 - `--worlds --verify` re-reads the six files with public engine APIs only (`World.Load` on the file, `Entity.Load` on each inline entity node and on the car file) and
   compares them with the constructors run again: the world's id and name, its keys, its environment key by key (against what `WorldEnvironmentSettings.Save` writes for the expected environment),
   the sky cube id (empty for the front end), the number of entities, each entity in order (name, id, policies, the tree of components with type, name and id, local transforms to 1e-6,
