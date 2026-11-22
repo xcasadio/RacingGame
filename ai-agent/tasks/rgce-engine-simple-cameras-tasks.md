@@ -93,7 +93,7 @@ Relevé en lecture seule (quatre lecteurs indépendants, faits décisifs relus p
 
 ## Phase 1 — Le moteur avancé, le jeu inchangé à l'image (étape A)
 
-### ⏳ T1.1 — Avancer le moteur local et le contrôler
+### ✅ T1.1 — Avancer le moteur local et le contrôler
 
 - Objectif : sous-module et `main` local du moteur à `164f8d680` ; build et tests du moteur relevés sur ce poste.
 - Fichiers : aucun fichier versionné du jeu, hors ce plan (le pointeur est indexé en T1.2).
@@ -105,7 +105,15 @@ Relevé en lecture seule (quatre lecteurs indépendants, faits décisifs relus p
 - Validation : `git -C CasaEngine rev-parse HEAD refs/heads/main refs/remotes/origin/main` rend trois fois `164f8d680…` ; build de l'éditeur à 0 erreur ; aucun échec de test qui ne soit déjà dans le témoin de l'étape 0 (sinon R2).
 - Commit : `docs(ai-agent): record the engine advance to origin/main`
 
-### ⏳ T1.2 — Le jeu compile sur le nouveau moteur, avec l'ancienne formule de vue
+> Approbation de l'auteur (2026-11-22) : « Approuvé AUTO ».
+>
+> Validation (2026-11-22), sorties dans `artifacts/engine-simple-cameras/` :
+> - **Témoin du poste** (étape 0), sur `01cdf483f`, sous le verrou : 8314 tests, 0 échec (`engine-tests-old.txt`, `engine-tests-old/old.trx`).
+> - **Avance** (étape 1, P1) : branche `chantier/rgce-on-origin-main-4` créée sur `01cdf483f` (le nom était libre, l'arbre propre), `git merge --ff-only refs/remotes/origin/main`, `git update-ref refs/heads/main 164f8d680… 01cdf483f…`. `git rev-parse HEAD refs/heads/main refs/remotes/origin/main` rend trois fois `164f8d6809f6293405a81458016bbc5ae2212076` ; `git status` propre ; `MGUI` (`2f9773d05`) et `NvgSharp` (`9c0da031d`) non signalés modifiés. Aucun commit du moteur, rien de poussé.
+> - **Build de l'éditeur** (étape 2) : `dotnet build CasaEngine/CasaEngine.Editor.MonoGame.sln`, 0 erreur (`build/editor-new.txt`).
+> - **Tests sur `164f8d680`** (étape 3), sous le verrou : 8533 tests, 0 échec (`engine-tests-new.txt`, `engine-tests-new/new.trx`). Aucun échec dans l'un ni l'autre passage : rien à comparer. **E1 est tenu.**
+
+### 🚧 T1.2 — Le jeu compile sur le nouveau moteur, avec l'ancienne formule de vue
 
 - Objectif : le jeu, l'outil et les mondes sont adaptés au minimum pour compiler et se charger sur `164f8d680`, sans changer une image.
 - Fichiers : `CasaEngine` (pointeur) ; nouveau `RacingGame.Gameplay/Components/RaceLookAtCameraComponent.cs` (P3) ; `ChaseCameraRigComponent.cs`, `DebugFreeCameraComponent.cs`, `RaceWorldTemplates.cs`, `CarSelectionCarousel.cs`, `ReferenceViewCaptureValidator.cs`, `TrackMigrationCaptureValidator.cs`, et les sources de `scripts/RgceAssetCooker` si leur build l'exige (le type `CameraLookAtComponent` devient `RaceLookAtCameraComponent`, rien d'autre ; dans `RaceWorldTemplates.cs`, `Name = nameof(RaceLookAtCameraComponent)`) ; `RacingGameCasaEngineGame.cs` (`RaiseGameplayNotifications = GameplayExecutionPolicies.Runtime.RaiseGameplayNotifications`) ; les quatre `.world` et `Content/AssetInfos.json` s'il change, régénérés (R6) ; tout autre fichier que le compilateur désigne, à condition que la correction soit un renommage ou l'ajout d'un membre devenu obligatoire, sinon ⚠️ Blocked.
