@@ -424,7 +424,7 @@ Arrêts : arrêts communs ; base de la copie différente de la référence préc
 - Arrêts : arrêts communs ; le composant ne peut pas reproduire un élément de la table de l'original (retour au plan du moteur).
 - Commits : `chore(engine): point CasaEngine at the lens flare component` ; `feat(racing-casa): draw the sun and its flare of the original`
 
-### 🚧 F6 — Ombre projetée en perspective
+### ⚠️ F6 — Ombre projetée en perspective
 
 - Objectif : les ombres des trois courses sont projetées comme dans l'original (T4 du moteur) : lumière virtuelle en perspective, centrée devant la voiture, portée et fondu de l'original, rien d'ombré hors de la carte.
 - Prérequis : table « Dépendances ».
@@ -486,6 +486,29 @@ Validation : validation commune, avec ces précisions.
 
 Arrêts : arrêts communs ; base différente de `f3/ref` ; script figé modifié après son gel ; cuisson qui change un autre fichier que les trois mondes de course ; candidat qui n'est plus retenu une fois appliqué ; la projection de l'original ne se reproduit pas avec les réglages du moteur sans les sortir de leur définition (retour au plan du moteur).
 
+> **Mesure (2026-11-22). Aucun candidat éligible : la tranche est en pause sur une question à l'auteur (point ouvert O13).**
+> - Code du point (b) écrit avant la mesure (`RaceShadowFocusComponent`, entrée du banc), mondes recuits, jeu construit ; outils figés (`f6/scripts-frozen.sha256`). Base rejouée : **33 PNG identiques octet pour octet à `f3/ref`** (le composant est inerte en orthographique). Point visé en jeu contre point du fichier des vues, sur les trois vues de départ, candidat `orig` : distance **0,000** pour `Beginner-start`, `Advanced-start` et `Expert-start` (journal de `f6/orig/run.log`).
+> - Grille (`f6/measure_shadow.txt`, onze candidats, trois rejeux chacun, 0 avertissement) :
+>
+> | Candidat | Réglage | `H` | `E` | `E` tunnels | `M` | Critères 1 / 2 / 3 / 4 | Critère 3 `legacy` | `E` `Beginner-sector-20` | Éligible |
+> |---|---|---|---|---|---|---|---|---|---|
+> | `base` | réglages actuels (orthographique) | 0 | 14,131 | 12,835 | 30,860 | 27 / 2 / 27 / 3 | 27 | 31,281 | - |
+> | `orig` | projection et réglages de l'original | 3 | 12,803 | 11,502 | 24,976 | 27 / 3 / 30 / 3 | 30 | 18,481 | non : `M` hors fenêtre |
+> | `res4096` | carte 4096, rayon 6 | 3 | 12,814 | 11,454 | 24,953 | 27 / 3 / 30 / 3 | 30 | 18,566 | non : `M` hors fenêtre |
+> | `r1.5` | rayon 1,5 | 3 | 12,862 | 11,223 | 25,308 | 27 / 3 / 30 / 3 | 30 | 18,614 | non : `M` hors fenêtre |
+> | `r6` | rayon 6 | 3 | 12,726 | 11,845 | 24,648 | 27 / 3 / 30 / 3 | 30 | 18,416 | non : `M` hors fenêtre |
+> | `nb0` | biais de normale 0 | 3 | 12,765 | 12,089 | 27,885 | 27 / 3 / 30 / 3 | 30 | 18,297 | non : `M` hors fenêtre |
+> | `db0.0006` | biais de profondeur 0,0006 | 3 | 12,800 | 11,734 | 21,336 | 27 / 3 / 30 / 3 | 30 | 18,458 | non : `M` hors fenêtre |
+> | `db0.002` | biais de profondeur 0,002 | 3 | 12,803 | 11,773 | 27,529 | 27 / 3 / 30 / 3 | 30 | 18,504 | non : `M` hors fenêtre |
+> | `fade0` | sans fondu | 3 | 12,840 | 11,500 | 24,976 | 27 / 2 / 29 / 3 | 29 | 18,623 | non : sonde perdue (`Beginner-sector-20/city-lit-1`, critère 3) ; `M` hors fenêtre |
+> | `taps32` | 32 lectures | 3 | 12,805 | 11,605 | 24,928 | 27 / 3 / 30 / 3 | 30 | 18,496 | non : `M` hors fenêtre |
+> | `c0.30` | couleur 0,30 | 3 | 12,959 | 12,626 | 23,787 | 27 / 0 / 30 / 3 | 30 | 18,975 | non : critère 2 baisse ; `M` hors fenêtre |
+> | `c0.46` | couleur 0,46 | 3 | 12,927 | 13,981 | 26,312 | 27 / 0 / 30 / 3 | 30 | 19,166 | non : `E` des tunnels monte ; critère 2 baisse ; `M` hors fenêtre |
+>
+> - Lecture. La projection de l'original apporte le plus grand gain du chantier sur les vues : `E` 14,131 -> 12,803, `Beginner-sector-20` 31,281 -> 18,481, les trois sondes `city-shadow` tenues, le rapport ombre / lumière de la ville à 0,277 pour 0,276 dans l'original (1,961 avant), critère 2 de 2 à 3, critère 3 de 27 à 30, `E` des tunnels 12,835 -> 11,502. Les trois sondes `city-lit` et les trois `road-shadow` restent hors d'atteinte (l'ombre de la route de `Beginner-sector-50` n'apparaît pas). **Mais la moyenne `M` des médianes de luminance des tunnels sort de la fenêtre de l'auteur pour tous les candidats** (24,976 pour `orig`, fenêtre [28,882 ; 31,882]) : la règle figée retient donc la base. `combo` est `orig` (aucun candidat éligible sur aucun axe), non rejoué.
+> - Détail de `M`, vue par vue (médianes, original / base / `orig`) : `Beginner-tunnel` 11,07 / 27,50 / 19,21 (se rapproche de l'original) ; `Advanced-tunnel` 39,29 / 26,57 / 22,00 (s'en éloigne) ; `Expert-tunnel` 40,79 / 38,50 / 33,72 (s'en éloigne). À la base, `M` tient dans la fenêtre par compensation entre une vue trop claire et deux vues trop sombres ; la capture de l'original de `Advanced-tunnel` contient le soleil et son halo, que le portage n'a pas (tranche F5). `M` suit le biais de profondeur (21,34 à 0,0006 ; 24,98 à 0,00118 ; 27,53 à 0,002) et le biais de normale (27,89 à 0).
+> - Rien n'est appliqué à ce stade. Le code du point (b) reste dans l'arbre de travail, non committé, en attendant la réponse.
+
 ### ⏳ F7 — Glow
 
 - Objectif : le monde de course prend le glow de l'original par le bloom du moteur et les réglages de couleur de l'image (T5), mesuré contre la variante `full` de l'original.
@@ -524,6 +547,7 @@ Arrêts : arrêts communs ; base différente de `f3/ref` ; script figé modifié
 | O10 | F3 : cinq familles du décor sont au plus grand facteur de la grille (1,45) et `M` y baissait encore pour quatre d'entre elles. Mesurer des facteurs plus grands gagnerait peut-être encore, mais s'éloigne de l'ambiant de l'original (un facteur au-dessus de 1 compense la courbe de ton) : à l'auteur de dire s'il le veut. | rapport de fin |
 | O11 | Pénombre en paliers : absente des vues du banc avec les 64 lectures de l'ADR-0035 ; la rotation par pixel du filtre n'a pas été faite (F4, T2, décision de l'auteur du 2026-11-22). À rouvrir si elle se voit en jeu dans un cas que le banc ne capture pas, de préférence après F6, qui change la taille des pénombres. | rapport de fin |
 | O12 | **T3 et F5 attendent l'audit du cycle de vie des composants du moteur.** Le détail de T3 (composant de lens flare) a reçu trois `REVISE`, chacun sur un trou différent de la façon dont le rendu connaît les composants à dessiner. Décisions de l'auteur du 2026-11-22 : (1) l'inscription des composants auprès du rendu est gardée, comme dans les moteurs modernes, avec la règle qui remonte la chaîne des entités parentes (détail de T3 révisé) ; (2) **un audit du cycle de vie des composants d'entité de CasaEngine passe d'abord, T3 attend son résultat**. La découverte en lecture seule de l'audit est faite (2026-11-22 : 34 défauts consolidés ; rapports dans `artifacts/component-lifecycle/facts/` et dans le dossier de notes partagé des sessions). L'auteur a décidé le même jour : bugs confirmés d'abord puis contrat à la façon des moteurs modernes ; comportement corrigé partout ; règle d'inscription du moteur = rappels du composant, fiabilisés ; et **l'exécution de l'audit se fait dans une session à part, que l'auteur lance depuis l'application de bureau** (brief prêt : `artifacts/component-lifecycle/BRIEF-session-audit.md`). Sa conclusion pour T3 sera déposée dans le dossier de notes partagé. Le chantier de fidélité continue sur T4 + F6, qui n'en dépendent pas. | T3, F5 |
+| O13 | **F6, question à l'auteur (2026-11-22).** La projection de l'ombre de l'original baisse l'écart des vues de 14,131 à 12,803 et celui des tunnels de 12,835 à 11,502, mais aucun candidat ne tient la fenêtre de l'auteur pour la luminance médiane des tunnels (`M` 24,976 pour [28,882 ; 31,882]) : la règle figée ne retient rien. Choix : (1) appliquer `orig` en constatant que la fenêtre n'est plus tenue, avec une ligne d'état sur l'ADR-0036 ; (2) une seconde grille sur les biais, même règle, pour chercher un réglage qui tient la fenêtre ; (3) clore sans rien appliquer (P5). |
 
 ## Hors périmètre
 
