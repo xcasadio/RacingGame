@@ -130,7 +130,7 @@ Seule source des prérequis des tranches F de ce plan et des tâches T du plan d
 | F1 | F0 ✅ ; T1 ✅, vérifiée, branche copiée (P2). |
 | F2 | F1 ✅. |
 | F3 | F1 ✅ ; F2 ✅ (appliquée ou non). |
-| F4 | F0 ✅ ; T2 ✅, vérifiée, branche copiée. |
+| F4 | F0 ✅ ; T2 ✅, vérifiée, branche copiée. **Close sans rien appliquer le 2026-11-22, avec T2, sur décision de l'auteur : pour T3 et F5, T2 et F4 comptent comme closes.** |
 | F5 | F0 ✅ ; T3 ✅, vérifiée, branche copiée. |
 | F6 | F0 ✅ ; T4 ✅, vérifiée, branche copiée. Une tranche F2 à F5 que l'auteur a fait sauter est nommée dans la note de F6 : ses réglages restent à mesurer sur les ombres nouvelles. |
 | F7 | F6 ✅ (appliquée ou non : le glow se mesure sur la scène finale) ; T5 ✅, vérifiée, branche copiée. |
@@ -394,7 +394,7 @@ Arrêts : arrêts communs ; base de la copie différente de la référence préc
 > - Référence précédente de F4 : `artifacts/render-fidelity/f3/ref/`, export `f3/export/scene.json`.
 
 
-### ⏳ F4 — Pénombre de l'ombre
+### ✅ F4 — Pénombre de l'ombre (close sans rien appliquer)
 
 - Objectif : la pénombre en paliers du bord des ombres devient un dégradé, par le motif par pixel du filtre (T2 du moteur).
 - Prérequis : table « Dépendances ».
@@ -404,6 +404,14 @@ Arrêts : arrêts communs ; base de la copie différente de la référence préc
 - Validation : validation commune ; planche agrandie de la paroi d'`Expert-tunnel` et d'un bord d'ombre extérieur.
 - Arrêts : arrêts communs ; grain visible que l'anticrénelage ne lisse pas (rien n'est appliqué).
 - Commits : `chore(engine): point CasaEngine at the shadow filter rotation` ; `fix(racing-casa): rotate the shadow filter of the race world per pixel`
+
+> **Close sans rien appliquer (décision de l'auteur du 2026-11-22), avec T2 du plan du moteur.** Deux essais faits le 2026-11-21 avant d'écrire le détail de la tranche, sur un build temporaire jamais committé (`artifacts/render-fidelity/t2/` : `facts/`, `spike/`, `probe-single/`, `probe-on/`, `probe-on-zoom.jpg`, envoyée à l'auteur) :
+> - **Compilation.** Le moteur se compile pour `DesktopGL` : profil `OpenGL`, shaders de pixel en `ps_3_0`. `LitPbr.fx` y tient aujourd'hui dans 182 des 224 registres de constantes (68 constantes littérales et 114 uniformes), et ses 112 lectures de la carte d'ombre (64, 32, 12 et 4) sont toutes exécutées à chaque pixel : le compilateur aplatit les branches du filtre. La position du pixel se lit sur les deux profils (`VPOS` en `ps_3_0`, traduit en `gl_FragCoord` ; membre `SV_Position` en `ps_5_0`).
+> - **La forme que demande la règle « sans effet par défaut, par construction » ne compile pas.** Garder le code actuel et lui ajouter, derrière un garde, une copie tournée des trois disques dépasse la limite : `error X4507: maximum ps_3_0 constant register index (224) exceeded`. Forcer un vrai branchement (`[branch]`) est refusé : `error X3528: can't force branch with gradients on non-inputs` (les lectures d'ombre sont des `tex2D` sur ce profil).
+> - **Seule une forme à chemin unique compile** : chaque lecture devient `shadowUv + o.x * axeX + o.y * axeY`, les deux axes valant `(rx, 0)` et `(0, ry)` quand la rotation est coupée (69 constantes, 112 lectures). Le « comme avant » n'y tient plus à un garde mais à l'arithmétique. Mesuré dans le jeu sur un build temporaire, rotation coupée : **les 15 vues et les 3 vues de tunnel en `linear` et les 15 vues en `legacy` sont identiques octet pour octet à la référence**.
+> - **Rotation active, le gain dans le jeu est nul à la mesure.** RacingGameCasaEngine filtre déjà ses ombres sur 64 lectures (ADR-0127). Deux rejeux identiques entre eux ; 12 vues sur 15 et les 3 vues de tunnel changent, de 1,09 niveau en moyenne sur les pixels touchés ; écart moyen à l'original 14,131 -> 14,130 ; moucheture de la paroi d'`Expert-tunnel` 0,426 % -> 0,429 % (original 0,363 %). Sur la planche agrandie trois fois (`probe-on-zoom.jpg`), la pénombre n'a pas de paliers visibles avant, et après elle porte un grain fin à peine visible.
+>
+> L'auteur, interrogé avec ces faits, a choisi de ne faire ni T2 ni F4 : le moteur n'est pas alourdi pour un gain que la mesure ne voit pas. Aucun code, aucun contenu, aucune ADR ; le pointeur `CasaEngine` ne bouge pas (commit (a) sans objet). L'écart « pénombre en paliers » de l'objectif est donc **constaté absent des vues du banc** avec les 64 lectures déjà en place, et non corrigé par ce chantier ; s'il se voit en jeu dans un cas que le banc ne capture pas, il reste ouvert (point O11). Les shaders du moteur ont été remis à l'identique et le jeu reconstruit. La référence précédente de F5 reste `artifacts/render-fidelity/f3/ref/`, export `f3/export/scene.json`.
 
 ### ⏳ F5 — Soleil et halo
 
@@ -464,6 +472,7 @@ Arrêts : arrêts communs ; base de la copie différente de la référence préc
 | O7 | Facteur de reflet d'environnement par matériau : reporté (D6) ; tuyau d'`Advanced-start` plus bleu et plus clair que l'original. | rapport de fin |
 | O8 | Le verrou `D:/development/rgce-run.lock` se teste puis se crée en deux gestes : deux sessions qui le prennent au même instant ne se voient pas. Convention acceptée telle quelle ; un rejeu dont les deux passes diffèrent est un arrêt, ce qui révèle une collision. | toutes |
 | O10 | F3 : cinq familles du décor sont au plus grand facteur de la grille (1,45) et `M` y baissait encore pour quatre d'entre elles. Mesurer des facteurs plus grands gagnerait peut-être encore, mais s'éloigne de l'ambiant de l'original (un facteur au-dessus de 1 compense la courbe de ton) : à l'auteur de dire s'il le veut. | rapport de fin |
+| O11 | Pénombre en paliers : absente des vues du banc avec les 64 lectures de l'ADR-0035 ; la rotation par pixel du filtre n'a pas été faite (F4, T2, décision de l'auteur du 2026-11-22). À rouvrir si elle se voit en jeu dans un cas que le banc ne capture pas, de préférence après F6, qui change la taille des pénombres. | rapport de fin |
 
 ## Hors périmètre
 
