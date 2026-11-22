@@ -1,5 +1,5 @@
 {
-  "view_model_type": "RacePauseViewModel",
+  "view_model_type": "RacingGame.Gameplay.ViewModels.RacePauseViewModel",
   "values": {
     "Summary": "Beginner | Lap 1/2 | Total 00:01.27"
   }

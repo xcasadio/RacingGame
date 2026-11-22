@@ -9,6 +9,7 @@ Like the other tools of `scripts/`, it is not part of `RacingGame.slnx`. Build a
 ```
 dotnet build scripts/RgceAssetCooker/RgceAssetCooker.csproj
 scripts/RgceAssetCooker/bin/Debug/net9.0-windows/RgceAssetCooker.exe [--content <Content folder>] [--check | --verify] [--worlds]
+scripts/RgceAssetCooker/bin/Debug/net9.0-windows/RgceAssetCooker.exe --content <copy of Content> (--roundtrip | --roundtrip-controls) [--out <folder>] [--type <extension>] [--file <file name>]
 ```
 
 The default `--content` is `RacingGameCasaEngine/Content` of the repository that holds the executable. No graphics device is needed.
@@ -58,8 +59,8 @@ same set of entries.
 
 `--worlds` writes the game's worlds and its car as CasaEngine assets, built by the game's own constructors
 (`RacingGame.Gameplay/Race/RaceWorldTemplates.cs`, `Entities/RaceCarEntityFactory.cs`), through the engine's public writers
-(`EditorWorldWriter.SaveWorld(World, IReadOnlyList<Entity>)`, `EditorEntityWriter.SaveEntity`; CasaEngine ADR-0128). The game does not load
-these files yet (plan `ai-agent/tasks/rgce-worlds-as-assets-tasks.md`, M5).
+(`EditorWorldWriter.SaveWorld(World, IReadOnlyList<Entity>)`, `EditorEntityWriter.SaveEntity`; CasaEngine ADR-0128). The game loads
+these files (plan `ai-agent/tasks/rgce-worlds-as-assets-tasks.md`, M5).
 
 | Asset | File | Catalogue name | Type | Entities |
 |---|---|---|---|---|
@@ -82,6 +83,8 @@ these files yet (plan `ai-agent/tasks/rgce-worlds-as-assets-tasks.md`, M5).
   entity has child entities (the writer does not save them).
 - The catalogue is not written by the tool: run `python scripts/generate_rgce_content_assets.py` after `--worlds` (it catalogues `Worlds/**/*.world`
   as `World.<path>` and `Entities/**/*.entity` as `Entity.<path>`, with the asset type the engine infers from the extension, and checks that each file's `id` is its entry's).
+- The camera of a world is the engine's `PerspectiveCameraComponent` (ADR-0045): its node carries its pose in `local_transform`, and the keys `view_distance`,
+  `viewport`, `fieldOfView` and `picture_offset`.
 - A camera component is written in its state before initialization: `view_distance` and `viewport` are zeros. The editor initializes the camera when it opens the
   world and saves the size of its window, 1, 1000 and 999; the game never reads those values from the file.
 - `--worlds --verify` re-reads the six files with public engine APIs only (`World.Load` on the file, `Entity.Load` on each inline entity node and on the car file) and
@@ -101,3 +104,43 @@ these files yet (plan `ai-agent/tasks/rgce-worlds-as-assets-tasks.md`, M5).
   paint rule the game applies at run time (a car-textured slot is painted when its cooked material has a clear coat) against the paint role of each `Car.gltf` material in the recipes. Exit code 1 on any mismatch. It does not compile the materials (that needs a graphics device); the editor catalogue walk opens them.
 - `--worlds`: write the five worlds and `Entities/PlayerCar.entity` (see above). It touches neither the models, materials and textures nor the catalogue. Not combinable with `--check`.
 - `--worlds --verify`: re-read those six files and compare them with the constructors. Writes nothing; exit code 1 on any mismatch.
+
+## Save round trip and preview headers (`--roundtrip`)
+
+`--roundtrip` measures whether the engine writers rewrite every editable asset without loss, outside the editor and with no graphics device (plan
+`ai-agent/tasks/rgce-editor-project-tasks.md`, T7.3, P25 and P30). It fixes nothing: a failing asset is reported. It must be given a **copy** of the
+project's `Content` folder (`--content`, required: it is read, never written; `EngineEnvironment.ProjectPath` is set to it) and writes only into
+`--out` (default `artifacts/editor-closure/roundtrip` of the repository, git-ignored; an output folder inside a Content folder is refused). The tool
+creates the output folders; the engine writer does not. It walks `AssetInfos.json` and picks the check by file extension.
+
+```
+RgceAssetCooker.exe --roundtrip --content D:/development/rgce-s7/content --out artifacts/editor-closure/roundtrip
+RgceAssetCooker.exe --roundtrip-controls --content D:/development/rgce-s7/content --out artifacts/editor-closure/roundtrip
+```
+
+- **Editable assets** (`.world`, `.entity`, `.staticmodel`, `.material`, `.texture`, `.sound`, `.uiscreen`, `.sprite`): loaded with the engine loader of the
+  type (`Entity`, `StaticModel`, `MaterialAsset`, `Texture`, `SoundAsset`, `UIScreenAsset`, `SpriteData`: `Load(JObject)`), written with
+  `EditorAssetWriterService.SaveAsset` to `<out>/first/<file name>`, the first write loaded again and written to `<out>/second/<file name>`. A `.world` creates its
+  entities only in a running game, so it is loaded with `entity_references` emptied, each inline entity node is loaded by `Entity.Load`, and the world is written by
+  `EditorWorldWriter.SaveWorld(World, IReadOnlyList<Entity>)` (the method of `--worlds --verify`); a reference whose `asset_id` is not empty fails as
+  "asset reference not supported". No internal type of the engine is called.
+- **Checks**, each reported under its name: `unstable` (the second write has not the bytes of the first); `key lost` (a key of the source JSON is missing at the same place
+  in the first write); `value changed` (a value differs: numbers to 1e-6, arrays element by element in order, strings and booleans exactly); `unresolved type` (a component
+  of a world or of `Entities/PlayerCar.entity` is loaded as `UnresolvedComponent`, which would write its node back unchanged and pass the round trip for nothing);
+  `logged error` (the engine logged an error through `Logs` while the asset was processed); `component count` (the components loaded under their real type, walked from the
+  root component, the component list and the children, are not as many as the component nodes of the source: root component, `components`, `children_component` trees);
+  `load failed` / `write failed` (an exception, with its type, message and first stack frames); `asset reference not supported`; `file missing`. A failed asset is
+  reported under the first of these names in the order of `RoundTripCheck.Order` (the order above, `file missing` first, `unreadable preview` last); all its failed checks are in the report.
+  The tool loads the `RacingGame.Gameplay` assembly before the first read, because the engine looks component types up in the loaded assemblies only.
+  The keys the writer adds are not failures: they are listed per type. The written file is not compared with the source byte for byte (a source may differ by its line endings
+  or its final newline).
+- **Preview assets** (`.png`, `.dds`, `.wav`, `.fnt`, `.gltf`, `.track`, `.combimodel`, `.data`): the header is read by `AssetPreviewReader.Read`, which is what the editor's
+  preview reads; `AssetPreviewInfo.Problem` not null fails the asset as `unreadable preview`, with the kind and the text. A glTF whose header is sound but which gives no mesh is not seen.
+- **Reports** in `--out`: `roundtrip.json` (`summary` per type, then one record per asset: verdict, failed checks and details, lost keys, changed values with the source
+  and the written value (the first 30 per asset, with the total), added keys, component counts, logged errors and warnings, preview kind and problem), `summary.txt` (what
+  is printed) and the files of the two writes. Exit code 1 if any asset fails, 2 on a wrong command line.
+- `--type <extension without its dot>` and `--file <file name of the catalogue>` restrict the run to one type or one file.
+- **`--roundtrip-controls`** runs the five negative controls on altered copies under `<out>/controls`, never in the content copy: a material whose first write loses a key
+  (`key lost`), has a value changed (`value changed`) or whose second write has one byte altered (`unstable`); a copy of a world in which a component type is renamed to a name no
+  assembly declares (`unresolved type`; the lookup ignores case, so the name is not a change of case); a copy of a `.wav` overwritten with text (`unreadable preview`). Each
+  subject is first run unaltered and must pass. The run exits 1 if a control is not reported under its own name first.

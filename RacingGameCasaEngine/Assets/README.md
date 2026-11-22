@@ -67,7 +67,7 @@ Every game file the game reads lives under `Content` and has a catalogue entry (
   - It prints the paths of the capture (`<Name>-final.png`) and of the diagnostics.
 - Screen authoring rules for the preview:
   - a full-screen window keeps `ScreenHorizontalAlignment="Stretch" ScreenVerticalAlignment="Stretch"` for the game and also declares the design size `Width="1280" Height="720"`. The preview takes a `Window` root as is and would otherwise size the window to its content. In the game, the Stretch placement replaces that size on every update (`MGWindow.ApplyScreenPlacement`);
-  - design-time data is `<Name>.design.json` next to the screen, `{"view_model_type": "<simple type name>", "values": {...}}`, referenced by `design_time_data_file` in the `.uiscreen`. It is not copied to the build output.
+  - design-time data is `<Name>.design.json` next to the screen, `{"view_model_type": "<full type name, namespace included: RacingGame.Gameplay.ViewModels.RaceHudViewModel>", "values": {...}}` (the editor resolves a script type by its full name only, engine ADR-0075), referenced by `design_time_data_file` in the `.uiscreen`. It is not copied to the build output.
 - Preview limits, in CasaEngine and not worked around here:
   - Compatibility parsing: a screen that previews can still fail the Strict load of the game;
   - elements renamed `_cse_<id>`;
@@ -100,7 +100,7 @@ Run-time state that is not cooked:
 The game loads its worlds and its player car from assets ([ADR-0042](../../docs/decisions/0042-rgce-loads-its-worlds-and-its-player-car-from-assets.md)); it builds none of them in code.
 
 - Files and catalogue entries: `Worlds/FrontEnd.world` (`World.FrontEnd`), `Worlds/Race/TrackBeginner.world`, `TrackAdvanced.world`, `TrackExpert.world` (`World.Race.Track<Track>`), `Worlds/CarSelection.world` (`World.CarSelection`), `Entities/PlayerCar.entity` (`Entity.PlayerCar`).
-- A race world holds the camera, `RaceRoot`, the light `Light.Key`, the five track generators, the scenery (649, 904 and 1745 entities), three checkpoints and `PlayerStart`, plus its environment: shadows, ambient, the linear colour pipeline and `specular_cubemap_asset_id` = `Texture.SkyCubeMap`. It holds no car. The scenery is the one of the seed of [ADR-0041](../../docs/decisions/0041-rgce-draws-the-scenery-of-the-game-with-the-seed-of-the-reference-capture.md), frozen in the file.
+- A race world holds the camera (the engine's `PerspectiveCameraComponent`, posed by its transform: [ADR-0045](../../docs/decisions/0045-rgce-poses-its-cameras-through-the-engine-perspective-camera.md)), `RaceRoot`, the light `Light.Key`, the five track generators, the scenery (649, 904 and 1745 entities), three checkpoints and `PlayerStart`, plus its environment: shadows, ambient, the linear colour pipeline and `specular_cubemap_asset_id` = `Texture.SkyCubeMap`. It holds no car. The scenery is the one of the seed of [ADR-0041](../../docs/decisions/0041-rgce-draws-the-scenery-of-the-game-with-the-seed-of-the-reference-capture.md), frozen in the file.
 - **The builders are the source.** `RacingGame.Gameplay/Race/RaceWorldTemplates.cs` and `RacingGame.Gameplay/Entities/RaceCarEntityFactory.cs` build the entities; the tool writes the files from them:
   1. `scripts/RgceAssetCooker/bin/Debug/net9.0-windows/RgceAssetCooker.exe --worlds` writes the six files (a second run writes nothing);
   2. `python scripts/generate_rgce_content_assets.py` catalogues them;
@@ -109,6 +109,33 @@ The game loads its worlds and its player car from assets ([ADR-0042](../../docs/
 - What the game does when a world is loaded: for a race world, the player's shadows option on the world and on `Light.Key`, the colour pipeline reset in `--color-pipeline legacy`, then the player car spawned from `Entity.PlayerCar` and given its state, then the sky cube loaded from the world's cubemap asset id (a race world without an id gets the procedural sky). The front end has no cube and a black background.
 - What stays in code: the three cars of the carousel, its camera and its placement; the sky background pipeline; the meshes of the track generators.
 - The editor opens the five worlds and the car. It saves the five worlds back without loss: it changes only the `view_distance` and the `viewport` of a camera, which the tool leaves at zero and the editor initializes when it opens the world (the viewport with the size of its window); the engine reads them when it loads the world, and the camera's initialization then overwrites the size, the depths and the distance at every load; only the viewport's `x` and `y` are kept, and they are 0 in the tool's files and in the editor's. Saving the car from the editor's own interface has not been checked yet; loaded and saved again through the engine's `EditorEntityWriter.SaveEntity`, it gives the bytes of the tool.
+
+## Checking the project in the editor
+
+Two checks say whether the CasaEngine editor still loads and saves this project (plan `ai-agent/tasks/rgce-editor-project-tasks.md`, phase 7). Both run on a **copy** of `RacingGameCasaEngine/Content` outside the repository, after `dotnet build RacingGame.slnx` (it produces `Content/RacingGame.Gameplay.dll`, which the editor loads) and `dotnet build CasaEngine/CasaEngine.Editor.MonoGame.sln`.
+
+- **Every asset opens in the editor.** One editor launch per catalogue entry, about 7 seconds each (622 entries: about 80 minutes):
+
+  ```
+  python -I scripts/check_editor_opens_assets.py --editor <repo>/CasaEngine/CasaEngine.Editor/bin/Debug/net9.0-windows/CasaEngine.Editor.exe --project <copy>/RacingGameCasaEngine.json --out <output folder> --timeout 120
+  ```
+
+  An asset passes when the editor exits 0, its diagnostics carry `[Automation] Opened asset='<file>'`, hold no `[Error]`, and no `[Warning]` that names the asset's file (that is how a preview reports an image, cube map, font or model it cannot load). `--type <extension>` and `--only <file_name>` restrict the run, `--resume` continues an interrupted one. `results.json` gives the verdict per asset, `summary.json` the count per type and every distinct warning. The script holds the lock file `D:/development/rgce-run.lock` during each launch, so that two sessions never run the game or the editor at the same time.
+- **Every editable asset saves without loss, and every preview asset has a readable header**, outside the editor, in a few seconds:
+
+  ```
+  scripts/RgceAssetCooker/bin/Debug/net9.0-windows/RgceAssetCooker.exe --roundtrip --content <copy> --out <output folder>
+  scripts/RgceAssetCooker/bin/Debug/net9.0-windows/RgceAssetCooker.exe --roundtrip-controls --content <copy> --out <output folder>
+  ```
+
+  See `scripts/RgceAssetCooker/README.md`. The second command runs the five negative controls of the check.
+- What opens how (catalogue of 2026-11-21, 622 entries). An editing document: `.world` (7), `.entity` (1), `.staticmodel` (56), `.material` (99), `.texture` (122), `.sound` (28), `.uiscreen` (9), `.sprite` (50). A read-only preview: `.png` (149), `.dds` (2), `.wav` (28), `.fnt` (1), `.gltf` (56), `.track` (3), `.combimodel` (10), `.data` (1).
+- What these checks do not see:
+  - a `.gltf` whose header is sound but that yields no mesh;
+  - a `.wav`, `.fnt` or `.dds` with a wrong header opens in the editor without any trace in its diagnostics: only the second check catches it;
+  - saving a texture, a static model or a sprite from the editor itself: their lossless save is proven outside the editor only;
+  - a warning that does not name the asset's file. The distinct warnings of a run must be read: on 2026-11-21 they showed that the nine screens had lost their design-time data (their `view_model_type` was a simple name).
+- Known differences when the editor saves: the eight values of the `local_transform` of `BodyVisual` in `Entities/PlayerCar.entity`, and the `view_distance` and `viewport` of a camera in a world (see "Worlds and the player car"); a `.sound` gets CRLF line endings, with the same JSON.
 
 ## Track generator components
 

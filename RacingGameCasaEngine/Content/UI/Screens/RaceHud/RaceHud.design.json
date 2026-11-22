@@ -1,5 +1,5 @@
 {
-  "view_model_type": "RaceHudViewModel",
+  "view_model_type": "RacingGame.Gameplay.ViewModels.RaceHudViewModel",
   "values": {
     "Lap": {
       "Value": 2

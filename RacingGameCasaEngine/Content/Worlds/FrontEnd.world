@@ -13,9 +13,9 @@
         "spatial_policy": "DynamicIndex",
         "render_dynamic_policy": "Static",
         "root_component": {
-          "id": "e1da7434-8986-5702-aa80-455dac9a2223",
-          "name": "CameraLookAtComponent",
-          "type": "CameraLookAtComponent",
+          "id": "4cf149ff-2da6-5e56-b959-7bfd992168e3",
+          "name": "PerspectiveCameraComponent",
+          "type": "PerspectiveCameraComponent",
           "local_transform": {
             "position": {
               "x": 0.0,
@@ -29,9 +29,9 @@
             },
             "rotation": {
               "x": 0.0,
-              "y": 0.0,
-              "z": 0.0,
-              "w": 1.0
+              "y": 0.9870874,
+              "z": 0.16018224,
+              "w": 0.0
             }
           },
           "children_component": [],
@@ -44,7 +44,11 @@
             "min_depth": 0.0,
             "max_depth": 0.0
           },
-          "fieldOfView": 0.7853982
+          "fieldOfView": 0.7853982,
+          "picture_offset": {
+            "x": 0.0,
+            "y": 0.0
+          }
         },
         "components": [],
         "script_class_name": null
