@@ -59,8 +59,8 @@ same set of entries.
 
 `--worlds` writes the game's worlds and its car as CasaEngine assets, built by the game's own constructors
 (`RacingGame.Gameplay/Race/RaceWorldTemplates.cs`, `Entities/RaceCarEntityFactory.cs`), through the engine's public writers
-(`EditorWorldWriter.SaveWorld(World, IReadOnlyList<Entity>)`, `EditorEntityWriter.SaveEntity`; CasaEngine ADR-0128). The game does not load
-these files yet (plan `ai-agent/tasks/rgce-worlds-as-assets-tasks.md`, M5).
+(`EditorWorldWriter.SaveWorld(World, IReadOnlyList<Entity>)`, `EditorEntityWriter.SaveEntity`; CasaEngine ADR-0128). The game loads
+these files (plan `ai-agent/tasks/rgce-worlds-as-assets-tasks.md`, M5).
 
 | Asset | File | Catalogue name | Type | Entities |
 |---|---|---|---|---|
