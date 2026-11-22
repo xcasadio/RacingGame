@@ -111,7 +111,7 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 > - **Build de l'éditeur** (étape 2) : `dotnet build CasaEngine/CasaEngine.Editor.MonoGame.sln`, 0 erreur (`build/editor.txt`). Le `CasaEngine.dll` du dossier de build de l'éditeur contient `IsValidDepthRange` et `DefaultNearPlane` : c'est bien le nouveau moteur.
 > - **Tests sur `aac8911cf`** (étape 3), sous le verrou : **8562 tests, 8562 réussis, 0 échec** (`engine-tests.txt`, `engine-tests/new.trx`), soit 29 de plus que les 8533 du même jour sur `164f8d680` ; le fichier de résultats contient 27 résultats `CameraDepthRangeTests` et 15 `OrientedSpriteSampleDataTests`. **E1 est tenu.**
 
-### 🚧 T1.2 — Le jeu compile sur le nouveau moteur, sans changement (E2)
+### ✅ T1.2 — Le jeu compile sur le nouveau moteur, sans changement (E2)
 
 - Objectif : le pointeur du sous-module est à `aac8911cf` ; le jeu, l'outil et les mondes sont inchangés.
 - Fichiers : `CasaEngine` (pointeur), ce plan. Aucun autre (R4).
@@ -122,11 +122,17 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 - Validation : les deux builds à 0 erreur ; les contrôles de l'étape 2 à 0 ; `--worlds --verify` rend les mêmes nombres qu'avant (6 fichiers, 3341 entités, 0 écart) ; l'étape 3 conforme ; `git ls-tree HEAD CasaEngine` après le commit rend `aac8911cf…`.
 - Commit : `chore(casaengine): move the game to the engine's camera depth range`
 
+> Validation (2026-11-22), sorties dans `artifacts/engine-depth-range/build/` et `artifacts/engine-depth-range/t12/` :
+> - **Builds** : `dotnet build RacingGame.slnx`, 0 erreur ; `dotnet build scripts/RgceAssetCooker/RgceAssetCooker.csproj`, 0 erreur (R7). Aucune erreur de compilation : le code du jeu et de l'outil ne change pas (R4). Les `CasaEngine.dll` des dossiers de build du jeu et de l'outil contiennent `IsValidDepthRange` : c'est le nouveau moteur.
+> - **Mondes** (R6) : `--worlds` écrit **0 fichier, 6 inchangés** ; catalogue inchangé (622 entrées) ; `--worlds --verify` : 6 fichiers, 3341 entités, 3364 composants, 0 écart ; `--verify` : 0 ; `--check` : 0 ; `generate_rgce_content_assets.py --check` : 0 ; `check_gameplay_type_names.py` : 0 collision (123 types du jeu, 3126 du moteur et de l'éditeur). Ces sorties sont celles de T1.2 du plan précédent, à deux lignes près, toutes deux attendues : « 0 files written » au lieu de 4, et 123 types du jeu au lieu de 124 (la classe de caméra de l'étape A n'existe plus).
+> - **`git status --short`** après ces commandes : seul `CasaEngine` est modifié ; aucun fichier de `Content` ni de code.
+> - **E2 est tenu.**
+
 ---
 
 ## Phase 2 — Le banc
 
-### ⏳ T2.1 — Parité avec la référence (E3)
+### 🚧 T2.1 — Parité avec la référence (E3)
 
 - Objectif : prouver que le jeu rend les mêmes images sur `aac8911cf` que sur `164f8d680`.
 - Fichiers : ce plan ; sorties sous `artifacts/worlds-as-assets/e5/`.
