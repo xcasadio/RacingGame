@@ -1,8 +1,8 @@
 # ADR-0045: RacingGameCasaEngine poses its cameras through the engine's perspective camera
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-11-22
-- **Source**: this chantier: `ai-agent/tasks/rgce-engine-simple-cameras-tasks.md`, decision D1 (the author's answer of 2026-11-22: measure, then decide), tasks T1.2 to T3.3 and open point O1; the author's answer of 2026-11-22 to the question "keep the engine camera, or return to state A": the recommendation, which was to keep the engine camera; the measurements: `artifacts/engine-simple-cameras/b-measure/report.md` and `shift-fit.txt`, `artifacts/worlds-as-assets/e1/` and `e2/`; engine ADR-0147, ADR-0148 and ADR-0149; ADR-0042
+- **Source**: this chantier: `ai-agent/tasks/rgce-engine-simple-cameras-tasks.md`, decision D1 (the author's answer of 2026-11-22: measure, then decide), tasks T1.2 to T3.3 and open point O1; the author's answer of 2026-11-22 to the question "keep the engine camera, or return to state A": the recommendation, which was to keep the engine camera; the measurements: `artifacts/engine-simple-cameras/b-measure/report.md` and `shift-fit.txt`, `artifacts/worlds-as-assets/e1/` and `e2/`; engine ADR-0147, ADR-0148 and ADR-0149; ADR-0042; accepted by the author on 2026-11-22 (the answer "Oui fais tout ca" to the proposal to validate this ADR)
 
 ## Context
 

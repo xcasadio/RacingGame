@@ -56,4 +56,4 @@ This folder records the architecture decisions of this repository: architecture,
 | ADR-0040 | RacingGameCasaEngine gives the leaf of the small palm its own base level | Accepted | 2026-11-18 |
 | ADR-0041 | RacingGameCasaEngine draws the scenery of the game with the seed of the reference capture | Proposed | 2026-11-18 |
 | ADR-0042 | RacingGameCasaEngine loads its worlds and its player car from assets | Proposed | 2026-11-19 |
-| ADR-0045 | RacingGameCasaEngine poses its cameras through the engine's perspective camera | Proposed | 2026-11-22 |
+| ADR-0045 | RacingGameCasaEngine poses its cameras through the engine's perspective camera | Accepted | 2026-11-22 |
