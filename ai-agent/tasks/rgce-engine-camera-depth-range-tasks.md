@@ -245,6 +245,7 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 > - Moteur : `HEAD` du sous-module et `main` local à `aac8911cf`, arbre propre, aucun commit du moteur, rien de poussé. Jeu : `remaster` = `origin/remaster` = `6e8424d`, inchangé (P8).
 > - `ai-agent/README.md` et `ai-agent/HANDOVER.md` (section 17) portent l'état final. La session de rendu est prévenue par un message d'information après ce commit.
 > - **Restent à l'auteur** : l'avance de `remaster` sur cette branche et le push ; le point ouvert O1 (plans de l'original pour les caméras de course) ; O2 (compte de caméras de l'ADR-0153 du moteur, à regarder dans le moteur).
+> - **Suite du 2026-11-22, à la demande de l'auteur (« Avance et pousse »)** : `remaster` est avancé sur cette branche puis poussé par `artifacts/push-main-remaster.ps1` (essai à blanc, push, relecture du distant).
 
 ---
 
