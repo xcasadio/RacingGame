@@ -1983,6 +1983,8 @@ Règles propres à cette phase, en plus des règles du plan : aucun fichier de `
 > **Clôture (2026-11-21).** A1 à A6 sont tenus. La copie `D:/development/rgce-s7/` (contenu, copies du vérificateur) est supprimée, comme P28 le prévoit. Restent ouverts dans ce plan : O3, O4, O5 (lignes de la table des points ouverts) ; restent à l'auteur : les ADR-0041 et 0042 du jeu encore `Proposed`, et les avertissements de déchargement de scripts à signaler au moteur.
 >
 > **Avance et push (2026-11-22).** À la demande de l'auteur (« Avance et push »), `remaster` est avancé en avance rapide de `5e5d17a` au commit qui porte cette note, et son push est lancé juste après par `artifacts/push-main-remaster.ps1` (essai à blanc, push, `git ls-remote`). Le moteur n'a rien à pousser (`main` = `origin/main` = `01cdf483f`).
+>
+> **Résultat du push (2026-11-22), et correction de la phrase précédente.** `origin/remaster` du jeu = `3e33238` (15 commits en avance rapide, relu par `git ls-remote`). L'égalité écrite ci-dessus était celle des références locales avant relevé : le relevé fait par le script montre qu'`origin/main` du moteur est à `164f8d680`, 85 commits devant le `main` local (`01cdf483f`), poussés depuis un autre poste entre le 2026-11-19 et le 2026-11-21 (caméra 2D posée par sa transformation, sprites orientés). Le `main` local est seulement en retard : rien à pousser pour le moteur, et le commit que le jeu référence est sur le dépôt distant. Le script `artifacts/push-main-remaster.ps1` a reçu ce cas (« behind only: nothing to push »), sans quoi il s'arrêtait avant le jeu. Le `main` local du moteur et le pointeur du jeu ne sont pas avancés sur ces 85 commits ; le jeu n'a pas été essayé dessus.
 
 ## Points ouverts
 
