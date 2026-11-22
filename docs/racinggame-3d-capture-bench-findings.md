@@ -521,3 +521,31 @@ Plan `ai-agent/tasks/rgce-render-fidelity-tasks.md` (slices F0 to F8), with the 
 Measured and not applied: the per-pixel rotation of the shadow filter (slice F4: no gain; it does not compile as a guarded option on the `ps_3_0` profile) and the glow (slice F7: eleven candidates of brightness, contrast, colour offset and bloom against `full`; the best, a brightness of 1.2, takes the views from 28.920 to 27.174 but the tunnel views from 14.744 to 14.836, and none is eligible under the rule). Not done: the sun and its lens flare (slice F5), deferred by the author until an audit of the component life cycle of the engine.
 
 Reference of the bench: `artifacts/render-fidelity/f6/ref/` of the worktree.
+
+## Update after the reunion with the simple cameras engine (2026-11-22)
+
+Plan `ai-agent/tasks/rgce-render-reunion-tasks.md` (slices R0 to R6), with the engine plan `CasaEngine/ai-agent/tasks/archive/render-fidelity-origin-main-tasks.md`. No new decision: two merges and a renumbering (the perspective shadow record is now ADR-0046, the engine records ADR-0154 to ADR-0156). Outputs under `artifacts/render-reunion/` of the worktree of the chantier, copied to the main checkout at the closing.
+
+The render work was done on an engine base (`01cdf483f`) that the main line has left: the engine now poses its cameras through `PerspectiveCameraComponent` and computes the view from the transform of the component. The engine branch of the render work merged `origin/main` (`aac8911cf`), the game branch merged `remaster` (`4fc96a5`). The proof was made in three steps, so that the effect of the engine and the effect of the render work can be read apart.
+
+1. The game of `remaster`, without the render work, on the engine `aac8911cf`: its 76 images are those of `artifacts/worlds-as-assets/e2/ref`, byte for byte.
+2. The same game on the merged engine, with the shaders of the render work in service (`LitPbr`, `LitForward`, `ShadowDepth`, `Tonemap`, `skinEffect` differ from step 1): the same 76 images, byte for byte. The scene export differs by one field, `MaterialParameters.AmbientColor`, at its default `0,0,0` on the 7528 records. The render work of the engine changes nothing for a game that does not use it.
+3. The reunited state, measured against the original by one script and one probes binary on four states:
+
+| Against the original | Old engine, without the render work (`f0`) | Old engine, with (`f6`) | New engine, without (step 1) | New engine, with (reunited, `r5`) |
+|---|---|---|---|---|
+| 15 views, `linear`, `nopost` | 15.039 | 12.772 | 15.039 | 12.773 |
+| 15 views, `linear`, `full` | 31.648 | 28.920 | 31.648 | 28.921 |
+| 3 tunnel views, `linear`, `nopost` | 12.844 | 12.471 | 12.845 | 12.471 |
+| Probes held, `linear` (of 34 / 4 / 33 / 3) | 20 / 2 / 27 / 3 | 27 / 3 / 30 / 3 | 20 / 2 / 27 / 3 | 27 / 3 / 30 / 3 |
+| Mean of the tunnel medians, `linear` | 30.885 | 29.150 | 30.884 | 29.150 |
+| 15 views, `legacy`, `nopost` | 19.793 | 14.134 | 19.792 | 14.133 |
+| Probes held, `legacy` | 4 / 0 / 27 / 3 | 19 / 0 / 30 / 3 | 4 / 0 / 27 / 3 | 19 / 0 / 30 / 3 |
+
+The render work gains the same 2.267 on both engine bases; the engine change moves every measure of this table by less than 0.001. View by view (`linear`, `nopost`) the reunited state is within -0.001 and +0.002 of `f6`.
+
+The images are not those of `f6`: 70 of the 76 differ (all but six interface screens), as 70 of 76 differed between `e2/ref` and `m1/ref` when the game moved to the new cameras without the render work. Against `f6/ref`, per kind (different pixels, pixels over 8 levels, over 32, largest difference of a channel, mean of the mean absolute differences): `views-linear` 667 330, 3 704, 282, 112, 0.028; `views-legacy` 556 691, 1 041, 365, 202, 0.023; `tunnel-linear` 166 992, 513, 21, 95, 0.027; `tunnel-legacy` 126 027, 432, 27, 78, 0.022; `ui` (4 screens) 153 891, 527, 52, 111, 0.003; `audit` 5 092 134, 25 069, 825, 118, 0.051. The same measure for the engine alone (`e2/ref` against `m1/ref`): `views-linear` 628 919, 3 220, 284, 112, 0.025; `audit` 4 814 484, 19 715, 694, 120, 0.046. It is a fine grain on lit textured ground and one-pixel lines along road borders, markings and a few object edges; no shadow and no object moves or disappears. The most changed view is `Beginner-sector-20` (mean 0.206, against 0.159 for the engine alone): the extra sits in the 36 % of the image that the render work itself brightened (the city ground, mean level 52 to 82), where the grain goes from 0.19 to 0.35; elsewhere in the view it is the same. In `views-legacy`, 9800 pixels differ by their alpha channel only, in both comparisons; the cause was not looked for.
+
+The drawn records of the scene export, the two car audits and the shadow focus of the 18 views are those of the closing of the render fidelity plan (`f8`). The export is not equal as a whole: the bounding box of `PlayerCar` is the one of `remaster` (already in `e2`).
+
+The author adopted `artifacts/render-reunion/r5/ref` as the reference of the bench for the reunited state on 2026-11-22; `artifacts/render-fidelity/f6/ref` remains the reference of the render work on the old engine base. Scripts of the reunion: `artifacts/render-reunion/scripts/` (`state.sh` rebuilds the outputs of a state and guards them, `runs.sh` replays the common validation under the run lock, `parity.py`, `measure_base.py`, `measure_images.py`).
