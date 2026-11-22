@@ -473,6 +473,7 @@ Arrêts : arrêts communs ; base de la copie différente de la référence préc
 | O8 | Le verrou `D:/development/rgce-run.lock` se teste puis se crée en deux gestes : deux sessions qui le prennent au même instant ne se voient pas. Convention acceptée telle quelle ; un rejeu dont les deux passes diffèrent est un arrêt, ce qui révèle une collision. | toutes |
 | O10 | F3 : cinq familles du décor sont au plus grand facteur de la grille (1,45) et `M` y baissait encore pour quatre d'entre elles. Mesurer des facteurs plus grands gagnerait peut-être encore, mais s'éloigne de l'ambiant de l'original (un facteur au-dessus de 1 compense la courbe de ton) : à l'auteur de dire s'il le veut. | rapport de fin |
 | O11 | Pénombre en paliers : absente des vues du banc avec les 64 lectures de l'ADR-0035 ; la rotation par pixel du filtre n'a pas été faite (F4, T2, décision de l'auteur du 2026-11-22). À rouvrir si elle se voit en jeu dans un cas que le banc ne capture pas, de préférence après F6, qui change la taille des pénombres. | rapport de fin |
+| O12 | **Chantier en pause sur T3 (P11).** Le détail de la tâche T3 du moteur (composant de lens flare) a reçu un troisième `REVISE` à sa relecture de clôture ; la question (façon dont le rendu connaît les composants à dessiner) est posée à l'auteur le 2026-11-22 et consignée au point O9 du plan du moteur. F5 attend T3. | T3, F5 |
 
 ## Hors périmètre
 
