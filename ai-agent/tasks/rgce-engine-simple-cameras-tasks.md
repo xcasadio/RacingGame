@@ -232,7 +232,7 @@ Sur l'état B (R4). Si l'auteur choisit ensuite de revenir à l'état A (T4.1), 
 > - **Aller-retour** (`roundtrip/roundtrip.json`, `roundtrip-stdout.txt`) : **622 sur 622** (372 éditables sans perte, 250 en-têtes lisibles) ; composants chargés sous leur vrai type : voiture 12 sur 12, `FrontEnd` 2 sur 2, courses 665, 920 et 1761, aucun composant non résolu. `--roundtrip-controls` : les cinq témoins détectés sous leur nom (le témoin du type inconnu porte maintenant sur le `PerspectiveCameraComponent` de `FrontEnd.world`).
 > - **Incident de déroulé, sans effet sur le résultat** : le rejeu d'ouverture reprend le verrou aussitôt relâché, ce qui a privé la session de rendu de créneau pendant environ une demi-heure. Mis en pause à 261 sur 622 (processus arrêté, verrou resté à notre ligne retiré, aucun éditeur vivant), la session de rendu prévenue, puis repris par `--resume` quand le verrou est resté libre 90 secondes (`resume_open_when_free.py`, sorties `open-stdout-part1.txt` et `open-stdout-resume.txt`). Les 622 verdicts sont dans `results.json`. Remarque pour la suite : `scripts/check_editor_opens_assets.py` gagnerait une courte attente après chaque relâchement du verrou.
 
-### 🚧 T3.2 — Composants proposables et monde de course
+### ✅ T3.2 — Composants proposables et monde de course
 
 - Objectif : rejouer le contrôle A1 de S7.
 - Fichiers : ce plan ; sorties sous `artifacts/engine-simple-cameras/a1/` ; `artifacts/editor-closure/a1_run.py` réutilisé, copié si un chemin doit changer.
@@ -240,7 +240,12 @@ Sur l'état B (R4). Si l'auteur choisit ensuite de revenir à l'état A (T4.1), 
 - Validation : les 16 composants du jeu attendus en S7 sont proposés (l'état B n'en ajoute ni n'en retire) ; le monde s'ouvre ; 0 entrée de niveau erreur ; l'entité `BootstrapCamera` porte une caméra résolue, que `entity.get` rend sous son nom d'affichage (« Perspective Camera » dans l'état B) et non comme composant non résolu.
 - Commit : `docs(ai-agent): record the offered components on the engine's origin/main`
 
-### ⏳ T3.3 — Échantillon piloté
+> Validation (2026-11-22, état B), `artifacts/engine-simple-cameras/a1_run.py` (copie de celui de S7 : copie de contenu `rgce-e4`, verrou par les fonctions du script versionné, lecture de la caméra ajoutée), sorties dans `artifacts/engine-simple-cameras/a1/` :
+> - `component.types` rend 50 noms ; **les 16 composants du jeu attendus sont proposés**, les deux absences attendues (`RaceTrackGeneratorComponent`, `RaceGeneratedModelComponent`) le restent : `RESULT A1: PASS`. Les caméras proposées sont maintenant « Perspective Camera », « Orbit Camera », « Camera 2d », « Follow Camera 2d » et les deux composants du jeu (`ChaseCameraRigComponent`, `DebugFreeCameraComponent`).
+> - `Worlds/Race/TrackBeginner.world` s'ouvre (`world.open` à 0, 661 entités) ; journal lu en entier, page par page : 1646 entrées, aucune perdue, **0 erreur**, 1 avertissement (celui d'`OverlayViewPipeline`, déjà présent en S7).
+> - `entity.get` sur `BootstrapCamera` : composants « Perspective Camera », `ChaseCameraRigComponent`, `DebugFreeCameraComponent` ; aucun composant non résolu.
+
+### 🚧 T3.3 — Échantillon piloté
 
 - Objectif : rejouer l'échantillon piloté de S7 (modifier, enregistrer, rétablir par l'éditeur piloté) sur sept assets, le monde étant cette fois **`Worlds/FrontEnd.world`**, qui porte une caméra (celui de S7, `Worlds/CarSelection.world`, n'en a pas) : c'est la seule preuve qu'un nœud de `PerspectiveCameraComponent` passe par l'enregistrement de l'éditeur.
 - Fichiers : ce plan ; `artifacts/engine-simple-cameras/driven/driven_run.py`, **copie** de `artifacts/editor-closure/driven/driven_run.py` où `COPY = 'D:/development/rgce-e4/content'`, `OUT = REPO + '/artifacts/engine-simple-cameras/driven'`, `WORLD = 'Worlds/FrontEnd.world'`, et où l'étape du monde ne cherche plus une propriété mais prend celle nommée ci-dessous ; l'original et ses sorties de S7 ne sont pas touchés.
