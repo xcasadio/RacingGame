@@ -213,7 +213,7 @@ Relevé en lecture seule (quatre lecteurs indépendants, faits décisifs relus p
 
 Sur l'état B (R4). Si l'auteur choisit ensuite de revenir à l'état A (T4.1), les tâches T3.1 à T3.3 sont rejouées sur cet état avant la clôture ; le type de caméra attendu dans leurs validations est alors celui de l'état retenu (`RaceLookAtCameraComponent`, affiché « Race Look-At Camera »).
 
-### 🚧 T3.1 — Ouverture des 622 assets et aller-retour
+### ✅ T3.1 — Ouverture des 622 assets et aller-retour
 
 - Objectif : rejouer les deux contrôles versionnés de S7 sur l'éditeur de `164f8d680`.
 - Fichiers : ce plan ; aucun fichier versionné d'outil (une adaptation de `RoundTripChecker.cs` exigée par le compilateur est faite en T1.2) ; sorties sous `artifacts/engine-simple-cameras/{open,roundtrip}/`.
@@ -225,7 +225,14 @@ Sur l'état B (R4). Si l'auteur choisit ensuite de revenir à l'état A (T4.1), 
 - Validation : 622 sur 622 ouvertures ; aller-retour 622 sur 622 (372 éditables sans perte, 250 en-têtes lisibles) ; cinq témoins détectés.
 - Commit : `docs(ai-agent): record the editor checks on the engine's origin/main`
 
-### ⏳ T3.2 — Composants proposables et monde de course
+> Validation (2026-11-22, état B, jeu `8d31748`, moteur et éditeur `164f8d680`), sorties dans `artifacts/engine-simple-cameras/` :
+> - Builds à jour (jeu et outil de T2.1 et T2.2, éditeur de T1.1), 0 erreur ; `RacingGameCasaEngine/Content` copié dans `D:/development/rgce-e4/content` (939 fichiers, P5) ; la DLL de gameplay de la copie est celle de l'état B.
+> - **Ouverture** (`open/results.json`, `open/summary.json`) : **622 jugés, 622 passent, 0 échec**, 4583 s de temps d'éditeur (7,4 s par lancement). Par type : les mêmes nombres qu'en S7 (7 mondes, 1 entité, 56 modèles, 99 matériaux, 122 textures, 28 sons, 9 écrans, 50 sprites ; 149 `.png`, 2 `.dds`, 28 `.wav`, 1 `.fnt`, 56 `.gltf`, 3 `.track`, 10 `.combimodel`, 1 `.data`).
+> - **Avertissements distincts** : les trois qui restaient en S7 après la correction des écrans (les deux de déchargement de scripts, 622 fois chacun, et celui d'`OverlayViewPipeline`, 3 fois). **Aucun avertissement nouveau** par rapport à `artifacts/editor-closure/a2/summary.json` ; les 18 de S7 sur les données de conception des écrans n'y sont plus (corrigés en S7).
+> - **Aller-retour** (`roundtrip/roundtrip.json`, `roundtrip-stdout.txt`) : **622 sur 622** (372 éditables sans perte, 250 en-têtes lisibles) ; composants chargés sous leur vrai type : voiture 12 sur 12, `FrontEnd` 2 sur 2, courses 665, 920 et 1761, aucun composant non résolu. `--roundtrip-controls` : les cinq témoins détectés sous leur nom (le témoin du type inconnu porte maintenant sur le `PerspectiveCameraComponent` de `FrontEnd.world`).
+> - **Incident de déroulé, sans effet sur le résultat** : le rejeu d'ouverture reprend le verrou aussitôt relâché, ce qui a privé la session de rendu de créneau pendant environ une demi-heure. Mis en pause à 261 sur 622 (processus arrêté, verrou resté à notre ligne retiré, aucun éditeur vivant), la session de rendu prévenue, puis repris par `--resume` quand le verrou est resté libre 90 secondes (`resume_open_when_free.py`, sorties `open-stdout-part1.txt` et `open-stdout-resume.txt`). Les 622 verdicts sont dans `results.json`. Remarque pour la suite : `scripts/check_editor_opens_assets.py` gagnerait une courte attente après chaque relâchement du verrou.
+
+### 🚧 T3.2 — Composants proposables et monde de course
 
 - Objectif : rejouer le contrôle A1 de S7.
 - Fichiers : ce plan ; sorties sous `artifacts/engine-simple-cameras/a1/` ; `artifacts/editor-closure/a1_run.py` réutilisé, copié si un chemin doit changer.
