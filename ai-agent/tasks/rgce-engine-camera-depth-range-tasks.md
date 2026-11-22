@@ -232,11 +232,19 @@ Relevé en lecture seule par la session principale. `NEW` = les 12 fichiers chan
 > - État laissé : arbre propre, aucun verrou ni processus à lui, `D:/development/rgce-e5/content` égal à `Content`, réglages de l'utilisateur aux empreintes de M1.
 > - **E6 est tenu.**
 
-### 🚧 T4.3 — Clôture
+### ✅ T4.3 — Clôture
 
 - Étapes : regarder puis supprimer `D:/development/rgce-e5/` (P3) ; vérifier qu'il ne reste ni verrou ni processus de cette session ; `git status --short` ; état final dans `ai-agent/README.md` et `ai-agent/HANDOVER.md` ; prévenir la session de rendu de la nouvelle base (`aac8911cf`), à titre d'information.
 - Validation : aucune tâche en 🚧 ; rien de poussé ; `remaster` inchangé (P8).
 - Commit : `docs(ai-agent): close the camera depth range integration plan`
+
+> Validation (2026-11-22) :
+> - `D:/development/rgce-e5/` regardé (un seul dossier `content`, 939 fichiers, la copie de T3.1, égale à `Content` d'après le vérificateur) puis supprimé (P3) ; il n'existe plus. `D:/development/rgce-bench-r7` n'est pas touché.
+> - Aucun verrou ; aucun processus d'éditeur, de jeu ni de tests.
+> - `git status --short` : seulement `.serena/` et `log.txt` ; aucune tâche en 🚧.
+> - Moteur : `HEAD` du sous-module et `main` local à `aac8911cf`, arbre propre, aucun commit du moteur, rien de poussé. Jeu : `remaster` = `origin/remaster` = `6e8424d`, inchangé (P8).
+> - `ai-agent/README.md` et `ai-agent/HANDOVER.md` (section 17) portent l'état final. La session de rendu est prévenue par un message d'information après ce commit.
+> - **Restent à l'auteur** : l'avance de `remaster` sur cette branche et le push ; le point ouvert O1 (plans de l'original pour les caméras de course) ; O2 (compte de caméras de l'ADR-0153 du moteur, à regarder dans le moteur).
 
 ---
 
