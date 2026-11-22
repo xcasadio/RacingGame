@@ -89,6 +89,11 @@
             "id": "41bb562e-5109-563f-b2f5-b5a188e8fcf1",
             "name": "RaceCourseDebugComponent",
             "type": "RaceCourseDebugComponent"
+          },
+          {
+            "id": "276f37d7-e4b6-502c-a791-80d596ae74ce",
+            "name": "RaceShadowFocusComponent",
+            "type": "RaceShadowFocusComponent"
           }
         ],
         "script_class_name": null
@@ -27228,9 +27233,9 @@
     "specular_intensity": 1.0,
     "shadows": {
       "enabled": true,
-      "resolution": 4096,
-      "depth_bias": 0.001,
-      "normal_bias": 0.1,
+      "resolution": 2048,
+      "depth_bias": 0.002,
+      "normal_bias": 0.0,
       "max_distance": 100.0,
       "mode": "MultiplyLitColor",
       "shadow_color": {
@@ -27240,8 +27245,13 @@
       },
       "filter_radius": 3.0,
       "filter_taps": 64,
-      "fade_distance": 15.0,
-      "depth_range": 150.0
+      "fade_distance": 8.34,
+      "depth_range": 150.0,
+      "projection": "Perspective",
+      "light_distance": 129.25,
+      "view_width": 83.4372,
+      "view_height": 129.25,
+      "far_plane": 218.75
     },
     "color_pipeline": {
       "mode": "LinearHdr",

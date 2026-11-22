@@ -48,41 +48,48 @@ internal static class RaceWorldTemplates
     // 17 of 34.
     private const float LinearExposure = 0.9f;
 
-    // Shadow map of the race world, tuned on the track audit views (ai-agent/tasks/rgce-hud-shadows-start-tasks.md, T3.1):
-    // - the original multiplies the whole image by a shadow colour of (0.25, 0.26, 0.27) (Core/Content/Shaders/ShadowMap.fx:36,
-    //   240) and softens the shadow in screen space: MultiplyLitColor with that hue (level: see ShadowColor), and a 3 texel filter radius for the
-    //   soft edge (2 left the edge sharper than the original, 5 showed the 12-tap pattern as grain on the boards: the other
-    //   machine's measurement, not repeated here);
-    // - 4096 texels over 2 x ShadowMaxDistance units, centred on the camera. The original's map is centred on a point
-    //   virtualVisibleRange / 6 = 21.5 m ahead of the car and its visible range is 5.5 x 23.5 = 129.25 m
-    //   (Core/Shaders/ShadowMapShader.cs:215, 250-261), which covers about +-42 m across the light and +-80 m along it
-    //   (scripts/TrackCaptureCompare/README.md); the camera of a bench view is about 40 m from that point, so 100 units
-    //   leaves the probed shadows inside the full-strength zone, and a texel of 0.05 unit steps road and car shadow edges
-    //   far less than 0.2;
-    // - fade over the last 15 units, so the end of the map does not show as an edge;
-    // - depth range 150, apart from the lateral extent: the depth bias in metres is 2 x DepthBias x (2 x DepthRange - 0.1)
-    //   on DesktopGL (CasaEngine docs/engine/shadow-settings.md), 0.6 m with 150 and 0.001, as when both were 150;
-    // - normal bias 0.1 unit: the terrain only receives shadows, as in RacingGame, so it has no acne at grazing angles, and
-    //   a small bias keeps cast shadows at their full width
-    //   (ai-agent/tasks/archive/rgce-start-beeps-shadow-shimmer-tasks.md, T2.2);
-    // - depth bias: the engine's 0.001.
-    // Measured uncapped in 1920x1080 with a 150 unit map and no filter (ai-agent/tasks/rgce-hud-shadows-start-tasks.md, T3.1):
-    // 1.6 ms per frame, as with the engine's settings (1.4 ms without shadows). The map takes about 128 MB of video memory
-    // instead of 8. The 12-tap filter of FilterRadius has not been timed here.
-    private const int ShadowMapResolution = 4096;
+    // Shadow of the race world (ADR-0045): cast in perspective from a virtual light, as the original does
+    // (RacingGameOriginal Core/Shaders/ShadowMapShader.cs:208-266, engine ADR-0147), and no longer from an orthographic square
+    // centred on the camera.
+    // - The virtual light is 129.25 m (5.5 x 23.5) from the aimed point, against the direction of the key light; the map
+    //   covers atan2(129.25, 171.6) x 129.25 = 83.44 m by 129.25 m at that point, between the planes 1 and 218.75. The aimed
+    //   point is 129.25 / 6 m ahead of the player's car: RaceShadowFocusComponent sets it every frame.
+    // - The original multiplies the whole image by a shadow colour of (0.25, 0.26, 0.27) (Core/Content/Shaders/ShadowMap.fx:36,
+    //   240): MultiplyLitColor with that hue (level: see ShadowColor).
+    // - 2048 texels: a texel of 0.04 m at the aimed point. 4096 measured the same within 0.011 of mean difference.
+    // - Fade over the last 8.34 m of the half-width (a fifth of it), the band of the original's fade texture
+    //   (ShadowDistanceFadeoutMap: full up to 80 % of the half-width). Without the fade a probe of the bench is lost.
+    // - Depth bias: a fraction of the interval between the planes, so 0.002 is 0.44 m. The original's two biases of 0.00065
+    //   are worth 0.00118 here (engine docs/engine/shadow-settings.md); the value is the one measured, with the filter radius
+    //   and the normal bias, against the original's views and the author's window for the tunnels (ADR-0045).
+    // - No normal bias: the original has none. With the 0.1 of the orthographic map the tunnels came out darker (mean of the
+    //   median luminances of the three tunnel views 24.98 instead of 27.89, for a window of 28.88 to 31.88), and darker
+    //   still with a smaller depth bias; the walls of a tunnel are one layer thick and almost parallel to the rays.
+    // - Filter radius 3 texels, as before: 1.5 and 6 measured within 0.08 of mean difference on the views.
+    // - ShadowMaxDistance and ShadowDepthRange are not used by the perspective projection; ShadowMaxDistance only bounds the
+    //   fade distance. They keep the values of the orthographic map.
+    // The video memory of the map is a quarter of the 4096 map's. Not timed here.
+    private const float ShadowLightDistance = 129.25f;
+    private const float ShadowViewWidth = 83.4372f;
+    private const float ShadowViewHeight = 129.25f;
+    private const float ShadowNearPlane = 1f;
+    private const float ShadowFarPlane = 218.75f;
+    private const int ShadowMapResolution = 2048;
     private const float ShadowMaxDistance = 100f;
-    private const float ShadowFadeDistance = 15f;
+    private const float ShadowFadeDistance = 8.34f;
     private const float ShadowDepthRange = 150f;
     private const float ShadowFilterRadius = 3f;
     // 64 reads instead of the engine's 12 (ADR-0035, engine ADR-0127): with 12 a shadow edge seen at a grazing angle, on a
-    // tunnel wall, showed as a fan of bands; with 64 it is a gradient, as the original's blurred shadow. Not timed here.
+    // tunnel wall, showed as a fan of bands; with 64 it is a gradient, as the original's blurred shadow. 32 measured the same
+    // within 0.002 of mean difference on the views (ADR-0045); 64 is kept. Not timed here.
     private const int ShadowFilterTaps = 64;
     // ADR-0036: no longer the original's (0.25, 0.26, 0.27). The engine applies the shadow colour in linear light, before the tone
     // curve, where 0.25 left the shadowed ground about half as bright, relative to the lit ground, as the original's display-space
     // multiply. The level 0.38 is measured against the original; the three channels keep the original's 25 : 26 : 27 ratio.
+    // Measured again with the perspective shadow (ADR-0045): 0.30 and 0.46 both lose the shadow to lit ratios of the bench.
     private static readonly Vector3 ShadowColor = new(0.38f, 0.3952f, 0.4104f);
-    private const float ShadowDepthBias = 0.001f;
-    private const float ShadowNormalBias = 0.1f;
+    private const float ShadowDepthBias = 0.002f;
+    private const float ShadowNormalBias = 0f;
 
     // The car selection carousel's fixed part (the cars, the camera and the placement stay with the carousel).
     private const string CarSelectionPlateModelAssetName = "StaticModel.CarSelectionPlate";
@@ -159,6 +166,12 @@ internal static class RaceWorldTemplates
     {
         // The Shadows option: the race world renders shadow maps, cast by its key light.
         environment.Shadows.Enabled = shadowsEnabled;
+        environment.Shadows.Projection = ShadowProjection.Perspective;
+        environment.Shadows.LightDistance = ShadowLightDistance;
+        environment.Shadows.ViewWidth = ShadowViewWidth;
+        environment.Shadows.ViewHeight = ShadowViewHeight;
+        environment.Shadows.NearPlane = ShadowNearPlane;
+        environment.Shadows.FarPlane = ShadowFarPlane;
         environment.Shadows.Resolution = ShadowMapResolution;
         environment.Shadows.MaxDistance = ShadowMaxDistance;
         environment.Shadows.FadeDistance = ShadowFadeDistance;
@@ -362,6 +375,7 @@ internal static class RaceWorldTemplates
         });
         entity.AddComponent(new RaceFlowCoordinatorComponent { Name = nameof(RaceFlowCoordinatorComponent) });
         entity.AddComponent(new RaceCourseDebugComponent { Name = nameof(RaceCourseDebugComponent) });
+        entity.AddComponent(new RaceShadowFocusComponent { Name = nameof(RaceShadowFocusComponent) });
         return entity;
     }
 

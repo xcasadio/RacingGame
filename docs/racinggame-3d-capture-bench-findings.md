@@ -466,3 +466,41 @@ Five scenery families and the city ground carry the ambient of the original thro
 Applied state: E 14.374 -> 14.131 in `linear`, 15.509 -> 15.355 in `legacy`; E against the original with its post-process 30.116 -> 30.183; tunnel views 12.844 -> 12.835; difference outside the masks 13.130 -> 13.125; probes 27 / 2 / 27 / 3 -> 27 / 2 / 27 / 3 in `linear`, 16 / 0 / 27 / 3 -> 16 / 0 / 27 / 3 in `legacy`.
 
 Reference of the bench from now on: `artifacts/render-fidelity/f3/ref/` of the worktree.
+
+## Update after the perspective shadow (2026-11-22)
+
+Decisions: see ADR-0045. Plan `ai-agent/tasks/rgce-render-fidelity-tasks.md`, slice F6; outputs under `artifacts/render-fidelity/f6/` of the worktree of the chantier.
+
+The race world casts its shadow in perspective from a virtual light, with the projection of the original (engine ADR-0147), aimed ahead of the player's car. E = mean absolute difference per channel with the original (`nopost`) over the 15 views; H = probes held among the nine the slice aimed at; M = mean of the median luminances of the three tunnel views, to hold between 28.882 and 31.882 (ADR-0036). First grid, around the settings of the original:
+
+| Candidate | Setting | H | E | E tunnels | M | Criteria 1 / 2 / 3 / 4 | Criterion 3 `legacy` | E `Beginner-sector-20` | Eligible |
+|---|---|---|---|---|---|---|---|---|---|
+| `base` | settings before (orthographic) | 0 | 14.131 | 12.835 | 30.860 | 27 / 2 / 27 / 3 | 27 | 31.281 | - |
+| `orig` | projection and settings of the original | 3 | 12.803 | 11.502 | 24.976 | 27 / 3 / 30 / 3 | 30 | 18.481 | no: M outside the window |
+| `res4096` | map of 4096, radius 6 | 3 | 12.814 | 11.454 | 24.953 | 27 / 3 / 30 / 3 | 30 | 18.566 | no: M outside the window |
+| `r1.5` | filter radius 1.5 | 3 | 12.862 | 11.223 | 25.308 | 27 / 3 / 30 / 3 | 30 | 18.614 | no: M outside the window |
+| `r6` | filter radius 6 | 3 | 12.726 | 11.845 | 24.648 | 27 / 3 / 30 / 3 | 30 | 18.416 | no: M outside the window |
+| `nb0` | normal bias 0 | 3 | 12.765 | 12.089 | 27.885 | 27 / 3 / 30 / 3 | 30 | 18.297 | no: M outside the window |
+| `db0.0006` | depth bias 0.0006 | 3 | 12.800 | 11.734 | 21.336 | 27 / 3 / 30 / 3 | 30 | 18.458 | no: M outside the window |
+| `db0.002` | depth bias 0.002 | 3 | 12.803 | 11.773 | 27.529 | 27 / 3 / 30 / 3 | 30 | 18.504 | no: M outside the window |
+| `fade0` | no fade | 3 | 12.840 | 11.500 | 24.976 | 27 / 2 / 29 / 3 | 29 | 18.623 | no: a probe lost, M outside the window |
+| `taps32` | 32 reads | 3 | 12.805 | 11.605 | 24.928 | 27 / 3 / 30 / 3 | 30 | 18.496 | no: M outside the window |
+| `c0.30` | shadow colour level 0.30 | 3 | 12.959 | 12.626 | 23.787 | 27 / 0 / 30 / 3 | 30 | 18.975 | no: criterion 2 falls, M outside the window |
+| `c0.46` | shadow colour level 0.46 | 3 | 12.927 | 13.981 | 26.312 | 27 / 0 / 30 / 3 | 30 | 19.166 | no: E of the tunnels rises, criterion 2 falls, M outside the window |
+
+Second grid, asked by the author after the first retained nothing, without normal bias:
+
+| Candidate | Setting (normal bias 0) | H | E | E tunnels | M | Medians `Beginner` / `Advanced` / `Expert` tunnel | Criteria 1 / 2 / 3 / 4 | Eligible |
+|---|---|---|---|---|---|---|---|---|
+| `nb0` | radius 3, depth bias 0.00118 | 3 | 12.765 | 12.089 | 27.885 | 24.72 / 25.08 / 33.86 | 27 / 3 / 30 / 3 | no: M outside the window |
+| `n-r1.5` | radius 1.5, depth bias 0.00118 | 3 | 12.830 | 12.472 | 29.195 | 27.43 / 26.43 / 33.72 | 27 / 3 / 30 / 3 | yes |
+| `n-db0.002` | radius 3, depth bias 0.002 | 3 | 12.772 | 12.471 | 29.150 | 26.87 / 26.22 / 34.36 | 27 / 3 / 30 / 3 | yes, **retained** |
+| `n-db0.003` | radius 3, depth bias 0.003 | 3 | 12.774 | 12.785 | 29.982 | 28.65 / 26.58 / 34.72 | 27 / 3 / 30 / 3 | yes |
+| `n-r1.5-db0.002` | radius 1.5, depth bias 0.002 | 3 | 12.826 | 12.561 | 29.481 | 27.87 / 26.57 / 34.00 | 27 / 3 / 30 / 3 | yes |
+| `n-r1.5-db0.003` | radius 1.5, depth bias 0.003 | 3 | 12.823 | 12.605 | 29.839 | 28.36 / 26.58 / 34.57 | 27 / 3 / 30 / 3 | yes |
+
+Applied state (`n-db0.002`): E 14.131 -> 12.772 in `linear`, 15.355 -> 14.134 in `legacy`; tunnel views 12.835 -> 12.471; M 30.860 -> 29.150; E against the original with its post-process 30.183 -> 28.920; probes 27 / 2 / 27 / 3 -> 27 / 3 / 30 / 3 in `linear`, 16 / 0 / 27 / 3 -> 19 / 0 / 30 / 3 in `legacy`. `Beginner-sector-20`: E 31.281 -> 18.325, shadow to lit ratio of the city 1.961 -> 0.275 for 0.276 in the original. Still out of reach: the three `city-lit` probes and the three `road-shadow` probes of `Beginner-sector-50` (ratio of the road 0.769 for 0.228).
+
+The bench now sets the aimed point of the shadow for each view from the car of the views file (`car.position` and `car.direction`), as the original's capture does, and logs on each view the point computed from the car of the port next to it (`[CaptureBench] view <name> shadowFocus ...`): on the three start views the distance is 0.000.
+
+Reference of the bench from now on: `artifacts/render-fidelity/f6/ref/` of the worktree.

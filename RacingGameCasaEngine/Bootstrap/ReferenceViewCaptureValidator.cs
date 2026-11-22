@@ -52,7 +52,7 @@ internal sealed class ReferenceViewCaptureValidator
         Failed,
     }
 
-    private sealed record ReferenceView(string Name, Vector3 Position, Vector3 Target, Vector3 CarPosition, bool CarVisible);
+    private sealed record ReferenceView(string Name, Vector3 Position, Vector3 Target, Vector3 CarPosition, Vector3 CarDirection, bool CarVisible);
 
     private sealed record ReferenceTrack(string Name, IReadOnlyList<ReferenceView> Views);
 
@@ -123,6 +123,7 @@ internal sealed class ReferenceViewCaptureValidator
                         ReadVector(view.GetProperty("position")),
                         ReadVector(view.GetProperty("target")),
                         ReadVector(view.GetProperty("car").GetProperty("position")),
+                        ReadVector(view.GetProperty("car").GetProperty("direction")),
                         view.GetProperty("car").GetProperty("visible").GetBoolean()));
                 }
 
@@ -324,6 +325,23 @@ internal sealed class ReferenceViewCaptureValidator
 
         string pipeline = world.EnvironmentSettings.ColorPipeline.Mode == ColorPipelineMode.LinearHdr ? "linear" : "legacy";
         Logs.WriteInfo($"[CaptureBench] view {captureName} pipeline {pipeline} fxaaPasses {raceView.RenderStats.FxaaPasses}");
+        LogShadowFocus(captureName, world);
+    }
+
+    // With the shadow cast in perspective: the point the game computes from its own car next to the one of the view (the
+    // original's car). On the start views the two cars are on the same grid, so the two points must be the same.
+    private static void LogShadowFocus(string captureName, World world)
+    {
+        RaceShadowFocusComponent? focus = world.Entities
+            .Select(static entity => entity.GetComponent<RaceShadowFocusComponent>())
+            .FirstOrDefault(static component => component != null);
+        if (focus?.ComputedCarFocus is not { } carFocus || focus.FocusOverride is not { } viewFocus)
+        {
+            return;
+        }
+
+        Logs.WriteInfo(FormattableString.Invariant(
+            $"[CaptureBench] view {captureName} shadowFocus car {Format(carFocus)} view {Format(viewFocus)} distance {Vector3.Distance(carFocus, viewFocus):F3}"));
     }
 
     // Proof of the mipmap chains of the race world (S1m), once the first race world is ready: the level count of three cooked
@@ -548,11 +566,19 @@ internal sealed class ReferenceViewCaptureValidator
         camera.FarPlane = _farPlane;
         camera.SetPositionAndTarget(_trackSpace.ToRaceWorld(view.Position), _trackSpace.ToRaceWorld(view.Target));
 
+        // The original aims its shadow map ahead of the car of its capture (RacingGameOriginal
+        // Core/Shaders/ShadowMapShader.cs:208-266): the point is computed in the original's coordinates, then converted.
+        Vector3 shadowFocus = _trackSpace.ToRaceWorld(view.CarPosition + view.CarDirection * RaceShadowFocusComponent.FocusLeadDistance);
         foreach (Entity entity in _game.GameManager.CurrentWorld!.Entities)
         {
             if (entity.Name == RaceWorldFactory.PlayerCarEntityName)
             {
                 entity.IsVisible = view.CarVisible;
+            }
+
+            if (entity.GetComponent<RaceShadowFocusComponent>() is { } focus)
+            {
+                focus.FocusOverride = shadowFocus;
             }
         }
 
