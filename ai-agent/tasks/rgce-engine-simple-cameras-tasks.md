@@ -322,6 +322,7 @@ Sur l'état B (R4). Si l'auteur choisit ensuite de revenir à l'état A (T4.1), 
 > - `git status --short` : seulement `.serena/` et `log.txt` ; aucune tâche en 🚧.
 > - `ai-agent/README.md` et `ai-agent/HANDOVER.md` (section 16) portent l'état final. La session de rendu est prévenue par un message d'information après ce commit.
 > - **Restent à l'auteur** : la validation de l'ADR-0045 (`Proposed`) ; O2 (deux phrases à préciser) ; l'avance de `remaster` sur cette branche et les push (le `main` du moteur local est déjà égal à `origin/main` : il n'y a rien à pousser côté moteur) ; la réunion avec les branches de rendu, encore basées sur le moteur `01cdf483f`.
+> - **Suite du 2026-11-22, à la demande de l'auteur (« Oui fais tout ca »)** : l'ADR-0045 passe en `Accepted` ; la phrase périmée de `scripts/RgceAssetCooker/README.md` (le jeu charge bien les mondes) est corrigée ; `remaster` est avancé sur cette branche puis poussé ; la réunion avec les branches de rendu est confiée à la session de rendu. L'attente après relâchement du verrou dans `scripts/check_editor_opens_assets.py` reste notée, non faite : une attente qui laisse un créneau à une session qui relit le verrou toutes les 5 secondes allongerait un rejeu complet des 622 ouvertures d'environ une heure, choix laissé à l'auteur.
 
 ---
 
