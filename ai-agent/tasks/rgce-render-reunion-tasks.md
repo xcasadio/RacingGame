@@ -3,7 +3,7 @@
 Plan d'exécution du chantier demandé par l'auteur le 2026-11-22 (demande relayée par la session « Correction par rapport a l'original » : « Réunir le travail de rendu avec ce moteur », réponse de l'auteur « Oui fais tout ca » ; la session relais précise que c'est une demande de mener le chantier, pas l'approbation d'un plan).
 Les décisions D1 → D5 ci-dessous ont été arbitrées avec l'auteur le 2026-11-22 : **ce plan les applique, il ne les rediscute pas**. Les points P1 → P9 sont des arbitrages proposés par l'agent, validés avec ce plan. **Plan approuvé par l'auteur le 2026-11-22** (« Oui, lance », en sachant que la dernière correction de relecture n'avait pas été relue).
 
-Les tâches du moteur sont dans son plan, `CasaEngine/ai-agent/tasks/render-fidelity-origin-main-tasks.md` (E0 à E3). L'ordre des deux plans est une seule suite, donnée en P7.
+Les tâches du moteur sont dans son plan, `CasaEngine/ai-agent/tasks/archive/render-fidelity-origin-main-tasks.md` (E0 à E3). L'ordre des deux plans est une seule suite, donnée en P7.
 
 Ce fichier doit être mis à jour pendant le travail : l'icône au début de chaque tâche indique son statut courant.
 
@@ -227,7 +227,7 @@ Vérifié par commandes git dans le worktree `D:/development/repo/RacingGame/.cl
 > - Hors de `ai-agent/` et des deux README, l'index fusionné est celui de `e6decfb` (`git diff --cached --stat` vide : ni code, ni `Content`, ni `docs/`, ni pointeur). Des six fichiers que `remaster` a changés depuis `6e8424d`, trois sont ceux de `4fc96a5` (les deux README et le plan `rgce-engine-camera-depth-range-tasks.md`) ; `ai-agent/README.md` porte les lignes des deux côtés (une ligne ajoutée à celui de la branche), `ai-agent/HANDOVER.md` les sections des deux côtés, `CasaEngine` la tête fusionnée du moteur.
 > - `dotnet build RacingGame.slnx` et le cuiseur : 0 erreur ; cuiseur `--worlds --verify` 0 écart (6 fichiers, 3341 entités, 3367 composants), `--verify` 0 écart, `--check` 0 ; générateur `--check` 0 ; noms de types 0 collision.
 
-### ⏳ R6 — Clôture
+### 🚧 R6 — Clôture
 
 - Objectif : documents à jour, vérification finale, sorties sauvées.
 - Prérequis : la décision de l'auteur en R5 ; E3.
