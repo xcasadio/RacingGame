@@ -13,9 +13,9 @@
         "spatial_policy": "DynamicIndex",
         "render_dynamic_policy": "Static",
         "root_component": {
-          "id": "736d1ac2-db26-53b4-a659-39d81254ffd3",
-          "name": "CameraLookAtComponent",
-          "type": "CameraLookAtComponent",
+          "id": "0264d433-ba60-55d4-98f8-b9d1bfd8ab8b",
+          "name": "RaceLookAtCameraComponent",
+          "type": "RaceLookAtCameraComponent",
           "local_transform": {
             "position": {
               "x": 0.0,
@@ -44,7 +44,11 @@
             "min_depth": 0.0,
             "max_depth": 0.0
           },
-          "fieldOfView": 0.7853982
+          "fieldOfView": 0.7853982,
+          "picture_offset": {
+            "x": 0.0,
+            "y": 0.0
+          }
         },
         "components": [
           {

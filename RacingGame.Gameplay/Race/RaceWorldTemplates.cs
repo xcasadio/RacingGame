@@ -270,7 +270,7 @@ internal static class RaceWorldTemplates
         };
         cameraEntity.ApplyExplicitPolicies(EntityPolicySet.DynamicDefault);
 
-        var cameraComponent = new CameraLookAtComponent { Name = nameof(CameraLookAtComponent) };
+        var cameraComponent = new RaceLookAtCameraComponent { Name = nameof(RaceLookAtCameraComponent) };
         cameraComponent.SetPositionAndTarget(new Vector3(0f, 6f, -18f), Vector3.Zero);
         cameraEntity.RootComponent = cameraComponent;
 

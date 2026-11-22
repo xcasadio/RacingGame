@@ -535,7 +535,7 @@ internal sealed class ReferenceViewCaptureValidator
 
     private bool ApplyView(ReferenceView view)
     {
-        if (_trackSpace == null || !TryGetRaceCamera(out CameraLookAtComponent? camera, out _))
+        if (_trackSpace == null || !TryGetRaceCamera(out RaceLookAtCameraComponent? camera, out _))
         {
             return false;
         }
@@ -559,10 +559,10 @@ internal sealed class ReferenceViewCaptureValidator
         return true;
     }
 
-    private bool TryGetRaceCamera(out CameraLookAtComponent? camera, out Entity? cameraEntity)
+    private bool TryGetRaceCamera(out RaceLookAtCameraComponent? camera, out Entity? cameraEntity)
     {
         cameraEntity = _game.GameManager.CurrentWorld?.Entities.FirstOrDefault(entity => entity.Name == RaceWorldFactory.CameraEntityName);
-        camera = cameraEntity?.RootComponent as CameraLookAtComponent;
+        camera = cameraEntity?.RootComponent as RaceLookAtCameraComponent;
         return camera != null;
     }
 

@@ -31,7 +31,7 @@ public sealed class DebugFreeCameraComponent : EntityComponent
 
     public override void Update(float elapsedTime)
     {
-        if (Owner?.RootComponent is not CameraLookAtComponent camera)
+        if (Owner?.RootComponent is not RaceLookAtCameraComponent camera)
         {
             return;
         }
@@ -122,7 +122,7 @@ public sealed class DebugFreeCameraComponent : EntityComponent
         CenterMouse(game);
     }
 
-    private void InitializeFromCamera(CameraLookAtComponent camera)
+    private void InitializeFromCamera(RaceLookAtCameraComponent camera)
     {
         Vector3 forward = camera.Target - camera.Position;
         if (forward.LengthSquared() < 0.0001f)

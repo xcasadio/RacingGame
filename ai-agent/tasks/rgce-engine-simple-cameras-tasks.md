@@ -113,7 +113,7 @@ Relevé en lecture seule (quatre lecteurs indépendants, faits décisifs relus p
 > - **Build de l'éditeur** (étape 2) : `dotnet build CasaEngine/CasaEngine.Editor.MonoGame.sln`, 0 erreur (`build/editor-new.txt`).
 > - **Tests sur `164f8d680`** (étape 3), sous le verrou : 8533 tests, 0 échec (`engine-tests-new.txt`, `engine-tests-new/new.trx`). Aucun échec dans l'un ni l'autre passage : rien à comparer. **E1 est tenu.**
 
-### 🚧 T1.2 — Le jeu compile sur le nouveau moteur, avec l'ancienne formule de vue
+### ✅ T1.2 — Le jeu compile sur le nouveau moteur, avec l'ancienne formule de vue
 
 - Objectif : le jeu, l'outil et les mondes sont adaptés au minimum pour compiler et se charger sur `164f8d680`, sans changer une image.
 - Fichiers : `CasaEngine` (pointeur) ; nouveau `RacingGame.Gameplay/Components/RaceLookAtCameraComponent.cs` (P3) ; `ChaseCameraRigComponent.cs`, `DebugFreeCameraComponent.cs`, `RaceWorldTemplates.cs`, `CarSelectionCarousel.cs`, `ReferenceViewCaptureValidator.cs`, `TrackMigrationCaptureValidator.cs`, et les sources de `scripts/RgceAssetCooker` si leur build l'exige (le type `CameraLookAtComponent` devient `RaceLookAtCameraComponent`, rien d'autre ; dans `RaceWorldTemplates.cs`, `Name = nameof(RaceLookAtCameraComponent)`) ; `RacingGameCasaEngineGame.cs` (`RaiseGameplayNotifications = GameplayExecutionPolicies.Runtime.RaiseGameplayNotifications`) ; les quatre `.world` et `Content/AssetInfos.json` s'il change, régénérés (R6) ; tout autre fichier que le compilateur désigne, à condition que la correction soit un renommage ou l'ajout d'un membre devenu obligatoire, sinon ⚠️ Blocked.
@@ -126,7 +126,14 @@ Relevé en lecture seule (quatre lecteurs indépendants, faits décisifs relus p
 - Validation : les commandes des étapes 2, 3 et 5 aux résultats dits, les deux builds à 0 erreur notés ; diff des mondes conforme à l'étape 4 ; les quatre mondes nomment `RaceLookAtCameraComponent`.
 - Commit : `chore(casaengine): move the game to the engine's origin/main and keep its look-at view`
 
-### ⏳ T1.3 — Parité de l'étape A (E2)
+> Validation (2026-11-22), sorties dans `artifacts/engine-simple-cameras/build/` et `artifacts/engine-simple-cameras/t12/` :
+> - **Code** : `RaceLookAtCameraComponent.cs` écrite selon P3 ; le type remplacé dans les six fichiers (4, 2, 2, 3, 3 et 7 occurrences, rien d'autre) ; `RaiseGameplayNotifications` ajouté à la politique d'exécution. **Aucune erreur de compilation que le relevé n'avait pas prévue**, ni dans le jeu ni dans l'outil : les sources de `scripts/RgceAssetCooker` ne changent pas.
+> - **Builds** : `dotnet build RacingGame.slnx`, 0 erreur ; `dotnet build scripts/RgceAssetCooker/RgceAssetCooker.csproj`, 0 erreur (R7). Les binaires du jeu portent bien le nouveau moteur (`CasaEngine.dll` du dossier de build contient `PerspectiveCameraComponent` et plus `CameraLookAtComponent`).
+> - **Mondes** (R6) : `--worlds` écrit 4 fichiers, 2 inchangés (`CarSelection.world`, `PlayerCar.entity`) ; catalogue inchangé (622 entrées) ; `--worlds --verify` : 6 fichiers, 3341 entités, 3364 composants, 0 écart ; `--verify` : 0 ; `--check` : 0 ; `generate_rgce_content_assets.py --check` : 0 ; `check_gameplay_type_names.py` : 0 collision.
+> - **Diff des mondes** : dans chacun des quatre, 8 lignes ajoutées et 4 retirées, toutes dans le nœud de caméra : `id`, `name`, `type`, et la clé `picture_offset` (`x` 0, `y` 0) que l'écrivain du moteur ajoute. Rien d'autre.
+> - **Restes** : `rg CameraLookAtComponent` hors `CasaEngine`, `docs`, `ai-agent`, `artifacts` : aucune occurrence.
+
+### 🚧 T1.3 — Parité de l'étape A (E2)
 
 - Objectif : prouver que le jeu rend les mêmes images sur le nouveau moteur.
 - Fichiers : ce plan ; sorties sous `artifacts/worlds-as-assets/e1/` ; lanceur `artifacts/engine-simple-cameras/parity_runs.py <tranche>` (copie de `artifacts/editor-closure/s7_parity_runs.py` dont la tranche devient un argument ; même verrou, même contrôle R5, Git Bash par son chemin complet ; il compare d'abord, par empreinte, tous les `.world` du dossier `bin/…/Content/Worlds` à ceux de `RacingGameCasaEngine/Content/Worlds` et s'arrête s'ils diffèrent, R1).

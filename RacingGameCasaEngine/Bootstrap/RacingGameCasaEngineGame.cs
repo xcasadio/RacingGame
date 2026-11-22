@@ -88,6 +88,7 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
             UpdateAnimatedSprites = GameplayExecutionPolicies.Runtime.UpdateAnimatedSprites,
             UpdatePhysicsComponents = GameplayExecutionPolicies.Runtime.UpdatePhysicsComponents,
             UpdatePhysicsEngine = GameplayExecutionPolicies.Runtime.UpdatePhysicsEngine,
+            RaiseGameplayNotifications = GameplayExecutionPolicies.Runtime.RaiseGameplayNotifications,
             ThrowOnScriptTypeResolution = GameplayExecutionPolicies.Runtime.ThrowOnScriptTypeResolution,
         };
 

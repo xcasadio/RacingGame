@@ -301,7 +301,7 @@ internal sealed class TrackMigrationCaptureValidator
 
     private void PrepareStartView(bool roadOnly)
     {
-        if (!TryGetRaceCamera(out CameraLookAtComponent? camera, out World? world))
+        if (!TryGetRaceCamera(out RaceLookAtCameraComponent? camera, out World? world))
         {
             Fail("Unable to locate race camera for automated capture.");
             return;
@@ -346,7 +346,7 @@ internal sealed class TrackMigrationCaptureValidator
 
     private bool PrepareCheckpointView(int checkpointIndex, bool roadOnly)
     {
-        if (!TryGetRaceCamera(out CameraLookAtComponent? camera, out World? world))
+        if (!TryGetRaceCamera(out RaceLookAtCameraComponent? camera, out World? world))
         {
             return false;
         }
@@ -392,7 +392,7 @@ internal sealed class TrackMigrationCaptureValidator
     /// </summary>
     private bool PrepareRoadPointView(int roadPointIndex)
     {
-        if (!TryGetRaceCamera(out CameraLookAtComponent? camera, out World? world))
+        if (!TryGetRaceCamera(out RaceLookAtCameraComponent? camera, out World? world))
         {
             return false;
         }
@@ -433,7 +433,7 @@ internal sealed class TrackMigrationCaptureValidator
 
     private bool PrepareTerrainOverview()
     {
-        if (!TryGetRaceCamera(out CameraLookAtComponent? camera, out World? world))
+        if (!TryGetRaceCamera(out RaceLookAtCameraComponent? camera, out World? world))
         {
             return false;
         }
@@ -476,7 +476,7 @@ internal sealed class TrackMigrationCaptureValidator
         }
     }
 
-    private static void PoseCamera(CameraLookAtComponent camera, Vector3 position, Vector3 target)
+    private static void PoseCamera(RaceLookAtCameraComponent camera, Vector3 position, Vector3 target)
     {
         // The look-at view matrix uses the component's Up, which comes from its orientation. The chase rig leaves
         // an orientation that depends on how many updates it ran, so a pose must reset it to be repeatable.
@@ -484,7 +484,7 @@ internal sealed class TrackMigrationCaptureValidator
         camera.SetPositionAndTarget(position, target);
     }
 
-    private bool TryGetRaceCamera([NotNullWhen(true)] out CameraLookAtComponent? camera, [NotNullWhen(true)] out World? world)
+    private bool TryGetRaceCamera([NotNullWhen(true)] out RaceLookAtCameraComponent? camera, [NotNullWhen(true)] out World? world)
     {
         world = _game.GameManager.CurrentWorld;
         camera = null;
@@ -494,7 +494,7 @@ internal sealed class TrackMigrationCaptureValidator
         }
 
         Entity? cameraEntity = world.Entities.FirstOrDefault(entity => entity.Name == RaceWorldFactory.CameraEntityName);
-        camera = cameraEntity?.RootComponent as CameraLookAtComponent;
+        camera = cameraEntity?.RootComponent as RaceLookAtCameraComponent;
         return camera != null;
     }
 

@@ -62,7 +62,7 @@ internal sealed class CarSelectionCarousel : IDisposable
     private readonly RacingGameCasaEngineGame _game;
     private readonly World _world;
     private readonly Entity _cameraEntity;
-    private readonly CameraLookAtComponent _camera;
+    private readonly RaceLookAtCameraComponent _camera;
     private readonly OpaqueGeometryAlphaViewPipeline _pipeline = new();
     private readonly StaticModelComponent[] _plates = new StaticModelComponent[CarCount];
     private readonly StaticModelComponent[] _cars = new StaticModelComponent[CarCount];
@@ -108,7 +108,7 @@ internal sealed class CarSelectionCarousel : IDisposable
         }
 
         _cameraEntity = new Entity { Name = "Carousel.Camera" };
-        _camera = new CameraLookAtComponent { Name = nameof(CameraLookAtComponent) };
+        _camera = new RaceLookAtCameraComponent { Name = nameof(RaceLookAtCameraComponent) };
         _cameraEntity.RootComponent = _camera;
         _cameraEntity.Initialize();
         _cameraEntity.InitializeWithWorld(_world);
