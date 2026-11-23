@@ -219,6 +219,9 @@ public sealed class RacingGameCasaEngineGame : CasaEngineGame, IRaceGameHost
 
         base.Initialize();
 
+        // The graphics device and its OpenGL context exist from here on.
+        OpenGlSeamlessCubeMaps.Enable();
+
         if (_ignorePlayerInput)
         {
             // The window input is already empty (Program); the gamepad is read through the input component's own provider.
